@@ -1,0 +1,52 @@
+# Overview
+
+## What Diffwise is
+
+Diffwise is an Angular library that compares two versions of an HTML document and shows them side by side, rendered as a reader would see them. Changes are highlighted the way a code diff highlights them, but in the document itself rather than in its markup.
+
+## Who it is for
+
+Applications that keep versions of rich text: content management systems, contract and policy tools, knowledge bases and editorial workflows.
+
+## What it will show
+
+| Change | How it is shown |
+|---|---|
+| Text | The changed line is tinted on both sides; the changed words are marked more strongly |
+| Formatting, e.g. italic → bold | Marked like a text change, with a description of what changed |
+| Link address | The link is highlighted in the text; an icon between the two sides and a tooltip show the old and new address |
+| Image | The old image is framed in red, the new one in green, with an icon between the two sides; the frame follows the marking style |
+| List markers, e.g. bullets → numbers | The line is tinted; the markers are marked more strongly |
+| Table | New rows and columns are marked strongly; otherwise only the changed cells. Unchanged cells keep their colors |
+| Added or removed paragraph | Shown on one side, with an empty space on the other |
+
+## Display and configuration
+
+All of this is planned:
+
+- **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
+- **Colors:** light, dark and automatic color modes, a colorblind-friendly palette, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
+- **Contrast:** one more scale (1–5) sets how much everything around the diff stands out: the toolbar, column headers, the line-number column and the column between the two sides. Each keeps its own shade — the line numbers darkest, the toolbar lightest — and the scale moves them together.
+- **Marking styles:** several ways to mark changed words, such as an outline, a background or an underline. All styles share the same fill and differ only in the lines drawn over it, so switching styles never moves the text.
+- **Change details:** for changes to links, images, formatting and list markers, a tooltip on the element, an icon between the two sides, or both. Tooltips use the component's colors or a dark style, and highlight the changed part of an address.
+- **Fonts:** the font is inherited from your application by default; you can switch to the built-in system font or name your own. Sizes of column headers, line numbers, tooltips and the toolbar are set in rem.
+- **Line numbers:** numbers of changed lines get a colored bar or a colored background. The column is only as wide as the largest number needs; numbers and icons can sit at the top, middle or bottom of a line.
+- **Reading aids:** optional line numbers, collapsing of unchanged lines, navigation between groups of neighboring changes and change statistics.
+- **Toolbar:** navigation between changes, change statistics and settings for end users, all shown by default. The application can hide any part of it or limit the settings users see.
+- **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides.
+- **Languages:** interface texts in 12 languages.
+
+Other optional features are turned off by default.
+
+## Not in scope
+
+- Editing, or tracking changes while someone types. Diffwise compares two finished versions.
+- Pixel-by-pixel comparison of screenshots.
+
+## Requirements
+
+Angular 20 or newer. Planned browser support: current versions of Chrome, Edge, Firefox and Safari.
+
+## License
+
+MIT: free to use, modify and distribute, including commercially.
