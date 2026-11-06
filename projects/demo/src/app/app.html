@@ -1,0 +1,31 @@
+<header class="demo-header">
+  <h1>Diffwise demo</h1>
+  <label>
+    Language
+    <select (change)="selectLanguage($event)">
+      @for (option of languages; track option.value) {
+        <option [value]="option.value" [selected]="option.value === language()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </label>
+  <label>
+    Sample
+    <select (change)="selectSize($event)">
+      @for (option of sizes; track option.value) {
+        <option [value]="option.value" [selected]="option.value === size()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </label>
+</header>
+
+<main class="demo-main">
+  @if (sample.error()) {
+    <p role="alert">The sample could not be loaded.</p>
+  } @else if (sample.value(); as pair) {
+    <diffwise-html-diff [oldHtml]="pair.oldHtml" [newHtml]="pair.newHtml" />
+  }
+</main>
