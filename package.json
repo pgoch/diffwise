@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "watch": "ng build --watch --configuration development",
+    "start": "ng serve demo",
+    "build": "ng build ngx-diffwise && node -e \"require('fs').copyFileSync('LICENSE', 'dist/ngx-diffwise/LICENSE')\"",
+    "build:demo": "ng build demo",
+    "watch": "ng build ngx-diffwise --watch --configuration development",
     "test": "ng test"
   },
   "prettier": {
@@ -30,8 +31,10 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@angular/build": "^20.3.42",
     "@angular/cli": "^20.3.42",
     "@angular/compiler-cli": "^20.3.0",
+    "ng-packagr": "^20.3.0",
     "typescript": "~5.9.2"
   },
   "description": "Side-by-side diffs of rendered HTML for Angular"

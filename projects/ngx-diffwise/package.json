@@ -1,0 +1,30 @@
+{
+  "name": "ngx-diffwise",
+  "version": "0.0.0",
+  "description": "Side-by-side diffs of rendered HTML for Angular",
+  "keywords": [
+    "angular",
+    "diff",
+    "html",
+    "compare",
+    "side-by-side"
+  ],
+  "license": "MIT",
+  "author": "Patryk Goch",
+  "homepage": "https://github.com/pgoch/diffwise#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pgoch/diffwise.git"
+  },
+  "bugs": {
+    "url": "https://github.com/pgoch/diffwise/issues"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=20.0.0",
+    "@angular/core": ">=20.0.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}
