@@ -1,0 +1,12 @@
+# Build output and caches
+/dist
+/coverage
+/.angular
+
+# Sample documents stay exactly as written: before and after differ only in the listed changes
+/test-data
+
+# Markdown tables would be re-aligned with padding
+*.md
+
+package-lock.json

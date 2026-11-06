@@ -10,7 +10,9 @@
     "test": "npm run test:engine && npm run test:angular",
     "test:engine": "vitest run",
     "test:angular": "ng test ngx-diffwise --watch=false",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "prettier": {
     "printWidth": 100,
@@ -41,6 +43,7 @@
     "eslint": "^9.39.1",
     "jsdom": "^27.4.0",
     "ng-packagr": "^20.3.0",
+    "prettier": "^3.9.10",
     "typescript": "~5.9.2",
     "typescript-eslint": "8.46.4",
     "vitest": "^3.2.7"
