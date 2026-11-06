@@ -9,7 +9,8 @@
     "watch": "ng build ngx-diffwise --watch --configuration development",
     "test": "npm run test:engine && npm run test:angular",
     "test:engine": "vitest run",
-    "test:angular": "ng test ngx-diffwise --watch=false"
+    "test:angular": "ng test ngx-diffwise --watch=false",
+    "lint": "ng lint"
   },
   "prettier": {
     "printWidth": 100,
@@ -36,9 +37,12 @@
     "@angular/build": "^20.3.42",
     "@angular/cli": "^20.3.42",
     "@angular/compiler-cli": "^20.3.0",
+    "angular-eslint": "20.7.0",
+    "eslint": "^9.39.1",
     "jsdom": "^27.4.0",
     "ng-packagr": "^20.3.0",
     "typescript": "~5.9.2",
+    "typescript-eslint": "8.46.4",
     "vitest": "^3.2.7"
   },
   "description": "Side-by-side diffs of rendered HTML for Angular"
