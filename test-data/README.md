@@ -1,0 +1,104 @@
+# Test data
+
+Sample documents for trying out Diffwise and checking it by eye. All samples were auto-generated. Each sample is a pair, `before.html` and `after.html`. Both are HTML fragments, the way an editor or a CMS stores content, not full pages.
+
+| Sample | English | Polish | Content |
+|---|---|---|---|
+| Short | [en/short](en/short) | [pl/short](pl/short) | An announcement: a heading and a few paragraphs |
+| Medium | [en/medium](en/medium) | [pl/medium](pl/medium) | A help article: headings, paragraphs, lists, links, a quote and an image |
+| Long | [en/long](en/long) | [pl/long](pl/long) | A user guide with every kind of content an editor can produce |
+
+The English and Polish versions have the same structure and the same changes. Samples in the other interface languages will follow with the translations (roadmap 0.5).
+
+Images are simple drawings in [images](images). Paths in the samples are relative to this folder, for example `images/logo-2025.svg`.
+
+## Changes in each sample
+
+### Short
+
+- Words changed inside bold text: the day and date of the maintenance.
+- A time changed: 23:00 → 23:30.
+- A clause added at the end of a paragraph.
+- A paragraph with a link added.
+
+### Medium
+
+- Words changed in the introduction ("three" → "four", an item added to an enumeration).
+- A word changed inside italic text.
+- A section added: a heading and a paragraph ("Stacks").
+- A sentence removed from a paragraph, a phrase changed in another one.
+- A number changed (20 → 50).
+- Bulleted list: an item removed, another added.
+- Numbered list: a step added, another changed.
+- Text changed inside a quote.
+- Two questions with their answers swapped. Until moved paragraphs are detected, this shows as a removal and an addition.
+- A link address changed; its text stayed the same.
+
+### Long
+
+Introduction and contents:
+
+- The logo replaced with a different image; the caption changed.
+- The date in `<time>` and the version number changed.
+- A word added to the lead paragraph.
+- An item added to the table of contents.
+
+Plans and prices:
+
+- A paragraph added above the first table, another one removed below it.
+- A price changed; a value with `&nbsp;` changed.
+- A row added to a table that uses `rowspan` and `colspan`.
+- Text changed in a merged cell (`colspan`) and in the table footer.
+- A column added to the second table, which has an image in one of its cells.
+
+Getting started:
+
+- A step added to a numbered list; text changed in another step.
+- An item changed in a nested list.
+- The `start` number of a continued list changed (5 → 6).
+- An emoji added.
+- A bulleted list changed to a numbered list.
+- A checkbox in a checklist checked.
+
+Sharing:
+
+- An inline icon removed from a sentence.
+- A list item changed and another added.
+- A link address changed (`sharing-2025` → `sharing`), the text of another link changed, and a link added around existing text.
+- Bold added to existing text.
+- An image enlarged (480 × 270 → 640 × 360).
+- Text changed inside a quote.
+
+Formatting:
+
+- Italic changed to bold (`<i>` → `<b>`).
+- Text color changed in a `style` attribute.
+- An extra space added. A reader cannot see it, so no change should be shown.
+- Text changed inside `<ins>`: the content itself contains tracked changes from another editor.
+- Two values changed in a code block, one of them next to `&lt;`.
+
+Shortcuts and glossary:
+
+- A heading level changed (h3 → h2).
+- Cells changed in a table; a row removed.
+- A definition changed; the `title` of an abbreviation changed, which is not visible in the text.
+
+Privacy and contact:
+
+- Text changed in paragraphs, inside `<details>`, in the address and in a footnote.
+- An image added in a new paragraph.
+- Only the `alt` text of an image changed.
+- A horizontal rule removed.
+- An image inside a link replaced.
+
+The long sample also covers content without changes: headings h1–h4, `<sub>`, `<sup>`, `<mark>`, `<kbd>`, `<abbr>`, `<figure>`, `<dl>`, `<address>`, centered text, line breaks, links that open in a new tab, footnote anchors, and `id` attributes that appear in both versions.
+
+## Not in the samples
+
+Scripts, event handlers, `javascript:` links and embedded media (`<iframe>`, `<video>`) are left out, so the samples are safe to open. Automated tests cover them.
+
+## Rules
+
+- All content is made up and describes a fictional service. Do not add real documents, names or data.
+- Use only `example.com` addresses.
+- Keep `before.html` and `after.html` identical apart from the changes listed above, and update this list when you change a sample.
