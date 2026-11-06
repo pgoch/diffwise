@@ -8,9 +8,7 @@
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
     "paths": {
-      "ngx-diffwise": [
-        "./projects/ngx-diffwise/src/public-api.ts"
-      ]
+      "ngx-diffwise": ["./projects/ngx-diffwise/src/public-api.ts"]
     },
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
