@@ -23,6 +23,18 @@
             }
           },
           "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/ngx-diffwise/tsconfig.spec.json",
+            "buildTarget": "demo:build:development",
+            "runner": "vitest",
+            "exclude": [
+              "src/engine/**"
+            ],
+            "providersFile": "projects/ngx-diffwise/test-providers.ts"
+          }
         }
       }
     },

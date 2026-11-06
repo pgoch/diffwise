@@ -7,7 +7,9 @@
     "build": "ng build ngx-diffwise && node -e \"require('fs').copyFileSync('LICENSE', 'dist/ngx-diffwise/LICENSE')\"",
     "build:demo": "ng build demo",
     "watch": "ng build ngx-diffwise --watch --configuration development",
-    "test": "ng test"
+    "test": "npm run test:engine && npm run test:angular",
+    "test:engine": "vitest run",
+    "test:angular": "ng test ngx-diffwise --watch=false"
   },
   "prettier": {
     "printWidth": 100,
@@ -34,8 +36,10 @@
     "@angular/build": "^20.3.42",
     "@angular/cli": "^20.3.42",
     "@angular/compiler-cli": "^20.3.0",
+    "jsdom": "^27.4.0",
     "ng-packagr": "^20.3.0",
-    "typescript": "~5.9.2"
+    "typescript": "~5.9.2",
+    "vitest": "^3.2.7"
   },
   "description": "Side-by-side diffs of rendered HTML for Angular"
 }
