@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  ViewEncapsulation,
   computed,
   inject,
   input,
@@ -54,7 +55,9 @@ interface ShownRow {
 @Component({
   selector: 'diffwise-html-diff',
   templateUrl: './diffwise-html-diff.html',
+  styleUrl: './diffwise-html-diff.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
   host: {
     class: 'diffwise-html-diff',
     '(click)': 'followInPageLink($event)',

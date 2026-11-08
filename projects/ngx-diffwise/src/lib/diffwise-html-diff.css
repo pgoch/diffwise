@@ -1,0 +1,235 @@
+/*
+ * Two versions of an HTML document side by side: light theme with the default look.
+ * Styles are global (no view encapsulation), so every class starts with `diffwise-html-diff`
+ * and apps can override the `--diffwise-…` variables.
+ */
+
+.diffwise-html-diff {
+  /* Neutral colors: the background mixed with ink. The contrast sets how much ink. */
+  --diffwise-background: #fff;
+  --diffwise-ink: #1f2328;
+  --diffwise-text: #1f2328;
+  --diffwise-muted: #6b7280;
+  --diffwise-border: #e3e6ea;
+  --diffwise-link: #1d4ed8;
+  --diffwise-contrast: 5%;
+  --diffwise-line-number-text-share: 65%;
+  --diffwise-line-number-background: color-mix(
+    in srgb,
+    var(--diffwise-ink) calc(var(--diffwise-contrast) * 1.6),
+    var(--diffwise-background)
+  );
+  --diffwise-divider-background: color-mix(
+    in srgb,
+    var(--diffwise-ink) calc(var(--diffwise-contrast) * 0.7),
+    var(--diffwise-background)
+  );
+  --diffwise-line-number-color: color-mix(
+    in srgb,
+    var(--diffwise-text) var(--diffwise-line-number-text-share),
+    var(--diffwise-line-number-background)
+  );
+  --diffwise-gap-light: color-mix(in srgb, var(--diffwise-ink) 5%, var(--diffwise-background));
+  --diffwise-gap-dark: color-mix(in srgb, var(--diffwise-ink) 10%, var(--diffwise-background));
+
+  /* Change colors: a base color mixed with the background. The intensity sets the shares. */
+  --diffwise-removed-base: #e5484d;
+  --diffwise-added-base: #2ea05a;
+  --diffwise-removed-accent: #c62f2f;
+  --diffwise-added-accent: #1d7a3a;
+  --diffwise-line-share: 9%;
+  --diffwise-highlight-share: 40%;
+  --diffwise-removed-line: color-mix(
+    in srgb,
+    var(--diffwise-removed-base) var(--diffwise-line-share),
+    var(--diffwise-background)
+  );
+  --diffwise-removed-highlight: color-mix(
+    in srgb,
+    var(--diffwise-removed-base) var(--diffwise-highlight-share),
+    var(--diffwise-background)
+  );
+  --diffwise-added-line: color-mix(
+    in srgb,
+    var(--diffwise-added-base) var(--diffwise-line-share),
+    var(--diffwise-background)
+  );
+  --diffwise-added-highlight: color-mix(
+    in srgb,
+    var(--diffwise-added-base) var(--diffwise-highlight-share),
+    var(--diffwise-background)
+  );
+
+  /* Sizes in rem. The content keeps the font and the font size of the app. */
+  --diffwise-line-number-font-size: 0.75rem;
+  --diffwise-version-header-font-size: 0.75rem;
+  --diffwise-line-number-digits: 2;
+  --diffwise-line-number-width: calc(
+    var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.25rem
+  );
+  --diffwise-divider-width: calc(2.67 * var(--diffwise-line-number-font-size));
+
+  display: block;
+  overflow: clip;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 10px;
+  /* Gaps opposite added and removed lines let the stripes show, so they run unbroken. */
+  background: repeating-linear-gradient(
+    135deg,
+    var(--diffwise-gap-light) 0 6px,
+    var(--diffwise-gap-dark) 6px 12px
+  );
+  color: var(--diffwise-text);
+  line-height: 1.6;
+}
+
+.diffwise-html-diff__version-headers,
+.diffwise-html-diff__row {
+  display: grid;
+  grid-template-columns:
+    var(--diffwise-line-number-width) minmax(0, 1fr) var(--diffwise-divider-width)
+    var(--diffwise-line-number-width) minmax(0, 1fr);
+}
+
+.diffwise-html-diff__version-headers {
+  border-bottom: 1px solid var(--diffwise-border);
+  background: var(--diffwise-divider-background);
+  color: var(--diffwise-muted);
+  font-size: var(--diffwise-version-header-font-size);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.diffwise-html-diff__version-header {
+  overflow: hidden;
+  padding: 0.65em 16px;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diffwise-html-diff__version-header--old {
+  grid-column: 2;
+}
+
+.diffwise-html-diff__version-header--new {
+  grid-column: 5;
+}
+
+/*
+ * A row can end at a fraction of a pixel, where the stripes behind would show through as a thin
+ * line. Cells reach 1px into the next row to cover it, and their bottom padding grows by 1px.
+ */
+.diffwise-html-diff__line-number,
+.diffwise-html-diff__content,
+.diffwise-html-diff__divider {
+  margin-bottom: -1px;
+}
+
+/* The top padding puts the number in the middle of the first text line. */
+.diffwise-html-diff__line-number {
+  padding: calc(5px + 0.8em - 0.8 * var(--diffwise-line-number-font-size)) 0.5rem 1px 0.75rem;
+  background: var(--diffwise-line-number-background);
+  color: var(--diffwise-line-number-color);
+  user-select: none;
+}
+
+.diffwise-html-diff__line-number-value {
+  display: block;
+  font-size: var(--diffwise-line-number-font-size);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.6;
+  text-align: right;
+}
+
+/* A changed line has a colored number with a bar. */
+.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number--old {
+  box-shadow: inset 3px 0 0 var(--diffwise-removed-accent);
+  color: var(--diffwise-removed-accent);
+}
+
+.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number--new {
+  box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
+  color: var(--diffwise-added-accent);
+}
+
+/* `contain: paint` keeps everything in the content, even an app class with a fixed position. */
+.diffwise-html-diff__content {
+  min-width: 0;
+  overflow-x: auto;
+  padding: 5px 16px 6px;
+  background: var(--diffwise-background);
+  overflow-wrap: anywhere;
+  contain: paint;
+}
+
+.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__content--old {
+  background: var(--diffwise-removed-line);
+}
+
+.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__content--new {
+  background: var(--diffwise-added-line);
+}
+
+.diffwise-html-diff__divider {
+  padding-bottom: 1px;
+  border-inline: 1px solid var(--diffwise-border);
+  background: var(--diffwise-divider-background);
+}
+
+.diffwise-html-diff__gap {
+  grid-column: span 2;
+}
+
+/* Changed words: the same background in every style; the default style adds an outline. */
+.diffwise-html-diff__highlight {
+  padding: 0 0.14em;
+  border-radius: 3px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  color: inherit;
+  text-decoration: none;
+}
+
+.diffwise-html-diff__highlight--removed {
+  background: var(--diffwise-removed-highlight);
+  box-shadow: inset 0 0 0 1.5px var(--diffwise-removed-accent);
+}
+
+.diffwise-html-diff__highlight--added {
+  background: var(--diffwise-added-highlight);
+  box-shadow: inset 0 0 0 1.5px var(--diffwise-added-accent);
+}
+
+/* Each line stands alone, so the outer margins of its blocks go. */
+.diffwise-html-diff__content :first-child {
+  margin-top: 0;
+}
+
+.diffwise-html-diff__content :last-child {
+  margin-bottom: 0;
+}
+
+.diffwise-html-diff__content a {
+  color: var(--diffwise-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.diffwise-html-diff__content img {
+  max-width: 100%;
+  height: auto;
+}
+
+.diffwise-html-diff__content table {
+  border-collapse: collapse;
+}
+
+.diffwise-html-diff__content :is(td, th) {
+  padding: 4px 10px;
+  border: 1px solid var(--diffwise-border);
+}
