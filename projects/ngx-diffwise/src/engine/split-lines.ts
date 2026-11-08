@@ -93,8 +93,8 @@ function hasVisibleContent(node: Node): boolean {
   }
 
   return (
-    VISIBLE_WITHOUT_TEXT_TAGS.has(node.localName) ||
-    Array.from(node.children).some(hasVisibleContent)
+    VISIBLE_WITHOUT_TEXT_TAGS.has(node.localName)
+    || Array.from(node.children).some(hasVisibleContent)
   );
 }
 

@@ -174,8 +174,8 @@ class SearchFront {
   /** Takes one more edit onto `diagonal`, then moves over equal items; `NOT_REACHED` outside the graph. */
   extend(diagonal: number, editCount: number): number {
     const fromAbove =
-      diagonal === -editCount ||
-      (diagonal !== editCount && this.furthestX(diagonal - 1) < this.furthestX(diagonal + 1));
+      diagonal === -editCount
+      || (diagonal !== editCount && this.furthestX(diagonal - 1) < this.furthestX(diagonal + 1));
     let x = fromAbove ? this.furthestX(diagonal + 1) : this.furthestX(diagonal - 1) + 1;
     let y = x - diagonal;
 
@@ -204,9 +204,9 @@ function commonPrefixLength<T>(oldItems: readonly T[], newItems: readonly T[], b
   let length = 0;
 
   while (
-    box.oldStart + length < box.oldEnd &&
-    box.newStart + length < box.newEnd &&
-    oldItems[box.oldStart + length] === newItems[box.newStart + length]
+    box.oldStart + length < box.oldEnd
+    && box.newStart + length < box.newEnd
+    && oldItems[box.oldStart + length] === newItems[box.newStart + length]
   ) {
     length++;
   }
@@ -224,9 +224,9 @@ function commonSuffixLength<T>(
   let length = 0;
 
   while (
-    box.oldEnd - length > box.oldStart + prefixLength &&
-    box.newEnd - length > box.newStart + prefixLength &&
-    oldItems[box.oldEnd - length - 1] === newItems[box.newEnd - length - 1]
+    box.oldEnd - length > box.oldStart + prefixLength
+    && box.newEnd - length > box.newStart + prefixLength
+    && oldItems[box.oldEnd - length - 1] === newItems[box.newEnd - length - 1]
   ) {
     length++;
   }
