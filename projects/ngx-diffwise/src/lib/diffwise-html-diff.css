@@ -4,7 +4,8 @@
  * and apps can override the `--diffwise-…` variables.
  */
 
-.diffwise-html-diff {
+/* Defaults of the variables; `:where()` makes them weaker than any selector of the app. */
+:where(.diffwise-html-diff) {
   /* Neutral colors: the background mixed with ink. The contrast sets how much ink. */
   --diffwise-background: #fff;
   --diffwise-ink: #1f2328;
@@ -68,7 +69,9 @@
     var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.25rem
   );
   --diffwise-divider-width: calc(2.67 * var(--diffwise-line-number-font-size));
+}
 
+.diffwise-html-diff {
   display: block;
   overflow: clip;
   border: 1px solid var(--diffwise-border);
@@ -85,7 +88,7 @@
 }
 
 /* Dark theme: other base colors and shares; the colors mixed from them follow. */
-.diffwise-html-diff--dark-theme {
+:where(.diffwise-html-diff--dark-theme) {
   --diffwise-background: #16191f;
   --diffwise-ink: #e6e8eb;
   --diffwise-text: #e6e8eb;
@@ -98,7 +101,9 @@
   --diffwise-added-accent: #6fdc8c;
   --diffwise-line-share: 15%;
   --diffwise-highlight-share: 48%;
+}
 
+.diffwise-html-diff--dark-theme {
   color-scheme: dark;
 }
 
