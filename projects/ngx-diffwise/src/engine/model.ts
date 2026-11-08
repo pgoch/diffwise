@@ -34,3 +34,24 @@ export const DEFAULT_DIFF_OPTIONS: DiffOptions = {
   ignoreWhitespace: false,
   ignoreCase: false,
 };
+
+/** Ways a line can differ between the two versions. */
+export const LineChangeKind = {
+  Unchanged: 'unchanged',
+  /** A similar line on each side; their words are compared separately. */
+  Changed: 'changed',
+  Added: 'added',
+  Removed: 'removed',
+} as const;
+
+export type LineChangeKind = (typeof LineChangeKind)[keyof typeof LineChangeKind];
+
+/** A line, or a pair of lines, and how it differs between the two versions. */
+export type LineChange =
+  | {
+      readonly kind: typeof LineChangeKind.Unchanged | typeof LineChangeKind.Changed;
+      readonly oldLine: Line;
+      readonly newLine: Line;
+    }
+  | { readonly kind: typeof LineChangeKind.Removed; readonly oldLine: Line }
+  | { readonly kind: typeof LineChangeKind.Added; readonly newLine: Line };
