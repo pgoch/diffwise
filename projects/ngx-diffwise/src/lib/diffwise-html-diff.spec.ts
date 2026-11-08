@@ -2,11 +2,20 @@ import { Component } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { LineChangeKind } from '../engine';
+import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
+import { DiffwiseVersionHeaders } from './config/option-values';
+import { provideDiffwise } from './config/provide-diffwise';
+import { Diffwise } from './diffwise';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
+const VERSION_HEADERS_SELECTOR = '.diffwise-html-diff__version-headers';
 const VERSION_HEADER_SELECTOR = '.diffwise-html-diff__version-header';
+const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
+const LINE_NUMBER_SELECTOR = '.diffwise-html-diff__line-number';
+const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
+const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const ROW_SELECTOR = '.diffwise-html-diff__row';
 const ROW_KIND_CLASS_START = 'diffwise-html-diff__row--';
 const ROW_PART_SELECTOR = '.diffwise-html-diff__line-number, .diffwise-html-diff__gap';
@@ -23,6 +32,12 @@ const FRAGMENT_START = '#';
 const GAP = 'gap';
 const CLICK_EVENT = 'click';
 const FOOTNOTE_HTML = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
+const ONE_LINE_HTML = '<p>Zasady ogólne.</p>';
+
+/** Inputs of the component besides the two versions. */
+type OptionInputs = DiffwiseConfigOptions & {
+  readonly config?: DiffwiseConfig | DiffwiseConfigOptions;
+};
 
 /** Elements scrolled to; jsdom does not scroll, so tests record the calls instead. */
 const scrolledTo: Element[] = [];
@@ -41,15 +56,25 @@ function clickNewFootnoteLink(element: HTMLElement, options: MouseEventInit = {}
   return click;
 }
 
-/** Renders the component with two versions of a document. */
-function render(oldHtml: string, newHtml: string) {
+/** Renders the component with two versions of a document and, if given, its options. */
+function render(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
   const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
+
+  for (const [name, value] of Object.entries(inputs)) {
+    fixture.componentRef.setInput(name, value);
+  }
+
   fixture.detectChanges();
 
   return fixture;
+}
+
+/** Renders the component with options and returns its element. */
+function renderElement(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
+  return render(oldHtml, newHtml, inputs).nativeElement as HTMLElement;
 }
 
 /** Rows as `[kind, old number, new number]`; a gap opposite an added or removed line is `gap`. */
@@ -171,5 +196,84 @@ describe('DiffwiseHtmlDiff', () => {
 
     expect(click.defaultPrevented).toBe(false);
     expect(scrolledTo).toEqual([]);
+  });
+
+  it('hides the line numbers on request', () => {
+    const element = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, { showLineNumbers: false });
+
+    expect(element.querySelectorAll(LINE_NUMBER_SELECTOR)).toHaveLength(0);
+    expect(element.classList).toContain(NO_LINE_NUMBERS_CLASS);
+  });
+
+  it('shows icons named by the default header texts', () => {
+    const element = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.Icons });
+    const iconNames = Array.from(element.querySelectorAll(VERSION_HEADER_ICON_SELECTOR), (icon) =>
+      icon.getAttribute(ARIA_LABEL_ATTRIBUTE),
+    );
+
+    expect(iconNames).toEqual(['Previous version', 'New version']);
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['', '']);
+  });
+
+  it('shows the header texts of the app, or no headers', () => {
+    const versionHeaders = { old: 'Wersja 3 · 12.10.2026', new: 'Wersja 4 · 05.11.2026' };
+    const withTexts = renderElement('', '', { versionHeaders });
+    const withoutHeaders = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.None });
+
+    expect(textsOf(withTexts, VERSION_HEADER_SELECTOR)).toEqual([
+      versionHeaders.old,
+      versionHeaders.new,
+    ]);
+    expect(withoutHeaders.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+  });
+
+  it('ignores differences in letter case and whitespace on request (T9)', () => {
+    const oldHtml = '<p>Termin: 23:00, sala A.</p>';
+    const newHtml = '<p>Termin:23:00, Sala A.</p>';
+    const ignoring = { ignoreCase: true, ignoreWhitespace: true };
+
+    expect(rowsOf(renderElement(oldHtml, newHtml))).toEqual([[LineChangeKind.Changed, 1, 1]]);
+    expect(rowsOf(renderElement(oldHtml, newHtml, ignoring))).toEqual([
+      [LineChangeKind.Unchanged, 1, 1],
+    ]);
+  });
+
+  it('uses the global configuration, and its own options win over it', () => {
+    const globalOptions = { showLineNumbers: false, versionHeaders: DiffwiseVersionHeaders.None };
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise(globalOptions)] });
+
+    const element = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, { showLineNumbers: true });
+
+    expect(element.querySelectorAll(LINE_NUMBER_SELECTOR)).toHaveLength(2);
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+  });
+
+  it('takes from config only the options it sets, and single inputs win over it', () => {
+    const config = new DiffwiseConfig({
+      versionHeaders: DiffwiseVersionHeaders.None,
+      ignoreCase: true,
+    });
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise({ showLineNumbers: false })] });
+
+    const element = renderElement('<p>Konto firmowe.</p>', '<p>Konto Firmowe.</p>', {
+      config,
+      ignoreCase: false,
+    });
+
+    expect(element.querySelectorAll(LINE_NUMBER_SELECTOR)).toHaveLength(0);
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+    expect(rowsOf(element)).toEqual([[LineChangeKind.Changed]]);
+  });
+
+  it('follows changes of the global configuration while the app runs', () => {
+    const fixture = render(ONE_LINE_HTML, ONE_LINE_HTML);
+    const element = fixture.nativeElement as HTMLElement;
+
+    TestBed.inject(Diffwise).updateConfig({ versionHeaders: DiffwiseVersionHeaders.None });
+    fixture.detectChanges();
+
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
   });
 });

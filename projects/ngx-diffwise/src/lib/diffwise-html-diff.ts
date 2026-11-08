@@ -10,18 +10,24 @@ import {
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import {
-  DEFAULT_DIFF_OPTIONS,
+  type DiffOptions,
   type LineChangeKind,
   type ViewLine,
   type ViewRow,
   diffHtml,
 } from '../engine';
+import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
+import { DiffwiseVersionHeaders, type DiffwiseVersionHeaderTexts } from './config/option-values';
+import { Diffwise } from './diffwise';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
 const ID_PREFIX_START = 'diffwise-';
 
-/** Texts above the two versions. */
-const VERSION_HEADER_TEXTS = { old: 'Previous version', new: 'New version' } as const;
+/** Texts above the two versions; icons in their place are named by them. */
+const VERSION_HEADER_TEXTS: DiffwiseVersionHeaderTexts = {
+  old: 'Previous version',
+  new: 'New version',
+};
 
 const IN_PAGE_LINK_SELECTOR = 'a[href^="#"]';
 const LINK_TARGET_SELECTOR = '[id], a[name]';
@@ -51,6 +57,13 @@ interface ShownRow {
   readonly newLine: ShownLine | null;
 }
 
+/** Headers as the template shows them. */
+interface ShownVersionHeaders {
+  readonly texts: DiffwiseVersionHeaderTexts;
+  /** Shows icons named by the texts instead of the texts. */
+  readonly asIcons: boolean;
+}
+
 /** Shows two versions of an HTML document side by side, with the changes marked. */
 @Component({
   selector: 'diffwise-html-diff',
@@ -60,6 +73,7 @@ interface ShownRow {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'diffwise-html-diff',
+    '[class.diffwise-html-diff--no-line-numbers]': '!effectiveConfig().showLineNumbers',
     '(click)': 'followInPageLink($event)',
   },
 })
@@ -70,15 +84,56 @@ export class DiffwiseHtmlDiff {
   /** The later version of the document. */
   readonly newHtml = input('');
 
+  /** Options of this diff in one object, such as a `DiffwiseConfig`; it changes only those it sets. */
+  readonly config = input<DiffwiseConfig | DiffwiseConfigOptions>({});
+
+  /** Shows the number of each line; wins over `config` and the global configuration. */
+  readonly showLineNumbers = input<boolean>();
+
+  /** Headers above the two versions; wins over `config` and the global configuration. */
+  readonly versionHeaders = input<DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts>();
+
+  /** Ignores differences in whitespace; wins over `config` and the global configuration. */
+  readonly ignoreWhitespace = input<boolean>();
+
+  /** Ignores differences in letter case; wins over `config` and the global configuration. */
+  readonly ignoreCase = input<boolean>();
+
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly diffwise = inject(Diffwise);
   private readonly idPrefix = nextIdPrefix();
 
-  protected readonly versionHeaders = VERSION_HEADER_TEXTS;
+  /** Options set by single inputs; an input left unset changes nothing. */
+  private readonly inputOptions = computed<DiffwiseConfigOptions>(() => ({
+    showLineNumbers: this.showLineNumbers(),
+    versionHeaders: this.versionHeaders(),
+    ignoreWhitespace: this.ignoreWhitespace(),
+    ignoreCase: this.ignoreCase(),
+  }));
 
-  /** Rows of the view, compared again whenever either version changes. */
+  /** The options in effect: single inputs over `config`, over the global configuration. */
+  protected readonly effectiveConfig = computed(() =>
+    this.diffwise.config().with(this.config()).with(this.inputOptions()),
+  );
+
+  /** What counts as a difference; other options change without comparing the versions again. */
+  private readonly diffOptions = computed<DiffOptions>(
+    () => {
+      const { ignoreWhitespace, ignoreCase } = this.effectiveConfig();
+      return { ignoreWhitespace, ignoreCase };
+    },
+    { equal: areDiffOptionsEqual },
+  );
+
+  /** Headers above the two versions, or `null` without headers. */
+  protected readonly shownVersionHeaders = computed(() =>
+    toShownVersionHeaders(this.effectiveConfig().versionHeaders),
+  );
+
+  /** Rows of the view, compared again whenever either version or `diffOptions` changes. */
   protected readonly rows = computed(() => {
-    const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: this.idPrefix };
+    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix };
     const { rows } = diffHtml(this.oldHtml(), this.newHtml(), settings);
 
     return rows.map((row) => this.shownRow(row));
@@ -135,6 +190,28 @@ export class DiffwiseHtmlDiff {
 function nextIdPrefix(): string {
   createdDiffs++;
   return ID_PREFIX_START + createdDiffs;
+}
+
+/** True when both count the same differences. */
+function areDiffOptionsEqual(first: DiffOptions, second: DiffOptions): boolean {
+  const names = Object.keys(first) as (keyof DiffOptions)[];
+  return names.every((name) => first[name] === second[name]);
+}
+
+/** Texts of the headers and whether icons show them; `null` without headers. */
+function toShownVersionHeaders(
+  versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
+): ShownVersionHeaders | null {
+  switch (versionHeaders) {
+    case DiffwiseVersionHeaders.None:
+      return null;
+    case DiffwiseVersionHeaders.Default:
+      return { texts: VERSION_HEADER_TEXTS, asIcons: false };
+    case DiffwiseVersionHeaders.Icons:
+      return { texts: VERSION_HEADER_TEXTS, asIcons: true };
+    default:
+      return { texts: versionHeaders, asIcons: false };
+  }
 }
 
 /** True for the element that `#fragment` points to: by its id or, for an anchor, by its name. */

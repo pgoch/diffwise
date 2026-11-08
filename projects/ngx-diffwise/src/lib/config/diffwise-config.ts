@@ -1,0 +1,54 @@
+import { normalizeConfig } from './normalize-config';
+import { DiffwiseVersionHeaders, type DiffwiseVersionHeaderTexts } from './option-values';
+
+/** Options of Diffwise. An option left out keeps its value from the level below, or its default. */
+export interface DiffwiseConfigOptions {
+  /** Shows the number of each line. Default: `true`. */
+  readonly showLineNumbers?: boolean;
+  /** Headers above the two versions, or texts of the app. Default: `DiffwiseVersionHeaders.Default`. */
+  readonly versionHeaders?: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts;
+  /** Ignores differences in whitespace. Default: `false`. */
+  readonly ignoreWhitespace?: boolean;
+  /** Ignores differences in letter case. Default: `false`. */
+  readonly ignoreCase?: boolean;
+}
+
+/**
+ * Options of Diffwise with their defaults. A config changes only the options given to it,
+ * so the config of one diff keeps the other options of the global configuration.
+ */
+export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
+  /** Shows the number of each line. */
+  readonly showLineNumbers: boolean = true;
+
+  /** Headers above the two versions, or texts of the app. */
+  readonly versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts =
+    DiffwiseVersionHeaders.Default;
+
+  /** Ignores differences in whitespace. */
+  readonly ignoreWhitespace: boolean = false;
+
+  /** Ignores differences in letter case. */
+  readonly ignoreCase: boolean = false;
+
+  /** Valid options given to the constructor, without the defaults. */
+  readonly #givenOptions: DiffwiseConfigOptions;
+
+  /** Takes only the options to change; an invalid value keeps the default. */
+  constructor(options: DiffwiseConfig | DiffwiseConfigOptions = {}) {
+    this.#givenOptions = DiffwiseConfig.#validOptionsOf(options);
+    Object.assign(this, this.#givenOptions);
+    Object.freeze(this);
+  }
+
+  /** A copy with the given options changed; an invalid value keeps the current one. */
+  with(changes: DiffwiseConfig | DiffwiseConfigOptions): DiffwiseConfig {
+    const validChanges = DiffwiseConfig.#validOptionsOf(changes);
+    return new DiffwiseConfig({ ...this.#givenOptions, ...validChanges });
+  }
+
+  /** Valid options of a plain object, or only the options given to a config. */
+  static #validOptionsOf(options: DiffwiseConfig | DiffwiseConfigOptions): DiffwiseConfigOptions {
+    return options instanceof DiffwiseConfig ? options.#givenOptions : normalizeConfig(options);
+  }
+}
