@@ -51,10 +51,11 @@ class ViewRowBuilder {
   }
 
   private unchangedRow(oldLine: Line, newLine: Line): ViewRow {
-    const oldViewLine = this.nextOldLine(oldLine.html);
-    const newViewLine = this.nextNewLine(newLine.html);
-
-    return { kind: LineChangeKind.Unchanged, oldLine: oldViewLine, newLine: newViewLine };
+    return {
+      kind: LineChangeKind.Unchanged,
+      oldLine: this.nextOldLine(oldLine.html),
+      newLine: this.nextNewLine(newLine.html),
+    };
   }
 
   /** A row of a changed pair: removed words marked in the old line, added words in the new one. */
@@ -62,20 +63,20 @@ class ViewRowBuilder {
     const { removed, added } = diffWords(oldLine.text, newLine.text, this.options);
     const markedOldHtml = markChanges(oldLine, removed, REMOVED_TEXT_MARKER);
     const markedNewHtml = markChanges(newLine, added, ADDED_TEXT_MARKER);
-    const oldViewLine = this.nextOldLine(markedOldHtml);
-    const newViewLine = this.nextNewLine(markedNewHtml);
 
-    return { kind: LineChangeKind.Changed, oldLine: oldViewLine, newLine: newViewLine };
+    return {
+      kind: LineChangeKind.Changed,
+      oldLine: this.nextOldLine(markedOldHtml),
+      newLine: this.nextNewLine(markedNewHtml),
+    };
   }
 
   private removedRow(oldLine: Line): ViewRow {
-    const oldViewLine = this.nextOldLine(oldLine.html);
-    return { kind: LineChangeKind.Removed, oldLine: oldViewLine, newLine: null };
+    return { kind: LineChangeKind.Removed, oldLine: this.nextOldLine(oldLine.html), newLine: null };
   }
 
   private addedRow(newLine: Line): ViewRow {
-    const newViewLine = this.nextNewLine(newLine.html);
-    return { kind: LineChangeKind.Added, oldLine: null, newLine: newViewLine };
+    return { kind: LineChangeKind.Added, oldLine: null, newLine: this.nextNewLine(newLine.html) };
   }
 
   private nextOldLine(html: string): ViewLine {
@@ -91,6 +92,5 @@ class ViewRowBuilder {
 
 /** A numbered line. Its HTML is sanitized again, because marking changes edits it. */
 function viewLine(number: number, html: string): ViewLine {
-  const sanitizedHtml = sanitizeHtml(html);
-  return { number, html: sanitizedHtml };
+  return { number, html: sanitizeHtml(html) };
 }

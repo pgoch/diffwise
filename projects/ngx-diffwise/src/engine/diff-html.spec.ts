@@ -49,18 +49,16 @@ function added(html: string): string {
 
 /** A row as `[kind, old number, new number]`; a missing line is `null`. */
 function rowShape({ kind, oldLine, newLine }: ViewRow) {
-  const oldNumber = oldLine?.number ?? null;
-  const newNumber = newLine?.number ?? null;
-
-  return [kind, oldNumber, newNumber];
+  return [kind, oldLine?.number ?? null, newLine?.number ?? null];
 }
 
 /** A row as `[kind, old number, new number, removed texts, added texts]`. */
 function rowSummary(row: ViewRow) {
-  const removedTexts = markedTexts(row.oldLine, REMOVED_SELECTOR);
-  const addedTexts = markedTexts(row.newLine, ADDED_SELECTOR);
-
-  return [...rowShape(row), removedTexts, addedTexts];
+  return [
+    ...rowShape(row),
+    markedTexts(row.oldLine, REMOVED_SELECTOR),
+    markedTexts(row.newLine, ADDED_SELECTOR),
+  ];
 }
 
 /** Texts of the line's markers, in reading order. */

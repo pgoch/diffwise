@@ -117,8 +117,7 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
       const backwardX = backward.furthestX(delta - diagonal);
 
       if (deltaIsOdd && meet(forwardX, backwardX, size)) {
-        const forwardY = forwardX - diagonal;
-        return { x: forwardX, y: forwardY };
+        return { x: forwardX, y: forwardX - diagonal };
       }
     }
 
@@ -127,8 +126,7 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
       const forwardX = forward.furthestX(delta - diagonal);
 
       if (!deltaIsOdd && meet(forwardX, backwardX, size)) {
-        const forwardY = forwardX - (delta - diagonal);
-        return { x: forwardX, y: forwardY };
+        return { x: forwardX, y: forwardX - (delta - diagonal) };
       }
     }
   }
@@ -244,10 +242,7 @@ function commonSuffixLength<T>(
 
 function addEquals(oldStart: number, newStart: number, count: number, edits: Edit[]): void {
   for (let offset = 0; offset < count; offset++) {
-    const oldIndex = oldStart + offset;
-    const newIndex = newStart + offset;
-
-    edits.push({ kind: EditKind.Equal, oldIndex, newIndex });
+    edits.push({ kind: EditKind.Equal, oldIndex: oldStart + offset, newIndex: newStart + offset });
   }
 }
 
