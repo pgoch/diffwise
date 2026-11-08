@@ -112,8 +112,9 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
   for (let editCount = 0; editCount < maxEdits; editCount++) {
     for (const diagonal of forward.diagonals(editCount)) {
       const forwardX = forward.extend(diagonal, editCount);
+      const backwardX = backward.furthestX(delta - diagonal);
 
-      if (deltaIsOdd && meet(forwardX, backward.furthestX(delta - diagonal), size)) {
+      if (deltaIsOdd && meet(forwardX, backwardX, size)) {
         return { x: forwardX, y: forwardX - diagonal };
       }
     }
@@ -133,9 +134,9 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
 
 /** True when the forward and backward paths on one diagonal together cover all old items. */
 function meet(forwardX: number, backwardX: number, size: GraphSize): boolean {
-  return (
-    forwardX !== NOT_REACHED && backwardX !== NOT_REACHED && forwardX + backwardX >= size.oldLength
-  );
+  const bothReached = forwardX !== NOT_REACHED && backwardX !== NOT_REACHED;
+
+  return bothReached && forwardX + backwardX >= size.oldLength;
 }
 
 /** One direction of the search: the furthest x on each diagonal (k = x - y). */
@@ -157,11 +158,9 @@ class SearchFront {
 
   /** Diagonals to extend after `editCount` edits; paths that left the graph are cut off. */
   *diagonals(editCount: number): Generator<number> {
-    for (
-      let diagonal = -editCount + this.lowCut;
-      diagonal <= editCount - this.highCut;
-      diagonal += 2
-    ) {
+    const lowest = -editCount + this.lowCut;
+
+    for (let diagonal = lowest; diagonal <= editCount - this.highCut; diagonal += 2) {
       yield diagonal;
     }
   }
@@ -173,13 +172,14 @@ class SearchFront {
 
   /** Takes one more edit onto `diagonal`, then moves over equal items; `NOT_REACHED` outside the graph. */
   extend(diagonal: number, editCount: number): number {
-    const fromAbove =
-      diagonal === -editCount
-      || (diagonal !== editCount && this.furthestX(diagonal - 1) < this.furthestX(diagonal + 1));
+    const isLowestDiagonal = diagonal === -editCount;
+    const isHighestDiagonal = diagonal === editCount;
+    const aboveIsFurther = this.furthestX(diagonal - 1) < this.furthestX(diagonal + 1);
+    const fromAbove = isLowestDiagonal || (!isHighestDiagonal && aboveIsFurther);
     let x = fromAbove ? this.furthestX(diagonal + 1) : this.furthestX(diagonal - 1) + 1;
     let y = x - diagonal;
 
-    while (x < this.size.oldLength && y < this.size.newLength && this.matches(x, y)) {
+    while (this.canMoveDiagonally(x, y)) {
       x++;
       y++;
     }
@@ -198,16 +198,20 @@ class SearchFront {
 
     return x;
   }
+
+  /** True when the items at `x` and `y` both exist and are equal. */
+  private canMoveDiagonally(x: number, y: number): boolean {
+    return x < this.size.oldLength && y < this.size.newLength && this.matches(x, y);
+  }
 }
 
 function commonPrefixLength<T>(oldItems: readonly T[], newItems: readonly T[], box: Box): number {
+  const maxLength = Math.min(box.oldEnd - box.oldStart, box.newEnd - box.newStart);
+  const itemsEqualAt = (offset: number) =>
+    oldItems[box.oldStart + offset] === newItems[box.newStart + offset];
   let length = 0;
 
-  while (
-    box.oldStart + length < box.oldEnd
-    && box.newStart + length < box.newEnd
-    && oldItems[box.oldStart + length] === newItems[box.newStart + length]
-  ) {
+  while (length < maxLength && itemsEqualAt(length)) {
     length++;
   }
 
@@ -221,13 +225,12 @@ function commonSuffixLength<T>(
   box: Box,
   prefixLength: number,
 ): number {
+  const maxLength = Math.min(box.oldEnd - box.oldStart, box.newEnd - box.newStart) - prefixLength;
+  const itemsEqualFromEnd = (offset: number) =>
+    oldItems[box.oldEnd - 1 - offset] === newItems[box.newEnd - 1 - offset];
   let length = 0;
 
-  while (
-    box.oldEnd - length > box.oldStart + prefixLength
-    && box.newEnd - length > box.newStart + prefixLength
-    && oldItems[box.oldEnd - length - 1] === newItems[box.newEnd - length - 1]
-  ) {
+  while (length < maxLength && itemsEqualFromEnd(length)) {
     length++;
   }
 
