@@ -55,3 +55,16 @@ export type LineChange =
     }
   | { readonly kind: typeof LineChangeKind.Removed; readonly oldLine: Line }
   | { readonly kind: typeof LineChangeKind.Added; readonly newLine: Line };
+
+/** Numbers of added, removed and changed lines. */
+export interface DiffStats {
+  readonly addedLines: number;
+  readonly removedLines: number;
+  readonly changedLines: number;
+}
+
+/** Line changes of a whole comparison, in reading order, with their numbers. */
+export interface LineDiff {
+  readonly changes: readonly LineChange[];
+  readonly stats: DiffStats;
+}
