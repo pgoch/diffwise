@@ -8,7 +8,6 @@ describe('comparisonText', () => {
 
   it('removes all whitespace when whitespace is ignored', () => {
     const options = { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace: true };
-
     expect(comparisonText('let a  =\n  1;', options)).toBe('leta=1;');
   });
 

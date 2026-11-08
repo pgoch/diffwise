@@ -94,10 +94,12 @@ function diffMiddle<T>(
  * Returns the meeting point, or `null` when the box has no equal items at all.
  */
 function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: Box): Point | null {
-  const size = { oldLength: box.oldEnd - box.oldStart, newLength: box.newEnd - box.newStart };
-  const delta = size.oldLength - size.newLength;
+  const oldLength = box.oldEnd - box.oldStart;
+  const newLength = box.newEnd - box.newStart;
+  const size = { oldLength, newLength };
+  const delta = oldLength - newLength;
   const deltaIsOdd = delta % 2 !== 0;
-  const maxEdits = Math.ceil((size.oldLength + size.newLength) / 2);
+  const maxEdits = Math.ceil((oldLength + newLength) / 2);
   const forward = new SearchFront(
     maxEdits,
     size,
@@ -115,7 +117,8 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
       const backwardX = backward.furthestX(delta - diagonal);
 
       if (deltaIsOdd && meet(forwardX, backwardX, size)) {
-        return { x: forwardX, y: forwardX - diagonal };
+        const forwardY = forwardX - diagonal;
+        return { x: forwardX, y: forwardY };
       }
     }
 
@@ -124,7 +127,8 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
       const forwardX = forward.furthestX(delta - diagonal);
 
       if (!deltaIsOdd && meet(forwardX, backwardX, size)) {
-        return { x: forwardX, y: forwardX - (delta - diagonal) };
+        const forwardY = forwardX - (delta - diagonal);
+        return { x: forwardX, y: forwardY };
       }
     }
   }
@@ -135,7 +139,6 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
 /** True when the forward and backward paths on one diagonal together cover all old items. */
 function meet(forwardX: number, backwardX: number, size: GraphSize): boolean {
   const bothReached = forwardX !== NOT_REACHED && backwardX !== NOT_REACHED;
-
   return bothReached && forwardX + backwardX >= size.oldLength;
 }
 
@@ -241,7 +244,10 @@ function commonSuffixLength<T>(
 
 function addEquals(oldStart: number, newStart: number, count: number, edits: Edit[]): void {
   for (let offset = 0; offset < count; offset++) {
-    edits.push({ kind: EditKind.Equal, oldIndex: oldStart + offset, newIndex: newStart + offset });
+    const oldIndex = oldStart + offset;
+    const newIndex = newStart + offset;
+
+    edits.push({ kind: EditKind.Equal, oldIndex, newIndex });
   }
 }
 

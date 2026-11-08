@@ -84,7 +84,9 @@ function addLine(lines: Line[], { kind, tag, nodes, wrappers }: LineSource): voi
     return;
   }
 
-  lines.push({ kind, tag, text, html: lineHtml(nodes, wrappers) });
+  const html = lineHtml(nodes, wrappers);
+
+  lines.push({ kind, tag, text, html });
 }
 
 /** True for an image, a rule or anything else a reader sees without text, at any depth. */

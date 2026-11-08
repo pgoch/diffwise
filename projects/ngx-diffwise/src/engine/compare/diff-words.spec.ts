@@ -11,17 +11,15 @@ function changedTexts(
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ) {
   const { removed, added } = diffWords(oldText, newText, options);
+  const removedTexts = removed.map((range) => oldText.slice(range.start, range.end));
+  const addedTexts = added.map((range) => newText.slice(range.start, range.end));
 
-  return {
-    removed: removed.map((range) => oldText.slice(range.start, range.end)),
-    added: added.map((range) => newText.slice(range.start, range.end)),
-  };
+  return { removed: removedTexts, added: addedTexts };
 }
 
 /** A paragraph of about 700 characters with one chosen word in the middle (T10). */
 function longParagraph(middleWord: string): string {
   const around = SENTENCE.repeat(SENTENCES_AROUND_CHANGE);
-
   return `${around}Pomoc jest ${middleWord} dla klientów. ${around}`;
 }
 

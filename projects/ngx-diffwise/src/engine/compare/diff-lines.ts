@@ -48,7 +48,9 @@ export function diffLines(
 
   addBlockOfChanges();
 
-  return { changes, stats: countChanges(changes) };
+  const stats = countChanges(changes);
+
+  return { changes, stats };
 }
 
 /** Lines are equal when their tags and their compared texts are. */
@@ -57,11 +59,11 @@ function lineKey(line: Line, options: DiffOptions): string {
 }
 
 function countChanges(changes: readonly LineChange[]): DiffStats {
-  return {
-    addedLines: countKind(changes, LineChangeKind.Added),
-    removedLines: countKind(changes, LineChangeKind.Removed),
-    changedLines: countKind(changes, LineChangeKind.Changed),
-  };
+  const addedLines = countKind(changes, LineChangeKind.Added);
+  const removedLines = countKind(changes, LineChangeKind.Removed);
+  const changedLines = countKind(changes, LineChangeKind.Changed);
+
+  return { addedLines, removedLines, changedLines };
 }
 
 function countKind(changes: readonly LineChange[], kind: LineChangeKind): number {

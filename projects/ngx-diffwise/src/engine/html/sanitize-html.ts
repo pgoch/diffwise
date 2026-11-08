@@ -63,7 +63,6 @@ let purifier: Purifier | undefined;
 /** Removes everything that could run code or act outside the diff. */
 export function sanitizeHtml(html: string): string {
   purifier ??= createPurifier();
-
   return purifier.sanitize(html, PURIFY_CONFIG);
 }
 

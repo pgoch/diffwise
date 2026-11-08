@@ -30,7 +30,6 @@ export function diffWords(oldText: string, newText: string, options: DiffOptions
 /** Tokens that take part in the comparison; whitespace drops out when it is ignored. */
 function comparedTokens(text: string, options: DiffOptions): Token[] {
   const tokens = splitWords(text);
-
   return options.ignoreWhitespace ? withoutWhitespace(tokens) : tokens;
 }
 
