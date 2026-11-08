@@ -78,8 +78,9 @@ function kindOf(block: Element): LineKind {
 /** Adds a line unless a reader would see nothing in it. */
 function addLine(lines: Line[], { kind, tag, nodes, wrappers }: LineSource): void {
   const text = readerText(nodes);
+  const readerSeesNothing = text.length === 0 && !nodes.some(hasVisibleContent);
 
-  if (text.length === 0 && !nodes.some(hasVisibleContent)) {
+  if (readerSeesNothing) {
     return;
   }
 
@@ -92,10 +93,9 @@ function hasVisibleContent(node: Node): boolean {
     return false;
   }
 
-  return (
-    VISIBLE_WITHOUT_TEXT_TAGS.has(node.localName)
-    || Array.from(node.children).some(hasVisibleContent)
-  );
+  const isVisibleItself = VISIBLE_WITHOUT_TEXT_TAGS.has(node.localName);
+
+  return isVisibleItself || Array.from(node.children).some(hasVisibleContent);
 }
 
 /** HTML of the nodes inside shallow copies of the wrappers, built in an inert template. */
