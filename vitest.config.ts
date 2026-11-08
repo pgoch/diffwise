@@ -7,6 +7,5 @@ export default defineConfig({
     include: ['projects/ngx-diffwise/src/engine/**/*.spec.ts'],
     environment: 'jsdom',
     globals: true,
-    passWithNoTests: true,
   },
 });
