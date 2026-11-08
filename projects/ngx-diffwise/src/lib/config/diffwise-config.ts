@@ -1,6 +1,8 @@
+import type { DiffwiseCustomTexts } from '../i18n/texts';
 import { normalizeConfig } from './normalize-config';
 import {
   DiffwiseColorMode,
+  DiffwiseLanguage,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
 } from './option-values';
@@ -22,7 +24,17 @@ export interface DiffwiseConfigOptions {
   readonly ignoreWhitespace?: boolean;
   /** Ignores differences in letter case. Default: `false`. */
   readonly ignoreCase?: boolean;
+  /** Language of the interface; `auto` takes the one of the app. Default: `DiffwiseLanguage.Auto`. */
+  readonly language?: DiffwiseLanguage;
+  /**
+   * Texts shown instead of texts of the interface. Each level of the configuration changes only
+   * the texts it sets. Default: none.
+   */
+  readonly customTexts?: DiffwiseCustomTexts;
 }
+
+/** Custom texts of a config that sets none. */
+const NO_CUSTOM_TEXTS: DiffwiseCustomTexts = Object.freeze({});
 
 /**
  * Options of Diffwise with their defaults. A config changes only the options given to it,
@@ -48,6 +60,12 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Ignores differences in letter case. */
   readonly ignoreCase: boolean = false;
 
+  /** Language of the interface; `auto` takes the one of the app. */
+  readonly language: DiffwiseLanguage = DiffwiseLanguage.Auto;
+
+  /** Texts shown instead of texts of the interface. */
+  readonly customTexts: DiffwiseCustomTexts = NO_CUSTOM_TEXTS;
+
   /** Valid options given to the constructor, without the defaults. */
   readonly #givenOptions: DiffwiseConfigOptions;
 
@@ -61,11 +79,20 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** A copy with the given options changed; an invalid value keeps the current one. */
   with(changes: DiffwiseConfig | DiffwiseConfigOptions): DiffwiseConfig {
     const validChanges = DiffwiseConfig.#validOptionsOf(changes);
-    return new DiffwiseConfig({ ...this.#givenOptions, ...validChanges });
+    return new DiffwiseConfig(withChanges(this.#givenOptions, validChanges));
   }
 
   /** Valid options of a plain object, or only the options given to a config. */
   static #validOptionsOf(options: DiffwiseConfig | DiffwiseConfigOptions): DiffwiseConfigOptions {
     return options instanceof DiffwiseConfig ? options.#givenOptions : normalizeConfig(options);
   }
+}
+
+/** The options with the changes; custom texts change one by one, so the texts left out stay. */
+function withChanges(
+  options: DiffwiseConfigOptions,
+  changes: DiffwiseConfigOptions,
+): DiffwiseConfigOptions {
+  const customTexts = { ...options.customTexts, ...changes.customTexts };
+  return { ...options, ...changes, customTexts };
 }

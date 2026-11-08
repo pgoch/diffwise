@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  LOCALE_ID,
   ViewEncapsulation,
   afterRenderEffect,
   computed,
@@ -22,19 +23,16 @@ import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   DiffwiseColorMode,
+  type DiffwiseLanguage,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
 } from './config/option-values';
 import { Diffwise } from './diffwise';
+import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
+import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
 const ID_PREFIX_START = 'diffwise-';
-
-/** Texts above the two versions; icons in their place are named by them. */
-const VERSION_HEADER_TEXTS: DiffwiseVersionHeaderTexts = {
-  old: 'Previous version',
-  new: 'New version',
-};
 
 const IN_PAGE_LINK_SELECTOR = 'a[href^="#"]';
 const LINK_TARGET_SELECTOR = '[id], a[name]';
@@ -80,6 +78,8 @@ interface ShownVersionHeaders {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'diffwise-html-diff',
+    role: 'region',
+    '[attr.aria-label]': 'texts().diffLabel',
     '[class.diffwise-html-diff--dark-theme]': 'isDark()',
     '[class.diffwise-html-diff--no-line-numbers]': '!effectiveConfig().showLineNumbers',
     '(click)': 'followInPageLink($event)',
@@ -113,10 +113,20 @@ export class DiffwiseHtmlDiff {
   /** Ignores differences in letter case; wins over `config` and the global configuration. */
   readonly ignoreCase = input<boolean>();
 
+  /** Language of the interface; wins over `config` and the global configuration. */
+  readonly language = input<DiffwiseLanguage>();
+
+  /**
+   * Texts shown instead of texts of the interface; each wins over the same text of `config` and
+   * the global configuration.
+   */
+  readonly customTexts = input<DiffwiseCustomTexts>();
+
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly diffwise = inject(Diffwise);
   private readonly colorScheme = inject(ColorScheme);
+  private readonly localeId = inject(LOCALE_ID);
   private readonly idPrefix = nextIdPrefix();
 
   /** True while the diff is inside an element that matches the dark mode marker of the app. */
@@ -130,6 +140,8 @@ export class DiffwiseHtmlDiff {
     versionHeaders: this.versionHeaders(),
     ignoreWhitespace: this.ignoreWhitespace(),
     ignoreCase: this.ignoreCase(),
+    language: this.language(),
+    customTexts: this.customTexts(),
   }));
 
   /** The options in effect: single inputs over `config`, over the global configuration. */
@@ -157,9 +169,17 @@ export class DiffwiseHtmlDiff {
     isDarkColorMode(this.effectiveConfig().colorMode, () => this.autoModeIsDark()),
   );
 
+  /** Texts of the interface in its language, with the custom texts of the app. */
+  protected readonly texts = computed<UiTexts>(() => {
+    const { language, customTexts } = this.effectiveConfig();
+    const languageTexts = LANGUAGE_TEXTS[resolveLanguage(language, this.localeId)];
+
+    return { ...languageTexts, ...customTexts };
+  });
+
   /** Headers above the two versions, or `null` without headers. */
   protected readonly shownVersionHeaders = computed(() =>
-    toShownVersionHeaders(this.effectiveConfig().versionHeaders),
+    toShownVersionHeaders(this.effectiveConfig().versionHeaders, this.texts()),
   );
 
   /** Rows of the view, compared again whenever either version or `diffOptions` changes. */
@@ -253,17 +273,23 @@ function areDiffOptionsEqual(first: DiffOptions, second: DiffOptions): boolean {
   return names.every((name) => first[name] === second[name]);
 }
 
-/** Texts of the headers and whether icons show them; `null` without headers. */
+/**
+ * Texts of the headers and whether icons show them; `null` without headers. Without texts of
+ * the app, the texts of the interface name the versions.
+ */
 function toShownVersionHeaders(
   versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
+  texts: UiTexts,
 ): ShownVersionHeaders | null {
+  const versionNames = { old: texts.oldVersion, new: texts.newVersion };
+
   switch (versionHeaders) {
     case DiffwiseVersionHeaders.None:
       return null;
     case DiffwiseVersionHeaders.Default:
-      return { texts: VERSION_HEADER_TEXTS, asIcons: false };
+      return { texts: versionNames, asIcons: false };
     case DiffwiseVersionHeaders.Icons:
-      return { texts: VERSION_HEADER_TEXTS, asIcons: true };
+      return { texts: versionNames, asIcons: true };
     default:
       return { texts: versionHeaders, asIcons: false };
   }

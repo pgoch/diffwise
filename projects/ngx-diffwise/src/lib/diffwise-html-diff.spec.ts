@@ -1,10 +1,14 @@
-import { Component, signal } from '@angular/core';
+import { Component, LOCALE_ID, signal } from '@angular/core';
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LineChangeKind } from '../engine';
 import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseColorMode, DiffwiseVersionHeaders } from './config/option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseLanguage,
+  DiffwiseVersionHeaders,
+} from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
 import { Diffwise } from './diffwise';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
@@ -37,6 +41,10 @@ const ONE_LINE_HTML = '<p>Zasady ogólne.</p>';
 const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
 const PAGE_DARK_CLASS = 'dark';
 const PAGE_DARK_SELECTOR = '.dark';
+const ROLE_ATTRIBUTE = 'role';
+const REGION_ROLE = 'region';
+const POLISH_LOCALE = 'pl-PL';
+const POLISH_VERSION_NAMES = ['Poprzednia wersja', 'Nowa wersja'];
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -106,6 +114,13 @@ function partText(part: Element) {
 
 function textsOf(element: HTMLElement, selector: string) {
   return Array.from(element.querySelectorAll(selector), (found) => found.textContent?.trim());
+}
+
+/** Names of the header icons, which screen readers read. */
+function iconNamesOf(element: HTMLElement) {
+  return Array.from(element.querySelectorAll(VERSION_HEADER_ICON_SELECTOR), (icon) =>
+    icon.getAttribute(ARIA_LABEL_ATTRIBUTE),
+  );
 }
 
 /** Two diffs of the same document on one page. */
@@ -217,11 +232,8 @@ describe('DiffwiseHtmlDiff', () => {
 
   it('shows icons named by the default header texts', () => {
     const element = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.Icons });
-    const iconNames = Array.from(element.querySelectorAll(VERSION_HEADER_ICON_SELECTOR), (icon) =>
-      icon.getAttribute(ARIA_LABEL_ATTRIBUTE),
-    );
 
-    expect(iconNames).toEqual(['Previous version', 'New version']);
+    expect(iconNamesOf(element)).toEqual(['Previous version', 'New version']);
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['', '']);
   });
 
@@ -326,5 +338,47 @@ describe('DiffwiseHtmlDiff', () => {
     document.documentElement.classList.remove(PAGE_DARK_CLASS);
 
     expect(element.classList).toContain(DARK_THEME_CLASS);
+  });
+
+  it('names the diff for screen readers', () => {
+    const element = renderElement('', '');
+
+    expect(element.getAttribute(ROLE_ATTRIBUTE)).toBe(REGION_ROLE);
+    expect(element.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Comparison of document versions');
+  });
+
+  it('shows the texts of the interface in Polish on request', () => {
+    const element = renderElement('', '', { language: DiffwiseLanguage.PL });
+
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_NAMES);
+    expect(element.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Porównanie wersji dokumentu');
+  });
+
+  it('takes the language of the app in automatic mode', () => {
+    TestBed.configureTestingModule({
+      providers: [{ provide: LOCALE_ID, useValue: POLISH_LOCALE }],
+    });
+
+    expect(textsOf(renderElement('', ''), VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_NAMES);
+  });
+
+  it('shows custom texts instead of single texts of the interface, also as names of icons', () => {
+    const element = renderElement('', '', {
+      language: DiffwiseLanguage.PL,
+      versionHeaders: DiffwiseVersionHeaders.Icons,
+      customTexts: { oldVersion: 'Przed zmianami' },
+    });
+
+    expect(iconNamesOf(element)).toEqual(['Przed zmianami', 'Nowa wersja']);
+  });
+
+  it('takes custom texts from every level of the configuration, text by text', () => {
+    const globalTexts = { oldVersion: 'Vorherige Version', newVersion: 'Neue Version' };
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise({ customTexts: globalTexts })] });
+
+    const element = renderElement('', '', { customTexts: { newVersion: 'Entwurf' } });
+
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Vorherige Version', 'Entwurf']);
   });
 });

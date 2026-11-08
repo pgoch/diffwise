@@ -1,6 +1,6 @@
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import { normalizeConfig } from './normalize-config';
-import { DiffwiseColorMode, DiffwiseVersionHeaders } from './option-values';
+import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseVersionHeaders } from './option-values';
 
 const WARN_METHOD = 'warn';
 
@@ -76,6 +76,30 @@ describe('normalizeConfig', () => {
     }
 
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps a language of the interface, and ignores one it has no texts in', () => {
+    expect(normalizeConfig({ language: 'pl' })).toEqual({ language: DiffwiseLanguage.PL });
+    expect(normalizeConfig({ language: 'de' })).toEqual({});
+    expect(normalizeConfig({ language: 'pl-PL' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the valid custom texts as a frozen copy, with a warning for each invalid one', () => {
+    const customTexts = { oldVersion: 'Przed zmianami', newVersion: 4, oldVerison: 'Po zmianach' };
+    const validTexts = normalizeConfig({ customTexts }).customTexts;
+
+    expect(validTexts).toEqual({ oldVersion: 'Przed zmianami' });
+    expect(Object.isFrozen(validTexts)).toBe(true);
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('leaves out a custom text without a value, and ignores custom texts that are not an object', () => {
+    expect(normalizeConfig({ customTexts: { oldVersion: undefined } })).toEqual({
+      customTexts: {},
+    });
+    expect(normalizeConfig({ customTexts: 'Przed zmianami' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledOnce();
   });
 
   it('ignores an unknown option, with a warning', () => {
