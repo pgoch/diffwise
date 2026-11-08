@@ -20,12 +20,30 @@
       }
     </select>
   </label>
+  <label>
+    Headers
+    <select (change)="selectVersionHeaders($event)">
+      @for (option of versionHeaderChoices; track $index) {
+        <option [value]="$index" [selected]="$index === versionHeaderChoice()">
+          {{ option.label }}
+        </option>
+      }
+    </select>
+  </label>
+  <label>
+    <input type="checkbox" [checked]="showLineNumbers()" (change)="toggleLineNumbers($event)" />
+    Line numbers
+  </label>
 </header>
 
 <main class="demo-main">
   @if (sample.error()) {
     <p role="alert">The sample could not be loaded.</p>
   } @else if (sample.value(); as pair) {
-    <diffwise-html-diff [oldHtml]="pair.oldHtml" [newHtml]="pair.newHtml" />
+    <diffwise-html-diff
+      [oldHtml]="pair.oldHtml"
+      [newHtml]="pair.newHtml"
+      [showLineNumbers]="showLineNumbers()"
+    />
   }
 </main>

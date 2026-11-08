@@ -83,6 +83,11 @@
   line-height: 1.6;
 }
 
+/* Without line numbers, their columns take no space. */
+.diffwise-html-diff--no-line-numbers {
+  --diffwise-line-number-width: 0px;
+}
+
 .diffwise-html-diff__version-headers,
 .diffwise-html-diff__row {
   display: grid;
@@ -108,12 +113,26 @@
   white-space: nowrap;
 }
 
-.diffwise-html-diff__version-header--old {
+/* Fixed columns keep headers and content in place when the line numbers are hidden. */
+.diffwise-html-diff__version-header--old,
+.diffwise-html-diff__content--old {
   grid-column: 2;
 }
 
-.diffwise-html-diff__version-header--new {
+.diffwise-html-diff__version-header--new,
+.diffwise-html-diff__content--new {
   grid-column: 5;
+}
+
+/* Icons in place of the header texts, which name them. */
+.diffwise-html-diff__version-header-icon {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.diffwise-html-diff__version-header-icon svg {
+  width: 1.4em;
+  height: 1.4em;
 }
 
 /*
