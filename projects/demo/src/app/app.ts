@@ -10,6 +10,7 @@ import {
   Diffwise,
   DiffwiseColorMode,
   DiffwiseHtmlDiff,
+  DiffwiseLanguage,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
 } from 'ngx-diffwise';
@@ -21,6 +22,12 @@ const SampleLanguage = {
 } as const;
 
 type SampleLanguage = (typeof SampleLanguage)[keyof typeof SampleLanguage];
+
+/** Language of the diff interface for each language of the samples. */
+const INTERFACE_LANGUAGES: Readonly<Record<SampleLanguage, DiffwiseLanguage>> = {
+  [SampleLanguage.English]: DiffwiseLanguage.EN,
+  [SampleLanguage.Polish]: DiffwiseLanguage.PL,
+};
 
 /** Sizes of the sample documents; each one is a folder in a language folder. */
 const SampleSize = {
@@ -88,6 +95,9 @@ export class App {
 
   protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
+
+  /** Language of the diff interface: the one of the sample, set through an input of the diff. */
+  protected readonly interfaceLanguage = computed(() => INTERFACE_LANGUAGES[this.language()]);
 
   /** Index of the header choice; the first one is set in `app.config.ts`. */
   protected readonly versionHeaderChoice = signal(0);
