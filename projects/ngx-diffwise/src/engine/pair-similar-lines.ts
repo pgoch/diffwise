@@ -31,10 +31,10 @@ export function pairSimilarLines(
 ): LineChange[] {
   const removedWords = removed.map((line) => countWords(line, options));
   const addedWords = added.map((line) => countWords(line, options));
-  const pairs =
-    removed.length * added.length > MAX_COMPARED_COMBINATIONS
-      ? pairByPosition(removedWords, addedWords)
-      : pairBySimilarity(removedWords, addedWords);
+  const blockIsLarge = removed.length * added.length > MAX_COMPARED_COMBINATIONS;
+  const pairs = blockIsLarge
+    ? pairByPosition(removedWords, addedWords)
+    : pairBySimilarity(removedWords, addedWords);
 
   return toChanges(removed, added, pairs);
 }
@@ -64,9 +64,9 @@ function bestTotals(scores: number[][], removedCount: number, addedCount: number
   for (let i = 1; i <= removedCount; i++) {
     for (let j = 1; j <= addedCount; j++) {
       const score = scores[i - 1][j - 1];
-      const withPair = score > 0 ? best[i - 1][j - 1] + score : 0;
+      const totalWithPair = score > 0 ? best[i - 1][j - 1] + score : 0;
 
-      best[i][j] = Math.max(best[i - 1][j], best[i][j - 1], withPair);
+      best[i][j] = Math.max(best[i - 1][j], best[i][j - 1], totalWithPair);
     }
   }
 
@@ -86,12 +86,14 @@ function collectPairs(
 
   while (i > 0 && j > 0) {
     const score = scores[i - 1][j - 1];
+    const pairedHere = score > 0 && best[i][j] === best[i - 1][j - 1] + score;
+    const removedLineUnpaired = best[i][j] === best[i - 1][j];
 
-    if (score > 0 && best[i][j] === best[i - 1][j - 1] + score) {
+    if (pairedHere) {
       pairs.push({ removedIndex: i - 1, addedIndex: j - 1 });
       i--;
       j--;
-    } else if (best[i][j] === best[i - 1][j]) {
+    } else if (removedLineUnpaired) {
       i--;
     } else {
       j--;
