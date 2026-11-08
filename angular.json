@@ -30,7 +30,7 @@
             "tsConfig": "projects/ngx-diffwise/tsconfig.spec.json",
             "buildTarget": "demo:build:development",
             "runner": "vitest",
-            "exclude": ["src/engine/**"],
+            "exclude": ["engine/**"],
             "providersFile": "projects/ngx-diffwise/test-providers.ts"
           }
         },

@@ -33,12 +33,15 @@ export class App {
       const [oldHtml, newHtml] = await Promise.all(
         ['before', 'after'].map(async (name) => {
           const response = await fetch(`${folder}/${name}.html`, { signal: abortSignal });
+
           if (!response.ok) {
             throw new Error(`Could not load ${response.url} (${response.status})`);
           }
+
           return response.text();
         }),
       );
+
       return { oldHtml, newHtml };
     },
   });

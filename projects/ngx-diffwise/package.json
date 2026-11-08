@@ -24,6 +24,7 @@
     "@angular/core": ">=20.0.0"
   },
   "dependencies": {
+    "dompurify": "^3.4.17",
     "tslib": "^2.3.0"
   },
   "sideEffects": false
