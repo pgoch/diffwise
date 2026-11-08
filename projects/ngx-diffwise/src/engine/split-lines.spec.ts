@@ -1,6 +1,22 @@
+import enLongAfter from '../../../../test-data/en/long/after.html?raw';
+import enLongBefore from '../../../../test-data/en/long/before.html?raw';
+import plLongAfter from '../../../../test-data/pl/long/after.html?raw';
+import plLongBefore from '../../../../test-data/pl/long/before.html?raw';
 import { LineKind } from './model';
 import { parseHtml } from './parse-html';
+import { readerText } from './reader-text';
 import { splitLines } from './split-lines';
+
+const SPACE = ' ';
+const HEADINGS_SELECTOR = 'h1, h2, h3, h4, h5, h6';
+
+/** Long samples from `test-data/`, which contain everything an editor can produce. */
+const LONG_SAMPLES: [string, string][] = [
+  ['en/long/before.html', enLongBefore],
+  ['en/long/after.html', enLongAfter],
+  ['pl/long/before.html', plLongBefore],
+  ['pl/long/after.html', plLongAfter],
+];
 
 function lines(html: string) {
   return splitLines(parseHtml(html));
@@ -149,5 +165,21 @@ describe('splitLines', () => {
       { kind: LineKind.Block, tag: 'dl', text: 'Notebook A set of notes' },
       { kind: LineKind.Block, tag: 'address', text: 'Notebook Online, example.com' },
     ]);
+  });
+
+  it.each(LONG_SAMPLES)('keeps all text of %s in reading order', (_, html) => {
+    const body = parseHtml(html);
+    const lineTexts = splitLines(body)
+      .map((line) => line.text)
+      .filter((text) => text.length > 0);
+
+    expect(lineTexts.join(SPACE)).toBe(readerText(body.childNodes));
+  });
+
+  it.each(LONG_SAMPLES)('makes a line of every heading in %s', (_, html) => {
+    const body = parseHtml(html);
+    const headingLines = splitLines(body).filter((line) => line.kind === LineKind.Heading);
+
+    expect(headingLines).toHaveLength(body.querySelectorAll(HEADINGS_SELECTOR).length);
   });
 });
