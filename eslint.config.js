@@ -13,6 +13,16 @@ module.exports = tseslint.config(
       ...angular.configs.tsRecommended,
     ],
     processor: angular.processInlineTemplates,
+    rules: {
+      // Deprecated in favor of ESLint Stylistic, but available until ESLint 11.
+      'padding-line-between-statements': [
+        'error',
+        { blankLine: 'always', prev: '*', next: 'block-like' },
+        { blankLine: 'always', prev: 'block-like', next: '*' },
+        { blankLine: 'always', prev: ['const', 'let'], next: '*' },
+        { blankLine: 'any', prev: ['const', 'let'], next: ['const', 'let'] },
+      ],
+    },
   },
   {
     files: ['**/*.html'],
