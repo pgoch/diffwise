@@ -6,7 +6,7 @@ import {
   type LineChange,
   LineChangeKind,
   type LineDiff,
-} from './model';
+} from '../model';
 import { EditKind, myersDiff } from './myers';
 import { pairSimilarLines } from './pair-similar-lines';
 

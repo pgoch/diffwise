@@ -5,7 +5,7 @@ import {
   PARAGRAPH_TAGS,
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
-import { type Line, LineKind } from './model';
+import { type Line, LineKind } from '../model';
 import { readerText } from './reader-text';
 
 const TEMPLATE_TAG = 'template';

@@ -4,7 +4,7 @@ import {
   type LineChange,
   LineChangeKind,
   LineKind,
-} from './model';
+} from '../model';
 import { pairSimilarLines } from './pair-similar-lines';
 
 const PARAGRAPH_TAG = 'p';

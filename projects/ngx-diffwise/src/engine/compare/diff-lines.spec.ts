@@ -1,7 +1,7 @@
 import { diffLines } from './diff-lines';
-import { DEFAULT_DIFF_OPTIONS, type DiffOptions, LineChangeKind } from './model';
-import { parseHtml } from './parse-html';
-import { splitLines } from './split-lines';
+import { DEFAULT_DIFF_OPTIONS, type DiffOptions, LineChangeKind } from '../model';
+import { parseHtml } from '../html/parse-html';
+import { splitLines } from '../html/split-lines';
 
 const NO_CHANGES = { addedLines: 0, removedLines: 0, changedLines: 0 };
 

@@ -1,5 +1,5 @@
 import { comparisonText } from './comparison-text';
-import type { DiffOptions, TextRange, WordChanges } from './model';
+import type { DiffOptions, TextRange, WordChanges } from '../model';
 import { EditKind, myersDiff } from './myers';
 import { type Token, TokenKind, splitWords } from './split-words';
 

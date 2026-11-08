@@ -1,5 +1,5 @@
 import { comparisonText } from './comparison-text';
-import { type DiffOptions, type Line, type LineChange, LineChangeKind } from './model';
+import { type DiffOptions, type Line, type LineChange, LineChangeKind } from '../model';
 import { TokenKind, splitWords } from './split-words';
 
 /** Lines sharing at least this part of their words are one changed line, not removed and added. */

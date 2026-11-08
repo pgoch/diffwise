@@ -1,5 +1,5 @@
 import { comparisonText } from './comparison-text';
-import { DEFAULT_DIFF_OPTIONS } from './model';
+import { DEFAULT_DIFF_OPTIONS } from '../model';
 
 describe('comparisonText', () => {
   it('keeps the text as it is by default', () => {

@@ -1,4 +1,4 @@
-import type { DiffOptions } from './model';
+import type { DiffOptions } from '../model';
 
 const ALL_WHITESPACE = /\s+/g;
 const NO_TEXT = '';

@@ -1,5 +1,5 @@
 import { diffWords } from './diff-words';
-import { DEFAULT_DIFF_OPTIONS, type DiffOptions } from './model';
+import { DEFAULT_DIFF_OPTIONS, type DiffOptions } from '../model';
 
 const SENTENCE = 'Usługa działa przez całą dobę, także w święta i długie weekendy. ';
 const SENTENCES_AROUND_CHANGE = 5;
