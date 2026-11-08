@@ -1,13 +1,14 @@
 import { diffLines } from './compare/diff-lines';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
+import { prefixIds } from './html/prefix-ids';
 import { sanitizeHtml } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER, markChanges } from './mark/mark-changes';
 import {
-  DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   type HtmlDiff,
+  type HtmlDiffSettings,
   type Line,
   type LineChange,
   LineChangeKind,
@@ -15,19 +16,31 @@ import {
   type ViewRow,
 } from './model';
 
+const ID_PART_SEPARATOR = '-';
+const OLD_VERSION_ID_PART = 'old';
+const NEW_VERSION_ID_PART = 'new';
+
 /** Compares two HTML documents and returns the rows of the side-by-side view with change counts. */
-export function diffHtml(
-  oldHtml: string,
-  newHtml: string,
-  options: DiffOptions = DEFAULT_DIFF_OPTIONS,
-): HtmlDiff {
-  const oldLines = splitLines(parseHtml(oldHtml));
-  const newLines = splitLines(parseHtml(newHtml));
-  const { changes, stats } = diffLines(oldLines, newLines, options);
-  const rowBuilder = new ViewRowBuilder(options);
+export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
+  const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
+  const newLines = versionLines(newHtml, settings.idPrefix, NEW_VERSION_ID_PART);
+  const { changes, stats } = diffLines(oldLines, newLines, settings.options);
+  const rowBuilder = new ViewRowBuilder(settings.options);
   const rows = changes.map((change) => rowBuilder.toRow(change));
 
   return { rows, stats };
+}
+
+/**
+ * Lines of one version. Its ids get a prefix of their own, such as `diffwise-1-old-`, so links
+ * such as footnotes work within each version.
+ */
+function versionLines(html: string, idPrefix: string, versionPart: string): Line[] {
+  const root = parseHtml(html);
+
+  prefixIds(root, `${idPrefix}${ID_PART_SEPARATOR}${versionPart}${ID_PART_SEPARATOR}`);
+
+  return splitLines(root);
 }
 
 /** Turns line changes into view rows and numbers the lines of each version from 1. */

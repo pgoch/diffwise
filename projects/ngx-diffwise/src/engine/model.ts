@@ -105,3 +105,11 @@ export interface HtmlDiff {
   readonly rows: readonly ViewRow[];
   readonly stats: DiffStats;
 }
+
+/** How two HTML documents are compared and prepared for the view. */
+export interface HtmlDiffSettings {
+  /** What counts as a difference. */
+  readonly options: DiffOptions;
+  /** Starts every id in the shown HTML; each diff on a page needs its own. */
+  readonly idPrefix: string;
+}
