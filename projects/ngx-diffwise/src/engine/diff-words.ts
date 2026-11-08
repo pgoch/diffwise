@@ -31,9 +31,11 @@ export function diffWords(oldText: string, newText: string, options: DiffOptions
 function comparedTokens(text: string, options: DiffOptions): Token[] {
   const tokens = splitWords(text);
 
-  return options.ignoreWhitespace
-    ? tokens.filter((token) => token.kind !== TokenKind.Whitespace)
-    : tokens;
+  return options.ignoreWhitespace ? withoutWhitespace(tokens) : tokens;
+}
+
+function withoutWhitespace(tokens: readonly Token[]): Token[] {
+  return tokens.filter((token) => token.kind !== TokenKind.Whitespace);
 }
 
 /** Adds the range of a token, joined with the previous range if only whitespace lies between. */

@@ -55,10 +55,10 @@ function lcsLength(oldItems: string[], newItems: string[]): number {
 
   for (let i = 1; i <= oldItems.length; i++) {
     for (let j = 1; j <= newItems.length; j++) {
-      lengths[i][j] =
-        oldItems[i - 1] === newItems[j - 1]
-          ? lengths[i - 1][j - 1] + 1
-          : Math.max(lengths[i - 1][j], lengths[i][j - 1]);
+      const lengthWithItem = lengths[i - 1][j - 1] + 1;
+      const lengthWithoutItem = Math.max(lengths[i - 1][j], lengths[i][j - 1]);
+
+      lengths[i][j] = oldItems[i - 1] === newItems[j - 1] ? lengthWithItem : lengthWithoutItem;
     }
   }
 

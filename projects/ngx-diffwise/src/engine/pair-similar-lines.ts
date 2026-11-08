@@ -64,9 +64,10 @@ function bestTotals(scores: number[][], removedCount: number, addedCount: number
   for (let i = 1; i <= removedCount; i++) {
     for (let j = 1; j <= addedCount; j++) {
       const score = scores[i - 1][j - 1];
-      const totalWithPair = score > 0 ? best[i - 1][j - 1] + score : 0;
+      const totalIfPaired = best[i - 1][j - 1] + score;
+      const pairingTotal = score > 0 ? totalIfPaired : 0;
 
-      best[i][j] = Math.max(best[i - 1][j], best[i][j - 1], totalWithPair);
+      best[i][j] = Math.max(best[i - 1][j], best[i][j - 1], pairingTotal);
     }
   }
 

@@ -172,11 +172,13 @@ class SearchFront {
 
   /** Takes one more edit onto `diagonal`, then moves over equal items; `NOT_REACHED` outside the graph. */
   extend(diagonal: number, editCount: number): number {
+    const xAbove = this.furthestX(diagonal + 1);
+    const xLeft = this.furthestX(diagonal - 1);
+    const xAfterStepRight = xLeft + 1;
     const isLowestDiagonal = diagonal === -editCount;
     const isHighestDiagonal = diagonal === editCount;
-    const aboveIsFurther = this.furthestX(diagonal - 1) < this.furthestX(diagonal + 1);
-    const fromAbove = isLowestDiagonal || (!isHighestDiagonal && aboveIsFurther);
-    let x = fromAbove ? this.furthestX(diagonal + 1) : this.furthestX(diagonal - 1) + 1;
+    const fromAbove = isLowestDiagonal || (!isHighestDiagonal && xLeft < xAbove);
+    let x = fromAbove ? xAbove : xAfterStepRight;
     let y = x - diagonal;
 
     while (this.canMoveDiagonally(x, y)) {
