@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { Component, signal } from '@angular/core';
+import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { LineChangeKind } from '../engine';
+import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseVersionHeaders } from './config/option-values';
+import { DiffwiseColorMode, DiffwiseVersionHeaders } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
 import { Diffwise } from './diffwise';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
@@ -33,6 +34,9 @@ const GAP = 'gap';
 const CLICK_EVENT = 'click';
 const FOOTNOTE_HTML = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
 const ONE_LINE_HTML = '<p>Zasady ogólne.</p>';
+const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
+const PAGE_DARK_CLASS = 'dark';
+const PAGE_DARK_SELECTOR = '.dark';
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -75,6 +79,12 @@ function render(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
 /** Renders the component with options and returns its element. */
 function renderElement(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
   return render(oldHtml, newHtml, inputs).nativeElement as HTMLElement;
+}
+
+/** Waits until the diff shows a change of the page, which an observer reports in a microtask. */
+async function whenPageChangeShown(fixture: ComponentFixture<unknown>): Promise<void> {
+  await Promise.resolve();
+  await fixture.whenStable();
 }
 
 /** Rows as `[kind, old number, new number]`; a gap opposite an added or removed line is `gap`. */
@@ -275,5 +285,46 @@ describe('DiffwiseHtmlDiff', () => {
     fixture.detectChanges();
 
     expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+  });
+
+  it('shows the dark theme on request, and the light one by default', () => {
+    const light = renderElement('', '');
+    const dark = renderElement('', '', { colorMode: DiffwiseColorMode.Dark });
+
+    expect(light.classList).not.toContain(DARK_THEME_CLASS);
+    expect(dark.classList).toContain(DARK_THEME_CLASS);
+  });
+
+  it('follows the color scheme of the system in automatic mode', () => {
+    const systemPrefersDark = signal(true);
+
+    TestBed.configureTestingModule({
+      providers: [{ provide: ColorScheme, useValue: { systemPrefersDark } }],
+    });
+
+    const fixture = render('', '');
+    const element = fixture.nativeElement as HTMLElement;
+
+    expect(element.classList).toContain(DARK_THEME_CLASS);
+
+    systemPrefersDark.set(false);
+    fixture.detectChanges();
+
+    expect(element.classList).not.toContain(DARK_THEME_CLASS);
+  });
+
+  it('follows the dark mode marker of the app around it in automatic mode', async () => {
+    const fixture = render('', '', { darkModeSelector: PAGE_DARK_SELECTOR });
+    const element = fixture.nativeElement as HTMLElement;
+
+    await fixture.whenStable();
+
+    expect(element.classList).not.toContain(DARK_THEME_CLASS);
+
+    document.documentElement.classList.add(PAGE_DARK_CLASS);
+    await whenPageChangeShown(fixture);
+    document.documentElement.classList.remove(PAGE_DARK_CLASS);
+
+    expect(element.classList).toContain(DARK_THEME_CLASS);
   });
 });

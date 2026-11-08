@@ -1,5 +1,5 @@
 /*
- * Two versions of an HTML document side by side: light theme with the default look.
+ * Two versions of an HTML document side by side, in the light or the dark theme.
  * Styles are global (no view encapsulation), so every class starts with `diffwise-html-diff`
  * and apps can override the `--diffwise-…` variables.
  */
@@ -80,7 +80,26 @@
     var(--diffwise-gap-dark) 6px 12px
   );
   color: var(--diffwise-text);
+  color-scheme: light;
   line-height: 1.6;
+}
+
+/* Dark theme: other base colors and shares; the colors mixed from them follow. */
+.diffwise-html-diff--dark-theme {
+  --diffwise-background: #16191f;
+  --diffwise-ink: #e6e8eb;
+  --diffwise-text: #e6e8eb;
+  --diffwise-muted: #8b93a1;
+  --diffwise-border: #2a2f38;
+  --diffwise-link: #7aa7ff;
+  --diffwise-removed-base: #ef5350;
+  --diffwise-added-base: #3fb96b;
+  --diffwise-removed-accent: #ff8a8a;
+  --diffwise-added-accent: #6fdc8c;
+  --diffwise-line-share: 15%;
+  --diffwise-highlight-share: 48%;
+
+  color-scheme: dark;
 }
 
 /* Without line numbers, their columns take no space. */

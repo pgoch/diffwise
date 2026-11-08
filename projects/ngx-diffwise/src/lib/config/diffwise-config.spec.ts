@@ -1,5 +1,5 @@
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
-import { DiffwiseVersionHeaders } from './option-values';
+import { DiffwiseColorMode, DiffwiseVersionHeaders } from './option-values';
 
 const WARN_METHOD = 'warn';
 
@@ -19,6 +19,8 @@ describe('DiffwiseConfig', () => {
 
   it('has the default of every option', () => {
     expect({ ...new DiffwiseConfig() }).toEqual({
+      colorMode: DiffwiseColorMode.Auto,
+      darkModeSelector: null,
       showLineNumbers: true,
       versionHeaders: DiffwiseVersionHeaders.Default,
       ignoreWhitespace: false,
@@ -30,6 +32,8 @@ describe('DiffwiseConfig', () => {
     const config = new DiffwiseConfig({ showLineNumbers: false, versionHeaders: 'icons' });
 
     expect({ ...config }).toEqual({
+      colorMode: DiffwiseColorMode.Auto,
+      darkModeSelector: null,
       showLineNumbers: false,
       versionHeaders: DiffwiseVersionHeaders.Icons,
       ignoreWhitespace: false,
