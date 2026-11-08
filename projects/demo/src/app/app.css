@@ -21,3 +21,25 @@
 .demo-main {
   padding: 1.5rem;
 }
+
+.demo-theme {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.demo-theme button {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  background: #fff;
+  color: #1f2328;
+  font: inherit;
+  cursor: pointer;
+}
+
+.demo-theme button[aria-pressed='true'] {
+  border-color: #1f2328;
+  background: #1f2328;
+  color: #fff;
+}

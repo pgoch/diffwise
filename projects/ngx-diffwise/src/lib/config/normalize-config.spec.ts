@@ -1,6 +1,6 @@
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import { normalizeConfig } from './normalize-config';
-import { DiffwiseVersionHeaders } from './option-values';
+import { DiffwiseColorMode, DiffwiseVersionHeaders } from './option-values';
 
 const WARN_METHOD = 'warn';
 
@@ -51,6 +51,31 @@ describe('normalizeConfig', () => {
     expect(normalizeConfig({ versionHeaders: { old: 'Wersja 3' } })).toEqual({});
     expect(normalizeConfig({ versionHeaders: { old: 'Wersja 3', new: 4 } })).toEqual({});
     expect(normalizeConfig({ versionHeaders: null })).toEqual({});
+  });
+
+  it('keeps a color mode, and a dark mode selector or null for the system', () => {
+    const options = { colorMode: 'dark', darkModeSelector: 'html.dark, [data-theme="dark"]' };
+
+    expect(normalizeConfig(options)).toEqual({
+      colorMode: DiffwiseColorMode.Dark,
+      darkModeSelector: 'html.dark, [data-theme="dark"]',
+    });
+    expect(normalizeConfig({ darkModeSelector: null })).toEqual({ darkModeSelector: null });
+  });
+
+  it('ignores a color mode or a dark mode selector the browser cannot use', () => {
+    const invalidOptions = [
+      { colorMode: 'night' },
+      { darkModeSelector: ' ' },
+      { darkModeSelector: '..dark' },
+      { darkModeSelector: 1 },
+    ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
   });
 
   it('ignores an unknown option, with a warning', () => {

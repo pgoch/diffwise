@@ -1,8 +1,9 @@
 import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
+import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig } from './config/diffwise-config';
-import { DiffwiseVersionHeaders } from './config/option-values';
+import { DiffwiseColorMode, DiffwiseVersionHeaders } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
 import { Diffwise } from './diffwise';
 
@@ -37,5 +38,37 @@ describe('Diffwise', () => {
 
     expect(showLineNumbers()).toBe(false);
     expect(diffwise.config().ignoreCase).toBe(true);
+  });
+
+  it('switches the color mode of the global configuration', () => {
+    const diffwise = TestBed.inject(Diffwise);
+
+    diffwise.switchToDarkMode();
+
+    expect(diffwise.config().colorMode).toBe(DiffwiseColorMode.Dark);
+
+    diffwise.switchToLightMode();
+
+    expect(diffwise.config().colorMode).toBe(DiffwiseColorMode.Light);
+
+    diffwise.switchToAutoMode();
+
+    expect(diffwise.config().colorMode).toBe(DiffwiseColorMode.Auto);
+  });
+
+  it('toggles to the theme the diffs do not show now', () => {
+    const darkPage = { autoModeIsDark: () => true };
+
+    TestBed.configureTestingModule({ providers: [{ provide: ColorScheme, useValue: darkPage }] });
+
+    const diffwise = TestBed.inject(Diffwise);
+
+    diffwise.toggleDarkMode();
+
+    expect(diffwise.config().colorMode).toBe(DiffwiseColorMode.Light);
+
+    diffwise.toggleDarkMode();
+
+    expect(diffwise.config().colorMode).toBe(DiffwiseColorMode.Dark);
   });
 });

@@ -1,3 +1,15 @@
+/** Color modes of the diff. */
+export const DiffwiseColorMode = {
+  /** Follows the system, or the dark mode of the app when `darkModeSelector` is set. */
+  Auto: 'auto',
+  /** Always light. */
+  Light: 'light',
+  /** Always dark. */
+  Dark: 'dark',
+} as const;
+
+export type DiffwiseColorMode = (typeof DiffwiseColorMode)[keyof typeof DiffwiseColorMode];
+
 /** Headers above the two versions; an app can also give its own texts instead. */
 export const DiffwiseVersionHeaders = {
   /** No headers. */

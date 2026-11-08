@@ -34,6 +34,31 @@
     <input type="checkbox" [checked]="showLineNumbers()" (change)="toggleLineNumbers($event)" />
     Line numbers
   </label>
+  <div class="demo-theme" role="group" aria-labelledby="demo-theme-label">
+    <span id="demo-theme-label">Theme</span>
+    <button
+      type="button"
+      [attr.aria-pressed]="colorMode() === colorModes.Light"
+      (click)="diffwise.switchToLightMode()"
+    >
+      Light
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="colorMode() === colorModes.Dark"
+      (click)="diffwise.switchToDarkMode()"
+    >
+      Dark
+    </button>
+    <button
+      type="button"
+      [attr.aria-pressed]="colorMode() === colorModes.Auto"
+      (click)="diffwise.switchToAutoMode()"
+    >
+      Auto
+    </button>
+    <button type="button" (click)="diffwise.toggleDarkMode()">Toggle</button>
+  </div>
 </header>
 
 <main class="demo-main">

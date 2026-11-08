@@ -1,8 +1,19 @@
 import { normalizeConfig } from './normalize-config';
-import { DiffwiseVersionHeaders, type DiffwiseVersionHeaderTexts } from './option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseVersionHeaders,
+  type DiffwiseVersionHeaderTexts,
+} from './option-values';
 
 /** Options of Diffwise. An option left out keeps its value from the level below, or its default. */
 export interface DiffwiseConfigOptions {
+  /** Light, dark, or automatic: as the system or the app. Default: `DiffwiseColorMode.Auto`. */
+  readonly colorMode?: DiffwiseColorMode;
+  /**
+   * In automatic mode, the dark mode marker of the app, such as `.dark` on `<html>`; `null`
+   * follows the system. Default: `null`.
+   */
+  readonly darkModeSelector?: string | null;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
   /** Headers above the two versions, or texts of the app. Default: `DiffwiseVersionHeaders.Default`. */
@@ -18,6 +29,12 @@ export interface DiffwiseConfigOptions {
  * so the config of one diff keeps the other options of the global configuration.
  */
 export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
+  /** Light, dark, or automatic: as the system or the app. */
+  readonly colorMode: DiffwiseColorMode = DiffwiseColorMode.Auto;
+
+  /** In automatic mode, the dark mode marker of the app, such as `.dark`; `null` follows the system. */
+  readonly darkModeSelector: string | null = null;
+
   /** Shows the number of each line. */
   readonly showLineNumbers: boolean = true;
 

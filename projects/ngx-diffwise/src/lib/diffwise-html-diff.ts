@@ -3,9 +3,11 @@ import {
   Component,
   ElementRef,
   ViewEncapsulation,
+  afterRenderEffect,
   computed,
   inject,
   input,
+  signal,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
@@ -16,8 +18,13 @@ import {
   type ViewRow,
   diffHtml,
 } from '../engine';
+import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseVersionHeaders, type DiffwiseVersionHeaderTexts } from './config/option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseVersionHeaders,
+  type DiffwiseVersionHeaderTexts,
+} from './config/option-values';
 import { Diffwise } from './diffwise';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
@@ -73,6 +80,7 @@ interface ShownVersionHeaders {
   encapsulation: ViewEncapsulation.None,
   host: {
     class: 'diffwise-html-diff',
+    '[class.diffwise-html-diff--dark-theme]': 'isDark()',
     '[class.diffwise-html-diff--no-line-numbers]': '!effectiveConfig().showLineNumbers',
     '(click)': 'followInPageLink($event)',
   },
@@ -86,6 +94,12 @@ export class DiffwiseHtmlDiff {
 
   /** Options of this diff in one object, such as a `DiffwiseConfig`; it changes only those it sets. */
   readonly config = input<DiffwiseConfig | DiffwiseConfigOptions>({});
+
+  /** Light, dark, or automatic; wins over `config` and the global configuration. */
+  readonly colorMode = input<DiffwiseColorMode>();
+
+  /** The app's dark mode marker, such as `.dark`; wins over `config` and the global configuration. */
+  readonly darkModeSelector = input<string | null>();
 
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
@@ -102,10 +116,16 @@ export class DiffwiseHtmlDiff {
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly diffwise = inject(Diffwise);
+  private readonly colorScheme = inject(ColorScheme);
   private readonly idPrefix = nextIdPrefix();
+
+  /** True while the diff is inside an element that matches the dark mode marker of the app. */
+  private readonly insideDarkMarker = signal(false);
 
   /** Options set by single inputs; an input left unset changes nothing. */
   private readonly inputOptions = computed<DiffwiseConfigOptions>(() => ({
+    colorMode: this.colorMode(),
+    darkModeSelector: this.darkModeSelector(),
     showLineNumbers: this.showLineNumbers(),
     versionHeaders: this.versionHeaders(),
     ignoreWhitespace: this.ignoreWhitespace(),
@@ -126,6 +146,17 @@ export class DiffwiseHtmlDiff {
     { equal: areDiffOptionsEqual },
   );
 
+  /** The dark mode marker to watch in automatic mode, or `null` when the diff follows the system. */
+  private readonly watchedDarkMarker = computed(() => {
+    const { colorMode, darkModeSelector } = this.effectiveConfig();
+    return colorMode === DiffwiseColorMode.Auto ? darkModeSelector : null;
+  });
+
+  /** True when the diff shows the dark theme. */
+  protected readonly isDark = computed(() =>
+    isDarkColorMode(this.effectiveConfig().colorMode, () => this.autoModeIsDark()),
+  );
+
   /** Headers above the two versions, or `null` without headers. */
   protected readonly shownVersionHeaders = computed(() =>
     toShownVersionHeaders(this.effectiveConfig().versionHeaders),
@@ -138,6 +169,23 @@ export class DiffwiseHtmlDiff {
 
     return rows.map((row) => this.shownRow(row));
   });
+
+  /** Watches the dark mode marker of the app after rendering, when the diff is in the page. */
+  constructor() {
+    afterRenderEffect((onCleanup) => {
+      const selector = this.watchedDarkMarker();
+
+      if (selector === null) {
+        return;
+      }
+
+      const stopWatching = watchDarkMarker(this.host.nativeElement, selector, (isInside) =>
+        this.insideDarkMarker.set(isInside),
+      );
+
+      onCleanup(stopWatching);
+    });
+  }
 
   /**
    * Follows a `#…` link of the content within this diff. The browser would resolve the link
@@ -159,6 +207,13 @@ export class DiffwiseHtmlDiff {
       target.scrollIntoView();
       focusWithoutScrolling(target);
     }
+  }
+
+  /** In automatic mode: dark inside the dark mode marker of the app, or else as the system. */
+  private autoModeIsDark(): boolean {
+    return this.watchedDarkMarker() === null
+      ? this.colorScheme.systemPrefersDark()
+      : this.insideDarkMarker();
   }
 
   private shownRow({ kind, oldLine, newLine }: ViewRow): ShownRow {

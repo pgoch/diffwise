@@ -1,7 +1,11 @@
 import { isDevMode } from '@angular/core';
 
 import type { DiffwiseConfigOptions } from './diffwise-config';
-import { DiffwiseVersionHeaders, type DiffwiseVersionHeaderTexts } from './option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseVersionHeaders,
+  type DiffwiseVersionHeaderTexts,
+} from './option-values';
 
 const TEXT_TYPE = 'string';
 const OBJECT_TYPE = 'object';
@@ -15,6 +19,8 @@ const Warning = {
 
 /** Checks of the values each option takes. */
 const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknown) => boolean>> = {
+  colorMode: isColorMode,
+  darkModeSelector: isDarkModeSelector,
   showLineNumbers: isBoolean,
   versionHeaders: isVersionHeaders,
   ignoreWhitespace: isBoolean,
@@ -64,6 +70,29 @@ function isText(value: unknown): value is string {
 
 function isObject(value: unknown): value is object {
   return typeof value === OBJECT_TYPE && value !== null;
+}
+
+function isColorMode(value: unknown): boolean {
+  return isValueOf(DiffwiseColorMode, value);
+}
+
+/** True for `null`, which follows the system, or for a CSS selector, such as `.dark`. */
+function isDarkModeSelector(value: unknown): boolean {
+  return value === null || (isText(value) && isSelector(value));
+}
+
+/** True for a selector the browser can read; without a browser, for any text that is not blank. */
+function isSelector(text: string): boolean {
+  if (text.trim().length === 0) {
+    return false;
+  }
+
+  try {
+    globalThis.document?.createDocumentFragment().querySelector(text);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function isVersionHeaders(value: unknown): boolean {

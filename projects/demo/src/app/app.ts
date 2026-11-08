@@ -1,6 +1,14 @@
-import { ChangeDetectionStrategy, Component, inject, resource, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  resource,
+  signal,
+} from '@angular/core';
 import {
   Diffwise,
+  DiffwiseColorMode,
   DiffwiseHtmlDiff,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
@@ -73,6 +81,10 @@ export class App {
   protected readonly languages = LANGUAGE_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
+  protected readonly colorModes = DiffwiseColorMode;
+
+  /** Changes the global configuration; the theme buttons call its methods. */
+  protected readonly diffwise = inject(Diffwise);
 
   protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
@@ -83,7 +95,8 @@ export class App {
   /** Line numbers of the diff, set through its input. */
   protected readonly showLineNumbers = signal(true);
 
-  private readonly diffwise = inject(Diffwise);
+  /** Color mode of the global configuration; its button is shown pressed. */
+  protected readonly colorMode = computed(() => this.diffwise.config().colorMode);
 
   /** The selected pair of sample documents from `test-data/`. */
   protected readonly sample = resource({
