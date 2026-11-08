@@ -20,3 +20,65 @@ export interface Line {
   /** Sanitized HTML inside copies of its containers, such as a quote. */
   readonly html: string;
 }
+
+/** What counts as a difference between the two versions. */
+export interface DiffOptions {
+  /** Ignores differences in whitespace. */
+  readonly ignoreWhitespace: boolean;
+  /** Ignores differences in letter case. */
+  readonly ignoreCase: boolean;
+}
+
+/** Default options: every difference counts. */
+export const DEFAULT_DIFF_OPTIONS: DiffOptions = {
+  ignoreWhitespace: false,
+  ignoreCase: false,
+};
+
+/** Ways a line can differ between the two versions. */
+export const LineChangeKind = {
+  Unchanged: 'unchanged',
+  /** A similar line on each side; their words are compared separately. */
+  Changed: 'changed',
+  Added: 'added',
+  Removed: 'removed',
+} as const;
+
+export type LineChangeKind = (typeof LineChangeKind)[keyof typeof LineChangeKind];
+
+/** A line, or a pair of lines, and how it differs between the two versions. */
+export type LineChange =
+  | {
+      readonly kind: typeof LineChangeKind.Unchanged | typeof LineChangeKind.Changed;
+      readonly oldLine: Line;
+      readonly newLine: Line;
+    }
+  | { readonly kind: typeof LineChangeKind.Removed; readonly oldLine: Line }
+  | { readonly kind: typeof LineChangeKind.Added; readonly newLine: Line };
+
+/** Numbers of added, removed and changed lines. */
+export interface DiffStats {
+  readonly addedLines: number;
+  readonly removedLines: number;
+  readonly changedLines: number;
+}
+
+/** Line changes of a whole comparison, in reading order, with their numbers. */
+export interface LineDiff {
+  readonly changes: readonly LineChange[];
+  readonly stats: DiffStats;
+}
+
+/** Part of a line's text, `[start, end)`, counted like `String.slice` counts. */
+export interface TextRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+/** Text that differs inside a changed line pair. */
+export interface WordChanges {
+  /** Ranges in the old line's text. */
+  readonly removed: readonly TextRange[];
+  /** Ranges in the new line's text. */
+  readonly added: readonly TextRange[];
+}

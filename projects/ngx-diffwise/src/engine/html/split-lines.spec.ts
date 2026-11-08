@@ -1,8 +1,8 @@
-import enLongAfter from '../../../../test-data/en/long/after.html?raw';
-import enLongBefore from '../../../../test-data/en/long/before.html?raw';
-import plLongAfter from '../../../../test-data/pl/long/after.html?raw';
-import plLongBefore from '../../../../test-data/pl/long/before.html?raw';
-import { LineKind } from './model';
+import enLongAfter from '../../../../../test-data/en/long/after.html?raw';
+import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
+import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
+import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
+import { LineKind } from '../model';
 import { parseHtml } from './parse-html';
 import { readerText } from './reader-text';
 import { splitLines } from './split-lines';

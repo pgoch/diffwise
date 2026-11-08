@@ -54,8 +54,8 @@ describe('sanitizeHtml', () => {
 
   it('cleans dangerous parts at any depth of a fragment', () => {
     const html =
-      '<p class="abc">Text <span><b><img src="x.png" onerror="alert(1)"> ' +
-      '<a href="javascript:alert(1)">link</a></b></span><script>alert(1)</script> end</p>';
+      '<p class="abc">Text <span><b><img src="x.png" onerror="alert(1)"> '
+      + '<a href="javascript:alert(1)">link</a></b></span><script>alert(1)</script> end</p>';
 
     expect(sanitizeHtml(html)).toBe(
       '<p class="abc">Text <span><b><img src="x.png"> <a>link</a></b></span> end</p>',
@@ -70,8 +70,8 @@ describe('sanitizeHtml', () => {
 
   it('cleans text pasted from Word', () => {
     const html =
-      '<p class="MsoNormal" style="color: red; mso-line-height-rule: exactly">Text<o:p></o:p></p>' +
-      '<!--[if gte mso 9]><xml><o:OfficeDocumentSettings></o:OfficeDocumentSettings></xml><![endif]-->';
+      '<p class="MsoNormal" style="color: red; mso-line-height-rule: exactly">Text<o:p></o:p></p>'
+      + '<!--[if gte mso 9]><xml><o:OfficeDocumentSettings></o:OfficeDocumentSettings></xml><![endif]-->';
 
     expect(sanitizeHtml(html)).toBe('<p class="MsoNormal" style="color: red;">Text</p>');
   });
