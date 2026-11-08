@@ -41,10 +41,14 @@ function addRange(ranges: TextRange[], token: Token, text: string): void {
   const end = token.start + token.text.length;
   const previous = ranges.at(-1);
 
-  if (previous && WHITESPACE_ONLY.test(text.slice(previous.end, token.start))) {
+  if (previous && onlyWhitespaceBetween(text, previous.end, token.start)) {
     ranges[ranges.length - 1] = { start: previous.start, end };
     return;
   }
 
   ranges.push({ start: token.start, end });
+}
+
+function onlyWhitespaceBetween(text: string, start: number, end: number): boolean {
+  return WHITESPACE_ONLY.test(text.slice(start, end));
 }
