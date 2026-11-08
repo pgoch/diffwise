@@ -68,3 +68,17 @@ export interface LineDiff {
   readonly changes: readonly LineChange[];
   readonly stats: DiffStats;
 }
+
+/** Part of a line's text, `[start, end)`, counted like `String.slice` counts. */
+export interface TextRange {
+  readonly start: number;
+  readonly end: number;
+}
+
+/** Text that differs inside a changed line pair. */
+export interface WordChanges {
+  /** Ranges in the old line's text. */
+  readonly removed: readonly TextRange[];
+  /** Ranges in the new line's text. */
+  readonly added: readonly TextRange[];
+}
