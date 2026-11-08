@@ -19,8 +19,6 @@ module.exports = tseslint.config(
         'error',
         { blankLine: 'always', prev: '*', next: 'block-like' },
         { blankLine: 'always', prev: 'block-like', next: '*' },
-        { blankLine: 'always', prev: ['const', 'let'], next: '*' },
-        { blankLine: 'any', prev: ['const', 'let'], next: ['const', 'let'] },
       ],
     },
   },

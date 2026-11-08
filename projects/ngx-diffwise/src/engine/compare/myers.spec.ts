@@ -82,7 +82,6 @@ function seededRandom(seed: number): () => number {
 
 function randomSequence(random: () => number, maxLength: number): string[] {
   const length = Math.floor(random() * (maxLength + 1));
-
   return Array.from({ length }, () => ALPHABET[Math.floor(random() * ALPHABET.length)]);
 }
 

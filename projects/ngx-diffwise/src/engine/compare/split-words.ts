@@ -24,11 +24,12 @@ const wordSegmenter = new Intl.Segmenter(undefined, { granularity: WORD_GRANULAR
 
 /** Splits text into words, whitespace and symbols; also works for languages without spaces. */
 export function splitWords(text: string): Token[] {
-  return Array.from(wordSegmenter.segment(text), ({ segment, index, isWordLike }) => ({
-    kind: tokenKind(segment, isWordLike),
-    text: segment,
-    start: index,
-  }));
+  return Array.from(wordSegmenter.segment(text), toToken);
+}
+
+function toToken({ segment, index, isWordLike }: Intl.SegmentData): Token {
+  const kind = tokenKind(segment, isWordLike);
+  return { kind, text: segment, start: index };
 }
 
 function tokenKind(segment: string, isWordLike: boolean | undefined): TokenKind {

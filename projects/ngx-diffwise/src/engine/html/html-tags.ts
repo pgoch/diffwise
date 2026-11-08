@@ -77,6 +77,20 @@ export const WORD_BREAK_TAGS: ReadonlySet<string> = new Set([
 /** Elements that show whitespace as typed. */
 export const PRESERVE_WHITESPACE_TAGS: ReadonlySet<string> = new Set(['pre', 'textarea']);
 
+/** Elements where a change marker would move out, vanish or show as text when parsed again. */
+export const NO_MARKER_TAGS: ReadonlySet<string> = new Set([
+  'colgroup',
+  'optgroup',
+  'option',
+  'select',
+  'table',
+  'tbody',
+  'textarea',
+  'tfoot',
+  'thead',
+  'tr',
+]);
+
 /** Form controls; the sanitizer disables them. */
 export const FORM_CONTROL_TAGS: ReadonlySet<string> = new Set([
   'button',

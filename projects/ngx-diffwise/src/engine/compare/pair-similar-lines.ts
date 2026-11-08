@@ -91,9 +91,9 @@ function collectPairs(
     const removedLineUnpaired = best[i][j] === best[i - 1][j];
 
     if (pairedHere) {
-      pairs.push({ removedIndex: i - 1, addedIndex: j - 1 });
       i--;
       j--;
+      pairs.push({ removedIndex: i, addedIndex: j });
     } else if (removedLineUnpaired) {
       i--;
     } else {
@@ -162,7 +162,6 @@ function toChanges(
 /** Similarity of two lines when it is high enough to pair them, otherwise 0. */
 function pairScore(first: WordCounts, second: WordCounts): number {
   const score = similarity(first, second);
-
   return score >= MIN_SIMILARITY ? score : 0;
 }
 

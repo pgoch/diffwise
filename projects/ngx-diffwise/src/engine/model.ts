@@ -82,3 +82,26 @@ export interface WordChanges {
   /** Ranges in the new line's text. */
   readonly added: readonly TextRange[];
 }
+
+/** A line as the view shows it. */
+export interface ViewLine {
+  /** Position of the line in its version, counted from 1. */
+  readonly number: number;
+  /** Sanitized HTML; in a changed line, removed or added words are marked. */
+  readonly html: string;
+}
+
+/** A row of the side-by-side view: a line of each version, or of one of them. */
+export interface ViewRow {
+  readonly kind: LineChangeKind;
+  /** `null` when the row shows an added line. */
+  readonly oldLine: ViewLine | null;
+  /** `null` when the row shows a removed line. */
+  readonly newLine: ViewLine | null;
+}
+
+/** Two HTML documents compared: rows of the view in reading order, and change counts. */
+export interface HtmlDiff {
+  readonly rows: readonly ViewRow[];
+  readonly stats: DiffStats;
+}

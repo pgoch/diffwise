@@ -1,8 +1,18 @@
 import { parseHtml } from './parse-html';
-import { readerText } from './reader-text';
+import { type ReaderTextMap, type TextPiece, mapReaderText, readerText } from './reader-text';
 
 function textOf(html: string): string {
   return readerText(parseHtml(html).childNodes);
+}
+
+function mapOf(html: string): ReaderTextMap {
+  return mapReaderText(parseHtml(html).childNodes);
+}
+
+/** The text a piece points to in its node. */
+function sourceText(piece: TextPiece): string {
+  const length = piece.end - piece.start;
+  return piece.node.data.slice(piece.nodeOffset, piece.nodeOffset + length);
 }
 
 describe('readerText', () => {
@@ -45,5 +55,47 @@ describe('readerText', () => {
 
   it('gives empty text for an empty document', () => {
     expect(textOf('')).toBe('');
+  });
+});
+
+describe('mapReaderText', () => {
+  it('points every piece at the text it was read from', () => {
+    const { text, pieces } = mapOf('<p>Read the <b>full</b> guide<i>lines</i>.</p>');
+
+    expect(text).toBe('Read the full guidelines.');
+    expect(pieces.map(sourceText)).toEqual([
+      'Read',
+      ' ',
+      'the',
+      ' ',
+      'full',
+      ' ',
+      'guide',
+      'lines',
+      '.',
+    ]);
+    expect(pieces.map((piece) => text.slice(piece.start, piece.end))).toEqual(
+      pieces.map(sourceText),
+    );
+  });
+
+  it('maps a space to the first whitespace character it stands for', () => {
+    const { pieces } = mapOf('<p>one \n two</p>');
+
+    expect(pieces.map((piece) => piece.nodeOffset)).toEqual([0, 3, 6]);
+  });
+
+  it('gives a space between blocks no piece', () => {
+    const { text, pieces } = mapOf('<p>one</p><p>two</p>');
+
+    expect(text).toBe('one two');
+    expect(pieces.map(sourceText)).toEqual(['one', 'two']);
+  });
+
+  it('maps a code block character by character', () => {
+    const { text, pieces } = mapOf('<pre>a&nbsp;b\n  c</pre>');
+
+    expect(text).toBe('a b\n  c');
+    expect(pieces).toEqual([expect.objectContaining({ start: 0, end: 7, nodeOffset: 0 })]);
   });
 });

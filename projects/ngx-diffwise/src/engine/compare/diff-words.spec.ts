@@ -11,17 +11,15 @@ function changedTexts(
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ) {
   const { removed, added } = diffWords(oldText, newText, options);
+  const removedTexts = removed.map((range) => oldText.slice(range.start, range.end));
+  const addedTexts = added.map((range) => newText.slice(range.start, range.end));
 
-  return {
-    removed: removed.map((range) => oldText.slice(range.start, range.end)),
-    added: added.map((range) => newText.slice(range.start, range.end)),
-  };
+  return { removed: removedTexts, added: addedTexts };
 }
 
 /** A paragraph of about 700 characters with one chosen word in the middle (T10). */
 function longParagraph(middleWord: string): string {
   const around = SENTENCE.repeat(SENTENCES_AROUND_CHANGE);
-
   return `${around}Pomoc jest ${middleWord} dla klientów. ${around}`;
 }
 
@@ -59,6 +57,28 @@ describe('diffWords', () => {
       removed: [],
       added: [],
     });
+  });
+
+  it('leaves whitespace at the edges of a change unmarked', () => {
+    expect(changedTexts('Kliknij', 'Kliknij tutaj')).toEqual({ removed: [], added: ['tutaj'] });
+  });
+
+  it('moves a removed sentence to start at a word and end with its full stop', () => {
+    expect(
+      changedTexts(
+        'Kliknij w menu i nadaj nazwę. Możesz ją zmienić później.',
+        'Kliknij na górze menu i nadaj nazwę.',
+      ),
+    ).toEqual({ removed: ['w', 'Możesz ją zmienić później.'], added: ['na górze'] });
+  });
+
+  it('moves an added sentence to start at a word and end with its full stop', () => {
+    expect(
+      changedTexts(
+        'Używaj krótkich nazw. Unikaj powtórzeń. Przeglądaj tagi co miesiąc.',
+        'Używaj krótkich nazw. Przeglądaj tagi co miesiąc. Pisz w jednym języku.',
+      ),
+    ).toEqual({ removed: ['Unikaj powtórzeń.'], added: ['Pisz w jednym języku.'] });
   });
 
   it('marks a change of whitespace unless whitespace is ignored', () => {

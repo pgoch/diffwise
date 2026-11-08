@@ -63,8 +63,7 @@ let purifier: Purifier | undefined;
 /** Removes everything that could run code or act outside the diff. */
 export function sanitizeHtml(html: string): string {
   purifier ??= createPurifier();
-
-  return purifier.sanitize(html, PURIFY_CONFIG);
+  return purifier.sanitize(html);
 }
 
 /**
@@ -78,6 +77,7 @@ function createPurifier(): Purifier {
     throw new Error(NO_DOM_ERROR);
   }
 
+  instance.setConfig(PURIFY_CONFIG);
   instance.addHook(AFTER_SANITIZE_ATTRIBUTES_HOOK, makeInert);
 
   return instance;
