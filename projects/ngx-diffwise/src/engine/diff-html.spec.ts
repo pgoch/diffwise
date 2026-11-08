@@ -14,7 +14,14 @@ import { diffHtml } from './diff-html';
 import { parseHtml } from './html/parse-html';
 import { readerText } from './html/reader-text';
 import { splitLines } from './html/split-lines';
-import { DEFAULT_DIFF_OPTIONS, LineChangeKind, type ViewLine, type ViewRow } from './model';
+import {
+  DEFAULT_DIFF_OPTIONS,
+  type DiffOptions,
+  type HtmlDiff,
+  LineChangeKind,
+  type ViewLine,
+  type ViewRow,
+} from './model';
 
 const TEMPLATE_TAG = 'template';
 const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
@@ -24,6 +31,11 @@ const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlig
 const RTL_PARAGRAPH = '<p dir="rtl">';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
 const NO_CHANGES = { addedLines: 0, removedLines: 0, changedLines: 0 };
+const ID_PREFIX = 'diff';
+const ID_SELECTOR = '[id]';
+const FRAGMENT_LINK_SELECTOR = 'a[href^="#"]';
+const HREF_ATTRIBUTE = 'href';
+const FRAGMENT_START = '#';
 
 /** Sample pairs from `test-data/`, as `[name, before, after]`. */
 const SAMPLES: [string, string, string][] = [
@@ -42,6 +54,15 @@ const TRANSLATED_SAMPLES: [string, [string, string], [string, string]][] = [
   ['long', [enLongBefore, enLongAfter], [plLongBefore, plLongAfter]],
 ];
 
+/** Compares two documents; ids of the versions start with `diff-old-` and `diff-new-`. */
+function compare(
+  oldHtml: string,
+  newHtml: string,
+  options: DiffOptions = DEFAULT_DIFF_OPTIONS,
+): HtmlDiff {
+  return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX });
+}
+
 /** Expected HTML of an added part. */
 function added(html: string): string {
   return `<ins class="${ADDED_CLASSES}">${html}</ins>`;
@@ -49,18 +70,16 @@ function added(html: string): string {
 
 /** A row as `[kind, old number, new number]`; a missing line is `null`. */
 function rowShape({ kind, oldLine, newLine }: ViewRow) {
-  const oldNumber = oldLine?.number ?? null;
-  const newNumber = newLine?.number ?? null;
-
-  return [kind, oldNumber, newNumber];
+  return [kind, oldLine?.number ?? null, newLine?.number ?? null];
 }
 
 /** A row as `[kind, old number, new number, removed texts, added texts]`. */
 function rowSummary(row: ViewRow) {
-  const removedTexts = markedTexts(row.oldLine, REMOVED_SELECTOR);
-  const addedTexts = markedTexts(row.newLine, ADDED_SELECTOR);
-
-  return [...rowShape(row), removedTexts, addedTexts];
+  return [
+    ...rowShape(row),
+    markedTexts(row.oldLine, REMOVED_SELECTOR),
+    markedTexts(row.newLine, ADDED_SELECTOR),
+  ];
 }
 
 /** Texts of the line's markers, in reading order. */
@@ -103,9 +122,27 @@ function numbersUpTo(count: number): number[] {
   return Array.from({ length: count }, (_, index) => index + 1);
 }
 
+/** Ids in the lines of one version. */
+function idsIn(lines: readonly (ViewLine | null)[]) {
+  return Array.from(elementsIn(lines, ID_SELECTOR), (element) => element.id);
+}
+
+/** Ids that links such as `#note-1` in the lines of one version point to. */
+function linkTargetsIn(lines: readonly (ViewLine | null)[]) {
+  const links = elementsIn(lines, FRAGMENT_LINK_SELECTOR);
+  return Array.from(links, (link) =>
+    link.getAttribute(HREF_ATTRIBUTE)?.slice(FRAGMENT_START.length),
+  );
+}
+
+function elementsIn(lines: readonly (ViewLine | null)[], selector: string): NodeListOf<Element> {
+  const html = lines.map((line) => line?.html).join();
+  return fragmentOf(html).querySelectorAll(selector);
+}
+
 describe('diffHtml', () => {
   it('shows the changes of the short sample', () => {
-    const diff = diffHtml(enShortBefore, enShortAfter);
+    const diff = compare(enShortBefore, enShortAfter);
 
     expect(diff.rows.map(rowSummary)).toEqual([
       [LineChangeKind.Unchanged, 1, 1, [], []],
@@ -118,7 +155,7 @@ describe('diffHtml', () => {
   });
 
   it('marks changed words inside the formatting of the short sample', () => {
-    const changedRow = diffHtml(enShortBefore, enShortAfter).rows[1];
+    const changedRow = compare(enShortBefore, enShortAfter).rows[1];
     const dayAndDate = `<strong>${added('Sunday')}, ${added('15')} March</strong>`;
     const time = `22:00 to 23:${added('30')}`;
 
@@ -128,7 +165,7 @@ describe('diffHtml', () => {
   });
 
   it('shows the changes of the medium sample', () => {
-    const diff = diffHtml(enMediumBefore, enMediumAfter);
+    const diff = compare(enMediumBefore, enMediumAfter);
 
     expect(diff.rows.map(rowSummary)).toEqual([
       [LineChangeKind.Unchanged, 1, 1, [], []],
@@ -176,14 +213,14 @@ describe('diffHtml', () => {
   it.each(TRANSLATED_SAMPLES)(
     'shows the same rows for the English and Polish %s samples',
     (_, [enBefore, enAfter], [plBefore, plAfter]) => {
-      expect(diffHtml(plBefore, plAfter).rows.map(rowShape)).toEqual(
-        diffHtml(enBefore, enAfter).rows.map(rowShape),
+      expect(compare(plBefore, plAfter).rows.map(rowShape)).toEqual(
+        compare(enBefore, enAfter).rows.map(rowShape),
       );
     },
   );
 
   it.each(SAMPLES)('numbers the lines of each version of %s from 1', (_, before, after) => {
-    const { rows } = diffHtml(before, after);
+    const { rows } = compare(before, after);
     const oldNumbers = rows.map((row) => row.oldLine?.number).filter(Number.isInteger);
     const newNumbers = rows.map((row) => row.newLine?.number).filter(Number.isInteger);
 
@@ -195,7 +232,7 @@ describe('diffHtml', () => {
     const oldTexts = lineTexts(before);
     const newTexts = lineTexts(after);
 
-    for (const { oldLine, newLine } of diffHtml(before, after).rows) {
+    for (const { oldLine, newLine } of compare(before, after).rows) {
       if (oldLine) {
         expect(textOf(oldLine)).toBe(oldTexts[oldLine.number - 1]);
       }
@@ -208,7 +245,7 @@ describe('diffHtml', () => {
 
   it.each(SAMPLES)('marks words only in changed rows of %s', (_, before, after) => {
     const markedKinds = new Set(
-      diffHtml(before, after)
+      compare(before, after)
         .rows.filter(hasMarkers)
         .map((row) => row.kind),
     );
@@ -220,7 +257,7 @@ describe('diffHtml', () => {
     const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
     const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p><p>Płatności.</p>';
 
-    expect(diffHtml(oldHtml, newHtml).rows.map(rowShape)).toEqual([
+    expect(compare(oldHtml, newHtml).rows.map(rowShape)).toEqual([
       [LineChangeKind.Unchanged, 1, 1],
       [LineChangeKind.Removed, 2, null],
       [LineChangeKind.Unchanged, 3, 2],
@@ -233,25 +270,25 @@ describe('diffHtml', () => {
     const newHtml = '<p>Konto firmowe</p>';
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
-    expect(diffHtml(oldHtml, newHtml).rows.map(rowSummary)).toEqual([
+    expect(compare(oldHtml, newHtml).rows.map(rowSummary)).toEqual([
       [LineChangeKind.Changed, 1, 1, ['Firmowe'], ['firmowe']],
     ]);
-    expect(diffHtml(oldHtml, newHtml, ignoreCase).rows.map(rowSummary)).toEqual([
+    expect(compare(oldHtml, newHtml, ignoreCase).rows.map(rowSummary)).toEqual([
       [LineChangeKind.Unchanged, 1, 1, [], []],
     ]);
   });
 
   it('marks an added emoji whole and only the changed word in Chinese (T13, T14)', () => {
     expect(
-      diffHtml('<p>Zażółć gęślą jaźń 🙂</p>', '<p>Zażółć gęślą jaźń 🙂🎉</p>').rows.map(rowSummary),
+      compare('<p>Zażółć gęślą jaźń 🙂</p>', '<p>Zażółć gęślą jaźń 🙂🎉</p>').rows.map(rowSummary),
     ).toEqual([[LineChangeKind.Changed, 1, 1, [], ['🎉']]]);
     expect(
-      diffHtml('<p>我们的服务全天开放。</p>', '<p>我们的服务每天开放。</p>').rows.map(rowSummary),
+      compare('<p>我们的服务全天开放。</p>', '<p>我们的服务每天开放。</p>').rows.map(rowSummary),
     ).toEqual([[LineChangeKind.Changed, 1, 1, ['全天'], ['每天']]]);
   });
 
   it('marks the changed words of right-to-left text and keeps its direction (T15)', () => {
-    const { rows } = diffHtml(
+    const { rows } = compare(
       '<p dir="rtl">الخدمة متاحة طوال اليوم.</p>',
       '<p dir="rtl">الخدمة متاحة كل يوم.</p>',
     );
@@ -267,7 +304,7 @@ describe('diffHtml', () => {
     const script = '<script>alert(1)</script>';
     const oldHtml = `<p onclick="alert(1)">Regulamin ${unsafeLink}Kliknij</a></p>${script}`;
     const newHtml = `<p onclick="alert(1)">Regulamin ${unsafeLink}Kliknij tutaj</a></p>${script}`;
-    const { rows } = diffHtml(oldHtml, newHtml);
+    const { rows } = compare(oldHtml, newHtml);
     const shownHtml = rows.flatMap(({ oldLine, newLine }) => [oldLine?.html, newLine?.html]).join();
 
     expect(rows.map(rowSummary)).toEqual([[LineChangeKind.Changed, 1, 1, [], ['tutaj']]]);
@@ -275,6 +312,30 @@ describe('diffHtml', () => {
   });
 
   it('gives no rows for two empty documents', () => {
-    expect(diffHtml('', '')).toEqual({ rows: [], stats: NO_CHANGES });
+    expect(compare('', '')).toEqual({ rows: [], stats: NO_CHANGES });
+  });
+
+  it('gives the ids of each version a prefix of their own', () => {
+    const html = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
+    const { rows } = compare(html, html);
+
+    expect(rows.map(({ oldLine, newLine }) => [oldLine?.html, newLine?.html])).toEqual([
+      [
+        '<p>Zobacz przypis<a href="#diff-old-note">1</a>.</p>',
+        '<p>Zobacz przypis<a href="#diff-new-note">1</a>.</p>',
+      ],
+      ['<p id="diff-old-note">Treść przypisu.</p>', '<p id="diff-new-note">Treść przypisu.</p>'],
+    ]);
+  });
+
+  it.each(SAMPLES)('keeps ids of %s unique and links within their version', (_, before, after) => {
+    const { rows } = compare(before, after);
+    const oldLines = rows.map((row) => row.oldLine);
+    const newLines = rows.map((row) => row.newLine);
+    const ids = [...idsIn(oldLines), ...idsIn(newLines)];
+
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(idsIn(oldLines)).toEqual(expect.arrayContaining(linkTargetsIn(oldLines)));
+    expect(idsIn(newLines)).toEqual(expect.arrayContaining(linkTargetsIn(newLines)));
   });
 });

@@ -91,9 +91,9 @@ function collectPairs(
     const removedLineUnpaired = best[i][j] === best[i - 1][j];
 
     if (pairedHere) {
+      pairs.push({ removedIndex: i - 1, addedIndex: j - 1 });
       i--;
       j--;
-      pairs.push({ removedIndex: i, addedIndex: j });
     } else if (removedLineUnpaired) {
       i--;
     } else {

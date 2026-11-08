@@ -42,10 +42,11 @@ export function diffWords(oldText: string, newText: string, options: DiffOptions
   }
 
   const { removedRuns, addedRuns } = runsBuilder.build();
-  const removed = changedRanges(removedRuns, oldSide);
-  const added = changedRanges(addedRuns, newSide);
 
-  return { removed, added };
+  return {
+    removed: changedRanges(removedRuns, oldSide),
+    added: changedRanges(addedRuns, newSide),
+  };
 }
 
 function comparedText(text: string, options: DiffOptions): ComparedText {
@@ -178,10 +179,7 @@ function slidePlaces(
 
 /** The run moved by `offset` tokens: left when negative, right when positive. */
 function shiftedRun(run: TokenRun, offset: number): TokenRun {
-  const start = run.start + offset;
-  const end = run.end + offset;
-
-  return { start, end };
+  return { start: run.start + offset, end: run.end + offset };
 }
 
 /** True when the token before the run equals the run's last token. */
@@ -209,11 +207,10 @@ function touchesWhitespace(text: string, position: number): boolean {
 }
 
 function textRangeOf(run: TokenRun, side: ComparedText): TextRange {
+  const firstToken = side.tokens[run.start];
   const lastToken = side.tokens[run.end - 1];
-  const start = side.tokens[run.start].start;
-  const end = lastToken.start + lastToken.text.length;
 
-  return { start, end };
+  return { start: firstToken.start, end: lastToken.start + lastToken.text.length };
 }
 
 /** Adds a range, joined with the previous one if only whitespace lies between. */
@@ -245,7 +242,6 @@ function withoutEdgeWhitespace(range: TextRange, text: string): TextRange {
   }
 
   const start = range.start + rangeText.length - rangeText.trimStart().length;
-  const end = start + words.length;
 
-  return { start, end };
+  return { start, end: start + words.length };
 }

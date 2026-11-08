@@ -95,10 +95,7 @@ function segmentsOfRange(pieces: readonly TextPiece[], range: TextRange): NodeSe
 /** The part of the piece's text node that shows `[textStart, textEnd)` of the reader text. */
 function nodeSegment(piece: TextPiece, textStart: number, textEnd: number): NodeSegment {
   const nodeShift = piece.nodeOffset - piece.start;
-  const start = textStart + nodeShift;
-  const end = textEnd + nodeShift;
-
-  return { node: piece.node, start, end };
+  return { node: piece.node, start: textStart + nodeShift, end: textEnd + nodeShift };
 }
 
 /** Adds a segment, or extends the previous one when both lie in the same text node. */
