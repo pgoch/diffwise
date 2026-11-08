@@ -20,3 +20,17 @@ export interface Line {
   /** Sanitized HTML inside copies of its containers, such as a quote. */
   readonly html: string;
 }
+
+/** What counts as a difference between the two versions. */
+export interface DiffOptions {
+  /** Ignores differences in whitespace. */
+  readonly ignoreWhitespace: boolean;
+  /** Ignores differences in letter case. */
+  readonly ignoreCase: boolean;
+}
+
+/** Default options: every difference counts. */
+export const DEFAULT_DIFF_OPTIONS: DiffOptions = {
+  ignoreWhitespace: false,
+  ignoreCase: false,
+};
