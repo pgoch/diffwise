@@ -80,11 +80,13 @@ describe('DiffwiseConfig', () => {
   });
 
   it('changes custom texts one by one, so the other texts stay', () => {
-    const config = new DiffwiseConfig({ customTexts: { oldVersion: 'Przed', newVersion: 'Po' } });
-    const copy = config.with({ customTexts: { newVersion: 'Teraz' } });
+    const config = new DiffwiseConfig({
+      customTexts: { oldVersionLabel: 'Przed', newVersionLabel: 'Po' },
+    });
+    const copy = config.with({ customTexts: { newVersionLabel: 'Teraz' } });
 
-    expect(copy.customTexts).toEqual({ oldVersion: 'Przed', newVersion: 'Teraz' });
-    expect(config.customTexts).toEqual({ oldVersion: 'Przed', newVersion: 'Po' });
+    expect(copy.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Teraz' });
+    expect(config.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Po' });
   });
 
   it('keeps the default for an invalid value, with a warning', () => {

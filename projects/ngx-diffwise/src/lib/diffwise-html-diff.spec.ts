@@ -44,7 +44,7 @@ const PAGE_DARK_SELECTOR = '.dark';
 const ROLE_ATTRIBUTE = 'role';
 const REGION_ROLE = 'region';
 const POLISH_LOCALE = 'pl-PL';
-const POLISH_VERSION_NAMES = ['Poprzednia wersja', 'Nowa wersja'];
+const POLISH_VERSION_LABELS = ['Poprzednia wersja', 'Nowa wersja'];
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -350,7 +350,7 @@ describe('DiffwiseHtmlDiff', () => {
   it('shows the texts of the interface in Polish on request', () => {
     const element = renderElement('', '', { language: DiffwiseLanguage.PL });
 
-    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_NAMES);
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_LABELS);
     expect(element.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Porównanie wersji dokumentu');
   });
 
@@ -359,25 +359,25 @@ describe('DiffwiseHtmlDiff', () => {
       providers: [{ provide: LOCALE_ID, useValue: POLISH_LOCALE }],
     });
 
-    expect(textsOf(renderElement('', ''), VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_NAMES);
+    expect(textsOf(renderElement('', ''), VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_LABELS);
   });
 
   it('shows custom texts instead of single texts of the interface, also as names of icons', () => {
     const element = renderElement('', '', {
       language: DiffwiseLanguage.PL,
       versionHeaders: DiffwiseVersionHeaders.Icons,
-      customTexts: { oldVersion: 'Przed zmianami' },
+      customTexts: { oldVersionLabel: 'Przed zmianami' },
     });
 
     expect(iconNamesOf(element)).toEqual(['Przed zmianami', 'Nowa wersja']);
   });
 
   it('takes custom texts from every level of the configuration, text by text', () => {
-    const globalTexts = { oldVersion: 'Vorherige Version', newVersion: 'Neue Version' };
+    const globalTexts = { oldVersionLabel: 'Vorherige Version', newVersionLabel: 'Neue Version' };
 
     TestBed.configureTestingModule({ providers: [provideDiffwise({ customTexts: globalTexts })] });
 
-    const element = renderElement('', '', { customTexts: { newVersion: 'Entwurf' } });
+    const element = renderElement('', '', { customTexts: { newVersionLabel: 'Entwurf' } });
 
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Vorherige Version', 'Entwurf']);
   });

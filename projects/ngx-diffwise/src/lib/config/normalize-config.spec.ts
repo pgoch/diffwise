@@ -86,16 +86,20 @@ describe('normalizeConfig', () => {
   });
 
   it('keeps the valid custom texts as a frozen copy, with a warning for each invalid one', () => {
-    const customTexts = { oldVersion: 'Przed zmianami', newVersion: 4, oldVerison: 'Po zmianach' };
+    const customTexts = {
+      oldVersionLabel: 'Przed zmianami',
+      newVersionLabel: 4,
+      oldVerisonLabel: 'Po zmianach',
+    };
     const validTexts = normalizeConfig({ customTexts }).customTexts;
 
-    expect(validTexts).toEqual({ oldVersion: 'Przed zmianami' });
+    expect(validTexts).toEqual({ oldVersionLabel: 'Przed zmianami' });
     expect(Object.isFrozen(validTexts)).toBe(true);
     expect(console.warn).toHaveBeenCalledTimes(2);
   });
 
   it('leaves out a custom text without a value, and ignores custom texts that are not an object', () => {
-    expect(normalizeConfig({ customTexts: { oldVersion: undefined } })).toEqual({
+    expect(normalizeConfig({ customTexts: { oldVersionLabel: undefined } })).toEqual({
       customTexts: {},
     });
     expect(normalizeConfig({ customTexts: 'Przed zmianami' })).toEqual({});

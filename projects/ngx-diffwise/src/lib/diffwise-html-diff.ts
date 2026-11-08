@@ -281,15 +281,15 @@ function toShownVersionHeaders(
   versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
   texts: UiTexts,
 ): ShownVersionHeaders | null {
-  const versionNames = { old: texts.oldVersion, new: texts.newVersion };
+  const versionLabels = { old: texts.oldVersionLabel, new: texts.newVersionLabel };
 
   switch (versionHeaders) {
     case DiffwiseVersionHeaders.None:
       return null;
     case DiffwiseVersionHeaders.Default:
-      return { texts: versionNames, asIcons: false };
+      return { texts: versionLabels, asIcons: false };
     case DiffwiseVersionHeaders.Icons:
-      return { texts: versionNames, asIcons: true };
+      return { texts: versionLabels, asIcons: true };
     default:
       return { texts: versionHeaders, asIcons: false };
   }
