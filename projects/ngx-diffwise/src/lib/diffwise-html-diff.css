@@ -466,6 +466,47 @@
 }
 
 /*
+ * A changed image: a frame with a gap instead of a background, which follows the highlight style.
+ * The padding keeps the frame off the text, and the image stays on the baseline of its line.
+ */
+.diffwise-html-diff__content .diffwise-html-diff__highlight--image {
+  position: relative;
+  display: inline-block;
+  padding: 6px;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  vertical-align: -6px;
+}
+
+.diffwise-html-diff__highlight--image :is(img, picture) {
+  display: block;
+}
+
+.diffwise-html-diff__highlight--image::after {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--diffwise-side-accent);
+  border-radius: 11px;
+  content: '';
+  pointer-events: none;
+}
+
+.diffwise-html-diff--highlight-style-background .diffwise-html-diff__highlight--image::after {
+  border-color: var(--diffwise-side-highlight);
+}
+
+.diffwise-html-diff--highlight-style-underline .diffwise-html-diff__highlight--image::after {
+  border-width: 0 0 3px;
+  border-radius: 0;
+}
+
+.diffwise-html-diff--highlight-style-top-bottom .diffwise-html-diff__highlight--image::after {
+  border-width: 3px 0;
+  border-radius: 0;
+}
+
+/*
  * An added or a removed line highlighted as a whole looks like changed words, in every style,
  * but keeps its rounded corners.
  */
