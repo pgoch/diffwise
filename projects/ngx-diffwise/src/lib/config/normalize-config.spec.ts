@@ -118,6 +118,14 @@ describe('normalizeConfig', () => {
     expect(console.warn).toHaveBeenCalledOnce();
   });
 
+  it('keeps null for custom texts and colors, which takes them away', () => {
+    expect(normalizeConfig({ customTexts: null, diffColors: null })).toEqual({
+      customTexts: null,
+      diffColors: null,
+    });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
   it('keeps values of the appearance options, given as constants or as plain text', () => {
     const options = {
       highlightStyle: 'top-bottom',

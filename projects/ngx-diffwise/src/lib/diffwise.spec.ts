@@ -40,6 +40,19 @@ describe('Diffwise', () => {
     expect(diffwise.config().ignoreCase).toBe(true);
   });
 
+  it('takes away custom texts and colors with null in updateConfig()', () => {
+    const diffwise = TestBed.inject(Diffwise);
+
+    diffwise.updateConfig({
+      customTexts: { oldVersionLabel: 'Przed zmianami' },
+      diffColors: { dark: { addedAccent: '#5eead4' } },
+    });
+    diffwise.updateConfig({ customTexts: null, diffColors: null });
+
+    expect(diffwise.config().customTexts).toEqual({});
+    expect(diffwise.config().diffColors).toEqual({});
+  });
+
   it('switches the color mode of the global configuration', () => {
     const diffwise = TestBed.inject(Diffwise);
 

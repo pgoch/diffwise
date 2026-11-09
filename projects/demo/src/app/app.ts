@@ -205,13 +205,8 @@ export class App {
   /** The chosen headers; the first choice is set in `app.config.ts`. */
   protected readonly versionHeaders = signal<VersionHeaders>(DiffwiseVersionHeaders.Default);
 
-  /** Shows the example colors through an input of the diff, which can also take them away. */
+  /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
-
-  /** Colors of changes for the input of the diff: the example colors, or none. */
-  protected readonly diffColors = computed(() =>
-    this.showsExampleColors() ? EXAMPLE_DIFF_COLORS : undefined,
-  );
 
   /** Name of the custom font, kept while another font is chosen. */
   protected readonly customFontName = signal(DEFAULT_CUSTOM_FONT);
@@ -255,6 +250,12 @@ export class App {
   protected chooseVersionHeaders(versionHeaders: VersionHeaders): void {
     this.versionHeaders.set(versionHeaders);
     this.update({ versionHeaders });
+  }
+
+  /** Gives the example colors to the global configuration, or takes them away with `null`. */
+  protected showExampleColors(shown: boolean): void {
+    this.showsExampleColors.set(shown);
+    this.update({ diffColors: shown ? EXAMPLE_DIFF_COLORS : null });
   }
 
   protected chooseFont(choice: FontChoice): void {

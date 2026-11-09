@@ -1,8 +1,8 @@
 <aside class="demo-panel" aria-label="Options of the diff">
   <h1>Diffwise demo</h1>
   <p class="demo-note">
-    Most options change the global configuration while the app runs. The language and the custom
-    colors go through inputs of the diff.
+    The options change the global configuration while the app runs. Only the language goes through
+    an input of the diff.
   </p>
 
   <h2>Sample</h2>
@@ -45,7 +45,7 @@
     <input
       type="checkbox"
       [checked]="showsExampleColors()"
-      (change)="showsExampleColors.set(isChecked($event))"
+      (change)="showExampleColors(isChecked($event))"
     />
     Custom colors (example)
   </label>
@@ -189,7 +189,6 @@
       [oldHtml]="pair.oldHtml"
       [newHtml]="pair.newHtml"
       [language]="interfaceLanguage()"
-      [diffColors]="diffColors()"
     />
   }
 </main>

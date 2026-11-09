@@ -42,9 +42,9 @@ export interface DiffwiseConfigOptions {
   readonly uiContrast?: DiffwiseLevel;
   /**
    * Colors of changes for the light and the dark theme. Each level of the configuration changes
-   * only the colors it sets. Default: none.
+   * only the colors it sets, and `null` takes away the colors of the levels below. Default: none.
    */
-  readonly diffColors?: DiffwiseDiffColors;
+  readonly diffColors?: DiffwiseDiffColors | null;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
   /**
@@ -86,9 +86,9 @@ export interface DiffwiseConfigOptions {
   readonly language?: DiffwiseLanguage;
   /**
    * Texts shown instead of texts of the interface. Each level of the configuration changes only
-   * the texts it sets. Default: none.
+   * the texts it sets, and `null` takes away the texts of the levels below. Default: none.
    */
-  readonly customTexts?: DiffwiseCustomTexts;
+  readonly customTexts?: DiffwiseCustomTexts | null;
 }
 
 /** Custom texts of a config that sets none. */
@@ -172,10 +172,13 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Valid options given to the constructor, without the defaults. */
   readonly #givenOptions: DiffwiseConfigOptions;
 
-  /** Takes only the options to change; an invalid value keeps the default. */
+  /**
+   * Takes only the options to change; an invalid value keeps the default. Custom texts or colors
+   * given as `null` are none, also in a config changed by this one through `with()`.
+   */
   constructor(options: DiffwiseConfig | DiffwiseConfigOptions = {}) {
     this.#givenOptions = DiffwiseConfig.#validOptionsOf(options);
-    Object.assign(this, this.#givenOptions);
+    Object.assign(this, fieldValuesOf(this.#givenOptions));
     Object.freeze(this);
   }
 
@@ -193,25 +196,49 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
 /**
  * The options with the changes. Custom texts and colors change one by one, so the texts and
- * colors left out stay.
+ * colors left out stay; `null` takes them all away.
  */
 function withChanges(
   options: DiffwiseConfigOptions,
   changes: DiffwiseConfigOptions,
 ): DiffwiseConfigOptions {
-  const customTexts = { ...options.customTexts, ...changes.customTexts };
+  const customTexts = withTextChanges(options.customTexts, changes.customTexts);
   const diffColors = withColorChanges(options.diffColors, changes.diffColors);
 
   return { ...options, ...changes, customTexts, diffColors };
 }
 
-/** Colors of both themes with the changes, color by color. */
+/** Custom texts with the changes, text by text; `null` takes away all texts. */
+function withTextChanges(
+  texts: DiffwiseCustomTexts | null = NO_CUSTOM_TEXTS,
+  changes: DiffwiseCustomTexts | null = NO_CUSTOM_TEXTS,
+): DiffwiseCustomTexts {
+  if (changes === null) {
+    return NO_CUSTOM_TEXTS;
+  }
+
+  return { ...texts, ...changes };
+}
+
+/** Colors of both themes with the changes, color by color; `null` takes away all colors. */
 function withColorChanges(
-  colors: DiffwiseDiffColors = NO_DIFF_COLORS,
-  changes: DiffwiseDiffColors = NO_DIFF_COLORS,
+  colors: DiffwiseDiffColors | null = NO_DIFF_COLORS,
+  changes: DiffwiseDiffColors | null = NO_DIFF_COLORS,
 ): DiffwiseDiffColors {
-  const light = { ...colors.light, ...changes.light };
-  const dark = { ...colors.dark, ...changes.dark };
+  if (changes === null) {
+    return NO_DIFF_COLORS;
+  }
+
+  const light = { ...colors?.light, ...changes.light };
+  const dark = { ...colors?.dark, ...changes.dark };
 
   return { light, dark };
+}
+
+/** The options as values of the fields of a config: texts or colors given as `null` are none. */
+function fieldValuesOf(options: DiffwiseConfigOptions): DiffwiseConfigOptions {
+  const customTexts = options.customTexts ?? NO_CUSTOM_TEXTS;
+  const diffColors = options.diffColors ?? NO_DIFF_COLORS;
+
+  return { ...options, customTexts, diffColors };
 }

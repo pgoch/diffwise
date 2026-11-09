@@ -64,7 +64,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   highlightStyle: isHighlightStyle,
   diffIntensity: isLevel,
   uiContrast: isLevel,
-  diffColors: isObject,
+  diffColors: isObjectOrNull,
   showLineNumbers: isBoolean,
   lineNumberStyle: isLineNumberStyle,
   lineNumberAlignment: isVerticalAlignment,
@@ -80,7 +80,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   ignoreWhitespace: isBoolean,
   ignoreCase: isBoolean,
   language: isLanguage,
-  customTexts: isObject,
+  customTexts: isObjectOrNull,
 };
 
 /** Keeps only the valid items of an object, such as the texts of custom texts. */
@@ -150,6 +150,11 @@ function isNumber(value: unknown): value is number {
 
 function isObject(value: unknown): value is object {
   return typeof value === OBJECT_TYPE && value !== null;
+}
+
+/** True for an object, or for `null`, which takes away the items of the levels below. */
+function isObjectOrNull(value: unknown): boolean {
+  return value === null || isObject(value);
 }
 
 function isBlank(text: string): boolean {

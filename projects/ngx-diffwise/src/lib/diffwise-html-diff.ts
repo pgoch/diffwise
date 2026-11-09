@@ -125,9 +125,9 @@ export class DiffwiseHtmlDiff {
 
   /**
    * Colors of changes for each theme; each wins over the same color of `config` and the global
-   * configuration.
+   * configuration, and `null` shows none of their colors.
    */
-  readonly diffColors = input<DiffwiseDiffColors>();
+  readonly diffColors = input<DiffwiseDiffColors | null>();
 
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
@@ -179,9 +179,9 @@ export class DiffwiseHtmlDiff {
 
   /**
    * Texts shown instead of texts of the interface; each wins over the same text of `config` and
-   * the global configuration.
+   * the global configuration, and `null` shows none of their texts.
    */
-  readonly customTexts = input<DiffwiseCustomTexts>();
+  readonly customTexts = input<DiffwiseCustomTexts | null>();
 
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);

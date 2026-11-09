@@ -126,6 +126,25 @@ describe('DiffwiseConfig', () => {
     });
   });
 
+  it('takes away all custom texts and colors with null', () => {
+    const config = new DiffwiseConfig({
+      customTexts: { oldVersionLabel: 'Przed' },
+      diffColors: { light: { addedAccent: '#0f766e' } },
+    });
+    const copy = config.with({ customTexts: null, diffColors: null });
+
+    expect(copy.customTexts).toEqual({});
+    expect(copy.diffColors).toEqual({});
+  });
+
+  it('has no custom texts when given null, and takes them away from a config it changes', () => {
+    const withoutTexts = new DiffwiseConfig({ customTexts: null });
+    const config = new DiffwiseConfig({ customTexts: { oldVersionLabel: 'Przed' } });
+
+    expect(withoutTexts.customTexts).toEqual({});
+    expect(config.with(withoutTexts).customTexts).toEqual({});
+  });
+
   it('keeps the default for an invalid value, with a warning', () => {
     const config = new DiffwiseConfig(untyped({ showLineNumbers: 'false' }));
 

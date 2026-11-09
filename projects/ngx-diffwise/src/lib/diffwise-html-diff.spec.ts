@@ -394,6 +394,16 @@ describe('DiffwiseHtmlDiff', () => {
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Vorherige Version', 'Entwurf']);
   });
 
+  it('shows the texts of the interface when an input takes away the custom texts with null', () => {
+    const globalTexts = { oldVersionLabel: 'Vorherige Version', newVersionLabel: 'Neue Version' };
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise({ customTexts: globalTexts })] });
+
+    const element = renderElement('', '', { customTexts: null });
+
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Previous version', 'New version']);
+  });
+
   it('shows options of the appearance as modifier classes, next to its own class', () => {
     const element = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, {
       gapStyle: DiffwiseGapStyle.Gray,
