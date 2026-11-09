@@ -19,13 +19,22 @@ import {
   type ViewRow,
   diffHtml,
 } from '../engine';
+import { appearanceClasses, appearanceStyles } from './appearance';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
+import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
 import {
+  type DiffwiseAlignment,
   DiffwiseColorMode,
+  type DiffwiseDividerStyle,
+  type DiffwiseGapStyle,
+  type DiffwiseHighlightStyle,
   type DiffwiseLanguage,
+  type DiffwiseLevel,
+  type DiffwiseLineNumberStyle,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
+  type DiffwiseVerticalAlignment,
 } from './config/option-values';
 import { Diffwise } from './diffwise';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
@@ -47,6 +56,9 @@ const FOCUSABLE_BY_SCRIPT = '-1';
 
 /** Diffs created so far; numbers the id prefixes. */
 let createdDiffs = 0;
+
+/** Colors of a theme without colors of the app. */
+const NO_COLORS: ThemeDiffColors = Object.freeze({});
 
 /** A line as the template shows it. */
 interface ShownLine {
@@ -80,8 +92,9 @@ interface ShownVersionHeaders {
     class: 'diffwise-html-diff',
     role: 'region',
     '[attr.aria-label]': 'texts().diffLabel',
+    '[class]': 'modifierClasses()',
     '[class.diffwise-html-diff--dark-theme]': 'isDark()',
-    '[class.diffwise-html-diff--no-line-numbers]': '!effectiveConfig().showLineNumbers',
+    '[style]': 'inlineStyles()',
     '(click)': 'followInPageLink($event)',
   },
 })
@@ -101,11 +114,59 @@ export class DiffwiseHtmlDiff {
   /** The app's dark mode marker, such as `.dark`; wins over `config` and the global configuration. */
   readonly darkModeSelector = input<string | null>();
 
+  /** Style of changed words; wins over `config` and the global configuration. */
+  readonly highlightStyle = input<DiffwiseHighlightStyle>();
+
+  /** Intensity of change colors, from 1 to 5; wins over `config` and the global configuration. */
+  readonly diffIntensity = input<DiffwiseLevel>();
+
+  /** Contrast besides the content, from 1 to 5; wins over `config` and the global configuration. */
+  readonly uiContrast = input<DiffwiseLevel>();
+
+  /**
+   * Colors of changes for each theme; each wins over the same color of `config` and the global
+   * configuration, and `null` shows none of their colors.
+   */
+  readonly diffColors = input<DiffwiseDiffColors | null>();
+
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
 
+  /** What the number of a changed line gets; wins over `config` and the global configuration. */
+  readonly lineNumberStyle = input<DiffwiseLineNumberStyle>();
+
+  /** Place of the line numbers in their lines; wins over `config` and the global configuration. */
+  readonly lineNumberAlignment = input<DiffwiseVerticalAlignment>();
+
+  /** Gives changed lines a background; wins over `config` and the global configuration. */
+  readonly highlightChangedLines = input<boolean>();
+
+  /**
+   * Without backgrounds of changed lines, highlights an added or a removed line as a whole; wins
+   * over `config` and the global configuration.
+   */
+  readonly highlightWholeLines = input<boolean>();
+
+  /** What stands between the versions; wins over `config` and the global configuration. */
+  readonly dividerStyle = input<DiffwiseDividerStyle>();
+
+  /** What fills the gap opposite a line; wins over `config` and the global configuration. */
+  readonly gapStyle = input<DiffwiseGapStyle>();
+
   /** Headers above the two versions; wins over `config` and the global configuration. */
   readonly versionHeaders = input<DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts>();
+
+  /** Place of the header texts; wins over `config` and the global configuration. */
+  readonly versionHeaderAlignment = input<DiffwiseAlignment>();
+
+  /** Font of the diff, or a font of the app; wins over `config` and the global configuration. */
+  readonly fontFamily = input<string>();
+
+  /** Font size of the headers in rem; wins over `config` and the global configuration. */
+  readonly versionHeaderFontSize = input<number>();
+
+  /** Font size of the line numbers in rem; wins over `config` and the global configuration. */
+  readonly lineNumberFontSize = input<number>();
 
   /** Ignores differences in whitespace; wins over `config` and the global configuration. */
   readonly ignoreWhitespace = input<boolean>();
@@ -118,9 +179,9 @@ export class DiffwiseHtmlDiff {
 
   /**
    * Texts shown instead of texts of the interface; each wins over the same text of `config` and
-   * the global configuration.
+   * the global configuration, and `null` shows none of their texts.
    */
-  readonly customTexts = input<DiffwiseCustomTexts>();
+  readonly customTexts = input<DiffwiseCustomTexts | null>();
 
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
@@ -136,8 +197,22 @@ export class DiffwiseHtmlDiff {
   private readonly inputOptions = computed<DiffwiseConfigOptions>(() => ({
     colorMode: this.colorMode(),
     darkModeSelector: this.darkModeSelector(),
+    highlightStyle: this.highlightStyle(),
+    diffIntensity: this.diffIntensity(),
+    uiContrast: this.uiContrast(),
+    diffColors: this.diffColors(),
     showLineNumbers: this.showLineNumbers(),
+    lineNumberStyle: this.lineNumberStyle(),
+    lineNumberAlignment: this.lineNumberAlignment(),
+    highlightChangedLines: this.highlightChangedLines(),
+    highlightWholeLines: this.highlightWholeLines(),
+    dividerStyle: this.dividerStyle(),
+    gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
+    versionHeaderAlignment: this.versionHeaderAlignment(),
+    fontFamily: this.fontFamily(),
+    versionHeaderFontSize: this.versionHeaderFontSize(),
+    lineNumberFontSize: this.lineNumberFontSize(),
     ignoreWhitespace: this.ignoreWhitespace(),
     ignoreCase: this.ignoreCase(),
     language: this.language(),
@@ -189,6 +264,27 @@ export class DiffwiseHtmlDiff {
 
     return rows.map((row) => this.shownRow(row));
   });
+
+  /** Colors of changes the app gives for the theme shown now. */
+  private readonly customColors = computed(() => {
+    const { diffColors } = this.effectiveConfig();
+    const themeColors = this.isDark() ? diffColors.dark : diffColors.light;
+
+    return themeColors ?? NO_COLORS;
+  });
+
+  /** Digits of the highest line number, which set the width of the line numbers. */
+  private readonly lineNumberDigits = computed(() => String(highestLineNumber(this.rows())).length);
+
+  /** Modifier classes of the options with values other than the defaults. */
+  protected readonly modifierClasses = computed(() =>
+    appearanceClasses(this.effectiveConfig(), this.customColors()),
+  );
+
+  /** Styles of the element: the width of the line numbers, and the app's sizes, font and colors. */
+  protected readonly inlineStyles = computed(() =>
+    appearanceStyles(this.effectiveConfig(), this.customColors(), this.lineNumberDigits()),
+  );
 
   /** Watches the dark mode marker of the app after rendering, when the diff is in the page. */
   constructor() {
@@ -265,6 +361,15 @@ export class DiffwiseHtmlDiff {
 function nextIdPrefix(): string {
   createdDiffs++;
   return ID_PREFIX_START + createdDiffs;
+}
+
+/** The highest line number in the rows, of either version; `0` without lines. */
+function highestLineNumber(rows: readonly ShownRow[]): number {
+  return rows.reduce(
+    (highest, { oldLine, newLine }) =>
+      Math.max(highest, oldLine?.number ?? 0, newLine?.number ?? 0),
+    0,
+  );
 }
 
 /** True when both count the same differences. */

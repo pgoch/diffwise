@@ -1,6 +1,17 @@
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import { normalizeConfig } from './normalize-config';
-import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseVersionHeaders } from './option-values';
+import {
+  DiffwiseAlignment,
+  DiffwiseColorMode,
+  DiffwiseDividerStyle,
+  DiffwiseFontFamily,
+  DiffwiseGapStyle,
+  DiffwiseHighlightStyle,
+  DiffwiseLanguage,
+  DiffwiseLineNumberStyle,
+  DiffwiseVersionHeaders,
+  DiffwiseVerticalAlignment,
+} from './option-values';
 
 const WARN_METHOD = 'warn';
 
@@ -11,6 +22,7 @@ describe('normalizeConfig', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('keeps valid values, given as constants or as plain text', () => {
@@ -103,6 +115,101 @@ describe('normalizeConfig', () => {
       customTexts: {},
     });
     expect(normalizeConfig({ customTexts: 'Przed zmianami' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledOnce();
+  });
+
+  it('keeps null for custom texts and colors, which takes them away', () => {
+    expect(normalizeConfig({ customTexts: null, diffColors: null })).toEqual({
+      customTexts: null,
+      diffColors: null,
+    });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('keeps values of the appearance options, given as constants or as plain text', () => {
+    const options = {
+      highlightStyle: 'top-bottom',
+      diffIntensity: 5,
+      uiContrast: 1,
+      lineNumberStyle: 'background',
+      lineNumberAlignment: 'middle',
+      highlightChangedLines: false,
+      highlightWholeLines: true,
+      dividerStyle: 'line',
+      gapStyle: 'empty',
+      versionHeaderAlignment: 'start',
+      fontFamily: 'builtin',
+      versionHeaderFontSize: 1,
+      lineNumberFontSize: 0.5,
+    };
+
+    expect(normalizeConfig(options)).toEqual({
+      highlightStyle: DiffwiseHighlightStyle.TopBottom,
+      diffIntensity: 5,
+      uiContrast: 1,
+      lineNumberStyle: DiffwiseLineNumberStyle.Background,
+      lineNumberAlignment: DiffwiseVerticalAlignment.Middle,
+      highlightChangedLines: false,
+      highlightWholeLines: true,
+      dividerStyle: DiffwiseDividerStyle.Line,
+      gapStyle: DiffwiseGapStyle.Empty,
+      versionHeaderAlignment: DiffwiseAlignment.Start,
+      fontFamily: DiffwiseFontFamily.Builtin,
+      versionHeaderFontSize: 1,
+      lineNumberFontSize: 0.5,
+    });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('ignores levels and font sizes out of their ranges, with a warning for each', () => {
+    const invalidOptions = [
+      { diffIntensity: 0 },
+      { diffIntensity: 2.5 },
+      { uiContrast: 6 },
+      { uiContrast: '3' },
+      { versionHeaderFontSize: 0.4 },
+      { lineNumberFontSize: 11 },
+      { lineNumberFontSize: Number.NaN },
+    ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps the name of a font of the app, and ignores a name it cannot put in quotes', () => {
+    expect(normalizeConfig({ fontFamily: 'Source Sans 3' })).toEqual({
+      fontFamily: 'Source Sans 3',
+    });
+    expect(normalizeConfig({ fontFamily: ' ' })).toEqual({});
+    expect(normalizeConfig({ fontFamily: 'Inter"; color: red' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps the valid colors of changes as frozen copies, warning about each invalid one', () => {
+    const diffColors = {
+      light: { addedLine: '#e6f7f5', addedAcent: '#0f766e', removedLine: ' ' },
+      dark: '#16191f',
+      sepia: { addedLine: '#f1e7d0' },
+    };
+    const validColors = normalizeConfig({ diffColors }).diffColors;
+
+    expect(validColors).toEqual({ light: { addedLine: '#e6f7f5' } });
+    expect(Object.isFrozen(validColors)).toBe(true);
+    expect(Object.isFrozen(validColors?.light)).toBe(true);
+    expect(console.warn).toHaveBeenCalledTimes(4);
+  });
+
+  it('ignores a color the browser cannot read', () => {
+    vi.stubGlobal('CSS', { supports: (_property: string, value: string) => value !== 'redd' });
+
+    const diffColors = { dark: { removedAccent: 'redd', addedAccent: '#6fdc8c' } };
+
+    expect(normalizeConfig({ diffColors })).toEqual({
+      diffColors: { dark: { addedAccent: '#6fdc8c' } },
+    });
     expect(console.warn).toHaveBeenCalledOnce();
   });
 

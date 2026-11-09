@@ -6,6 +6,7 @@ import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   DiffwiseColorMode,
+  DiffwiseGapStyle,
   DiffwiseLanguage,
   DiffwiseVersionHeaders,
 } from './config/option-values';
@@ -45,6 +46,12 @@ const ROLE_ATTRIBUTE = 'role';
 const REGION_ROLE = 'region';
 const POLISH_LOCALE = 'pl-PL';
 const POLISH_VERSION_LABELS = ['Poprzednia wersja', 'Nowa wersja'];
+const HOST_CLASS = 'diffwise-html-diff';
+const GRAY_GAP_CLASS = 'diffwise-html-diff--gap-style-gray';
+const STRONGER_CONTRAST_CLASS = 'diffwise-html-diff--ui-contrast-4';
+const STRONGEST_INTENSITY_CLASS = 'diffwise-html-diff--diff-intensity-5';
+const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
+const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -114,6 +121,11 @@ function partText(part: Element) {
 
 function textsOf(element: HTMLElement, selector: string) {
   return Array.from(element.querySelectorAll(selector), (found) => found.textContent?.trim());
+}
+
+/** Digits of the highest line number, which the diff sets as a CSS variable. */
+function lineNumberDigitsOf(element: HTMLElement) {
+  return element.style.getPropertyValue(LINE_NUMBER_DIGITS_VARIABLE);
 }
 
 /** Names of the header icons, which screen readers read. */
@@ -380,5 +392,53 @@ describe('DiffwiseHtmlDiff', () => {
     const element = renderElement('', '', { customTexts: { newVersionLabel: 'Entwurf' } });
 
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Vorherige Version', 'Entwurf']);
+  });
+
+  it('shows the texts of the interface when an input takes away the custom texts with null', () => {
+    const globalTexts = { oldVersionLabel: 'Vorherige Version', newVersionLabel: 'Neue Version' };
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise({ customTexts: globalTexts })] });
+
+    const element = renderElement('', '', { customTexts: null });
+
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Previous version', 'New version']);
+  });
+
+  it('shows options of the appearance as modifier classes, next to its own class', () => {
+    const element = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, {
+      gapStyle: DiffwiseGapStyle.Gray,
+      uiContrast: 4,
+    });
+
+    expect(element.classList).toContain(HOST_CLASS);
+    expect(element.classList).toContain(GRAY_GAP_CLASS);
+    expect(element.classList).toContain(STRONGER_CONTRAST_CLASS);
+  });
+
+  it('sizes the column of line numbers by the digits of the highest number', () => {
+    const twelveLines = ONE_LINE_HTML.repeat(12);
+
+    expect(lineNumberDigitsOf(renderElement(ONE_LINE_HTML, ONE_LINE_HTML))).toBe('1');
+    expect(lineNumberDigitsOf(renderElement(ONE_LINE_HTML, twelveLines))).toBe('2');
+  });
+
+  it('shows colors of the app in their theme, where they replace the intensity', () => {
+    const options: DiffwiseConfigOptions = {
+      diffColors: { dark: { addedAccent: '#5eead4' } },
+      diffIntensity: 5,
+    };
+    const light = renderElement('', '', { ...options, colorMode: DiffwiseColorMode.Light });
+    const dark = renderElement('', '', { ...options, colorMode: DiffwiseColorMode.Dark });
+
+    expect(light.style.getPropertyValue(ADDED_ACCENT_VARIABLE)).toBe('');
+    expect(light.classList).toContain(STRONGEST_INTENSITY_CLASS);
+    expect(dark.style.getPropertyValue(ADDED_ACCENT_VARIABLE)).toBe('#5eead4');
+    expect(dark.classList).not.toContain(STRONGEST_INTENSITY_CLASS);
+  });
+
+  it('sets the font of the app on its element', () => {
+    const element = renderElement('', '', { fontFamily: 'Georgia' });
+
+    expect(element.style.fontFamily).toContain('"Georgia"');
   });
 });

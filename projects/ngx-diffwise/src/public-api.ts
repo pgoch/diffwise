@@ -2,6 +2,7 @@
  * Public API of ngx-diffwise
  */
 
+export type { DiffwiseDiffColors } from './lib/config/diff-colors';
 export * from './lib/config/diffwise-config';
 export * from './lib/config/option-values';
 export { provideDiffwise } from './lib/config/provide-diffwise';

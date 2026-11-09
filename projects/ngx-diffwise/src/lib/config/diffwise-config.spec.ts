@@ -1,7 +1,44 @@
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
-import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseVersionHeaders } from './option-values';
+import {
+  DiffwiseAlignment,
+  DiffwiseColorMode,
+  DiffwiseDividerStyle,
+  DiffwiseFontFamily,
+  DiffwiseGapStyle,
+  DiffwiseHighlightStyle,
+  DiffwiseLanguage,
+  DiffwiseLineNumberStyle,
+  DiffwiseVersionHeaders,
+  DiffwiseVerticalAlignment,
+} from './option-values';
 
 const WARN_METHOD = 'warn';
+
+/** Every option with its default. */
+const DEFAULT_OPTIONS = {
+  colorMode: DiffwiseColorMode.Auto,
+  darkModeSelector: null,
+  highlightStyle: DiffwiseHighlightStyle.Outline,
+  diffIntensity: 3,
+  uiContrast: 3,
+  diffColors: {},
+  showLineNumbers: true,
+  lineNumberStyle: DiffwiseLineNumberStyle.Bar,
+  lineNumberAlignment: DiffwiseVerticalAlignment.Top,
+  highlightChangedLines: true,
+  highlightWholeLines: false,
+  dividerStyle: DiffwiseDividerStyle.Column,
+  gapStyle: DiffwiseGapStyle.Stripes,
+  versionHeaders: DiffwiseVersionHeaders.Default,
+  versionHeaderAlignment: DiffwiseAlignment.Center,
+  fontFamily: DiffwiseFontFamily.Inherit,
+  versionHeaderFontSize: 0.75,
+  lineNumberFontSize: 0.75,
+  ignoreWhitespace: false,
+  ignoreCase: false,
+  language: DiffwiseLanguage.Auto,
+  customTexts: {},
+};
 
 /** Options as plain JavaScript or JSON can give them, without type checks. */
 function untyped(options: object): DiffwiseConfigOptions {
@@ -18,30 +55,16 @@ describe('DiffwiseConfig', () => {
   });
 
   it('has the default of every option', () => {
-    expect({ ...new DiffwiseConfig() }).toEqual({
-      colorMode: DiffwiseColorMode.Auto,
-      darkModeSelector: null,
-      showLineNumbers: true,
-      versionHeaders: DiffwiseVersionHeaders.Default,
-      ignoreWhitespace: false,
-      ignoreCase: false,
-      language: DiffwiseLanguage.Auto,
-      customTexts: {},
-    });
+    expect({ ...new DiffwiseConfig() }).toEqual(DEFAULT_OPTIONS);
   });
 
   it('changes only the options given to the constructor', () => {
     const config = new DiffwiseConfig({ showLineNumbers: false, versionHeaders: 'icons' });
 
     expect({ ...config }).toEqual({
-      colorMode: DiffwiseColorMode.Auto,
-      darkModeSelector: null,
+      ...DEFAULT_OPTIONS,
       showLineNumbers: false,
       versionHeaders: DiffwiseVersionHeaders.Icons,
-      ignoreWhitespace: false,
-      ignoreCase: false,
-      language: DiffwiseLanguage.Auto,
-      customTexts: {},
     });
   });
 
@@ -87,6 +110,39 @@ describe('DiffwiseConfig', () => {
 
     expect(copy.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Teraz' });
     expect(config.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Po' });
+  });
+
+  it('changes colors of changes one by one in each theme, so the other colors stay', () => {
+    const config = new DiffwiseConfig({
+      diffColors: { light: { addedLine: '#e6f7f5', addedAccent: '#0f766e' } },
+    });
+    const copy = config.with({
+      diffColors: { light: { addedAccent: '#115e59' }, dark: { addedAccent: '#5eead4' } },
+    });
+
+    expect(copy.diffColors).toEqual({
+      light: { addedLine: '#e6f7f5', addedAccent: '#115e59' },
+      dark: { addedAccent: '#5eead4' },
+    });
+  });
+
+  it('takes away all custom texts and colors with null', () => {
+    const config = new DiffwiseConfig({
+      customTexts: { oldVersionLabel: 'Przed' },
+      diffColors: { light: { addedAccent: '#0f766e' } },
+    });
+    const copy = config.with({ customTexts: null, diffColors: null });
+
+    expect(copy.customTexts).toEqual({});
+    expect(copy.diffColors).toEqual({});
+  });
+
+  it('has no custom texts when given null, and takes them away from a config it changes', () => {
+    const withoutTexts = new DiffwiseConfig({ customTexts: null });
+    const config = new DiffwiseConfig({ customTexts: { oldVersionLabel: 'Przed' } });
+
+    expect(withoutTexts.customTexts).toEqual({});
+    expect(config.with(withoutTexts).customTexts).toEqual({});
   });
 
   it('keeps the default for an invalid value, with a warning', () => {
