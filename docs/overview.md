@@ -10,6 +10,8 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## What it will show
 
+Version 0.1 shows changes of the text in paragraphs and headings. The rest comes with the releases in the [roadmap](roadmap.md).
+
 | Change | How it is shown |
 |---|---|
 | Text | The changed line is tinted on both sides; the changed words are marked more strongly |
@@ -22,7 +24,7 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## Display and configuration
 
-All of this is planned:
+Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish; see [Configuration](configuration.md). The rest is planned:
 
 - **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
 - **Colors:** light, dark and automatic color modes, a colorblind-friendly palette, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
@@ -45,7 +47,7 @@ Other optional features are turned off by default.
 
 ## Requirements
 
-Angular 20 or newer. Planned browser support: current versions of Chrome, Edge, Firefox and Safari.
+Angular 20 or newer. Planned browser support: current versions of Chrome, Edge, Firefox and Safari. Diffwise runs in the browser; server-side rendering is not supported yet.
 
 ## License
 

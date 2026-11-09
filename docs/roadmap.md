@@ -1,14 +1,14 @@
 # Roadmap
 
-> Tentative. The order and scope may change.
+> Tentative. The order and scope may change. Version 0.1 is complete; [Configuration](configuration.md) describes what it can do.
 
 | Version | Scope |
 |---|---|
-| 0.1 | Diff engine; side-by-side view of paragraphs and headings; word-level changes; line numbers; light, dark and automatic color modes; global, runtime and per-component configuration |
+| 0.1 | Diff engine; side-by-side view of paragraphs and headings; word-level changes; line numbers; light, dark and automatic color modes; appearance options; interface in English and Polish; global, runtime and per-component configuration |
 | 0.2 | Changes in formatting, links and images |
 | 0.3 | Lists and tables |
 | 0.4 | Single-column layout with automatic switching; collapsing of unchanged lines; navigation between changes and statistics; optional toolbar with settings for end users |
-| 0.5 | Interface in 12 languages; colorblind-friendly palette; accessibility review |
+| 0.5 | Interface in 10 more languages, 12 in all; colorblind-friendly palette; accessibility review |
 | 0.6+ | Further improvements based on feedback, as needed |
 | 1.0 | Stable API, complete documentation, a live demo and a configurator page that turns your choices into ready-to-copy configuration |
 
