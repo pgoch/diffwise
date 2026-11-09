@@ -1,5 +1,5 @@
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
-import { DiffwiseColorMode, DiffwiseVersionHeaders } from './option-values';
+import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseVersionHeaders } from './option-values';
 
 const WARN_METHOD = 'warn';
 
@@ -25,6 +25,8 @@ describe('DiffwiseConfig', () => {
       versionHeaders: DiffwiseVersionHeaders.Default,
       ignoreWhitespace: false,
       ignoreCase: false,
+      language: DiffwiseLanguage.Auto,
+      customTexts: {},
     });
   });
 
@@ -38,6 +40,8 @@ describe('DiffwiseConfig', () => {
       versionHeaders: DiffwiseVersionHeaders.Icons,
       ignoreWhitespace: false,
       ignoreCase: false,
+      language: DiffwiseLanguage.Auto,
+      customTexts: {},
     });
   });
 
@@ -73,6 +77,16 @@ describe('DiffwiseConfig', () => {
     texts.old = 'Wersja 5';
 
     expect(config.versionHeaders).toEqual({ old: 'Wersja 3', new: 'Wersja 4' });
+  });
+
+  it('changes custom texts one by one, so the other texts stay', () => {
+    const config = new DiffwiseConfig({
+      customTexts: { oldVersionLabel: 'Przed', newVersionLabel: 'Po' },
+    });
+    const copy = config.with({ customTexts: { newVersionLabel: 'Teraz' } });
+
+    expect(copy.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Teraz' });
+    expect(config.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Po' });
   });
 
   it('keeps the default for an invalid value, with a warning', () => {

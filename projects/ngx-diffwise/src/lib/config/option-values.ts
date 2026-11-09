@@ -30,3 +30,15 @@ export interface DiffwiseVersionHeaderTexts {
   /** Header of the later version. */
   readonly new: string;
 }
+
+/** Languages of the interface. */
+export const DiffwiseLanguage = {
+  /** The language of the app (`LOCALE_ID`) when the interface has it, or else English. */
+  Auto: 'auto',
+  /** English. */
+  EN: 'en',
+  /** Polish. */
+  PL: 'pl',
+} as const;
+
+export type DiffwiseLanguage = (typeof DiffwiseLanguage)[keyof typeof DiffwiseLanguage];
