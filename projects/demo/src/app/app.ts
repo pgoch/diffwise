@@ -8,12 +8,24 @@ import {
 } from '@angular/core';
 import {
   Diffwise,
+  DiffwiseAlignment,
   DiffwiseColorMode,
+  type DiffwiseConfigOptions,
+  type DiffwiseDiffColors,
+  DiffwiseDividerStyle,
+  DiffwiseFontFamily,
+  DiffwiseGapStyle,
+  DiffwiseHighlightStyle,
   DiffwiseHtmlDiff,
   DiffwiseLanguage,
+  type DiffwiseLevel,
+  DiffwiseLineNumberStyle,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
+  DiffwiseVerticalAlignment,
 } from 'ngx-diffwise';
+
+import { type Choice, ChoiceButtons } from './choice-buttons';
 
 /** Languages of the sample documents; each one is a folder in `test-data/`. */
 const SampleLanguage = {
@@ -46,12 +58,6 @@ const PATH_SEPARATOR = '/';
 const HTML_EXTENSION = '.html';
 const LOAD_ERROR = 'Could not load a sample file.';
 
-/** An option of a select in the demo header. */
-interface Choice<T> {
-  readonly value: T;
-  readonly label: string;
-}
-
 const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
   { value: SampleLanguage.English, label: 'English' },
   { value: SampleLanguage.Polish, label: 'Polski' },
@@ -61,6 +67,39 @@ const SIZE_CHOICES: readonly Choice<SampleSize>[] = [
   { value: SampleSize.Short, label: 'Short' },
   { value: SampleSize.Medium, label: 'Medium' },
   { value: SampleSize.Long, label: 'Long' },
+];
+
+const COLOR_MODE_CHOICES: readonly Choice<DiffwiseColorMode>[] = [
+  { value: DiffwiseColorMode.Light, label: 'Light' },
+  { value: DiffwiseColorMode.Dark, label: 'Dark' },
+  { value: DiffwiseColorMode.Auto, label: 'Auto' },
+];
+
+const HIGHLIGHT_STYLE_CHOICES: readonly Choice<DiffwiseHighlightStyle>[] = [
+  { value: DiffwiseHighlightStyle.Outline, label: 'Outline' },
+  { value: DiffwiseHighlightStyle.Background, label: 'Background' },
+  { value: DiffwiseHighlightStyle.Underline, label: 'Underline' },
+  { value: DiffwiseHighlightStyle.TopBottom, label: 'Top and bottom' },
+];
+
+/** Levels of the intensity and the contrast, from the weakest to the strongest. */
+const LEVEL_CHOICES: readonly Choice<DiffwiseLevel>[] = [
+  { value: 1, label: '1' },
+  { value: 2, label: '2' },
+  { value: 3, label: '3' },
+  { value: 4, label: '4' },
+  { value: 5, label: '5' },
+];
+
+const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
+  { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
+  { value: DiffwiseDividerStyle.Line, label: 'Line' },
+];
+
+const GAP_STYLE_CHOICES: readonly Choice<DiffwiseGapStyle>[] = [
+  { value: DiffwiseGapStyle.Stripes, label: 'Stripes' },
+  { value: DiffwiseGapStyle.Gray, label: 'Gray' },
+  { value: DiffwiseGapStyle.Empty, label: 'Empty' },
 ];
 
 /** A value of the `versionHeaders` option. */
@@ -77,9 +116,64 @@ const VERSION_HEADER_CHOICES: readonly Choice<VersionHeaders>[] = [
   { value: DiffwiseVersionHeaders.None, label: 'None' },
 ];
 
+const ALIGNMENT_CHOICES: readonly Choice<DiffwiseAlignment>[] = [
+  { value: DiffwiseAlignment.Start, label: 'Start' },
+  { value: DiffwiseAlignment.Center, label: 'Center' },
+  { value: DiffwiseAlignment.End, label: 'End' },
+];
+
+const LINE_NUMBER_STYLE_CHOICES: readonly Choice<DiffwiseLineNumberStyle>[] = [
+  { value: DiffwiseLineNumberStyle.Bar, label: 'Colored bar' },
+  { value: DiffwiseLineNumberStyle.Background, label: 'Colored background' },
+];
+
+const VERTICAL_ALIGNMENT_CHOICES: readonly Choice<DiffwiseVerticalAlignment>[] = [
+  { value: DiffwiseVerticalAlignment.Top, label: 'Top' },
+  { value: DiffwiseVerticalAlignment.Middle, label: 'Middle' },
+  { value: DiffwiseVerticalAlignment.Bottom, label: 'Bottom' },
+];
+
+/** Fonts in the panel: the one of the app, the built-in one, or a font named in the panel. */
+const FontChoice = {
+  App: 'app',
+  Builtin: 'builtin',
+  Custom: 'custom',
+} as const;
+
+type FontChoice = (typeof FontChoice)[keyof typeof FontChoice];
+
+const FONT_CHOICES: readonly Choice<FontChoice>[] = [
+  { value: FontChoice.App, label: 'App' },
+  { value: FontChoice.Builtin, label: 'Built-in' },
+  { value: FontChoice.Custom, label: 'Custom' },
+];
+
+/** A font that comes with Windows and macOS, so the custom font shows without loading it. */
+const DEFAULT_CUSTOM_FONT = 'Georgia';
+
+/** Colors an app could give, magenta and teal, as in the mockups. */
+const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
+  light: {
+    removedLine: '#fbeefe',
+    removedHighlight: '#efc0f6',
+    removedAccent: '#a21caf',
+    addedLine: '#e6f7f5',
+    addedHighlight: '#a5e2d9',
+    addedAccent: '#0f766e',
+  },
+  dark: {
+    removedLine: '#2a1730',
+    removedHighlight: '#6b2a78',
+    removedAccent: '#f0abfc',
+    addedLine: '#10251f',
+    addedHighlight: '#1f5f55',
+    addedAccent: '#5eead4',
+  },
+};
+
 @Component({
   selector: 'demo-root',
-  imports: [DiffwiseHtmlDiff],
+  imports: [ChoiceButtons, DiffwiseHtmlDiff],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,10 +181,19 @@ const VERSION_HEADER_CHOICES: readonly Choice<VersionHeaders>[] = [
 export class App {
   protected readonly languages = LANGUAGE_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
+  protected readonly colorModes = COLOR_MODE_CHOICES;
+  protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
+  protected readonly levels = LEVEL_CHOICES;
+  protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
+  protected readonly gapStyles = GAP_STYLE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
-  protected readonly colorModes = DiffwiseColorMode;
+  protected readonly alignments = ALIGNMENT_CHOICES;
+  protected readonly lineNumberStyles = LINE_NUMBER_STYLE_CHOICES;
+  protected readonly verticalAlignments = VERTICAL_ALIGNMENT_CHOICES;
+  protected readonly fonts = FONT_CHOICES;
+  protected readonly fontChoices = FontChoice;
 
-  /** Changes the global configuration; the theme buttons call its methods. */
+  /** Changes the global configuration while the app runs; the panel shows its values. */
   protected readonly diffwise = inject(Diffwise);
 
   protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
@@ -99,14 +202,22 @@ export class App {
   /** Language of the diff interface: the one of the sample, set through an input of the diff. */
   protected readonly interfaceLanguage = computed(() => INTERFACE_LANGUAGES[this.language()]);
 
-  /** Index of the header choice; the first one is set in `app.config.ts`. */
-  protected readonly versionHeaderChoice = signal(0);
+  /** The chosen headers; the first choice is set in `app.config.ts`. */
+  protected readonly versionHeaders = signal<VersionHeaders>(DiffwiseVersionHeaders.Default);
 
-  /** Line numbers of the diff, set through its input. */
-  protected readonly showLineNumbers = signal(true);
+  /** Shows the example colors through an input of the diff, which can also take them away. */
+  protected readonly showsExampleColors = signal(false);
 
-  /** Color mode of the global configuration; its button is shown pressed. */
-  protected readonly colorMode = computed(() => this.diffwise.config().colorMode);
+  /** Colors of changes for the input of the diff: the example colors, or none. */
+  protected readonly diffColors = computed(() =>
+    this.showsExampleColors() ? EXAMPLE_DIFF_COLORS : undefined,
+  );
+
+  /** Name of the custom font, kept while another font is chosen. */
+  protected readonly customFontName = signal(DEFAULT_CUSTOM_FONT);
+
+  /** The chosen font, from the global configuration. */
+  protected readonly fontChoice = computed(() => fontChoiceOf(this.diffwise.config().fontFamily));
 
   /** The selected pair of sample documents from `test-data/`. */
   protected readonly sample = resource({
@@ -121,24 +232,74 @@ export class App {
     },
   });
 
-  protected selectLanguage(event: Event): void {
-    this.language.set((event.target as HTMLSelectElement).value as SampleLanguage);
+  /** Changes options of the global configuration, as an app can do while it runs. */
+  protected update(changes: DiffwiseConfigOptions): void {
+    this.diffwise.updateConfig(changes);
   }
 
-  protected selectSize(event: Event): void {
-    this.size.set((event.target as HTMLSelectElement).value as SampleSize);
+  /** Switches the theme with the method of the service for each color mode. */
+  protected chooseColorMode(colorMode: DiffwiseColorMode): void {
+    switch (colorMode) {
+      case DiffwiseColorMode.Light:
+        this.diffwise.switchToLightMode();
+        break;
+      case DiffwiseColorMode.Dark:
+        this.diffwise.switchToDarkMode();
+        break;
+      case DiffwiseColorMode.Auto:
+        this.diffwise.switchToAutoMode();
+        break;
+    }
   }
 
-  /** Changes the headers in the global configuration, as an app can do while it runs. */
-  protected selectVersionHeaders(event: Event): void {
-    const index = Number((event.target as HTMLSelectElement).value);
-
-    this.versionHeaderChoice.set(index);
-    this.diffwise.updateConfig({ versionHeaders: VERSION_HEADER_CHOICES[index].value });
+  protected chooseVersionHeaders(versionHeaders: VersionHeaders): void {
+    this.versionHeaders.set(versionHeaders);
+    this.update({ versionHeaders });
   }
 
-  protected toggleLineNumbers(event: Event): void {
-    this.showLineNumbers.set((event.target as HTMLInputElement).checked);
+  protected chooseFont(choice: FontChoice): void {
+    this.update({ fontFamily: fontFamilyOf(choice, this.customFontName()) });
+  }
+
+  /** Shows the named font at once; the diff ignores a blank name. */
+  protected nameCustomFont(event: Event): void {
+    const name = (event.target as HTMLInputElement).value;
+
+    this.customFontName.set(name);
+    this.update({ fontFamily: name });
+  }
+
+  protected isChecked(event: Event): boolean {
+    return (event.target as HTMLInputElement).checked;
+  }
+
+  /** The number in a field; an empty field gives `NaN`, which the diff ignores. */
+  protected numberOf(event: Event): number {
+    return (event.target as HTMLInputElement).valueAsNumber;
+  }
+}
+
+/** The font choice that shows a value of the `fontFamily` option. */
+function fontChoiceOf(fontFamily: string): FontChoice {
+  switch (fontFamily) {
+    case DiffwiseFontFamily.Inherit:
+      return FontChoice.App;
+    case DiffwiseFontFamily.Builtin:
+      return FontChoice.Builtin;
+    default:
+      return FontChoice.Custom;
+  }
+}
+
+/** The value of the `fontFamily` option for a font choice. */
+function fontFamilyOf(choice: FontChoice, customFontName: string): string {
+  switch (choice) {
+    case FontChoice.App:
+      return DiffwiseFontFamily.Inherit;
+    case FontChoice.Builtin:
+      return DiffwiseFontFamily.Builtin;
+    case FontChoice.Custom:
+      return customFontName;
   }
 }
 

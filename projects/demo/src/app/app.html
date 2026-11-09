@@ -1,65 +1,185 @@
-<header class="demo-header">
+<aside class="demo-panel" aria-label="Options of the diff">
   <h1>Diffwise demo</h1>
-  <label>
-    Language
-    <select (change)="selectLanguage($event)">
-      @for (option of languages; track option.value) {
-        <option [value]="option.value" [selected]="option.value === language()">
-          {{ option.label }}
-        </option>
-      }
-    </select>
+  <p class="demo-note">
+    Most options change the global configuration while the app runs. The language and the custom
+    colors go through inputs of the diff.
+  </p>
+
+  <h2>Sample</h2>
+  <demo-choice-buttons
+    label="Language"
+    [choices]="languages"
+    [value]="language()"
+    (chosen)="language.set($event)"
+  />
+  <demo-choice-buttons
+    label="Size"
+    [choices]="sizes"
+    [value]="size()"
+    (chosen)="size.set($event)"
+  />
+
+  <h2>Colors</h2>
+  <demo-choice-buttons
+    label="Theme"
+    [choices]="colorModes"
+    [value]="diffwise.config().colorMode"
+    (chosen)="chooseColorMode($event)"
+  />
+  <button type="button" class="demo-button" (click)="diffwise.toggleDarkMode()">
+    Toggle dark mode
+  </button>
+  <demo-choice-buttons
+    label="Changed words"
+    [choices]="highlightStyles"
+    [value]="diffwise.config().highlightStyle"
+    (chosen)="update({ highlightStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Intensity"
+    [choices]="levels"
+    [value]="diffwise.config().diffIntensity"
+    (chosen)="update({ diffIntensity: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="showsExampleColors()"
+      (change)="showsExampleColors.set(isChecked($event))"
+    />
+    Custom colors (example)
   </label>
-  <label>
-    Sample
-    <select (change)="selectSize($event)">
-      @for (option of sizes; track option.value) {
-        <option [value]="option.value" [selected]="option.value === size()">
-          {{ option.label }}
-        </option>
-      }
-    </select>
-  </label>
-  <label>
-    Headers
-    <select (change)="selectVersionHeaders($event)">
-      @for (option of versionHeaderChoices; track $index) {
-        <option [value]="$index" [selected]="$index === versionHeaderChoice()">
-          {{ option.label }}
-        </option>
-      }
-    </select>
-  </label>
-  <label>
-    <input type="checkbox" [checked]="showLineNumbers()" (change)="toggleLineNumbers($event)" />
+  <p class="demo-hint">Custom colors replace the intensity.</p>
+
+  <h2>Contrast</h2>
+  <demo-choice-buttons
+    label="Contrast of the interface"
+    [choices]="levels"
+    [value]="diffwise.config().uiContrast"
+    (chosen)="update({ uiContrast: $event })"
+  />
+
+  <h2>Layout</h2>
+  <demo-choice-buttons
+    label="Between the versions"
+    [choices]="dividerStyles"
+    [value]="diffwise.config().dividerStyle"
+    (chosen)="update({ dividerStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Opposite added and removed lines"
+    [choices]="gapStyles"
+    [value]="diffwise.config().gapStyle"
+    (chosen)="update({ gapStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Headers"
+    [choices]="versionHeaderChoices"
+    [value]="versionHeaders()"
+    (chosen)="chooseVersionHeaders($event)"
+  />
+  <demo-choice-buttons
+    label="Header alignment"
+    [choices]="alignments"
+    [value]="diffwise.config().versionHeaderAlignment"
+    (chosen)="update({ versionHeaderAlignment: $event })"
+  />
+
+  <h2>Lines</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showLineNumbers"
+      (change)="update({ showLineNumbers: isChecked($event) })"
+    />
     Line numbers
   </label>
-  <div class="demo-theme" role="group" aria-labelledby="demo-theme-label">
-    <span id="demo-theme-label">Theme</span>
-    <button
-      type="button"
-      [attr.aria-pressed]="colorMode() === colorModes.Light"
-      (click)="diffwise.switchToLightMode()"
-    >
-      Light
-    </button>
-    <button
-      type="button"
-      [attr.aria-pressed]="colorMode() === colorModes.Dark"
-      (click)="diffwise.switchToDarkMode()"
-    >
-      Dark
-    </button>
-    <button
-      type="button"
-      [attr.aria-pressed]="colorMode() === colorModes.Auto"
-      (click)="diffwise.switchToAutoMode()"
-    >
-      Auto
-    </button>
-    <button type="button" (click)="diffwise.toggleDarkMode()">Toggle</button>
-  </div>
-</header>
+  <demo-choice-buttons
+    label="Numbers of changed lines"
+    [choices]="lineNumberStyles"
+    [value]="diffwise.config().lineNumberStyle"
+    (chosen)="update({ lineNumberStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Numbers in their lines"
+    [choices]="verticalAlignments"
+    [value]="diffwise.config().lineNumberAlignment"
+    (chosen)="update({ lineNumberAlignment: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().highlightChangedLines"
+      (change)="update({ highlightChangedLines: isChecked($event) })"
+    />
+    Background of changed lines
+  </label>
+  @if (!diffwise.config().highlightChangedLines) {
+    <label class="demo-check demo-check--nested">
+      <input
+        type="checkbox"
+        [checked]="diffwise.config().highlightWholeLines"
+        (change)="update({ highlightWholeLines: isChecked($event) })"
+      />
+      Highlight whole added and removed lines
+    </label>
+  }
+
+  <h2>Fonts</h2>
+  <demo-choice-buttons
+    label="Font"
+    [choices]="fonts"
+    [value]="fontChoice()"
+    (chosen)="chooseFont($event)"
+  />
+  @if (fontChoice() === fontChoices.Custom) {
+    <label class="demo-field">
+      Font name
+      <input type="text" [value]="customFontName()" (input)="nameCustomFont($event)" />
+    </label>
+  }
+  <label class="demo-field">
+    Header size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().versionHeaderFontSize"
+      (change)="update({ versionHeaderFontSize: numberOf($event) })"
+    />
+  </label>
+  <label class="demo-field">
+    Line number size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().lineNumberFontSize"
+      (change)="update({ lineNumberFontSize: numberOf($event) })"
+    />
+  </label>
+  <p class="demo-hint">From 0.5 to 10; the diff ignores other sizes.</p>
+
+  <h2>Comparison</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreWhitespace"
+      (change)="update({ ignoreWhitespace: isChecked($event) })"
+    />
+    Ignore whitespace
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreCase"
+      (change)="update({ ignoreCase: isChecked($event) })"
+    />
+    Ignore letter case
+  </label>
+</aside>
 
 <main class="demo-main">
   @if (sample.error()) {
@@ -68,8 +188,8 @@
     <diffwise-html-diff
       [oldHtml]="pair.oldHtml"
       [newHtml]="pair.newHtml"
-      [showLineNumbers]="showLineNumbers()"
       [language]="interfaceLanguage()"
+      [diffColors]="diffColors()"
     />
   }
 </main>
