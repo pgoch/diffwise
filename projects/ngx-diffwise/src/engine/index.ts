@@ -1,10 +1,19 @@
 export { diffHtml } from './diff-html';
 export {
+  CHANGE_DETAILS_ATTRIBUTE,
+  type ChangeDetail,
+  ChangeDetailKind,
+  DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   type DiffStats,
+  type FormattingChangeDetail,
+  FormattingValue,
+  type FormattingValueChange,
   type HtmlDiff,
   type HtmlDiffSettings,
   LineChangeKind,
+  type LinkChangeDetail,
+  TextStyle,
   type ViewLine,
   type ViewRow,
 } from './model';

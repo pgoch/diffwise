@@ -1,3 +1,4 @@
+import { diffFormats } from './compare/diff-formats';
 import { diffLines } from './compare/diff-lines';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
@@ -5,6 +6,7 @@ import { sanitizeHtml } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER, markChanges } from './mark/mark-changes';
 import {
+  type ChangeDetail,
   type DiffOptions,
   type HtmlDiff,
   type HtmlDiffSettings,
@@ -18,6 +20,8 @@ import {
 const ID_PART_SEPARATOR = '-';
 const OLD_VERSION_ID_PART = 'old';
 const NEW_VERSION_ID_PART = 'new';
+
+const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 
 /** Compares two HTML documents and returns the rows of the side-by-side view with change counts. */
 export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
@@ -64,28 +68,46 @@ class ViewRowBuilder {
       kind: LineChangeKind.Unchanged,
       oldLine: this.nextOldLine(oldLine.html),
       newLine: this.nextNewLine(newLine.html),
+      changeDetails: NO_CHANGE_DETAILS,
     };
   }
 
-  /** A row of a changed pair: removed words marked in the old line, added words in the new one. */
+  /**
+   * A row of a changed pair. Removed text and changed formats are marked in the old line, added
+   * text and changed formats in the new one; markers of formats point to the row's details.
+   */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
-    const { removed, added } = diffWords(oldLine.text, newLine.text, this.options);
-    const markedOldHtml = markChanges(oldLine, removed, REMOVED_TEXT_MARKER);
-    const markedNewHtml = markChanges(newLine, added, ADDED_TEXT_MARKER);
+    const wordChanges = diffWords(oldLine.text, newLine.text, this.options);
+    const formatChanges = diffFormats(oldLine, newLine, wordChanges, this.options);
+    const oldRanges = [...wordChanges.removed, ...formatChanges.oldRanges];
+    const newRanges = [...wordChanges.added, ...formatChanges.newRanges];
+    const markedOldHtml = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER);
+    const markedNewHtml = markChanges(newLine, newRanges, ADDED_TEXT_MARKER);
 
     return {
       kind: LineChangeKind.Changed,
       oldLine: this.nextOldLine(markedOldHtml),
       newLine: this.nextNewLine(markedNewHtml),
+      changeDetails: formatChanges.details,
     };
   }
 
   private removedRow(oldLine: Line): ViewRow {
-    return { kind: LineChangeKind.Removed, oldLine: this.nextOldLine(oldLine.html), newLine: null };
+    return {
+      kind: LineChangeKind.Removed,
+      oldLine: this.nextOldLine(oldLine.html),
+      newLine: null,
+      changeDetails: NO_CHANGE_DETAILS,
+    };
   }
 
   private addedRow(newLine: Line): ViewRow {
-    return { kind: LineChangeKind.Added, oldLine: null, newLine: this.nextNewLine(newLine.html) };
+    return {
+      kind: LineChangeKind.Added,
+      oldLine: null,
+      newLine: this.nextNewLine(newLine.html),
+      changeDetails: NO_CHANGE_DETAILS,
+    };
   }
 
   private nextOldLine(html: string): ViewLine {

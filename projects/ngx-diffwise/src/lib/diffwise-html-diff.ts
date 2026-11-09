@@ -13,6 +13,7 @@ import {
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import {
+  DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   type LineChangeKind,
   type ViewLine,
@@ -224,11 +225,14 @@ export class DiffwiseHtmlDiff {
     this.diffwise.config().with(this.config()).with(this.inputOptions()),
   );
 
-  /** What counts as a difference; other options change without comparing the versions again. */
+  /**
+   * What counts as a difference; other options change without comparing the versions again.
+   * Options of the engine that the configuration does not have yet keep their defaults.
+   */
   private readonly diffOptions = computed<DiffOptions>(
     () => {
       const { ignoreWhitespace, ignoreCase } = this.effectiveConfig();
-      return { ignoreWhitespace, ignoreCase };
+      return { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace, ignoreCase };
     },
     { equal: areDiffOptionsEqual },
   );

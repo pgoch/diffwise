@@ -1,4 +1,5 @@
 import { comparisonText } from './comparison-text';
+import { PARAGRAPH_TAG } from '../html/html-tags';
 import {
   type DiffOptions,
   type DiffStats,
@@ -6,9 +7,21 @@ import {
   type LineChange,
   LineChangeKind,
   type LineDiff,
+  LineKind,
+  type TextFormat,
 } from '../model';
 import { EditKind, myersDiff } from './myers';
 import { pairSimilarLines } from './pair-similar-lines';
+
+const WHITESPACE = /\s/g;
+const NO_TEXT = '';
+
+/** Characters next to each other with one compared format. */
+interface FormatRun {
+  /** Characters other than whitespace. */
+  length: number;
+  readonly format: string;
+}
 
 /** Matches the lines of both versions as unchanged, changed, added or removed, in reading order. */
 export function diffLines(
@@ -51,9 +64,47 @@ export function diffLines(
   return { changes, stats: countChanges(changes) };
 }
 
-/** Lines are equal when their tags and their compared texts are. */
+/** Lines are equal when their structures, compared texts and compared formats are. */
 function lineKey(line: Line, options: DiffOptions): string {
-  return JSON.stringify([line.tag, comparisonText(line.text, options)]);
+  const text = comparisonText(line.text, options);
+  return JSON.stringify([structureTag(line), text, formatRuns(line, options)]);
+}
+
+/** Tag of the line's structure; a heading counts as a paragraph, as its level is formatting. */
+function structureTag(line: Line): string | null {
+  return line.kind === LineKind.Heading ? PARAGRAPH_TAG : line.tag;
+}
+
+/** Compared formats of the line's text; whitespace and its formatting do not count. */
+function formatRuns(line: Line, options: DiffOptions): FormatRun[] {
+  const runs: FormatRun[] = [];
+
+  for (const { start, end, format } of line.formats) {
+    const length = line.text.slice(start, end).replace(WHITESPACE, NO_TEXT).length;
+
+    if (length === 0) {
+      continue;
+    }
+
+    const comparedFormat = comparisonFormat(format, options);
+    const previous = runs.at(-1);
+
+    if (previous?.format === comparedFormat) {
+      previous.length += length;
+    } else {
+      runs.push({ length, format: comparedFormat });
+    }
+  }
+
+  return runs;
+}
+
+/** A format in the form it is compared in: without formatting or link, if the options say so. */
+function comparisonFormat({ styles, values, link }: TextFormat, options: DiffOptions): string {
+  const formatting = options.ignoreFormatting ? null : { styles, values };
+  const comparedLink = options.ignoreLinkChanges ? null : link;
+
+  return JSON.stringify([formatting, comparedLink]);
 }
 
 function countChanges(changes: readonly LineChange[]): DiffStats {

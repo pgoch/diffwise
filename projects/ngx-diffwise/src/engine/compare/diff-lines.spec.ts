@@ -121,4 +121,56 @@ describe('diffLines', () => {
       [LineChangeKind.Changed, 'Cennik', 'Cennik'],
     ]);
   });
+
+  it('finds a change of formatting or of a link in the same text (T16, T19)', () => {
+    const italicToBold = ['<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'];
+    const otherAddress = [
+      '<p><a href="/regulamin-2025">Regulamin</a></p>',
+      '<p><a href="/regulamin-2026">Regulamin</a></p>',
+    ];
+
+    expect(summary(italicToBold[0], italicToBold[1])).toEqual([
+      [LineChangeKind.Changed, 'Ważne: chroń hasło.', 'Ważne: chroń hasło.'],
+    ]);
+    expect(summary(otherAddress[0], otherAddress[1])).toEqual([
+      [LineChangeKind.Changed, 'Regulamin', 'Regulamin'],
+    ]);
+  });
+
+  it('finds no change in other markup of the same look or in the format of spaces', () => {
+    const oldHtml =
+      '<p><b>Ważne:</b> <em>chroń</em> <u>hasło</u>.</p><p><b>jeden</b> <b>dwa</b></p>';
+    const newHtml =
+      '<p><strong>Ważne:</strong> <i>chroń</i> <span style="text-decoration: underline">hasło</span>.</p><p><b>jeden dwa</b></p>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
+  });
+
+  it('ignores formatting and heading levels with ignoreFormatting (T12)', () => {
+    const ignoreFormatting = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
+
+    expect(diff('<h2>Cennik</h2>', '<h3>Cennik</h3>').stats).toEqual({
+      ...NO_CHANGES,
+      changedLines: 1,
+    });
+    expect(diff('<h2>Cennik</h2>', '<h3>Cennik</h3>', ignoreFormatting).stats).toEqual(NO_CHANGES);
+    expect(diff('<p><i>Cennik</i></p>', '<h2>Cennik</h2>', ignoreFormatting).stats).toEqual(
+      NO_CHANGES,
+    );
+  });
+
+  it('ignores links added, removed or changed with ignoreLinkChanges (T21)', () => {
+    const ignoreLinkChanges = { ...DEFAULT_DIFF_OPTIONS, ignoreLinkChanges: true };
+    const oldHtml = '<p>Zobacz regulamin.</p>';
+    const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+    expect(diff(oldHtml, newHtml, ignoreLinkChanges).stats).toEqual(NO_CHANGES);
+  });
+
+  it('compares links within the document without the id prefixes of the versions', () => {
+    const html = '<p>Dane są szyfrowane<a href="#note-1">1</a>.</p><p id="note-1">TLS 1.3.</p>';
+
+    expect(diff(html, html).stats).toEqual(NO_CHANGES);
+  });
 });

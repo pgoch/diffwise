@@ -15,10 +15,14 @@ import { parseHtml } from './html/parse-html';
 import { readerText } from './html/reader-text';
 import { splitLines } from './html/split-lines';
 import {
+  ChangeDetailKind,
   DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
+  FormattingValue,
+  type FormattingValueChange,
   type HtmlDiff,
   LineChangeKind,
+  TextStyle,
   type ViewLine,
   type ViewRow,
 } from './model';
@@ -27,6 +31,8 @@ const TEMPLATE_TAG = 'template';
 const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
 const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
 const MARKER_SELECTOR = `${REMOVED_SELECTOR}, ${ADDED_SELECTOR}`;
+const DETAILS_MARKER_SELECTOR = '[data-diffwise-change-details]';
+const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
 const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
 const RTL_PARAGRAPH = '<p dir="rtl">';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
@@ -68,6 +74,20 @@ function added(html: string): string {
   return `<ins class="${ADDED_CLASSES}">${html}</ins>`;
 }
 
+/** Expected details of a formatting change. */
+function formattingDetail(
+  removedStyles: TextStyle[],
+  addedStyles: TextStyle[],
+  changedValues: FormattingValueChange[] = [],
+) {
+  return { kind: ChangeDetailKind.Formatting, removedStyles, addedStyles, changedValues };
+}
+
+/** Expected details of a link change. */
+function linkDetail(oldLink: string | null, newLink: string | null) {
+  return { kind: ChangeDetailKind.Link, oldLink, newLink };
+}
+
 /** A row as `[kind, old number, new number]`; a missing line is `null`. */
 function rowShape({ kind, oldLine, newLine }: ViewRow) {
   return [kind, oldLine?.number ?? null, newLine?.number ?? null];
@@ -91,6 +111,26 @@ function markedTexts(line: ViewLine | null, selector: string) {
   const markers = fragmentOf(line.html).querySelectorAll(selector);
 
   return Array.from(markers, (marker) => marker.textContent);
+}
+
+/** A row as `[old number, new number, old texts, new texts, details]` for markers with details. */
+function detailSummary(row: ViewRow) {
+  return [
+    row.oldLine?.number,
+    row.newLine?.number,
+    markedTexts(row.oldLine, DETAILS_MARKER_SELECTOR),
+    markedTexts(row.newLine, DETAILS_MARKER_SELECTOR),
+    row.changeDetails,
+  ];
+}
+
+/** A row as `[old number, new number, kinds of details]`. */
+function detailShape(row: ViewRow) {
+  return [row.oldLine?.number, row.newLine?.number, row.changeDetails.map(({ kind }) => kind)];
+}
+
+function hasChangeDetails(row: ViewRow): boolean {
+  return row.changeDetails.length > 0;
 }
 
 function hasMarkers({ oldLine, newLine }: ViewRow): boolean {
@@ -199,15 +239,15 @@ describe('diffHtml', () => {
       [LineChangeKind.Unchanged, 15, 17, [], []],
       [LineChangeKind.Unchanged, 16, 18, [], []],
       [LineChangeKind.Unchanged, 17, 19, [], []],
-      [LineChangeKind.Added, null, 20, [], []],
-      [LineChangeKind.Added, null, 21, [], []],
-      [LineChangeKind.Unchanged, 18, 22, [], []],
-      [LineChangeKind.Unchanged, 19, 23, [], []],
-      [LineChangeKind.Removed, 20, null, [], []],
-      [LineChangeKind.Removed, 21, null, [], []],
-      [LineChangeKind.Unchanged, 22, 24, [], []],
+      [LineChangeKind.Removed, 18, null, [], []],
+      [LineChangeKind.Removed, 19, null, [], []],
+      [LineChangeKind.Unchanged, 20, 20, [], []],
+      [LineChangeKind.Unchanged, 21, 21, [], []],
+      [LineChangeKind.Added, null, 22, [], []],
+      [LineChangeKind.Added, null, 23, [], []],
+      [LineChangeKind.Changed, 22, 24, ['help center'], ['help center']],
     ]);
-    expect(diff.stats).toEqual({ addedLines: 4, removedLines: 2, changedLines: 8 });
+    expect(diff.stats).toEqual({ addedLines: 4, removedLines: 2, changedLines: 9 });
   });
 
   it.each(TRANSLATED_SAMPLES)(
@@ -337,5 +377,90 @@ describe('diffHtml', () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(idsIn(oldLines)).toEqual(expect.arrayContaining(linkTargetsIn(oldLines)));
     expect(idsIn(newLines)).toEqual(expect.arrayContaining(linkTargetsIn(newLines)));
+  });
+
+  it('marks a change of formatting on both sides and describes it (T16)', () => {
+    const { rows, stats } = compare(
+      '<p><i>Ważne:</i> chroń hasło.</p>',
+      '<p><b>Ważne:</b> chroń hasło.</p>',
+    );
+    const detailsAttribute = 'data-diffwise-change-details="0"';
+    const removedMarker = `<del class="${REMOVED_CLASSES}" ${detailsAttribute}>Ważne:</del>`;
+    const addedMarker = `<ins class="${ADDED_CLASSES}" ${detailsAttribute}>Ważne:</ins>`;
+
+    expect(rows).toEqual([
+      {
+        kind: LineChangeKind.Changed,
+        oldLine: { number: 1, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
+        newLine: { number: 1, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
+        changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
+      },
+    ]);
+    expect(stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+  });
+
+  it('describes the changes of formatting and links in the long sample', () => {
+    const textColor = {
+      name: FormattingValue.TextColor,
+      oldValue: 'rgb(192, 57, 43)',
+      newValue: 'rgb(30, 125, 79)',
+    };
+    const headingLevel = { name: FormattingValue.HeadingLevel, oldValue: '3', newValue: '2' };
+    const sharingGuide = linkDetail(
+      'https://example.com/help/sharing-2025',
+      'https://example.com/help/sharing',
+    );
+    const publicLinksHelp = linkDetail(null, 'https://example.com/help/public-links');
+    const addedBold = formattingDetail([], [TextStyle.Bold]);
+    const sharedTexts = ['anyone with the link', 'note settings'];
+
+    expect(
+      compare(enLongBefore, enLongAfter).rows.filter(hasChangeDetails).map(detailSummary),
+    ).toEqual([
+      [28, 28, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
+      [29, 29, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
+      [
+        35,
+        35,
+        ['Important:'],
+        ['Important:'],
+        [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
+      ],
+      [37, 37, ['color'], ['color'], [formattingDetail([], [], [textColor])]],
+      [
+        41,
+        41,
+        ['Keyboard shortcuts'],
+        ['Keyboard shortcuts'],
+        [formattingDetail([], [], [headingLevel])],
+      ],
+    ]);
+  });
+
+  it('describes the same changes in the Polish long sample', () => {
+    const englishShapes = compare(enLongBefore, enLongAfter).rows.filter(hasChangeDetails);
+    const polishShapes = compare(plLongBefore, plLongAfter).rows.filter(hasChangeDetails);
+
+    expect(polishShapes.map(detailShape)).toEqual(englishShapes.map(detailShape));
+  });
+
+  it('shows no changes of footnote links between identical documents', () => {
+    const html = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
+
+    expect(compare(html, html).rows.map(rowShape)).toEqual([
+      [LineChangeKind.Unchanged, 1, 1],
+      [LineChangeKind.Unchanged, 2, 2],
+    ]);
+  });
+
+  it('shows changes of formatting and links as unchanged when the options ignore them', () => {
+    const oldHtml = '<h3>Regulamin</h3><p>Zobacz <b>regulamin</b>.</p>';
+    const newHtml = '<h2>Regulamin</h2><p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const ignoring = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true, ignoreLinkChanges: true };
+
+    expect(compare(oldHtml, newHtml, ignoring).rows.map(rowShape)).toEqual([
+      [LineChangeKind.Unchanged, 1, 1],
+      [LineChangeKind.Unchanged, 2, 2],
+    ]);
   });
 });
