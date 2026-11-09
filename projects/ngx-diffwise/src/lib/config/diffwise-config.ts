@@ -1,10 +1,19 @@
 import type { DiffwiseCustomTexts } from '../i18n/texts';
+import type { DiffwiseDiffColors } from './diff-colors';
 import { normalizeConfig } from './normalize-config';
 import {
+  DiffwiseAlignment,
   DiffwiseColorMode,
+  DiffwiseDividerStyle,
+  DiffwiseFontFamily,
+  DiffwiseGapStyle,
+  DiffwiseHighlightStyle,
   DiffwiseLanguage,
+  type DiffwiseLevel,
+  DiffwiseLineNumberStyle,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
+  DiffwiseVerticalAlignment,
 } from './option-values';
 
 /** Options of Diffwise. An option left out keeps its value from the level below, or its default. */
@@ -16,10 +25,59 @@ export interface DiffwiseConfigOptions {
    * follows the system. Default: `null`.
    */
   readonly darkModeSelector?: string | null;
+  /**
+   * Style of changed words: all have the same background, and a style can add lines in the
+   * accent color. Default: `DiffwiseHighlightStyle.Outline`.
+   */
+  readonly highlightStyle?: DiffwiseHighlightStyle;
+  /**
+   * Intensity of the change colors, from 1 to 5; the backgrounds of changed lines and words
+   * change together. Default: `3`.
+   */
+  readonly diffIntensity?: DiffwiseLevel;
+  /**
+   * Contrast of everything besides the content, from 1 to 5: headers, line numbers and the
+   * column between the versions. Default: `3`.
+   */
+  readonly uiContrast?: DiffwiseLevel;
+  /**
+   * Colors of changes for the light and the dark theme. Each level of the configuration changes
+   * only the colors it sets. Default: none.
+   */
+  readonly diffColors?: DiffwiseDiffColors;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
+  /**
+   * What the number of a changed line gets: a colored number with a bar, or a colored
+   * background. Default: `DiffwiseLineNumberStyle.Bar`.
+   */
+  readonly lineNumberStyle?: DiffwiseLineNumberStyle;
+  /** Place of the line numbers in their lines. Default: `DiffwiseVerticalAlignment.Top`. */
+  readonly lineNumberAlignment?: DiffwiseVerticalAlignment;
+  /** Gives changed lines a light background. Default: `true`. */
+  readonly highlightChangedLines?: boolean;
+  /**
+   * Without backgrounds of changed lines, highlights an added or a removed line as a whole, like
+   * changed words; otherwise its number shows the change. Default: `false`.
+   */
+  readonly highlightWholeLines?: boolean;
+  /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
+  readonly dividerStyle?: DiffwiseDividerStyle;
+  /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
+  readonly gapStyle?: DiffwiseGapStyle;
   /** Headers above the two versions, or texts of the app. Default: `DiffwiseVersionHeaders.Default`. */
   readonly versionHeaders?: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts;
+  /** Place of the header texts in their columns. Default: `DiffwiseAlignment.Center`. */
+  readonly versionHeaderAlignment?: DiffwiseAlignment;
+  /**
+   * Font of the diff: the one of the app, a built-in one, or the name of a font the app loads,
+   * such as `'Inter'`. Default: `DiffwiseFontFamily.Inherit`.
+   */
+  readonly fontFamily?: string;
+  /** Font size of the headers in rem, from 0.5 to 10. Default: `0.75`. */
+  readonly versionHeaderFontSize?: number;
+  /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
+  readonly lineNumberFontSize?: number;
   /** Ignores differences in whitespace. Default: `false`. */
   readonly ignoreWhitespace?: boolean;
   /** Ignores differences in letter case. Default: `false`. */
@@ -36,6 +94,9 @@ export interface DiffwiseConfigOptions {
 /** Custom texts of a config that sets none. */
 const NO_CUSTOM_TEXTS: DiffwiseCustomTexts = Object.freeze({});
 
+/** Colors of changes of a config that sets none. */
+const NO_DIFF_COLORS: DiffwiseDiffColors = Object.freeze({});
+
 /**
  * Options of Diffwise with their defaults. A config changes only the options given to it,
  * so the config of one diff keeps the other options of the global configuration.
@@ -47,12 +108,54 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** In automatic mode, the dark mode marker of the app, such as `.dark`; `null` follows the system. */
   readonly darkModeSelector: string | null = null;
 
+  /** Style of changed words. */
+  readonly highlightStyle: DiffwiseHighlightStyle = DiffwiseHighlightStyle.Outline;
+
+  /** Intensity of the change colors, from 1 to 5. */
+  readonly diffIntensity: DiffwiseLevel = 3;
+
+  /** Contrast of everything besides the content, from 1 to 5. */
+  readonly uiContrast: DiffwiseLevel = 3;
+
+  /** Colors of changes for the light and the dark theme. */
+  readonly diffColors: DiffwiseDiffColors = NO_DIFF_COLORS;
+
   /** Shows the number of each line. */
   readonly showLineNumbers: boolean = true;
+
+  /** What the number of a changed line gets. */
+  readonly lineNumberStyle: DiffwiseLineNumberStyle = DiffwiseLineNumberStyle.Bar;
+
+  /** Place of the line numbers in the height of their lines. */
+  readonly lineNumberAlignment: DiffwiseVerticalAlignment = DiffwiseVerticalAlignment.Top;
+
+  /** Gives changed lines a light background. */
+  readonly highlightChangedLines: boolean = true;
+
+  /** Without backgrounds of changed lines, highlights an added or a removed line as a whole. */
+  readonly highlightWholeLines: boolean = false;
+
+  /** What stands between the two versions. */
+  readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;
+
+  /** What fills the place opposite an added or a removed line. */
+  readonly gapStyle: DiffwiseGapStyle = DiffwiseGapStyle.Stripes;
 
   /** Headers above the two versions, or texts of the app. */
   readonly versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts =
     DiffwiseVersionHeaders.Default;
+
+  /** Place of the header texts in their columns. */
+  readonly versionHeaderAlignment: DiffwiseAlignment = DiffwiseAlignment.Center;
+
+  /** Font of the diff: the one of the app, a built-in one, or the name of a font the app loads. */
+  readonly fontFamily: string = DiffwiseFontFamily.Inherit;
+
+  /** Font size of the headers in rem. */
+  readonly versionHeaderFontSize: number = 0.75;
+
+  /** Font size of the line numbers in rem. */
+  readonly lineNumberFontSize: number = 0.75;
 
   /** Ignores differences in whitespace. */
   readonly ignoreWhitespace: boolean = false;
@@ -88,11 +191,27 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   }
 }
 
-/** The options with the changes; custom texts change one by one, so the texts left out stay. */
+/**
+ * The options with the changes. Custom texts and colors change one by one, so the texts and
+ * colors left out stay.
+ */
 function withChanges(
   options: DiffwiseConfigOptions,
   changes: DiffwiseConfigOptions,
 ): DiffwiseConfigOptions {
   const customTexts = { ...options.customTexts, ...changes.customTexts };
-  return { ...options, ...changes, customTexts };
+  const diffColors = withColorChanges(options.diffColors, changes.diffColors);
+
+  return { ...options, ...changes, customTexts, diffColors };
+}
+
+/** Colors of both themes with the changes, color by color. */
+function withColorChanges(
+  colors: DiffwiseDiffColors = NO_DIFF_COLORS,
+  changes: DiffwiseDiffColors = NO_DIFF_COLORS,
+): DiffwiseDiffColors {
+  const light = { ...colors.light, ...changes.light };
+  const dark = { ...colors.dark, ...changes.dark };
+
+  return { light, dark };
 }
