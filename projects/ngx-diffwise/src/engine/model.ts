@@ -17,7 +17,9 @@ export interface Line {
   readonly tag: string | null;
   /** Text as a reader sees it; lines are compared by it. */
   readonly text: string;
-  /** Sanitized HTML inside copies of its containers, such as a quote. */
+  /** Format of each piece of the text, in reading order; a space between blocks has none. */
+  readonly formats: readonly FormattedRange[];
+  /** Sanitized HTML inside copies of its containers, such as a quote; its ids are prefixed. */
   readonly html: string;
 }
 
@@ -82,6 +84,61 @@ export interface WordChanges {
   /** Ranges in the new line's text. */
   readonly added: readonly TextRange[];
 }
+
+/** On-off formatting. Markup of the same look gives the same style, such as `b` and `strong`. */
+export const TextStyle = {
+  Bold: 'bold',
+  Italic: 'italic',
+  Underline: 'underline',
+  Strikethrough: 'strikethrough',
+  Superscript: 'superscript',
+  Subscript: 'subscript',
+  /** Code font: `code`, `kbd`, `samp`, `tt` and `pre`. */
+  Code: 'code',
+  /** Text marked with `mark`. */
+  TextHighlight: 'textHighlight',
+  SmallText: 'smallText',
+  Uppercase: 'uppercase',
+  Lowercase: 'lowercase',
+  /** The first letter of each word in upper case. */
+  Capitalized: 'capitalized',
+} as const;
+
+export type TextStyle = (typeof TextStyle)[keyof typeof TextStyle];
+
+/** Formatting with a value, such as the text color. */
+export const FormattingValue = {
+  /** Level of the heading around the text, `1` to `6`; text outside headings has none. */
+  HeadingLevel: 'headingLevel',
+  TextColor: 'textColor',
+  BackgroundColor: 'backgroundColor',
+  FontFamily: 'fontFamily',
+  FontSize: 'fontSize',
+  /** Alignment of the block around the text, such as `center`. */
+  TextAlignment: 'textAlignment',
+} as const;
+
+export type FormattingValue = (typeof FormattingValue)[keyof typeof FormattingValue];
+
+/** Each formatting value as CSS writes it, or a heading level; `null` where none is set. */
+export type FormattingValues = Readonly<Record<FormattingValue, string | null>>;
+
+/** How a reader sees a piece of text besides its words: formatting and link. */
+export interface TextFormat {
+  /** On-off formatting, in the order of `TextStyle`. */
+  readonly styles: readonly TextStyle[];
+  readonly values: FormattingValues;
+  /** Address of the link around the text, as its `href` gives it; `null` outside links. */
+  readonly link: string | null;
+}
+
+/** Part of a line's text and its format. */
+export interface FormattedRange extends TextRange {
+  readonly format: TextFormat;
+}
+
+/** Starts the data attributes Diffwise puts in the HTML; the content's own are removed. */
+export const DIFFWISE_DATA_ATTRIBUTE_START = 'data-diffwise-';
 
 /** A line as the view shows it. */
 export interface ViewLine {

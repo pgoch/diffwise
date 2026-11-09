@@ -4,9 +4,14 @@ import { parseHtml } from '../html/parse-html';
 import { splitLines } from '../html/split-lines';
 
 const NO_CHANGES = { addedLines: 0, removedLines: 0, changedLines: 0 };
+const OLD_ID_PREFIX = 'diff-old-';
+const NEW_ID_PREFIX = 'diff-new-';
 
 function diff(oldHtml: string, newHtml: string, options: DiffOptions = DEFAULT_DIFF_OPTIONS) {
-  return diffLines(splitLines(parseHtml(oldHtml)), splitLines(parseHtml(newHtml)), options);
+  const oldLines = splitLines(parseHtml(oldHtml), OLD_ID_PREFIX);
+  const newLines = splitLines(parseHtml(newHtml), NEW_ID_PREFIX);
+
+  return diffLines(oldLines, newLines, options);
 }
 
 /** Changes as `[kind, old text, new text]`; a missing side is `null`. */

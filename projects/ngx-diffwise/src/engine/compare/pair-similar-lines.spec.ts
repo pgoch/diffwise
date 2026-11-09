@@ -11,7 +11,13 @@ const PARAGRAPH_TAG = 'p';
 const LARGE_BLOCK_SIZE = 101;
 
 function paragraph(text: string): Line {
-  return { kind: LineKind.Paragraph, tag: PARAGRAPH_TAG, text, html: `<p>${text}</p>` };
+  return {
+    kind: LineKind.Paragraph,
+    tag: PARAGRAPH_TAG,
+    text,
+    formats: [],
+    html: `<p>${text}</p>`,
+  };
 }
 
 /** Changes as `[kind, old text, new text]`; a missing side is `null`. */

@@ -1,7 +1,6 @@
 import { diffLines } from './compare/diff-lines';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
-import { prefixIds } from './html/prefix-ids';
 import { sanitizeHtml } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER, markChanges } from './mark/mark-changes';
@@ -36,11 +35,8 @@ export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSet
  * such as footnotes work within each version.
  */
 function versionLines(html: string, idPrefix: string, versionPart: string): Line[] {
-  const root = parseHtml(html);
-
-  prefixIds(root, `${idPrefix}${ID_PART_SEPARATOR}${versionPart}${ID_PART_SEPARATOR}`);
-
-  return splitLines(root);
+  const versionIdPrefix = `${idPrefix}${ID_PART_SEPARATOR}${versionPart}${ID_PART_SEPARATOR}`;
+  return splitLines(parseHtml(html), versionIdPrefix);
 }
 
 /** Turns line changes into view rows and numbers the lines of each version from 1. */

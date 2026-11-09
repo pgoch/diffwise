@@ -47,7 +47,7 @@ const URL_REFERENCE_ATTRIBUTES: ReadonlySet<string> = new Set([
  * Puts the prefix before every id and anchor name in the tree and before every reference to them,
  * so the same ids in both versions, or in several diffs on one page, do not collide.
  */
-export function prefixIds(root: Element, prefix: string): void {
+export function prefixIds(root: ParentNode, prefix: string): void {
   for (const element of root.querySelectorAll(ALL_ELEMENTS)) {
     for (const attribute of Array.from(element.attributes)) {
       const value = prefixedValue(element, attribute, prefix);

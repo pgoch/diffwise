@@ -114,7 +114,7 @@ function textOf(line: ViewLine): string {
 }
 
 function lineTexts(html: string): string[] {
-  return splitLines(parseHtml(html)).map((line) => line.text);
+  return splitLines(parseHtml(html), ID_PREFIX).map((line) => line.text);
 }
 
 /** Numbers 1 to `count`. */

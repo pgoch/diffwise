@@ -10,6 +10,7 @@ import {
 
 const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
 const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
+const ID_PREFIX = 'diff-';
 
 /** Expected HTML of a removed part. */
 function removed(html: string): string {
@@ -23,7 +24,7 @@ function added(html: string): string {
 
 /** The first line of a document. */
 function lineOf(html: string): Line {
-  const [line] = splitLines(parseHtml(html));
+  const [line] = splitLines(parseHtml(html), ID_PREFIX);
   return line;
 }
 
@@ -139,6 +140,7 @@ describe('markChanges', () => {
       kind: LineKind.Block,
       tag: 'pre',
       text: '\nkod',
+      formats: [],
       html: '<pre>\nkod</pre>',
     };
 
