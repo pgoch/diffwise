@@ -15,12 +15,41 @@ export interface Line {
   readonly kind: LineKind;
   /** Block tag, such as `p` or `ul`; `null` for text outside any block. */
   readonly tag: string | null;
-  /** Text as a reader sees it; lines are compared by it. */
+  /** Text as a reader sees it; lines are compared by it. An image is one character of it. */
   readonly text: string;
   /** Format of each piece of the text, in reading order; a space between blocks has none. */
   readonly formats: readonly FormattedRange[];
+  /** Images in the text, in reading order. */
+  readonly images: readonly LineImage[];
   /** Sanitized HTML inside copies of its containers, such as a quote; its ids are prefixed. */
   readonly html: string;
+}
+
+/** The text of a line and the images in it, which its words are compared by. */
+export type LineContent = Pick<Line, 'text' | 'images'>;
+
+/** What a reader sees of an image. */
+export const ImageProperty = {
+  /** Address of the image file, as its `src` gives it. */
+  Source: 'source',
+  /** Width as CSS writes it, such as `480px`. */
+  Width: 'width',
+  /** Height as CSS writes it, such as `270px`. */
+  Height: 'height',
+  /** Text that screen readers read instead of the image. */
+  AltText: 'altText',
+} as const;
+
+export type ImageProperty = (typeof ImageProperty)[keyof typeof ImageProperty];
+
+/** Each property of an image; `null` where the image does not set it. */
+export type ImageProperties = Readonly<Record<ImageProperty, string | null>>;
+
+/** An image in a line. */
+export interface LineImage {
+  /** Position of the image's character in the line's text. */
+  readonly position: number;
+  readonly properties: ImageProperties;
 }
 
 /** What counts as a difference between the two versions. */
@@ -161,6 +190,8 @@ export const ChangeDetailKind = {
   Formatting: 'formatting',
   /** The link around unchanged text: another address, or a link added or removed. */
   Link: 'link',
+  /** An image with another file, size or alternative text in the same place. */
+  Image: 'image',
 } as const;
 
 export type ChangeDetailKind = (typeof ChangeDetailKind)[keyof typeof ChangeDetailKind];
@@ -194,14 +225,32 @@ export interface LinkChangeDetail {
   readonly newLink: string | null;
 }
 
+/** An image that differs between the versions in the same place. */
+export interface ImageChangeDetail {
+  readonly kind: typeof ChangeDetailKind.Image;
+  readonly oldImage: ImageProperties;
+  readonly newImage: ImageProperties;
+  /** Properties that differ, in the order of `ImageProperty`. */
+  readonly changedProperties: readonly ImageProperty[];
+}
+
 /** A change besides changed text, described in the view. */
-export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail;
+export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail;
+
+/** Changes described in the view: their ranges in each line and their details. */
+export interface DescribedChanges {
+  /** Ranges in the old line's text, with the positions of their details. */
+  readonly oldRanges: readonly MarkedRange[];
+  /** Ranges in the new line's text, with the positions of their details. */
+  readonly newRanges: readonly MarkedRange[];
+  readonly details: readonly ChangeDetail[];
+}
 
 /** A line as the view shows it. */
 export interface ViewLine {
   /** Position of the line in its version, counted from 1. */
   readonly number: number;
-  /** Sanitized HTML; in a changed line, changed text and changed formatting are marked. */
+  /** Sanitized HTML; in a changed line, changed text, formatting and images are marked. */
   readonly html: string;
 }
 

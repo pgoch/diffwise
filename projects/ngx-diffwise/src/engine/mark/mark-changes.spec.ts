@@ -1,4 +1,5 @@
 import { parseHtml } from '../html/parse-html';
+import { IMAGE_CHARACTER } from '../html/reader-text';
 import { splitLines } from '../html/split-lines';
 import { type Line, LineKind, type TextRange } from '../model';
 import {
@@ -10,6 +11,7 @@ import {
 
 const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
 const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
+const IMAGE_CLASS = 'diffwise-html-diff__highlight--image';
 const ID_PREFIX = 'diff-';
 
 /** Expected HTML of a removed part. */
@@ -141,6 +143,7 @@ describe('markChanges', () => {
       tag: 'pre',
       text: '\nkod',
       formats: [],
+      images: [],
       html: '<pre>\nkod</pre>',
     };
 
@@ -162,6 +165,51 @@ describe('markChanges', () => {
 
     expect(markChanges(line, [{ ...range, detailIndices: [0, 1] }], ADDED_TEXT_MARKER)).toBe(
       `<p>Zobacz <b>${marker}</b>.</p>`,
+    );
+  });
+
+  it('frames an image with a marker of its own class', () => {
+    const icon = '<img src="images/icon-share.svg" alt="">';
+    const marker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}">${icon}</del>`;
+
+    expect(mark(`<p>Kliknij ${icon} Udostępnij.</p>`, [IMAGE_CHARACTER])).toBe(
+      `<p>Kliknij ${marker} Udostępnij.</p>`,
+    );
+  });
+
+  it('marks text and an image in one range with separate markers', () => {
+    const icon = '<img src="images/icon-share.svg" alt="">';
+    const iconMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}">${icon}</ins>`;
+
+    expect(
+      mark(
+        `<p>Kliknij ${icon} Udostępnij.</p>`,
+        [`${IMAGE_CHARACTER} Udostępnij`],
+        ADDED_TEXT_MARKER,
+      ),
+    ).toBe(`<p>Kliknij ${iconMarker} ${added('Udostępnij')}.</p>`);
+  });
+
+  it('frames the picture around an image, so its sources stay with it', () => {
+    const picture =
+      '<picture><source srcset="images/logo.webp"><img src="images/logo.png"></picture>';
+    const marker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}">${picture}</del>`;
+
+    expect(mark(`<p>${picture}</p>`, [IMAGE_CHARACTER])).toBe(`<p>${marker}</p>`);
+  });
+
+  it('gives an image covered by several ranges one marker with all their details', () => {
+    const line = lineOf('<p>Logo <img src="images/logo-2026.svg" alt="Logo"></p>');
+    const [imageRange] = rangesOf(line.text, [IMAGE_CHARACTER]);
+    const ranges = [
+      imageRange,
+      { ...imageRange, detailIndices: [2] },
+      { ...imageRange, detailIndices: [0] },
+    ];
+    const marker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" data-diffwise-change-details="0 2">`;
+
+    expect(markChanges(line, ranges, ADDED_TEXT_MARKER)).toBe(
+      `<p>Logo ${marker}<img src="images/logo-2026.svg" alt="Logo"></ins></p>`,
     );
   });
 

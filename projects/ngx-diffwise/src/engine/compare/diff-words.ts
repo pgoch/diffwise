@@ -1,5 +1,6 @@
+import { imageWordKey } from './comparison-image';
 import { comparisonText } from './comparison-text';
-import type { DiffOptions, TextRange, WordChanges } from '../model';
+import type { DiffOptions, LineContent, LineImage, TextRange, WordChanges } from '../model';
 import { type Edit, EditKind, myersDiff } from './myers';
 import { type Token, TokenKind, splitWords } from './split-words';
 
@@ -31,10 +32,14 @@ interface ChangedRuns {
   readonly addedRuns: readonly ChangedRun[];
 }
 
-/** Text removed from and added to a changed line, compared word by word. */
-export function diffWords(oldText: string, newText: string, options: DiffOptions): WordChanges {
-  const oldSide = comparedText(oldText, options);
-  const newSide = comparedText(newText, options);
+/** Text removed from and added to a changed line, compared word by word; an image is a word. */
+export function diffWords(
+  oldLine: LineContent,
+  newLine: LineContent,
+  options: DiffOptions,
+): WordChanges {
+  const oldSide = comparedText(oldLine, options);
+  const newSide = comparedText(newLine, options);
   const runsBuilder = new ChangedRunsBuilder();
 
   for (const edit of myersDiff(oldSide.keys, newSide.keys)) {
@@ -49,11 +54,37 @@ export function diffWords(oldText: string, newText: string, options: DiffOptions
   };
 }
 
-function comparedText(text: string, options: DiffOptions): ComparedText {
+/**
+ * Words, symbols and images that unchanged text keeps on both sides, in the same order: tokens
+ * outside the changed text, apart from whitespace.
+ */
+export function unchangedTokens(text: string, changedText: readonly TextRange[]): Token[] {
+  return splitWords(text).filter(
+    (token) => token.kind !== TokenKind.Whitespace && !overlapsAny(token, changedText),
+  );
+}
+
+function overlapsAny(token: Token, ranges: readonly TextRange[]): boolean {
+  const tokenEnd = token.start + token.text.length;
+  return ranges.some((range) => range.start < tokenEnd && token.start < range.end);
+}
+
+function comparedText({ text, images }: LineContent, options: DiffOptions): ComparedText {
   const tokens = comparedTokens(text, options);
-  const keys = tokens.map((token) => comparisonText(token.text, options));
+  const imagesByPosition = new Map(images.map((image) => [image.position, image]));
+  const keys = tokens.map((token) => tokenKey(token, imagesByPosition, options));
 
   return { text, tokens, keys };
+}
+
+/** Key of a token: the key of the image in its place, or its text in the compared form. */
+function tokenKey(
+  token: Token,
+  imagesByPosition: ReadonlyMap<number, LineImage>,
+  options: DiffOptions,
+): string {
+  const image = imagesByPosition.get(token.start);
+  return image === undefined ? comparisonText(token.text, options) : imageWordKey(image);
 }
 
 /** Tokens that take part in the comparison; whitespace drops out when it is ignored. */

@@ -1,4 +1,4 @@
-import { NO_MARKER_TAGS } from '../html/html-tags';
+import { NO_MARKER_TAGS, PICTURE_TAG } from '../html/html-tags';
 import { type TextPiece, mapReaderText } from '../html/reader-text';
 import { CHANGE_DETAILS_ATTRIBUTE, type Line, type MarkedRange } from '../model';
 
@@ -6,6 +6,9 @@ const TEMPLATE_TAG = 'template';
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const HIGHLIGHT_CLASS = 'diffwise-html-diff__highlight';
 const DETAIL_INDEX_SEPARATOR = ' ';
+
+/** Added to the classes of a marker around an image, which frames the image. */
+const IMAGE_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--image`;
 
 /** The element that wraps changed text, with its classes. */
 export interface ChangeMarker {
@@ -25,11 +28,12 @@ export const ADDED_TEXT_MARKER: ChangeMarker = {
   classNames: [HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--added`],
 };
 
-/** Part of a text node, `[start, end)`, counted in the node's text, and the details it shows. */
+/** Part of a text node, `[start, end)` counted in the node's text, or an image. */
 interface NodeSegment {
-  readonly node: Text;
+  readonly node: Text | Element;
   readonly start: number;
   readonly end: number;
+  /** Positions of the change details the segment's marker shows. */
   readonly detailIndices: readonly number[];
 }
 
@@ -58,7 +62,7 @@ export function markChanges(
     return line.html;
   }
 
-  const markablePieces = pieces.filter((piece) => canHoldMarker(piece.node));
+  const markablePieces = pieces.filter((piece) => canHoldMarker(markedNodeOf(piece.node)));
   const rangesInReadingOrder = [...ranges].sort((first, second) => first.start - second.start);
 
   wrapSegments(rangeSegments(markablePieces, rangesInReadingOrder), marker);
@@ -66,8 +70,16 @@ export function markChanges(
   return template.innerHTML;
 }
 
+/** The node a marker goes around: a text node, or an image with its picture, if it has one. */
+function markedNodeOf(node: Text | Element): Text | Element {
+  const parent = node.parentElement;
+  const isImageOfPicture = node instanceof Element && parent?.localName === PICTURE_TAG;
+
+  return isImageOfPicture ? parent : node;
+}
+
 /** False where a marker would break the HTML: in SVG, in MathML and in elements such as `table`. */
-function canHoldMarker(node: Text): boolean {
+function canHoldMarker(node: Node): boolean {
   const parent = node.parentElement;
 
   if (parent === null) {
@@ -77,12 +89,16 @@ function canHoldMarker(node: Text): boolean {
   return parent.namespaceURI === HTML_NAMESPACE && !NO_MARKER_TAGS.has(parent.localName);
 }
 
-/** Parts of text nodes that show the ranges, in reading order: one per node and range. */
+/**
+ * Parts of text nodes and images that show the ranges, in reading order: one per node and range.
+ * An image that several ranges cover, such as changed text and a changed image, gets one part.
+ */
 function rangeSegments(
   pieces: readonly TextPiece[],
   ranges: readonly MarkedRange[],
 ): NodeSegment[] {
-  return ranges.flatMap((range) => segmentsOfRange(pieces, range));
+  const segments = ranges.flatMap((range) => segmentsOfRange(pieces, range));
+  return withEachImageOnce(segments);
 }
 
 function segmentsOfRange(pieces: readonly TextPiece[], range: MarkedRange): NodeSegment[] {
@@ -101,7 +117,7 @@ function segmentsOfRange(pieces: readonly TextPiece[], range: MarkedRange): Node
   return segments;
 }
 
-/** The part of the piece's text node that shows `[textStart, textEnd)` of the reader text. */
+/** The part of the piece's node that shows `[textStart, textEnd)` of the reader text. */
 function nodeSegment(
   piece: TextPiece,
   textStart: number,
@@ -130,6 +146,35 @@ function addSegment(segments: NodeSegment[], segment: NodeSegment): void {
   segments.push(segment);
 }
 
+/** Keeps the first segment of each image, with the change details of all its segments. */
+function withEachImageOnce(segments: readonly NodeSegment[]): NodeSegment[] {
+  const keptSegments: NodeSegment[] = [];
+  const imagePositions = new Map<Node, number>();
+
+  for (const segment of segments) {
+    const position = imagePositions.get(segment.node);
+
+    if (position !== undefined) {
+      keptSegments[position] = withDetailsOfBoth(keptSegments[position], segment);
+      continue;
+    }
+
+    if (segment.node instanceof Element) {
+      imagePositions.set(segment.node, keptSegments.length);
+    }
+
+    keptSegments.push(segment);
+  }
+
+  return keptSegments;
+}
+
+/** The first segment with the change details of both, in ascending order. */
+function withDetailsOfBoth(first: NodeSegment, second: NodeSegment): NodeSegment {
+  const detailIndices = [...first.detailIndices, ...second.detailIndices];
+  return { ...first, detailIndices: detailIndices.sort((one, other) => one - other) };
+}
+
 /** Wraps from the last segment back, so splitting a text node keeps earlier offsets in it valid. */
 function wrapSegments(segments: readonly NodeSegment[], marker: ChangeMarker): void {
   for (const segment of [...segments].reverse()) {
@@ -137,24 +182,48 @@ function wrapSegments(segments: readonly NodeSegment[], marker: ChangeMarker): v
   }
 }
 
-/**
- * Splits the segment's text out of its node and puts it in a new marker element. The marker of
- * a changed format lists the positions of its change details.
- */
+/** Puts the segment in a new marker element; the marker of an image frames it. */
 function wrapSegment({ node, start, end, detailIndices }: NodeSegment, marker: ChangeMarker): void {
-  const markedText = node.splitText(start);
-  const markerElement = document.createElement(marker.tag);
-
-  markedText.splitText(end - start);
-  markerElement.classList.add(...marker.classNames);
-
-  if (detailIndices.length > 0) {
-    markerElement.setAttribute(
-      CHANGE_DETAILS_ATTRIBUTE,
-      detailIndices.join(DETAIL_INDEX_SEPARATOR),
-    );
+  if (node instanceof Text) {
+    wrapNode(textPart(node, start, end), markerElement(marker, detailIndices));
+    return;
   }
 
-  markedText.replaceWith(markerElement);
-  markerElement.append(markedText);
+  wrapNode(markedNodeOf(node), markerElement(imageMarkerOf(marker), detailIndices));
+}
+
+/** Splits `[start, end)` of the text node out into a text node of its own. */
+function textPart(node: Text, start: number, end: number): Text {
+  const part = node.splitText(start);
+
+  part.splitText(end - start);
+
+  return part;
+}
+
+/** The marker of an image: the same element, with the class that frames the image. */
+function imageMarkerOf({ tag, classNames }: ChangeMarker): ChangeMarker {
+  return { tag, classNames: [...classNames, IMAGE_HIGHLIGHT_CLASS] };
+}
+
+/** A new marker element. The marker of a described change lists the positions of its details. */
+function markerElement(
+  { tag, classNames }: ChangeMarker,
+  detailIndices: readonly number[],
+): HTMLElement {
+  const element = document.createElement(tag);
+
+  element.classList.add(...classNames);
+
+  if (detailIndices.length > 0) {
+    element.setAttribute(CHANGE_DETAILS_ATTRIBUTE, detailIndices.join(DETAIL_INDEX_SEPARATOR));
+  }
+
+  return element;
+}
+
+/** Puts the marker in the node's place and the node inside it. */
+function wrapNode(node: ChildNode, marker: HTMLElement): void {
+  node.replaceWith(marker);
+  marker.append(node);
 }

@@ -5,6 +5,7 @@ import {
   PARAGRAPH_TAGS,
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
+import { lineImages } from './line-images';
 import { type FormattedRange, type Line, LineKind } from '../model';
 import { prefixIds } from './prefix-ids';
 import { type TextPiece, mapReaderText } from './reader-text';
@@ -78,12 +79,16 @@ class LineCollector {
     }
 
     const formats = this.formatsOf(pieces);
+    const images = lineImages(pieces);
     const html = this.lineHtml(nodes, wrappers);
 
-    this.lines.push({ kind, tag, text, formats, html });
+    this.lines.push({ kind, tag, text, formats, images, html });
   }
 
-  /** Format of each piece of the text; neighboring pieces with the same format share a range. */
+  /**
+   * Format of each piece of the text; neighboring pieces with the same format share a range. An
+   * image has the format of its place, like a word.
+   */
   private formatsOf(pieces: readonly TextPiece[]): FormattedRange[] {
     const formats: FormattedRange[] = [];
 

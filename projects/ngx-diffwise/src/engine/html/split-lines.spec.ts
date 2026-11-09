@@ -4,7 +4,7 @@ import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
 import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
 import { LineKind, TextStyle } from '../model';
 import { parseHtml } from './parse-html';
-import { readerText } from './reader-text';
+import { IMAGE_CHARACTER, readerText } from './reader-text';
 import { splitLines } from './split-lines';
 import { PLAIN_FORMAT } from './text-format';
 
@@ -132,9 +132,31 @@ describe('splitLines', () => {
 
   it('keeps lines with only an image or a horizontal rule', () => {
     expect(linesWithoutHtml('<p><img src="images/logo-2025.svg" alt="Logo"></p><hr>')).toEqual([
-      { kind: LineKind.Paragraph, tag: 'p', text: '' },
+      { kind: LineKind.Paragraph, tag: 'p', text: IMAGE_CHARACTER },
       { kind: LineKind.Block, tag: 'hr', text: '' },
     ]);
+  });
+
+  it('lists the images of a line with their places in its text', () => {
+    const [line] = splitDocument(
+      '<p>Click <img src="images/icon-share.svg" alt="" width="16" height="16"> Share</p>',
+    );
+    const shareIcon = {
+      source: 'images/icon-share.svg',
+      width: '16px',
+      height: '16px',
+      altText: '',
+    };
+
+    expect(line.text).toBe(`Click ${IMAGE_CHARACTER} Share`);
+    expect(line.images).toEqual([{ position: 6, properties: shareIcon }]);
+  });
+
+  it('gives an image the format of its place, like a word', () => {
+    const [line] = splitDocument('<p><a href="https://example.com"><img src="logo.svg"></a></p>');
+    const linkFormat = { ...PLAIN_FORMAT, link: 'https://example.com' };
+
+    expect(line.formats).toEqual([{ start: 0, end: 1, format: linkFormat }]);
   });
 
   it('gives the same lines for unclosed and closed tags (T37)', () => {
@@ -171,7 +193,7 @@ describe('splitLines', () => {
       { kind: LineKind.Heading, tag: 'h2', text: 'Getting started' },
       { kind: LineKind.Block, tag: 'ol', text: 'Sign in Create a notebook' },
       { kind: LineKind.Paragraph, tag: 'p', text: 'Simple and fast.' },
-      { kind: LineKind.Block, tag: 'figure', text: 'The editor' },
+      { kind: LineKind.Block, tag: 'figure', text: `${IMAGE_CHARACTER} The editor` },
       { kind: LineKind.Block, tag: 'pre', text: 'Ctrl + S' },
       { kind: LineKind.Block, tag: 'details', text: 'More Hidden until opened.' },
       { kind: LineKind.Block, tag: 'dl', text: 'Notebook A set of notes' },

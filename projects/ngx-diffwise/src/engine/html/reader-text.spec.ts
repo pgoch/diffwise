@@ -1,5 +1,13 @@
 import { parseHtml } from './parse-html';
-import { type ReaderTextMap, type TextPiece, mapReaderText, readerText } from './reader-text';
+import {
+  IMAGE_CHARACTER,
+  type ReaderTextMap,
+  type TextPiece,
+  mapReaderText,
+  readerText,
+} from './reader-text';
+
+const IMAGE_TAG = 'img';
 
 function textOf(html: string): string {
   return readerText(parseHtml(html).childNodes);
@@ -9,10 +17,13 @@ function mapOf(html: string): ReaderTextMap {
   return mapReaderText(parseHtml(html).childNodes);
 }
 
-/** The text a piece points to in its node. */
-function sourceText(piece: TextPiece): string {
-  const length = piece.end - piece.start;
-  return piece.node.data.slice(piece.nodeOffset, piece.nodeOffset + length);
+/** The text a piece points to in its node; an image stands for its character. */
+function sourceText({ node, nodeOffset, start, end }: TextPiece): string {
+  if (node instanceof Element) {
+    return IMAGE_CHARACTER;
+  }
+
+  return node.data.slice(nodeOffset, nodeOffset + end - start);
 }
 
 describe('readerText', () => {
@@ -38,11 +49,16 @@ describe('readerText', () => {
     );
   });
 
-  it('separates words at blocks, line breaks and images', () => {
+  it('separates words at blocks and line breaks', () => {
     expect(textOf('<p>one</p><p>two</p>')).toBe('one two');
-    expect(textOf('<p>one<br>two<img src="images/icon-share.svg" alt="">three</p>')).toBe(
-      'one two three',
-    );
+    expect(textOf('<p>one<br>two</p>')).toBe('one two');
+  });
+
+  it('reads each image as one character between words', () => {
+    const html =
+      '<p>one<img src="images/icon-share.svg" alt="">two <img src="a.svg"><img src="b.svg"></p>';
+
+    expect(textOf(html)).toBe(`one ${IMAGE_CHARACTER} two ${IMAGE_CHARACTER} ${IMAGE_CHARACTER}`);
   });
 
   it('keeps spaces and line breaks in code blocks', () => {
@@ -90,6 +106,16 @@ describe('mapReaderText', () => {
 
     expect(text).toBe('one two');
     expect(pieces.map(sourceText)).toEqual(['one', 'two']);
+  });
+
+  it('points the character of an image at the image', () => {
+    const { text, pieces } = mapOf('<p>Click <img src="images/icon-share.svg" alt=""> Share</p>');
+    const imagePiece = pieces[2];
+
+    expect(text).toBe(`Click ${IMAGE_CHARACTER} Share`);
+    expect(pieces.map(sourceText)).toEqual(['Click', ' ', IMAGE_CHARACTER, 'Share']);
+    expect(imagePiece).toEqual(expect.objectContaining({ start: 6, end: 7, nodeOffset: 0 }));
+    expect((imagePiece.node as Element).localName).toBe(IMAGE_TAG);
   });
 
   it('maps a code block character by character', () => {

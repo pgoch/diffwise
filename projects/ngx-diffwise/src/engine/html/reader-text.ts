@@ -1,20 +1,24 @@
-import { PRESERVE_WHITESPACE_TAGS, WORD_BREAK_TAGS } from './html-tags';
+import { IMAGE_TAG, PRESERVE_WHITESPACE_TAGS, WORD_BREAK_TAGS } from './html-tags';
 
 const SPACE = ' ';
 const NO_BREAK_SPACE = '\u00a0';
+
+/** Stands for an image in reader text: the object replacement character. */
+export const IMAGE_CHARACTER = '\ufffc';
 
 /** Splits text at whitespace runs and keeps them, so words and whitespace runs alternate. */
 const WHITESPACE_RUN = /(\s+)/;
 const WHITESPACE_ONLY = /^\s+$/;
 
-/** A piece of reader text read from one text node. */
+/** A piece of reader text read from one text node, or the character of an image. */
 export interface TextPiece {
   /** Where the piece starts in the reader text. */
   readonly start: number;
   /** Where the piece ends in the reader text. */
   readonly end: number;
-  readonly node: Text;
-  /** Where the piece starts in the node's text. */
+  /** A text node, or an image. */
+  readonly node: Text | Element;
+  /** Where the piece starts in the node's text; 0 for an image. */
   readonly nodeOffset: number;
 }
 
@@ -25,13 +29,16 @@ export interface ReaderTextMap {
   readonly pieces: readonly TextPiece[];
 }
 
-/** A character in a text node. */
+/** A character in a text node, or an image. */
 interface NodePosition {
-  readonly node: Text;
+  readonly node: Text | Element;
   readonly offset: number;
 }
 
-/** Text as a reader sees it: whitespace shows as single spaces, except in code blocks. */
+/**
+ * Text as a reader sees it: whitespace shows as single spaces, except in code blocks, and each
+ * image as one character.
+ */
 export function readerText(nodes: Iterable<Node>): string {
   return mapReaderText(nodes).text;
 }
@@ -74,6 +81,10 @@ class ReaderTextBuilder {
 
     if (separatesWords) {
       this.askForSpace(null);
+    }
+
+    if (element.localName === IMAGE_TAG) {
+      this.addWord(IMAGE_CHARACTER, { node: element, offset: 0 });
     }
 
     for (const child of element.childNodes) {
@@ -127,7 +138,7 @@ class ReaderTextBuilder {
     this.spaceBeforeNextWord = false;
   }
 
-  /** Adds text, and a piece that points to it when a text node holds it. */
+  /** Adds text, and a piece that points to it when a text node or an image holds it. */
   private append(text: string, source: NodePosition | null): void {
     const start = this.builtText.length;
 

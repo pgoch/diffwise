@@ -1,3 +1,4 @@
+import { comparisonImage } from './comparison-image';
 import { comparisonText } from './comparison-text';
 import { PARAGRAPH_TAG } from '../html/html-tags';
 import {
@@ -64,10 +65,12 @@ export function diffLines(
   return { changes, stats: countChanges(changes) };
 }
 
-/** Lines are equal when their structures, compared texts and compared formats are. */
+/** Lines are equal when their structures, compared texts, formats and images are. */
 function lineKey(line: Line, options: DiffOptions): string {
   const text = comparisonText(line.text, options);
-  return JSON.stringify([structureTag(line), text, formatRuns(line, options)]);
+  const images = line.images.map((image) => comparisonImage(image.properties, options));
+
+  return JSON.stringify([structureTag(line), text, formatRuns(line, options), images]);
 }
 
 /** Tag of the line's structure; a heading counts as a paragraph, as its level is formatting. */

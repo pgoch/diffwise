@@ -173,4 +173,36 @@ describe('diffLines', () => {
 
     expect(diff(html, html).stats).toEqual(NO_CHANGES);
   });
+
+  it('finds another file, size or alternative text of an image (T23, T24, T26)', () => {
+    const logo = '<p><img src="images/logo-2025.svg" alt="Logo" width="160"></p>';
+    const otherVersions = [
+      '<p><img src="images/logo-2026.svg" alt="Logo" width="160"></p>',
+      '<p><img src="images/logo-2025.svg" alt="Logo serwisu" width="160"></p>',
+      '<p><img src="images/logo-2025.svg" alt="Logo" width="220"></p>',
+    ];
+
+    expect(diff(logo, logo).stats).toEqual(NO_CHANGES);
+
+    for (const otherVersion of otherVersions) {
+      expect(diff(logo, otherVersion).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+    }
+  });
+
+  it('compares alternative texts in the case the options say', () => {
+    const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
+    const oldHtml = '<p><img src="images/logo-2025.svg" alt="Logo serwisu"></p>';
+    const newHtml = '<p><img src="images/logo-2025.svg" alt="logo serwisu"></p>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+    expect(diff(oldHtml, newHtml, ignoreCase).stats).toEqual(NO_CHANGES);
+  });
+
+  it('finds a line with only an image added or removed (T25)', () => {
+    const textHtml = '<p>Notatki synchronizują się w tle.</p>';
+    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
+
+    expect(diff(textHtml, textHtml + imageHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1 });
+    expect(diff(textHtml + imageHtml, textHtml).stats).toEqual({ ...NO_CHANGES, removedLines: 1 });
+  });
 });

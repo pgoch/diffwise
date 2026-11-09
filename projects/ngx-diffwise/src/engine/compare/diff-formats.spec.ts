@@ -1,6 +1,7 @@
 import { diffFormats } from './diff-formats';
 import { diffWords } from './diff-words';
 import { parseHtml } from '../html/parse-html';
+import { IMAGE_CHARACTER } from '../html/reader-text';
 import { splitLines } from '../html/split-lines';
 import {
   ChangeDetailKind,
@@ -29,7 +30,7 @@ function compareFormats(
 ) {
   const [oldLine] = splitLines(parseHtml(oldHtml), OLD_ID_PREFIX);
   const [newLine] = splitLines(parseHtml(newHtml), NEW_ID_PREFIX);
-  const wordChanges = diffWords(oldLine.text, newLine.text, options);
+  const wordChanges = diffWords(oldLine, newLine, options);
   const formatChanges = diffFormats(oldLine, newLine, wordChanges, options);
 
   return { oldLine, newLine, ...formatChanges };
@@ -212,6 +213,16 @@ describe('diffFormats', () => {
 
     expect(formatChanges(...differentTags)).toEqual([]);
     expect(formatChanges(...boldSpace)).toEqual([]);
+  });
+
+  it('finds another link around an image, together with the words next to it', () => {
+    const oldHtml = '<p><a href="/stara"><img src="logo.svg" alt="Logo"> Notatnik</a> Online</p>';
+    const newHtml = '<p><a href="/nowa"><img src="logo.svg" alt="Logo"> Notatnik</a> Online</p>';
+    const imageAndWord = `${IMAGE_CHARACTER} Notatnik`;
+
+    expect(formatChanges(oldHtml, newHtml)).toEqual([
+      [imageAndWord, imageAndWord, [link('/stara', '/nowa')]],
+    ]);
   });
 
   it('compares links within the document without the id prefixes of the versions', () => {
