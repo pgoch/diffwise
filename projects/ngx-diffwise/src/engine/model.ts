@@ -17,7 +17,9 @@ export interface Line {
   readonly tag: string | null;
   /** Text as a reader sees it; lines are compared by it. */
   readonly text: string;
-  /** Sanitized HTML inside copies of its containers, such as a quote. */
+  /** Format of each piece of the text, in reading order; a space between blocks has none. */
+  readonly formats: readonly FormattedRange[];
+  /** Sanitized HTML inside copies of its containers, such as a quote; its ids are prefixed. */
   readonly html: string;
 }
 
@@ -27,12 +29,18 @@ export interface DiffOptions {
   readonly ignoreWhitespace: boolean;
   /** Ignores differences in letter case. */
   readonly ignoreCase: boolean;
+  /** Ignores differences in formatting, such as italic → bold, and in heading levels. */
+  readonly ignoreFormatting: boolean;
+  /** Ignores links added, removed or pointing elsewhere around the same text. */
+  readonly ignoreLinkChanges: boolean;
 }
 
 /** Default options: every difference counts. */
 export const DEFAULT_DIFF_OPTIONS: DiffOptions = {
   ignoreWhitespace: false,
   ignoreCase: false,
+  ignoreFormatting: false,
+  ignoreLinkChanges: false,
 };
 
 /** Ways a line can differ between the two versions. */
@@ -83,11 +91,117 @@ export interface WordChanges {
   readonly added: readonly TextRange[];
 }
 
+/** On-off formatting. Markup of the same look gives the same style, such as `b` and `strong`. */
+export const TextStyle = {
+  Bold: 'bold',
+  Italic: 'italic',
+  Underline: 'underline',
+  Strikethrough: 'strikethrough',
+  Superscript: 'superscript',
+  Subscript: 'subscript',
+  /** Code font: `code`, `kbd`, `samp`, `tt` and `pre`. */
+  Code: 'code',
+  /** Text marked with `mark`. */
+  TextHighlight: 'textHighlight',
+  SmallText: 'smallText',
+  Uppercase: 'uppercase',
+  Lowercase: 'lowercase',
+  /** The first letter of each word in upper case. */
+  Capitalized: 'capitalized',
+} as const;
+
+export type TextStyle = (typeof TextStyle)[keyof typeof TextStyle];
+
+/** Formatting with a value, such as the text color. */
+export const FormattingValue = {
+  /** Level of the heading around the text, `1` to `6`; text outside headings has none. */
+  HeadingLevel: 'headingLevel',
+  TextColor: 'textColor',
+  BackgroundColor: 'backgroundColor',
+  FontFamily: 'fontFamily',
+  FontSize: 'fontSize',
+  /** Alignment of the block around the text, such as `center`. */
+  TextAlignment: 'textAlignment',
+} as const;
+
+export type FormattingValue = (typeof FormattingValue)[keyof typeof FormattingValue];
+
+/** Each formatting value as CSS writes it, or a heading level; `null` where none is set. */
+export type FormattingValues = Readonly<Record<FormattingValue, string | null>>;
+
+/** How a reader sees a piece of text besides its words: formatting and link. */
+export interface TextFormat {
+  /** On-off formatting, in the order of `TextStyle`. */
+  readonly styles: readonly TextStyle[];
+  readonly values: FormattingValues;
+  /** Address of the link around the text, as its `href` gives it; `null` outside links. */
+  readonly link: string | null;
+}
+
+/** Part of a line's text and its format. */
+export interface FormattedRange extends TextRange {
+  readonly format: TextFormat;
+}
+
+/** Starts the data attributes Diffwise puts in the HTML; the content's own are removed. */
+export const DIFFWISE_DATA_ATTRIBUTE_START = 'data-diffwise-';
+
+/** Positions of the change details a marker shows, separated by spaces, such as `0 1`. */
+export const CHANGE_DETAILS_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}change-details`;
+
+/** Part of a line's text to mark, and the change details its marker shows. */
+export interface MarkedRange extends TextRange {
+  /** Positions in the row's change details; changed text has none. */
+  readonly detailIndices?: readonly number[];
+}
+
+/** Kinds of changes the view describes besides changed text. */
+export const ChangeDetailKind = {
+  /** Formatting of unchanged text, such as italic → bold, or a heading level. */
+  Formatting: 'formatting',
+  /** The link around unchanged text: another address, or a link added or removed. */
+  Link: 'link',
+} as const;
+
+export type ChangeDetailKind = (typeof ChangeDetailKind)[keyof typeof ChangeDetailKind];
+
+/** A formatting value before and after a change. */
+export interface FormattingValueChange {
+  readonly name: FormattingValue;
+  /** `null` when the old text has no such value. */
+  readonly oldValue: string | null;
+  /** `null` when the new text has no such value. */
+  readonly newValue: string | null;
+}
+
+/** Formatting of unchanged text that differs between the versions. */
+export interface FormattingChangeDetail {
+  readonly kind: typeof ChangeDetailKind.Formatting;
+  /** Styles of the old text that the new text lacks, such as italic. */
+  readonly removedStyles: readonly TextStyle[];
+  /** Styles of the new text that the old text lacks, such as bold. */
+  readonly addedStyles: readonly TextStyle[];
+  /** Values that differ, such as the text color, in the order of `FormattingValue`. */
+  readonly changedValues: readonly FormattingValueChange[];
+}
+
+/** The link around unchanged text that differs between the versions. */
+export interface LinkChangeDetail {
+  readonly kind: typeof ChangeDetailKind.Link;
+  /** `null` when the link was added around the text. */
+  readonly oldLink: string | null;
+  /** `null` when the link was removed from around the text. */
+  readonly newLink: string | null;
+}
+
+/** A change besides changed text, described in the view. */
+export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail;
+
 /** A line as the view shows it. */
 export interface ViewLine {
   /** Position of the line in its version, counted from 1. */
   readonly number: number;
-  /** Sanitized HTML; in a changed line, removed or added words are marked. */
+  /** Sanitized HTML; in a changed line, changed text and changed formatting are marked. */
   readonly html: string;
 }
 
@@ -98,6 +212,8 @@ export interface ViewRow {
   readonly oldLine: ViewLine | null;
   /** `null` when the row shows a removed line. */
   readonly newLine: ViewLine | null;
+  /** Changes besides changed text, such as formatting; markers point to them by position. */
+  readonly changeDetails: readonly ChangeDetail[];
 }
 
 /** Two HTML documents compared: rows of the view in reading order, and change counts. */

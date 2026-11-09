@@ -31,4 +31,11 @@ describe('parseHtml', () => {
   it('returns an empty element for empty input', () => {
     expect(parseHtml('').childNodes.length).toBe(0);
   });
+
+  it('drops data-diffwise attributes, so the content cannot pose as details of a change', () => {
+    const html =
+      '<p data-diffwise-change-details="0" data-note="1"><b data-diffwise-x="">Text</b></p>';
+
+    expect(parseHtml(html).innerHTML).toBe('<p data-note="1"><b>Text</b></p>');
+  });
 });

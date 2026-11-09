@@ -10,6 +10,7 @@ import {
 
 const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
 const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
+const ID_PREFIX = 'diff-';
 
 /** Expected HTML of a removed part. */
 function removed(html: string): string {
@@ -23,7 +24,7 @@ function added(html: string): string {
 
 /** The first line of a document. */
 function lineOf(html: string): Line {
-  const [line] = splitLines(parseHtml(html));
+  const [line] = splitLines(parseHtml(html), ID_PREFIX);
   return line;
 }
 
@@ -139,6 +140,7 @@ describe('markChanges', () => {
       kind: LineKind.Block,
       tag: 'pre',
       text: '\nkod',
+      formats: [],
       html: '<pre>\nkod</pre>',
     };
 
@@ -151,5 +153,24 @@ describe('markChanges', () => {
     const line = lineOf('<p>Bez zmian</p>');
 
     expect(markChanges(line, [], REMOVED_TEXT_MARKER)).toBe(line.html);
+  });
+
+  it('lists the change details of a marker in its attribute', () => {
+    const line = lineOf('<p>Zobacz <b>regulamin</b>.</p>');
+    const [range] = rangesOf(line.text, ['regulamin']);
+    const marker = `<ins class="${ADDED_CLASSES}" data-diffwise-change-details="0 1">regulamin</ins>`;
+
+    expect(markChanges(line, [{ ...range, detailIndices: [0, 1] }], ADDED_TEXT_MARKER)).toBe(
+      `<p>Zobacz <b>${marker}</b>.</p>`,
+    );
+  });
+
+  it('marks ranges given in any order', () => {
+    const line = lineOf('<p>Opłata wynosi 19 zł i jest pobierana z góry.</p>');
+    const ranges = rangesOf(line.text, ['19', 'góry']);
+
+    expect(markChanges(line, [...ranges].reverse(), REMOVED_TEXT_MARKER)).toBe(
+      markChanges(line, ranges, REMOVED_TEXT_MARKER),
+    );
   });
 });

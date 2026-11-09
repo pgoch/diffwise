@@ -2,13 +2,15 @@ import enLongAfter from '../../../../../test-data/en/long/after.html?raw';
 import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
 import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
 import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
-import { LineKind } from '../model';
+import { LineKind, TextStyle } from '../model';
 import { parseHtml } from './parse-html';
 import { readerText } from './reader-text';
 import { splitLines } from './split-lines';
+import { PLAIN_FORMAT } from './text-format';
 
 const SPACE = ' ';
 const HEADINGS_SELECTOR = 'h1, h2, h3, h4, h5, h6';
+const ID_PREFIX = 'diff-';
 
 /** Long samples from `test-data/`, which contain everything an editor can produce. */
 const LONG_SAMPLES: [string, string][] = [
@@ -18,11 +20,21 @@ const LONG_SAMPLES: [string, string][] = [
   ['pl/long/after.html', plLongAfter],
 ];
 
-function lines(html: string) {
-  return splitLines(parseHtml(html));
+function splitDocument(html: string) {
+  return splitLines(parseHtml(html), ID_PREFIX);
 }
 
-/** Lines without their HTML, for tests that check only the split. */
+/** Lines without their formats, for tests that check the split and the HTML. */
+function lines(documentHtml: string) {
+  return splitDocument(documentHtml).map(({ kind, tag, text, html }) => ({
+    kind,
+    tag,
+    text,
+    html,
+  }));
+}
+
+/** Lines without their formats and HTML, for tests that check only the split. */
 function linesWithoutHtml(html: string) {
   return lines(html).map(({ kind, tag, text }) => ({ kind, tag, text }));
 }
@@ -169,7 +181,7 @@ describe('splitLines', () => {
 
   it.each(LONG_SAMPLES)('keeps all text of %s in reading order', (_, html) => {
     const body = parseHtml(html);
-    const lineTexts = splitLines(body)
+    const lineTexts = splitLines(body, ID_PREFIX)
       .map((line) => line.text)
       .filter((text) => text.length > 0);
 
@@ -178,8 +190,28 @@ describe('splitLines', () => {
 
   it.each(LONG_SAMPLES)('makes a line of every heading in %s', (_, html) => {
     const body = parseHtml(html);
-    const headingLines = splitLines(body).filter((line) => line.kind === LineKind.Heading);
+    const allLines = splitLines(body, ID_PREFIX);
+    const headingLines = allLines.filter((line) => line.kind === LineKind.Heading);
 
     expect(headingLines).toHaveLength(body.querySelectorAll(HEADINGS_SELECTOR).length);
+  });
+
+  it('gives each piece of text its format', () => {
+    const [line] = splitDocument('<p>Read the <b>full</b> guide.</p>');
+    const bold = { ...PLAIN_FORMAT, styles: [TextStyle.Bold] };
+
+    expect(line.formats).toEqual([
+      { start: 0, end: 9, format: PLAIN_FORMAT },
+      { start: 9, end: 13, format: bold },
+      { start: 13, end: 20, format: PLAIN_FORMAT },
+    ]);
+  });
+
+  it('prefixes ids in the HTML of a line, but reads links as they are written', () => {
+    const [line] = splitDocument('<p>See note<a href="#note">1</a>.</p><p id="note">Note.</p>');
+    const linkFormat = line.formats.find((range) => range.format.link !== null)?.format;
+
+    expect(line.html).toBe('<p>See note<a href="#diff-note">1</a>.</p>');
+    expect(linkFormat?.link).toBe('#note');
   });
 });
