@@ -1,8 +1,9 @@
 import {
   BLOCK_TAGS,
-  CONTAINER_TAGS,
   HEADING_TAGS,
+  LIST_ITEM_TAGS,
   PARAGRAPH_TAGS,
+  SPLIT_BLOCK_TAGS,
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
 import { lineImages } from './line-images';
@@ -12,6 +13,7 @@ import { type TextPiece, mapReaderText } from './reader-text';
 import { TextFormatReader } from './text-format';
 
 const TEMPLATE_TAG = 'template';
+const ID_ATTRIBUTE = 'id';
 
 /** What a line is built from. */
 interface LineSource {
@@ -20,6 +22,12 @@ interface LineSource {
   readonly nodes: readonly Node[];
   readonly wrappers: readonly Element[];
 }
+
+/** Kind and tag of a line. */
+type LineType = Pick<LineSource, 'kind' | 'tag'>;
+
+/** Text outside any block, or next to the blocks of a container such as a quote. */
+const TEXT_OUTSIDE_BLOCKS: LineType = { kind: LineKind.Paragraph, tag: null };
 
 /**
  * Splits a parsed document into lines. Text and formats are read from the document as it is,
@@ -40,14 +48,18 @@ class LineCollector {
 
   private readonly formatReader = new TextFormatReader();
 
+  /** Containers copied into the HTML of a line so far; a later copy is not the first one. */
+  private readonly copiedWrappers = new Set<Element>();
+
   constructor(private readonly idPrefix: string) {}
 
   /** Adds lines for the children of a container; containers of blocks are split further. */
   addChildren(container: Element, wrappers: readonly Element[]): void {
+    const inlineLineType = textLineType(container);
     let inlineNodes: Node[] = [];
 
     const addInlineLine = (): void => {
-      this.addLine({ kind: LineKind.Paragraph, tag: null, nodes: inlineNodes, wrappers });
+      this.addLine({ ...inlineLineType, nodes: inlineNodes, wrappers });
       inlineNodes = [];
     };
 
@@ -59,7 +71,9 @@ class LineCollector {
 
       addInlineLine();
 
-      if (isContainerOfBlocks(child)) {
+      if (LIST_ITEM_TAGS.has(child.localName)) {
+        this.addListItem(child, wrappers);
+      } else if (isContainerOfBlocks(child)) {
         this.addChildren(child, [...wrappers, child]);
       } else {
         this.addLine({ kind: kindOf(child), tag: child.localName, nodes: [child], wrappers });
@@ -67,6 +81,22 @@ class LineCollector {
     }
 
     addInlineLine();
+  }
+
+  /**
+   * Adds the lines of a list item. An item with blocks inside, such as a nested list, is split like
+   * a quote; an item that gives no line that way, such as one with empty paragraphs, is one line.
+   */
+  private addListItem(item: Element, wrappers: readonly Element[]): void {
+    const lineCountBefore = this.lines.length;
+
+    if (isContainerOfBlocks(item)) {
+      this.addChildren(item, [...wrappers, item]);
+    }
+
+    if (this.lines.length === lineCountBefore) {
+      this.addLine({ kind: LineKind.ListItem, tag: item.localName, nodes: [item], wrappers });
+    }
   }
 
   /** Adds a line unless a reader would see nothing in it. */
@@ -114,7 +144,7 @@ class LineCollector {
     let parent: Node = template.content;
 
     for (const wrapper of wrappers) {
-      parent = parent.appendChild(wrapper.cloneNode(false));
+      parent = parent.appendChild(this.wrapperCopy(wrapper));
     }
 
     for (const node of nodes) {
@@ -125,15 +155,37 @@ class LineCollector {
 
     return template.innerHTML;
   }
+
+  /** A shallow copy of a container. Only its first copy keeps its id, so ids stay unique. */
+  private wrapperCopy(wrapper: Element): Element {
+    const copy = shallowCopy(wrapper);
+
+    if (this.copiedWrappers.has(wrapper)) {
+      copy.removeAttribute(ID_ATTRIBUTE);
+    }
+
+    this.copiedWrappers.add(wrapper);
+
+    return copy;
+  }
 }
 
 function isBlock(node: Node): node is Element {
   return node instanceof Element && BLOCK_TAGS.has(node.localName);
 }
 
-/** A container, such as a quote, whose blocks become separate lines. */
+/** A container, such as a quote, a list or a list item, whose blocks become separate lines. */
 function isContainerOfBlocks(element: Element): boolean {
-  return CONTAINER_TAGS.has(element.localName) && Array.from(element.children).some(isBlock);
+  return SPLIT_BLOCK_TAGS.has(element.localName) && Array.from(element.children).some(isBlock);
+}
+
+/** Kind and tag of text next to the blocks of a container: a list item's text, or a paragraph. */
+function textLineType(container: Element): LineType {
+  if (LIST_ITEM_TAGS.has(container.localName)) {
+    return { kind: LineKind.ListItem, tag: container.localName };
+  }
+
+  return TEXT_OUTSIDE_BLOCKS;
 }
 
 function kindOf(block: Element): LineKind {
@@ -146,6 +198,11 @@ function kindOf(block: Element): LineKind {
   }
 
   return LineKind.Block;
+}
+
+/** A copy of the element without its children. */
+function shallowCopy(element: Element): Element {
+  return element.cloneNode(false) as Element;
 }
 
 /** True for an image, a rule or anything else a reader sees without text, at any depth. */

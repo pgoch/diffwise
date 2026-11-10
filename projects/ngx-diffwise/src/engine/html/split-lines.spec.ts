@@ -10,6 +10,7 @@ import { PLAIN_FORMAT } from './text-format';
 
 const SPACE = ' ';
 const HEADINGS_SELECTOR = 'h1, h2, h3, h4, h5, h6';
+const LIST_ITEMS_SELECTOR = 'li, dt, dd';
 const ID_PREFIX = 'diff-';
 
 /** Long samples from `test-data/`, which contain everything an editor can produce. */
@@ -37,6 +38,11 @@ function lines(documentHtml: string) {
 /** Lines without their formats and HTML, for tests that check only the split. */
 function linesWithoutHtml(html: string) {
   return lines(html).map(({ kind, tag, text }) => ({ kind, tag, text }));
+}
+
+/** HTML of each line, for tests that check only the copies around the content. */
+function htmlOfLines(html: string) {
+  return lines(html).map((line) => line.html);
 }
 
 describe('splitLines', () => {
@@ -114,13 +120,135 @@ describe('splitLines', () => {
     ]);
   });
 
-  it('keeps lists and tables whole for now', () => {
+  it('makes a line of every list item inside a copy of its list', () => {
+    expect(lines('<ul class="plany"><li>Osobisty</li><li>Firmowy</li></ul>')).toEqual([
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'Osobisty',
+        html: '<ul class="plany"><li>Osobisty</li></ul>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'Firmowy',
+        html: '<ul class="plany"><li>Firmowy</li></ul>',
+      },
+    ]);
+  });
+
+  it('splits an item with a nested list into its text and the nested items', () => {
     const html =
-      '<ul><li>One</li><li>Two</li></ul><table><tr><td>49 zł</td><td>59 zł</td></tr></table>';
+      '<ul><li>Konta<ul><li>osobiste</li><li>firmowe</li></ul>i ich ustawienia</li></ul>';
+
+    expect(lines(html)).toEqual([
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'Konta',
+        html: '<ul><li>Konta</li></ul>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'osobiste',
+        html: '<ul><li><ul><li>osobiste</li></ul></li></ul>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'firmowe',
+        html: '<ul><li><ul><li>firmowe</li></ul></li></ul>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'i ich ustawienia',
+        html: '<ul><li>i ich ustawienia</li></ul>',
+      },
+    ]);
+  });
+
+  it('splits an item with several paragraphs, which read like the item without them', () => {
+    expect(lines('<ol><li><p>Pierwszy akapit</p><p>Drugi akapit</p></li></ol>')).toEqual([
+      {
+        kind: LineKind.Paragraph,
+        tag: 'p',
+        text: 'Pierwszy akapit',
+        html: '<ol><li><p>Pierwszy akapit</p></li></ol>',
+      },
+      {
+        kind: LineKind.Paragraph,
+        tag: 'p',
+        text: 'Drugi akapit',
+        html: '<ol><li><p>Drugi akapit</p></li></ol>',
+      },
+    ]);
+  });
+
+  it('keeps an empty list item as a line, as its marker shows', () => {
+    const html =
+      '<ol><li>Jeden</li><li></li><li><p> </p></li></ol><dl><dt>Termin</dt><dd></dd></dl>';
+
+    expect(lines(html)).toEqual([
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: 'Jeden',
+        html: '<ol><li>Jeden</li></ol>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: '',
+        html: '<ol><li></li></ol>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'li',
+        text: '',
+        html: '<ol><li><p> </p></li></ol>',
+      },
+      {
+        kind: LineKind.ListItem,
+        tag: 'dt',
+        text: 'Termin',
+        html: '<dl><dt>Termin</dt></dl>',
+      },
+    ]);
+  });
+
+  it('makes a line of each term and description of a definition list', () => {
+    expect(htmlOfLines('<dl><dt>Notatnik</dt><dd>Zbiór notatek</dd></dl>')).toEqual([
+      '<dl><dt>Notatnik</dt></dl>',
+      '<dl><dd>Zbiór notatek</dd></dl>',
+    ]);
+  });
+
+  it('splits a list inside a quote and keeps both around each item', () => {
+    expect(htmlOfLines('<blockquote><ul><li>Jeden</li><li>Dwa</li></ul></blockquote>')).toEqual([
+      '<blockquote><ul><li>Jeden</li></ul></blockquote>',
+      '<blockquote><ul><li>Dwa</li></ul></blockquote>',
+    ]);
+  });
+
+  it('keeps an id only in the first line of its element', () => {
+    const list = '<ol id="kroki"><li id="konto">Konto<ul><li>osobiste</li></ul></li></ol>';
+    const quote = '<blockquote id="cytat"><p>Jeden</p><p>Dwa</p></blockquote>';
+
+    expect(htmlOfLines(list + quote)).toEqual([
+      '<ol id="diff-kroki"><li id="diff-konto">Konto</li></ol>',
+      '<ol><li><ul><li>osobiste</li></ul></li></ol>',
+      '<blockquote id="diff-cytat"><p>Jeden</p></blockquote>',
+      '<blockquote><p>Dwa</p></blockquote>',
+    ]);
+  });
+
+  it('keeps a table whole for now, with the lists in its cells', () => {
+    const html = '<table><tr><td>49 zł</td><td><ul><li>bez limitu</li></ul></td></tr></table>';
 
     expect(linesWithoutHtml(html)).toEqual([
-      { kind: LineKind.Block, tag: 'ul', text: 'One Two' },
-      { kind: LineKind.Block, tag: 'table', text: '49 zł 59 zł' },
+      { kind: LineKind.Block, tag: 'table', text: '49 zł bez limitu' },
     ]);
   });
 
@@ -191,12 +319,14 @@ describe('splitLines', () => {
       { kind: LineKind.Heading, tag: 'h1', text: 'User guide' },
       { kind: LineKind.Paragraph, tag: 'p', text: 'Welcome to Notebook Online.' },
       { kind: LineKind.Heading, tag: 'h2', text: 'Getting started' },
-      { kind: LineKind.Block, tag: 'ol', text: 'Sign in Create a notebook' },
+      { kind: LineKind.ListItem, tag: 'li', text: 'Sign in' },
+      { kind: LineKind.ListItem, tag: 'li', text: 'Create a notebook' },
       { kind: LineKind.Paragraph, tag: 'p', text: 'Simple and fast.' },
       { kind: LineKind.Block, tag: 'figure', text: `${IMAGE_CHARACTER} The editor` },
       { kind: LineKind.Block, tag: 'pre', text: 'Ctrl + S' },
       { kind: LineKind.Block, tag: 'details', text: 'More Hidden until opened.' },
-      { kind: LineKind.Block, tag: 'dl', text: 'Notebook A set of notes' },
+      { kind: LineKind.ListItem, tag: 'dt', text: 'Notebook' },
+      { kind: LineKind.ListItem, tag: 'dd', text: 'A set of notes' },
       { kind: LineKind.Block, tag: 'address', text: 'Notebook Online, example.com' },
     ]);
   });
@@ -216,6 +346,14 @@ describe('splitLines', () => {
     const headingLines = allLines.filter((line) => line.kind === LineKind.Heading);
 
     expect(headingLines).toHaveLength(body.querySelectorAll(HEADINGS_SELECTOR).length);
+  });
+
+  it.each(LONG_SAMPLES)('makes a line of every list item in %s', (_, html) => {
+    const body = parseHtml(html);
+    const allLines = splitLines(body, ID_PREFIX);
+    const itemLines = allLines.filter((line) => line.kind === LineKind.ListItem);
+
+    expect(itemLines).toHaveLength(body.querySelectorAll(LIST_ITEMS_SELECTOR).length);
   });
 
   it('gives each piece of text its format', () => {

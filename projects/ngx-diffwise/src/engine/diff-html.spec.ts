@@ -49,6 +49,8 @@ const FRAGMENT_LINK_SELECTOR = 'a[href^="#"]';
 const HREF_ATTRIBUTE = 'href';
 const FRAGMENT_START = '#';
 
+const LIST_ITEM_SELECTOR = 'li, dt, dd';
+
 /** Sample pairs from `test-data/`, as `[name, before, after]`. */
 const SAMPLES: [string, string, string][] = [
   ['en/short', enShortBefore, enShortAfter],
@@ -190,6 +192,15 @@ function hasMarkers({ oldLine, newLine }: ViewRow): boolean {
   return [oldLine, newLine].some(lineHasMarkers);
 }
 
+/** True for a row of list items that differ. */
+function isChangedListItem(row: ViewRow): boolean {
+  return row.kind !== LineChangeKind.Unchanged && isListItemLine(row.newLine ?? row.oldLine);
+}
+
+function isListItemLine(line: ViewLine | null): boolean {
+  return line !== null && fragmentOf(line.html).querySelector(LIST_ITEM_SELECTOR) !== null;
+}
+
 function lineHasMarkers(line: ViewLine | null): boolean {
   return line !== null && fragmentOf(line.html).querySelector(MARKER_SELECTOR) !== null;
 }
@@ -270,39 +281,56 @@ describe('diffHtml', () => {
       [LineChangeKind.Added, null, 7, [], []],
       [LineChangeKind.Unchanged, 6, 8, [], []],
       [LineChangeKind.Changed, 7, 9, ['20'], ['50']],
+      [LineChangeKind.Unchanged, 8, 10, [], []],
+      [LineChangeKind.Removed, 9, null, [], []],
+      [LineChangeKind.Unchanged, 10, 11, [], []],
+      [LineChangeKind.Added, null, 12, [], []],
+      [LineChangeKind.Unchanged, 11, 13, [], []],
       [
         LineChangeKind.Changed,
-        8,
-        10,
-        ['Avoid tags that repeat a notebook name.'],
-        ['Name all tags in one language.'],
-      ],
-      [LineChangeKind.Unchanged, 9, 11, [], []],
-      [
-        LineChangeKind.Changed,
-        10,
         12,
+        14,
         ['Pinned notes always stay at the top of the list in every notebook.'],
         [],
       ],
-      [LineChangeKind.Unchanged, 11, 13, [], []],
-      [LineChangeKind.Unchanged, 12, 14, [], []],
-      [LineChangeKind.Changed, 13, 15, ['five'], ['Delete notes you no longer need.', 'ten']],
-      [LineChangeKind.Changed, 14, 16, ['month'], ['week']],
+      [LineChangeKind.Unchanged, 13, 15, [], []],
+      [LineChangeKind.Unchanged, 14, 16, [], []],
       [LineChangeKind.Unchanged, 15, 17, [], []],
       [LineChangeKind.Unchanged, 16, 18, [], []],
       [LineChangeKind.Unchanged, 17, 19, [], []],
-      [LineChangeKind.Removed, 18, null, [], []],
-      [LineChangeKind.Removed, 19, null, [], []],
-      [LineChangeKind.Unchanged, 20, 20, [], []],
-      [LineChangeKind.Unchanged, 21, 21, [], []],
-      [LineChangeKind.Added, null, 22, [], []],
-      [LineChangeKind.Added, null, 23, [], []],
-      [LineChangeKind.Changed, 22, 24, ['help center'], ['help center']],
+      [LineChangeKind.Added, null, 20, [], []],
+      [LineChangeKind.Changed, 18, 21, ['five'], ['ten']],
+      [LineChangeKind.Changed, 19, 22, ['month'], ['week']],
+      [LineChangeKind.Unchanged, 20, 23, [], []],
+      [LineChangeKind.Unchanged, 21, 24, [], []],
+      [LineChangeKind.Unchanged, 22, 25, [], []],
+      [LineChangeKind.Removed, 23, null, [], []],
+      [LineChangeKind.Removed, 24, null, [], []],
+      [LineChangeKind.Unchanged, 25, 26, [], []],
+      [LineChangeKind.Unchanged, 26, 27, [], []],
+      [LineChangeKind.Added, null, 28, [], []],
+      [LineChangeKind.Added, null, 29, [], []],
+      [LineChangeKind.Changed, 27, 30, ['help center'], ['help center']],
     ]);
-    expect(diff.stats).toEqual({ addedLines: 4, removedLines: 2, changedLines: 9 });
+    expect(diff.stats).toEqual({ addedLines: 6, removedLines: 3, changedLines: 8 });
   });
 
+  it('shows the list changes of the long sample item by item', () => {
+    const changedItems = compare(enLongBefore, enLongAfter)
+      .rows.filter(isChangedListItem)
+      .map(rowSummary);
+
+    expect(changedItems).toEqual([
+      [LineChangeKind.Added, null, 11, [], []],
+      [LineChangeKind.Changed, 21, 22, ['24'], ['48']],
+      [LineChangeKind.Added, null, 23, [], []],
+      [LineChangeKind.Changed, 23, 25, ['macOS'], [', macOS', 'Linux']],
+      [LineChangeKind.Changed, 44, 46, ['and invite others'], []],
+      [LineChangeKind.Added, null, 47, [], []],
+      [LineChangeKind.Changed, 62, 65, [], ['and files']],
+      [LineChangeKind.Changed, 77, 80, [], ['or newer']],
+    ]);
+  });
   it.each(TRANSLATED_SAMPLES)(
     'shows the same rows for the English and Polish %s samples',
     (_, [enBefore, enAfter], [plBefore, plAfter]) => {
@@ -470,19 +498,19 @@ describe('diffHtml', () => {
     expect(
       compare(enLongBefore, enLongAfter).rows.filter(hasFormattingOrLinkDetails).map(detailSummary),
     ).toEqual([
-      [28, 28, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
-      [29, 29, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
+      [45, 48, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
+      [46, 49, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
       [
-        35,
-        35,
+        52,
+        55,
         ['Important:'],
         ['Important:'],
         [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
       ],
-      [37, 37, ['color'], ['color'], [formattingDetail([], [], [textColor])]],
+      [54, 57, ['color'], ['color'], [formattingDetail([], [], [textColor])]],
       [
-        41,
-        41,
+        58,
+        61,
         ['Keyboard shortcuts'],
         ['Keyboard shortcuts'],
         [formattingDetail([], [], [headingLevel])],
@@ -538,10 +566,10 @@ describe('diffHtml', () => {
       compare(enLongBefore, enLongAfter).rows.filter(hasFramedImages).map(imageSummary),
     ).toEqual([
       [3, 3, [logo2025], [logo2026], [[ImageProperty.Source]]],
-      [25, 25, ['images/icon-share.svg'], [], []],
-      [30, 30, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
-      [49, 50, [chart], [chart], [[ImageProperty.AltText]]],
-      [53, 53, [logo2025], [logo2026], [[ImageProperty.Source]]],
+      [40, 42, ['images/icon-share.svg'], [], []],
+      [47, 50, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
+      [71, 75, [chart], [chart], [[ImageProperty.AltText]]],
+      [75, 78, [logo2025], [logo2026], [[ImageProperty.Source]]],
     ]);
   });
 

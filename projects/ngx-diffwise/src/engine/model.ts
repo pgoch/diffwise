@@ -4,7 +4,9 @@ export const LineKind = {
   Heading: 'heading',
   /** `p`, a container with text only, or text outside any block. */
   Paragraph: 'paragraph',
-  /** Any other block, such as a list or a table; one line for now. */
+  /** `li`, `dt` or `dd`, or the text of one next to its inner blocks, such as a nested list. */
+  ListItem: 'listItem',
+  /** Any other block, such as a table; one line for now. */
   Block: 'block',
 } as const;
 
@@ -13,7 +15,7 @@ export type LineKind = (typeof LineKind)[keyof typeof LineKind];
 /** A block a reader sees as one unit; HTML has no lines of its own. */
 export interface Line {
   readonly kind: LineKind;
-  /** Block tag, such as `p` or `ul`; `null` for text outside any block. */
+  /** Block tag, such as `p` or `li`; `null` for text outside any block. */
   readonly tag: string | null;
   /** Text as a reader sees it; lines are compared by it. An image is one character of it. */
   readonly text: string;
@@ -21,7 +23,10 @@ export interface Line {
   readonly formats: readonly FormattedRange[];
   /** Images in the text, in reading order. */
   readonly images: readonly LineImage[];
-  /** Sanitized HTML inside copies of its containers, such as a quote; its ids are prefixed. */
+  /**
+   * Sanitized HTML inside copies of its containers, such as a quote or a list; its ids are prefixed
+   * and appear only in the first line of their element.
+   */
   readonly html: string;
 }
 

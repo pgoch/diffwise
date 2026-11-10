@@ -104,11 +104,10 @@ describe('markChanges', () => {
   });
 
   it('leaves the space between blocks unmarked', () => {
-    expect(mark('<ul><li>Jeden</li><li>Dwa</li></ul>', ['Jeden Dwa'])).toBe(
-      `<ul><li>${removed('Jeden')}</li><li>${removed('Dwa')}</li></ul>`,
+    expect(mark('<details><summary>Jeden</summary><p>Dwa</p></details>', ['Jeden Dwa'])).toBe(
+      `<details><summary>${removed('Jeden')}</summary><p>${removed('Dwa')}</p></details>`,
     );
   });
-
   it('keeps entities and no-break spaces', () => {
     expect(mark('<p>Rabat &lt; 20&nbsp;zł &amp; dostawa</p>', ['20 zł'])).toBe(
       `<p>Rabat &lt; ${removed('20&nbsp;zł')} &amp; dostawa</p>`,
