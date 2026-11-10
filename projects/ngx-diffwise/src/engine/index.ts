@@ -4,6 +4,7 @@ export {
   type ChangeDetail,
   ChangeDetailKind,
   DEFAULT_DIFF_OPTIONS,
+  DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   type DiffStats,
   type FormattingChangeDetail,

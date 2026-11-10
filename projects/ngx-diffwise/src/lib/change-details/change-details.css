@@ -1,0 +1,224 @@
+/*
+ * Details of changes besides text: the icon between the versions and the tooltip.
+ * Apart from the other styles of the component, which have a size budget in the demo build.
+ */
+
+/* Defaults of the variables; `:where()` makes them weaker than any selector of the app. */
+:where(.diffwise-html-diff) {
+  --diffwise-focus: #3b82f6;
+  --diffwise-tooltip-background: #fff;
+  --diffwise-tooltip-text: #1f2328;
+  --diffwise-tooltip-border: #e3e6ea;
+  --diffwise-tooltip-shadow: 0 10px 28px rgb(0 0 0 / 12%);
+  --diffwise-tooltip-removed-highlight: #ffc4c4;
+  --diffwise-tooltip-added-highlight: #ade6bb;
+  --diffwise-tooltip-font-size: 0.8rem;
+}
+
+:where(.diffwise-html-diff--dark-theme) {
+  --diffwise-focus: #60a5fa;
+  --diffwise-tooltip-background: #1b1f26;
+  --diffwise-tooltip-text: #e6e8eb;
+  --diffwise-tooltip-border: #2a2f38;
+  --diffwise-tooltip-shadow: 0 10px 28px rgb(0 0 0 / 40%);
+  --diffwise-tooltip-removed-highlight: #6b2a2f;
+  --diffwise-tooltip-added-highlight: #22603a;
+}
+
+/*
+ * The column between the versions holds the icon of a row, at the first line of the text, like
+ * the line numbers. The bottom padding has the extra 1px of every cell.
+ */
+.diffwise-html-diff__divider {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-block: calc(5px + 0.8em - 0.915 * var(--diffwise-line-number-font-size))
+    calc(6px + 0.8em - 0.915 * var(--diffwise-line-number-font-size));
+}
+
+.diffwise-html-diff--line-number-alignment-middle .diffwise-html-diff__divider {
+  align-items: center;
+}
+
+.diffwise-html-diff--line-number-alignment-bottom .diffwise-html-diff__divider {
+  align-items: flex-end;
+}
+
+/* A line between the versions carries the icon above the cells next to it. */
+.diffwise-html-diff--divider-style-line .diffwise-html-diff__divider {
+  position: relative;
+  z-index: 1;
+}
+
+diffwise-change-details-button {
+  display: contents;
+}
+
+/*
+ * The icon grows with the line numbers. Its frame has a gradient from the color of the old
+ * version to the color of the new one (U26 B).
+ */
+.diffwise-html-diff__change-details-icon {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: calc(1.83 * var(--diffwise-line-number-font-size));
+  height: calc(1.83 * var(--diffwise-line-number-font-size));
+  padding: 0;
+  border: 1.5px solid transparent;
+  border-radius: calc(0.5 * var(--diffwise-line-number-font-size));
+  background:
+    linear-gradient(var(--diffwise-background), var(--diffwise-background)) padding-box,
+    linear-gradient(90deg, var(--diffwise-removed-accent), var(--diffwise-added-accent)) border-box;
+  color: var(--diffwise-text);
+  font: inherit;
+  font-size: var(--diffwise-line-number-font-size);
+  cursor: help;
+}
+
+.diffwise-html-diff__change-details-icon svg {
+  width: 1.17em;
+  height: 1.17em;
+}
+
+.diffwise-html-diff__change-details-icon:hover,
+.diffwise-html-diff__change-details-icon:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--diffwise-focus) 35%, transparent);
+}
+
+/* The number of changes on the icon of several changes (U24 B). */
+.diffwise-html-diff__change-details-count {
+  position: absolute;
+  top: -0.6em;
+  right: -0.7em;
+  box-sizing: border-box;
+  min-width: 1.25em;
+  height: 1.25em;
+  padding: 0 0.25em;
+  border-radius: 0.625em;
+  background: var(--diffwise-text);
+  color: var(--diffwise-background);
+  font-size: 0.83em;
+  font-weight: 600;
+  line-height: 1.25em;
+  text-align: center;
+}
+
+.diffwise-html-diff__change-details-icon:focus-visible,
+.diffwise-html-diff__content [data-diffwise-change-details]:focus-visible {
+  outline: 2px solid var(--diffwise-focus);
+  outline-offset: 2px;
+}
+
+/* Marked changes with details show them on hover, unless only the icons show them. */
+.diffwise-html-diff:not(.diffwise-html-diff--change-details-icon)
+  .diffwise-html-diff__content
+  [data-diffwise-change-details] {
+  cursor: help;
+}
+
+/*
+ * The tooltip, in the colors of the component (U9 C). It stands where the diff puts it, instead
+ * of where popovers stand by default, and covers the gap to its trigger for the pointer.
+ */
+.diffwise-html-diff__tooltip {
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  max-width: min(30em, calc(100vw - 16px));
+  margin: 0;
+  overflow: visible;
+  padding: 0.65em 0.9em;
+  border: 1px solid var(--diffwise-tooltip-border);
+  border-radius: 8px;
+  background: var(--diffwise-tooltip-background);
+  box-shadow: var(--diffwise-tooltip-shadow);
+  color: var(--diffwise-tooltip-text);
+  font-size: var(--diffwise-tooltip-font-size);
+  line-height: 1.45;
+  text-align: start;
+}
+
+.diffwise-html-diff__tooltip::before {
+  position: absolute;
+  inset: -10px 0;
+  content: '';
+}
+
+.diffwise-html-diff__tooltip-title {
+  margin-bottom: 3px;
+  font-weight: 650;
+}
+
+.diffwise-html-diff__tooltip-title:last-child {
+  margin-bottom: 0;
+}
+
+/* One of several changes, under a line. */
+.diffwise-html-diff__tooltip-item {
+  margin-top: 0.5em;
+  padding-top: 0.5em;
+  border-top: 1px solid rgb(128 128 128 / 35%);
+}
+
+.diffwise-html-diff__tooltip-subtitle {
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.diffwise-html-diff__tooltip-subtitle:not(:first-child) {
+  margin-top: 0.45em;
+}
+
+/* "Before" and "After" rows; the minimum width of the label keeps short values in line. */
+.diffwise-html-diff__tooltip-row {
+  display: flex;
+  gap: 0.6em;
+}
+
+.diffwise-html-diff__tooltip-label {
+  flex: none;
+  min-width: 3.2em;
+  opacity: 0.65;
+}
+
+.diffwise-html-diff__tooltip-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.diffwise-html-diff__tooltip code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.95em;
+  word-break: break-all;
+}
+
+/* The part of a value that changed, in the color of its version (U9 C, R65). */
+.diffwise-html-diff__tooltip-highlight {
+  padding: 0 2px;
+  border-radius: 3px;
+  color: inherit;
+}
+
+.diffwise-html-diff__tooltip-highlight--removed {
+  background: var(--diffwise-tooltip-removed-highlight);
+}
+
+.diffwise-html-diff__tooltip-highlight--added {
+  background: var(--diffwise-tooltip-added-highlight);
+}
+
+/* A swatch before the value of a color (U37 B). */
+.diffwise-html-diff__tooltip-color {
+  display: inline-block;
+  width: 0.85em;
+  height: 0.85em;
+  margin-inline-end: 0.3em;
+  border: 1px solid rgb(128 128 128 / 55%);
+  border-radius: 3px;
+  vertical-align: -0.1em;
+}

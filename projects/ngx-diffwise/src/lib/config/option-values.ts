@@ -92,6 +92,19 @@ export const DiffwiseFontFamily = {
 
 export type DiffwiseFontFamily = (typeof DiffwiseFontFamily)[keyof typeof DiffwiseFontFamily];
 
+/** Where the details of a change besides its text show, such as the old and new link address. */
+export const DiffwiseChangeDetails = {
+  /** In a tooltip of the marked change, on hover; marked changes can take the focus then. */
+  Hover: 'hover',
+  /** In a tooltip of an icon between the versions, on hover and on focus. */
+  Icon: 'icon',
+  /** In both places. */
+  Both: 'both',
+} as const;
+
+export type DiffwiseChangeDetails =
+  (typeof DiffwiseChangeDetails)[keyof typeof DiffwiseChangeDetails];
+
 /** Headers above the two versions; an app can also give its own texts instead. */
 export const DiffwiseVersionHeaders = {
   /** No headers. */

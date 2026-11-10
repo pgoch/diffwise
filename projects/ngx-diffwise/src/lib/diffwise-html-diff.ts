@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
   ElementRef,
   LOCALE_ID,
   ViewEncapsulation,
@@ -9,11 +10,16 @@ import {
   inject,
   input,
   signal,
+  untracked,
+  viewChild,
 } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import {
+  CHANGE_DETAILS_ATTRIBUTE,
+  type ChangeDetail,
   DEFAULT_DIFF_OPTIONS,
+  DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   type LineChangeKind,
   type ViewLine,
@@ -21,11 +27,19 @@ import {
   diffHtml,
 } from '../engine';
 import { appearanceClasses, appearanceStyles } from './appearance';
+import { ChangeDetailsButton } from './change-details/change-details-button';
+import { ChangeDescriber } from './change-details/change-texts';
+import {
+  ChangeTooltip,
+  type TooltipRequest,
+  TriggerDescription,
+} from './change-details/change-tooltip';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   type DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   type DiffwiseDividerStyle,
   type DiffwiseGapStyle,
@@ -55,11 +69,35 @@ const FRAGMENT_START = '#';
 /** A `tabindex` that lets a script focus an element without adding it to the tab order. */
 const FOCUSABLE_BY_SCRIPT = '-1';
 
+/** A `tabindex` that adds an element to the tab order, in the order of the page. */
+const FOCUSABLE_IN_ORDER = '0';
+
+const TOOLTIP_ID_END = '-tooltip';
+const ROW_SELECTOR = '.diffwise-html-diff__row';
+const CONTENT_SELECTOR = '.diffwise-html-diff__content';
+const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
+const FOCUS_VISIBLE_SELECTOR = ':focus-visible';
+const MOUSEOVER_EVENT = 'mouseover';
+const MOUSEOUT_EVENT = 'mouseout';
+const FOCUSIN_EVENT = 'focusin';
+const FOCUSOUT_EVENT = 'focusout';
+
+/** Marks a row with changes besides text with its position, so its markers find their details. */
+const ROW_INDEX_ATTRIBUTE = 'data-diffwise-row';
+
+/** A marker of changed text that points to change details. */
+const DESCRIBED_MARKER_SELECTOR = `[${CHANGE_DETAILS_ATTRIBUTE}]`;
+
+/** Markers that can take the focus: the new version has one for each change, which is one stop. */
+const FOCUSABLE_MARKER_SELECTOR = `.diffwise-html-diff__content--new ${DESCRIBED_MARKER_SELECTOR}`;
+
 /** Diffs created so far; numbers the id prefixes. */
 let createdDiffs = 0;
 
 /** Colors of a theme without colors of the app. */
 const NO_COLORS: ThemeDiffColors = Object.freeze({});
+
+const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 
 /** A line as the template shows it. */
 interface ShownLine {
@@ -73,6 +111,8 @@ interface ShownRow {
   readonly kind: LineChangeKind;
   readonly oldLine: ShownLine | null;
   readonly newLine: ShownLine | null;
+  /** Changes besides changed text, such as formatting; markers point to them by position. */
+  readonly changeDetails: readonly ChangeDetail[];
 }
 
 /** Headers as the template shows them. */
@@ -85,8 +125,9 @@ interface ShownVersionHeaders {
 /** Shows two versions of an HTML document side by side, with the changes marked. */
 @Component({
   selector: 'diffwise-html-diff',
+  imports: [ChangeDetailsButton, ChangeTooltip],
   templateUrl: './diffwise-html-diff.html',
-  styleUrl: './diffwise-html-diff.css',
+  styleUrls: ['./diffwise-html-diff.css', './change-details/change-details.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
@@ -169,6 +210,9 @@ export class DiffwiseHtmlDiff {
   /** Font size of the line numbers in rem; wins over `config` and the global configuration. */
   readonly lineNumberFontSize = input<number>();
 
+  /** Where details of changes besides text show; wins over `config` and the global configuration. */
+  readonly changeDetails = input<DiffwiseChangeDetails>();
+
   /** Ignores differences in whitespace; wins over `config` and the global configuration. */
   readonly ignoreWhitespace = input<boolean>();
 
@@ -189,7 +233,14 @@ export class DiffwiseHtmlDiff {
   private readonly diffwise = inject(Diffwise);
   private readonly colorScheme = inject(ColorScheme);
   private readonly localeId = inject(LOCALE_ID);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly idPrefix = nextIdPrefix();
+
+  /** Id of the tooltip of this diff. */
+  protected readonly tooltipId = this.idPrefix + TOOLTIP_ID_END;
+
+  /** The one tooltip of this diff, for the icons of changes and the marked changes. */
+  private readonly tooltip = viewChild.required(ChangeTooltip);
 
   /** True while the diff is inside an element that matches the dark mode marker of the app. */
   private readonly insideDarkMarker = signal(false);
@@ -214,6 +265,7 @@ export class DiffwiseHtmlDiff {
     fontFamily: this.fontFamily(),
     versionHeaderFontSize: this.versionHeaderFontSize(),
     lineNumberFontSize: this.lineNumberFontSize(),
+    changeDetails: this.changeDetails(),
     ignoreWhitespace: this.ignoreWhitespace(),
     ignoreCase: this.ignoreCase(),
     language: this.language(),
@@ -248,13 +300,31 @@ export class DiffwiseHtmlDiff {
     isDarkColorMode(this.effectiveConfig().colorMode, () => this.autoModeIsDark()),
   );
 
+  /** Language of the interface; it also joins lists in the tooltips. */
+  private readonly uiLanguage = computed(() =>
+    resolveLanguage(this.effectiveConfig().language, this.localeId),
+  );
+
   /** Texts of the interface in its language, with the custom texts of the app. */
   protected readonly texts = computed<UiTexts>(() => {
-    const { language, customTexts } = this.effectiveConfig();
-    const languageTexts = LANGUAGE_TEXTS[resolveLanguage(language, this.localeId)];
-
-    return { ...languageTexts, ...customTexts };
+    const languageTexts = LANGUAGE_TEXTS[this.uiLanguage()];
+    return { ...languageTexts, ...this.effectiveConfig().customTexts };
   });
+
+  /** Describes changes besides text in the language of the interface. */
+  protected readonly describer = computed(
+    () => new ChangeDescriber(this.texts(), this.uiLanguage()),
+  );
+
+  /** True when icons between the versions show the details of changes. */
+  protected readonly showsChangeIcons = computed(
+    () => this.effectiveConfig().changeDetails !== DiffwiseChangeDetails.Hover,
+  );
+
+  /** True when marked changes show their details on hover. */
+  private readonly markersShowDetails = computed(
+    () => this.effectiveConfig().changeDetails !== DiffwiseChangeDetails.Icon,
+  );
 
   /** Headers above the two versions, or `null` without headers. */
   protected readonly shownVersionHeaders = computed(() =>
@@ -290,7 +360,10 @@ export class DiffwiseHtmlDiff {
     appearanceStyles(this.effectiveConfig(), this.customColors(), this.lineNumberDigits()),
   );
 
-  /** Watches the dark mode marker of the app after rendering, when the diff is in the page. */
+  /**
+   * Watches the dark mode marker of the app after rendering, when the diff is in the page, and
+   * prepares the tooltips of change details.
+   */
   constructor() {
     afterRenderEffect((onCleanup) => {
       const selector = this.watchedDarkMarker();
@@ -305,6 +378,9 @@ export class DiffwiseHtmlDiff {
 
       onCleanup(stopWatching);
     });
+
+    afterRenderEffect(() => this.prepareMarkers());
+    this.listenForTooltipTriggers();
   }
 
   /**
@@ -336,8 +412,147 @@ export class DiffwiseHtmlDiff {
       : this.insideDarkMarker();
   }
 
-  private shownRow({ kind, oldLine, newLine }: ViewRow): ShownRow {
-    return { kind, oldLine: this.shownLine(oldLine), newLine: this.shownLine(newLine) };
+  /**
+   * After new rows, or with details in another place: hides the tooltip, whose trigger may be gone,
+   * and lets marked changes take the focus when no icons show their details.
+   */
+  private prepareMarkers(): void {
+    const rows = this.rows();
+    const markersTakeFocus = !this.showsChangeIcons();
+
+    untracked(() => this.tooltip().hide());
+
+    if (!rows.some(hasChangeDetails)) {
+      return;
+    }
+
+    for (const marker of this.host.nativeElement.querySelectorAll(FOCUSABLE_MARKER_SELECTOR)) {
+      setFocusable(marker, markersTakeFocus);
+    }
+  }
+
+  /**
+   * Listens outside Angular's event bindings, since after each of them Angular checks every row,
+   * and the pointer moves often. A tooltip shows on hover, and on focus from the keyboard.
+   */
+  private listenForTooltipTriggers(): void {
+    const listeners = new AbortController();
+    const element = this.host.nativeElement;
+    const options = { signal: listeners.signal };
+
+    element.addEventListener(MOUSEOVER_EVENT, (event) => this.showTooltipOnHover(event), options);
+    element.addEventListener(
+      MOUSEOUT_EVENT,
+      (event) => this.tooltip().hideWhenPointerLeaves(event),
+      options,
+    );
+    element.addEventListener(FOCUSIN_EVENT, (event) => this.showTooltipOnFocus(event), options);
+    element.addEventListener(
+      FOCUSOUT_EVENT,
+      (event) => this.tooltip().hideWhenFocusLeaves(event),
+      options,
+    );
+    this.destroyRef.onDestroy(() => listeners.abort());
+  }
+
+  private showTooltipOnHover({ target }: MouseEvent): void {
+    const trigger = this.triggerOf(target);
+
+    if (trigger !== null && !this.tooltip().isShownFor(trigger)) {
+      this.showTooltip(trigger, false);
+    }
+  }
+
+  /** Shows the tooltip of a trigger focused from the keyboard; a click focuses a button too. */
+  private showTooltipOnFocus({ target }: FocusEvent): void {
+    const trigger = this.triggerOf(target);
+
+    if (trigger?.matches(FOCUS_VISIBLE_SELECTOR)) {
+      this.showTooltip(trigger, true);
+    }
+  }
+
+  private showTooltip(trigger: HTMLElement, byFocus: boolean): void {
+    const request = this.tooltipRequest(trigger, byFocus);
+
+    if (request !== null) {
+      this.tooltip().show(request);
+    }
+  }
+
+  /** The element with a tooltip at the target: an icon of changes, or a marked change. */
+  private triggerOf(target: EventTarget | null): HTMLElement | null {
+    if (!(target instanceof Element) || this.tooltip().contains(target)) {
+      return null;
+    }
+
+    const content = target.closest(CONTENT_SELECTOR);
+
+    if (content !== null) {
+      return this.markerOf(target, content);
+    }
+
+    const icon = target.closest<HTMLElement>(CHANGE_DETAILS_ICON_SELECTOR);
+    const isOwnIcon = icon !== null && this.host.nativeElement.contains(icon);
+
+    return isOwnIcon ? icon : null;
+  }
+
+  /** The marker with change details at the target, when marked changes show them on hover. */
+  private markerOf(target: Element, content: Element): HTMLElement | null {
+    const marker = target.closest<HTMLElement>(DESCRIBED_MARKER_SELECTOR);
+    const showsDetails = marker !== null && content.contains(marker) && this.markersShowDetails();
+
+    return showsDetails ? marker : null;
+  }
+
+  /** What the tooltip of a trigger shows; `null` when there is nothing to show. */
+  private tooltipRequest(trigger: HTMLElement, byFocus: boolean): TooltipRequest | null {
+    const details = this.detailsOf(trigger);
+
+    if (details.length === 0) {
+      return null;
+    }
+
+    const content = this.describer().tooltip(details);
+    const isIcon = trigger.matches(CHANGE_DETAILS_ICON_SELECTOR);
+    const description = isIcon ? TriggerDescription.Details : TriggerDescription.Whole;
+
+    return { trigger, content, description, byFocus };
+  }
+
+  /** Changes a trigger shows: all changes of its row for an icon, the ones a marker points to. */
+  private detailsOf(trigger: Element): readonly ChangeDetail[] {
+    const rowDetails = this.rowOf(trigger)?.changeDetails ?? NO_CHANGE_DETAILS;
+    const detailIndices = trigger.getAttribute(CHANGE_DETAILS_ATTRIBUTE);
+
+    if (detailIndices === null) {
+      return rowDetails;
+    }
+
+    const positions = detailIndices.split(DETAIL_INDEX_SEPARATOR).map(Number);
+
+    return rowDetails.filter((_, position) => positions.includes(position));
+  }
+
+  /** The row of an element, by the position its row element carries. */
+  private rowOf(element: Element): ShownRow | null {
+    const position = element.closest(ROW_SELECTOR)?.getAttribute(ROW_INDEX_ATTRIBUTE) ?? null;
+
+    if (position === null) {
+      return null;
+    }
+
+    return this.rows().at(Number(position)) ?? null;
+  }
+
+  private shownRow({ kind, oldLine, newLine, changeDetails }: ViewRow): ShownRow {
+    return {
+      kind,
+      oldLine: this.shownLine(oldLine),
+      newLine: this.shownLine(newLine),
+      changeDetails,
+    };
   }
 
   /**
@@ -374,6 +589,19 @@ function highestLineNumber(rows: readonly ShownRow[]): number {
       Math.max(highest, oldLine?.number ?? 0, newLine?.number ?? 0),
     0,
   );
+}
+
+function hasChangeDetails(row: ShownRow): boolean {
+  return row.changeDetails.length > 0;
+}
+
+/** Puts the element in the tab order, or takes it out. */
+function setFocusable(element: Element, focusable: boolean): void {
+  if (focusable) {
+    element.setAttribute(TABINDEX_ATTRIBUTE, FOCUSABLE_IN_ORDER);
+  } else {
+    element.removeAttribute(TABINDEX_ATTRIBUTE);
+  }
 }
 
 /** True when both count the same differences. */

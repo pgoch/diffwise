@@ -3,6 +3,7 @@ import type { DiffwiseDiffColors } from './diff-colors';
 import { normalizeConfig } from './normalize-config';
 import {
   DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -78,6 +79,11 @@ export interface DiffwiseConfigOptions {
   readonly versionHeaderFontSize?: number;
   /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
   readonly lineNumberFontSize?: number;
+  /**
+   * Where details of changes besides text show, such as link addresses: on hover of the change,
+   * from an icon between the versions, or both. Default: `DiffwiseChangeDetails.Both`.
+   */
+  readonly changeDetails?: DiffwiseChangeDetails;
   /** Ignores differences in whitespace. Default: `false`. */
   readonly ignoreWhitespace?: boolean;
   /** Ignores differences in letter case. Default: `false`. */
@@ -156,6 +162,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Font size of the line numbers in rem. */
   readonly lineNumberFontSize: number = 0.75;
+
+  /** Where the details of a change besides its text show. */
+  readonly changeDetails: DiffwiseChangeDetails = DiffwiseChangeDetails.Both;
 
   /** Ignores differences in whitespace. */
   readonly ignoreWhitespace: boolean = false;
