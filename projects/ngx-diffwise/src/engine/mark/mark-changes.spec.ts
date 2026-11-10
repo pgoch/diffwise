@@ -55,7 +55,7 @@ function rangesOf(text: string, parts: readonly string[]): TextRange[] {
 }
 
 describe('markChanges', () => {
-  it('wraps removed text in a del marker (T2)', () => {
+  it('wraps removed text in a del marker', () => {
     expect(mark('<p>Konto można usunąć w ustawieniach.</p>', ['usunąć'])).toBe(
       `<p>Konto można ${removed('usunąć')} w ustawieniach.</p>`,
     );
@@ -67,7 +67,7 @@ describe('markChanges', () => {
     );
   });
 
-  it('marks two changes in one line separately (T3)', () => {
+  it('marks two changes in one line separately', () => {
     expect(mark('<p>Opłata wynosi 19 zł i jest pobierana z góry.</p>', ['19', 'góry'])).toBe(
       `<p>Opłata wynosi ${removed('19')} zł i jest pobierana z ${removed('góry')}.</p>`,
     );
@@ -109,7 +109,7 @@ describe('markChanges', () => {
     );
   });
 
-  it('keeps entities and no-break spaces (T11)', () => {
+  it('keeps entities and no-break spaces', () => {
     expect(mark('<p>Rabat &lt; 20&nbsp;zł &amp; dostawa</p>', ['20 zł'])).toBe(
       `<p>Rabat &lt; ${removed('20&nbsp;zł')} &amp; dostawa</p>`,
     );

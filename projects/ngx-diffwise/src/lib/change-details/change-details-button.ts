@@ -9,7 +9,7 @@ import {
 import { type ChangeDetail, ChangeDetailKind } from '../../engine';
 import type { ChangeDescriber } from './change-texts';
 
-/** Icons of the button: one for each kind of change, and one for several changes (U24 B). */
+/** Icons of the button: one for each kind of change, and one for several changes. */
 export const ChangeIconKind = {
   Formatting: ChangeDetailKind.Formatting,
   Link: ChangeDetailKind.Link,

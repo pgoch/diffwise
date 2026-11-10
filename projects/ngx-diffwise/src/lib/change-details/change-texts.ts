@@ -31,7 +31,7 @@ import {
 /** Name of a text of the interface. */
 type TextName = keyof UiTexts;
 
-/** Forms of the name of a formatting: as it is, and added or removed (U36 A). */
+/** Forms of the name of a formatting: as it is, and added or removed. */
 const NameForm = {
   Plain: 'plain',
   Added: 'added',
@@ -137,7 +137,7 @@ const ALIGNMENT_TEXT_NAMES: ReadonlyMap<string, TextName> = new Map([
   ['justify', 'alignJustifyLabel'],
 ]);
 
-/** Formatting values shown with a swatch of their color (U37 B). */
+/** Formatting values shown with a swatch of their color. */
 const COLOR_VALUES: ReadonlySet<FormattingValue> = new Set([
   FormattingValue.TextColor,
   FormattingValue.BackgroundColor,
@@ -176,10 +176,7 @@ const HEX_RADIX = 16;
 const HEX_CHANNEL_LENGTH = 2;
 const HEX_PADDING = '0';
 
-/**
- * Describes changes besides changed text in the language of the interface: titles and lines of
- * tooltips (U36 A, U37 B, U38 C, U39 A, U40 A).
- */
+/** Describes changes besides changed text in the language of the interface, for tooltips. */
 export class ChangeDescriber {
   /** Joins names in the language of the interface, such as "bold and italic". */
   private readonly listFormat: Intl.ListFormat;
@@ -218,7 +215,7 @@ export class ChangeDescriber {
     return { title: this.changeTitle(detail), lines: this.changeLines(detail) };
   }
 
-  /** "Formatting changes: 2" (U27 E). */
+  /** "Formatting changes: 2". */
   private multipleChangesTitle(count: number): string {
     return this.texts.multipleChangesLabel.replaceAll(COUNT_PLACEHOLDER, String(count));
   }
@@ -325,7 +322,7 @@ export class ChangeDescriber {
     return textPart(this.texts[textName] + LABEL_SEPARATOR);
   }
 
-  /** A color with its swatch (U37 B), an alignment by its name, other values as CSS writes them. */
+  /** A color with its swatch, an alignment by its name, other values as CSS writes them. */
   private valueParts(name: NamedValue, value: string | null): TooltipPart[] {
     if (value === null) {
       return [textPart(MISSING_VALUE)];
@@ -356,7 +353,7 @@ export class ChangeDescriber {
     return textName === undefined ? alignment : this.texts[textName];
   }
 
-  /** "Link added", "Link removed", or "Link address changed" (U40 A). */
+  /** "Link added", "Link removed", or "Link address changed". */
   private linkTitle({ oldLink, newLink }: LinkChangeDetail): string {
     if (oldLink === null) {
       return this.texts.addedLinkLabel;
@@ -401,7 +398,7 @@ export class ChangeDescriber {
     return lines;
   }
 
-  /** Rows with the old and the new file, under "file" when more of the image changed (U38 C). */
+  /** Rows with the old and the new file, under "file" when more of the image changed. */
   private fileLines(
     oldSource: string | null,
     newSource: string | null,
@@ -417,7 +414,7 @@ export class ChangeDescriber {
     return [subtitleLine(this.texts.imageFileLabel), ...rows];
   }
 
-  /** "size: 480 × 270 → 640 × 360 px" (U39 A); sizes not all in pixels keep their units. */
+  /** "size: 480 × 270 → 640 × 360 px"; sizes not all in pixels keep their units. */
   private sizeChangeText(oldImage: ImageProperties, newImage: ImageProperties): string {
     const sizes = [oldImage.width, oldImage.height, newImage.width, newImage.height];
     const inPixels = sizes.every((size) => size === null || size.endsWith(PIXEL_UNIT));
@@ -428,7 +425,7 @@ export class ChangeDescriber {
     return this.texts.imageSizeLabel + LABEL_SEPARATOR + oldSize + ARROW + newSize + unit;
   }
 
-  /** Rows "Before" and "After", each with the part that changed highlighted (U9 C, R65). */
+  /** Rows "Before" and "After", each with the part that changed highlighted. */
   private valueRows(oldValue: string, newValue: string, kind: TooltipPartKind): TooltipLine[] {
     const [oldParts, newParts] = this.changedPartsOf(oldValue, newValue);
     const oldValueParts = highlightedParts(oldParts, kind, TooltipHighlight.Removed);
@@ -470,7 +467,7 @@ function highlightedParts(
   return parts.filter((part) => part.text.length > 0);
 }
 
-/** Files as their names (U38 C), or as whole addresses when both have the same name. */
+/** Files as their names, or as whole addresses when both have the same name. */
 function shownFiles(oldSource: string | null, newSource: string | null): [string, string] {
   const oldName = fileName(oldSource);
   const newName = fileName(newSource);

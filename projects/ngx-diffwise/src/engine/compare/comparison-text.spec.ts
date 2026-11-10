@@ -11,7 +11,7 @@ describe('comparisonText', () => {
     expect(comparisonText('let a  =\n  1;', options)).toBe('leta=1;');
   });
 
-  it('lowers the case when letter case is ignored (T9)', () => {
+  it('lowers the case when letter case is ignored', () => {
     const options = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
     expect(comparisonText('Konto Firmowe', options)).toBe(comparisonText('Konto firmowe', options));

@@ -42,7 +42,7 @@ const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
 const FONT_FAMILY_PROPERTY = 'font-family';
 const REM_UNIT = 'rem';
 
-/** The built-in font: the font of the system, as in the mockups. */
+/** The built-in font: the font of the system. */
 const BUILTIN_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
 
 const FONT_NAME_QUOTE = '"';

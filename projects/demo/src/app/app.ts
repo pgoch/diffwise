@@ -136,7 +136,7 @@ const VERTICAL_ALIGNMENT_CHOICES: readonly Choice<DiffwiseVerticalAlignment>[] =
   { value: DiffwiseVerticalAlignment.Bottom, label: 'Bottom' },
 ];
 
-/** Where details of changes besides text show, as in the section of the mockup. */
+/** Where details of changes besides text show. */
 const CHANGE_DETAILS_CHOICES: readonly Choice<DiffwiseChangeDetails>[] = [
   { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
   { value: DiffwiseChangeDetails.Icon, label: 'Icon in the middle' },
@@ -172,7 +172,7 @@ const FONT_CHOICES: readonly Choice<FontChoice>[] = [
 /** A font that comes with Windows and macOS, so the custom font shows without loading it. */
 const DEFAULT_CUSTOM_FONT = 'Georgia';
 
-/** Colors an app could give, magenta and teal, as in the mockups. */
+/** Colors an app could give: magenta and teal. */
 const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
   light: {
     removedLine: '#fbeefe',

@@ -14,7 +14,7 @@ describe('parseHtml', () => {
     expect(parseHtml(html).innerHTML).toBe('<p>Text</p>');
   });
 
-  it('closes unclosed tags the way a browser does (T37)', () => {
+  it('closes unclosed tags the way a browser does', () => {
     expect(parseHtml('<p>Paragraph <b>not closed').innerHTML).toBe(
       '<p>Paragraph <b>not closed</b></p>',
     );

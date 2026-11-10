@@ -37,7 +37,7 @@ describe('splitWords', () => {
     ]);
   });
 
-  it('keeps each emoji whole (T13)', () => {
+  it('keeps each emoji whole', () => {
     expect(kindsAndTexts('jaźń 🙂🎉')).toEqual([
       [TokenKind.Word, 'jaźń'],
       [TokenKind.Whitespace, ' '],
@@ -46,7 +46,7 @@ describe('splitWords', () => {
     ]);
   });
 
-  it('splits Chinese into words, not single characters or whole sentences (T14)', () => {
+  it('splits Chinese into words, not single characters or whole sentences', () => {
     expect(kindsAndTexts('我们的服务全天开放。')).toEqual([
       [TokenKind.Word, '我们'],
       [TokenKind.Word, '的'],

@@ -134,7 +134,7 @@ function partKindsOf(content: TooltipContent): Set<TooltipPartKind> {
 }
 
 describe('ChangeDescriber', () => {
-  it('describes styles turned into others with an arrow, in the language of the interface (U36 A)', () => {
+  it('describes styles turned into others with an arrow, in the language of the interface', () => {
     const detail = formatting([TextStyle.Italic], [TextStyle.Bold, TextStyle.Underline]);
 
     expect(tooltipText(english.tooltip([detail]))).toEqual([
@@ -147,7 +147,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('names added and removed styles in forms of their own (U36 A)', () => {
+  it('names added and removed styles in forms of their own', () => {
     expect(linesOf(polish, formatting([], [TextStyle.Bold, TextStyle.Italic]))).toEqual([
       'dodane pogrubienie i dodana kursywa',
     ]);
@@ -157,7 +157,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('describes heading levels, and a paragraph turned into a heading (T12)', () => {
+  it('describes heading levels, and a paragraph turned into a heading', () => {
     const levels = formatting([], [], [valueChange(FormattingValue.HeadingLevel, '3', '2')]);
     const paragraph = formatting([], [], [valueChange(FormattingValue.HeadingLevel, null, '2')]);
 
@@ -165,7 +165,7 @@ describe('ChangeDescriber', () => {
     expect(linesOf(polish, paragraph)).toEqual(['akapit → nagłówek 2']);
   });
 
-  it('shows colors with swatches and writes them in hexadecimal digits (U37 B)', () => {
+  it('shows colors with swatches and writes them in hexadecimal digits', () => {
     const textColor = valueChange(
       FormattingValue.TextColor,
       'rgb(192, 57, 43)',
@@ -193,7 +193,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('names a value added or removed, with the value after the name (U36 A)', () => {
+  it('names a value added or removed, with the value after the name', () => {
     const addedColor = valueChange(FormattingValue.TextColor, null, 'rgb(192, 57, 43)');
     const removedFont = valueChange(FormattingValue.FontFamily, 'Georgia, serif', null);
 
@@ -226,7 +226,7 @@ describe('ChangeDescriber', () => {
     expect(linesOf(english, detail)).toEqual(['italic → bold', 'text color: ■ red → ■ blue']);
   });
 
-  it('shows the old and the new address of a link with the changed part highlighted (U9 C)', () => {
+  it('shows the old and the new address of a link with the changed part highlighted', () => {
     const content = english.tooltip([
       link('https://example.com/terms-2025', 'https://example.com/terms-2026'),
     ]);
@@ -261,7 +261,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('titles an added or a removed link and shows its address (U40 A)', () => {
+  it('titles an added or a removed link and shows its address', () => {
     const address = 'https://example.com/pomoc/linki-publiczne';
 
     expect(tooltipText(polish.tooltip([link(null, address)]))).toEqual(['Dodany link', address]);
@@ -274,13 +274,13 @@ describe('ChangeDescriber', () => {
     expect(linesOf(english, link(null, dataAddress))).toEqual(['data:image/png;base64,iVBORw0K…']);
   });
 
-  it('shows the files of a changed image by their names (U38 C)', () => {
+  it('shows the files of a changed image by their names', () => {
     const detail = image({ source: 'img/logo-2025.svg' }, { source: 'img/logo-2026.svg?v=2' });
 
     expect(linesOf(polish, detail)).toEqual(['Było: logo-[-2025-].svg', 'Jest: logo-[+2026+].svg']);
   });
 
-  it('shows whole addresses when both files have the same name (U38 C)', () => {
+  it('shows whole addresses when both files have the same name', () => {
     const detail = image(
       { source: 'https://cdn.example.com/media/2025/logo.svg' },
       { source: 'https://cdn.example.com/media/2026/logo.svg' },
@@ -292,7 +292,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('shows both sides of a size in one line, with pixels once at the end (U39 A, T26)', () => {
+  it('shows both sides of a size in one line, with pixels once at the end', () => {
     const detail = image(
       { source: 'editor.png', width: '480px', height: '270px' },
       { source: 'editor.png', width: '640px', height: '360px' },
@@ -309,7 +309,7 @@ describe('ChangeDescriber', () => {
     expect(linesOf(english, sized)).toEqual(['size: — → 640 × 360 px']);
   });
 
-  it('heads the alternative text, and the files when more of the image changed (T24)', () => {
+  it('heads the alternative text, and the files when more of the image changed', () => {
     const detail = image(
       { source: 'img/logo-2025.svg', width: '220px', height: '72px', altText: 'Logo serwisu' },
       {
@@ -341,7 +341,7 @@ describe('ChangeDescriber', () => {
     ]);
   });
 
-  it('lists several changes, each under its title (U27 E, T22)', () => {
+  it('lists several changes, each under its title', () => {
     const details = [
       formatting([], [TextStyle.Bold]),
       link('https://example.com/a', 'https://example.com/b'),

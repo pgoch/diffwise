@@ -25,7 +25,7 @@
   --diffwise-tooltip-added-highlight: #22603a;
 }
 
-/* Tooltips in the colors of the opposite theme (U9 A, B), with no visible frame. */
+/* Tooltips in the colors of the opposite theme, with no visible frame. */
 :where(.diffwise-html-diff--tooltip-color-mode-reversed) {
   --diffwise-tooltip-background: #1f2328;
   --diffwise-tooltip-text: #f3f4f6;
@@ -74,7 +74,7 @@ diffwise-change-details-button {
 
 /*
  * The icon grows with the line numbers. Its frame has a gradient from the color of the old
- * version to the color of the new one (U26 B).
+ * version to the color of the new one.
  */
 .diffwise-html-diff__change-details-icon {
   position: relative;
@@ -107,7 +107,7 @@ diffwise-change-details-button {
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--diffwise-focus) 35%, transparent);
 }
 
-/* Icons with a gray frame (U26 A); on hover the frame and the icon darken instead of a glow. */
+/* Icons with a gray frame; on hover the frame and the icon darken instead of a glow. */
 .diffwise-html-diff--change-details-icon-style-plain .diffwise-html-diff__change-details-icon {
   border: 1px solid var(--diffwise-border);
   background: var(--diffwise-background);
@@ -121,14 +121,14 @@ diffwise-change-details-button {
   color: var(--diffwise-text);
 }
 
-/* Icons filled with the gradient (U26 D). */
+/* Icons filled with the gradient. */
 .diffwise-html-diff--change-details-icon-style-filled .diffwise-html-diff__change-details-icon {
   border: 0;
   background: linear-gradient(90deg, var(--diffwise-removed-accent), var(--diffwise-added-accent));
   color: var(--diffwise-background);
 }
 
-/* The number of changes on the icon of several changes (U24 B). */
+/* The number of changes on the icon of several changes. */
 .diffwise-html-diff__change-details-count {
   position: absolute;
   top: -0.6em;
@@ -166,7 +166,7 @@ diffwise-change-details-button {
 }
 
 /*
- * The tooltip, in the colors of the component (U9 C). It stands where the diff puts it, instead
+ * The tooltip, in the colors of its variables. It stands where the diff puts it, instead
  * of where popovers stand by default, and covers the gap to its trigger for the pointer.
  */
 .diffwise-html-diff__tooltip {
@@ -202,7 +202,7 @@ diffwise-change-details-button {
   margin-bottom: 0;
 }
 
-/* Place of the titles (U23); start and end follow the direction of the text. */
+/* Place of the titles; start and end follow the direction of the text. */
 .diffwise-html-diff--tooltip-title-alignment-center .diffwise-html-diff__tooltip-title {
   text-align: center;
 }
@@ -250,7 +250,7 @@ diffwise-change-details-button {
   word-break: break-all;
 }
 
-/* The part of a value that changed, in the color of its version (U9 C, R65). */
+/* The part of a value that changed, in the color of its version. */
 .diffwise-html-diff__tooltip-highlight {
   padding: 0 2px;
   border-radius: 3px;
@@ -265,7 +265,7 @@ diffwise-change-details-button {
   background: var(--diffwise-tooltip-added-highlight);
 }
 
-/* A swatch before the value of a color (U37 B). */
+/* A swatch before the value of a color. */
 .diffwise-html-diff__tooltip-color {
   display: inline-block;
   width: 0.85em;

@@ -65,7 +65,7 @@
 
   /*
    * A colored background of a line number: the line color with a share of the highlight color,
-   * so it follows the colors of an app too. The shares match the mockups at every intensity.
+   * so it follows the colors of an app too. Its share changes with the intensity.
    */
   --diffwise-line-number-share: 25.8%;
   --diffwise-removed-line-number: color-mix(

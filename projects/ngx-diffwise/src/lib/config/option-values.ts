@@ -86,7 +86,7 @@ export type DiffwiseVerticalAlignment =
 export const DiffwiseFontFamily = {
   /** The font of the element around the diff. */
   Inherit: 'inherit',
-  /** The font of the system, as in the mockups. */
+  /** The font of the system. */
   Builtin: 'builtin',
 } as const;
 

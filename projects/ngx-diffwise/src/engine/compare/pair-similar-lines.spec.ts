@@ -81,7 +81,7 @@ function sourceOf(line: Line): string | null {
 }
 
 describe('pairSimilarLines', () => {
-  it('pairs a line with one changed word as a changed line (T2)', () => {
+  it('pairs a line with one changed word as a changed line', () => {
     expect(
       pair(['Konto można usunąć w ustawieniach.'], ['Konto można zamknąć w ustawieniach.']),
     ).toEqual([
@@ -128,7 +128,7 @@ describe('pairSimilarLines', () => {
     ]);
   });
 
-  it('compares words in the case the options say (T9)', () => {
+  it('compares words in the case the options say', () => {
     const options = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
     expect(pair(['Konto Firmowe Plus'], ['konto firmowe premium'], options)).toEqual([

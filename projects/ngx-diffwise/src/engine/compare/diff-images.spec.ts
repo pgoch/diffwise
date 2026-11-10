@@ -49,7 +49,7 @@ function change(
 }
 
 describe('diffImages', () => {
-  it('describes another file in the same place (T23)', () => {
+  it('describes another file in the same place', () => {
     expect(
       imageChanges(
         '<p><img src="images/logo-2025.svg" alt="Logo"> Notatnik</p>',
@@ -60,7 +60,7 @@ describe('diffImages', () => {
     ]);
   });
 
-  it('describes another alternative text of the same file (T24)', () => {
+  it('describes another alternative text of the same file', () => {
     expect(
       imageChanges(
         '<p>Logo: <img src="images/logo-2025.svg" alt="Logo"></p>',
@@ -79,7 +79,7 @@ describe('diffImages', () => {
     ]);
   });
 
-  it('describes another size of the same file (T26)', () => {
+  it('describes another size of the same file', () => {
     const oldImage = { ...image(LOGO_2025), width: '160px' };
     const newImage = { ...image(LOGO_2025), width: '220px' };
 

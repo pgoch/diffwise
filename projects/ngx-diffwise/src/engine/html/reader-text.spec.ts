@@ -27,19 +27,19 @@ function sourceText({ node, nodeOffset, start, end }: TextPiece): string {
 }
 
 describe('readerText', () => {
-  it('collapses whitespace a reader cannot see (T8)', () => {
+  it('collapses whitespace a reader cannot see', () => {
     expect(textOf('<p>Konto  osobiste</p>')).toBe('Konto osobiste');
     expect(textOf('<p>Konto&nbsp;osobiste</p>')).toBe('Konto osobiste');
     expect(textOf('<p>\n  Konto\nosobiste </p>')).toBe('Konto osobiste');
   });
 
-  it('reads entities as the characters a reader sees (T11)', () => {
+  it('reads entities as the characters a reader sees', () => {
     expect(textOf('<p>Rabat &lt; 20 zł &amp; darmowa dostawa</p>')).toBe(
       'Rabat < 20 zł & darmowa dostawa',
     );
   });
 
-  it('keeps Polish letters and emoji intact (T13)', () => {
+  it('keeps Polish letters and emoji intact', () => {
     expect(textOf('<p>Zażółć gęślą jaźń 🙂🎉</p>')).toBe('Zażółć gęślą jaźń 🙂🎉');
   });
 

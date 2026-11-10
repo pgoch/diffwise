@@ -282,7 +282,7 @@ describe('DiffwiseHtmlDiff', () => {
     ]);
   });
 
-  it('marks changed words inside the formatting of a changed line (T2)', () => {
+  it('marks changed words inside the formatting of a changed line', () => {
     const element = render(
       '<p>Konto można <b>usunąć</b> w ustawieniach.</p>',
       '<p>Konto można <b>zamknąć</b> w ustawieniach.</p>',
@@ -377,7 +377,7 @@ describe('DiffwiseHtmlDiff', () => {
     expect(withoutHeaders.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
   });
 
-  it('ignores differences in letter case and whitespace on request (T9)', () => {
+  it('ignores differences in letter case and whitespace on request', () => {
     const oldHtml = '<p>Termin: 23:00, sala A.</p>';
     const newHtml = '<p>Termin:23:00, Sala A.</p>';
     const ignoring = { ignoreCase: true, ignoreWhitespace: true };
@@ -388,7 +388,7 @@ describe('DiffwiseHtmlDiff', () => {
     ]);
   });
 
-  it('ignores changes of formatting alone on request (T16)', () => {
+  it('ignores changes of formatting alone on request', () => {
     const element = renderElement(ITALIC_HTML, BOLD_HTML, { ignoreFormatting: true });
 
     expect(rowsOf(element)).toEqual([[LineChangeKind.Unchanged, 1, 1]]);
@@ -396,7 +396,7 @@ describe('DiffwiseHtmlDiff', () => {
     expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
   });
 
-  it('ignores link changes on request, and keeps other changes of the line (T19, T22)', () => {
+  it('ignores link changes on request, and keeps other changes of the line', () => {
     const linkOnly = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, { ignoreLinkChanges: true });
     const withFormatting = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML, {
       ignoreLinkChanges: true,
@@ -424,7 +424,7 @@ describe('DiffwiseHtmlDiff', () => {
     expect(newMarkersOf(element)).toHaveLength(1);
   });
 
-  it('takes an option from the level below when its value is invalid, with a warning (R49)', () => {
+  it('takes an option from the level below when its value is invalid, with a warning', () => {
     const warn = vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
     const invalidValue = 'yes' as unknown as boolean;
 
@@ -622,7 +622,7 @@ describe('DiffwiseHtmlDiff', () => {
 });
 
 describe('DiffwiseHtmlDiff change details', () => {
-  it('shows an icon between the versions for a change besides text, named by its kind (R40)', () => {
+  it('shows an icon between the versions for a change besides text, named by its kind', () => {
     const versions = [
       [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
       [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
@@ -637,7 +637,7 @@ describe('DiffwiseHtmlDiff change details', () => {
     }
   });
 
-  it('shows one icon with the number of changes for several changes in a line (R41, U24 B)', () => {
+  it('shows one icon with the number of changes for several changes in a line', () => {
     const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML);
     const icons = element.querySelectorAll(CHANGE_DETAILS_ICON_SELECTOR);
 
@@ -682,7 +682,7 @@ describe('DiffwiseHtmlDiff change details', () => {
     expect(element.querySelector(ADDED_TOOLTIP_HIGHLIGHT_SELECTOR)).toBeNull();
   });
 
-  it('lists every change of a line in the tooltip of its icon (U27 E)', () => {
+  it('lists every change of a line in the tooltip of its icon', () => {
     const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML);
 
     pointTo(iconOf(element));
