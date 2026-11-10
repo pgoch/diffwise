@@ -1,9 +1,14 @@
+import { imageWordKey } from './comparison-image';
 import { comparisonText } from './comparison-text';
+import { IMAGE_CHARACTER } from '../html/reader-text';
 import { type DiffOptions, type Line, type LineChange, LineChangeKind } from '../model';
 import { TokenKind, splitWords } from './split-words';
 
 /** Lines sharing at least this part of their words are one changed line, not removed and added. */
 const MIN_SIMILARITY = 0.5;
+
+/** A word every image has, besides the key of its file; no text word contains the character. */
+const ANY_IMAGE_WORD = IMAGE_CHARACTER;
 
 /** In bigger blocks, each line is compared only with the line at the same position. */
 const MAX_COMPARED_COMBINATIONS = 10_000;
@@ -182,18 +187,21 @@ function similarity(first: WordCounts, second: WordCounts): number {
   return (2 * common) / total;
 }
 
+/**
+ * Counts the words of a line. An image counts as two words: one that all images share and the key
+ * of its file, so a line whose image was replaced stays half similar.
+ */
 function countWords(line: Line, options: DiffOptions): WordCounts {
+  const textWords = splitWords(line.text)
+    .filter((token) => token.kind === TokenKind.Word)
+    .map((token) => comparisonText(token.text, options));
+  const imageWords = line.images.flatMap((image) => [ANY_IMAGE_WORD, imageWordKey(image)]);
+  const words = [...textWords, ...imageWords];
   const counts = new Map<string, number>();
-  let total = 0;
 
-  for (const token of splitWords(line.text)) {
-    if (token.kind === TokenKind.Word) {
-      const word = comparisonText(token.text, options);
-
-      counts.set(word, (counts.get(word) ?? 0) + 1);
-      total++;
-    }
+  for (const word of words) {
+    counts.set(word, (counts.get(word) ?? 0) + 1);
   }
 
-  return { counts, total };
+  return { counts, total: words.length };
 }

@@ -1,4 +1,5 @@
 import { diffFormats } from './compare/diff-formats';
+import { diffImages } from './compare/diff-images';
 import { diffLines } from './compare/diff-lines';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
@@ -7,12 +8,14 @@ import { splitLines } from './html/split-lines';
 import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER, markChanges } from './mark/mark-changes';
 import {
   type ChangeDetail,
+  type DescribedChanges,
   type DiffOptions,
   type HtmlDiff,
   type HtmlDiffSettings,
   type Line,
   type LineChange,
   LineChangeKind,
+  type MarkedRange,
   type ViewLine,
   type ViewRow,
 } from './model';
@@ -73,14 +76,16 @@ class ViewRowBuilder {
   }
 
   /**
-   * A row of a changed pair. Removed text and changed formats are marked in the old line, added
-   * text and changed formats in the new one; markers of formats point to the row's details.
+   * A row of a changed pair. Removed text and described changes are marked in the old line, added
+   * text and described changes in the new one; their markers point to the row's details.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
-    const wordChanges = diffWords(oldLine.text, newLine.text, this.options);
+    const wordChanges = diffWords(oldLine, newLine, this.options);
     const formatChanges = diffFormats(oldLine, newLine, wordChanges, this.options);
-    const oldRanges = [...wordChanges.removed, ...formatChanges.oldRanges];
-    const newRanges = [...wordChanges.added, ...formatChanges.newRanges];
+    const imageChanges = diffImages(oldLine, newLine, wordChanges, this.options);
+    const describedChanges = joinDescribedChanges(formatChanges, imageChanges);
+    const oldRanges = [...wordChanges.removed, ...describedChanges.oldRanges];
+    const newRanges = [...wordChanges.added, ...describedChanges.newRanges];
     const markedOldHtml = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER);
     const markedNewHtml = markChanges(newLine, newRanges, ADDED_TEXT_MARKER);
 
@@ -88,7 +93,7 @@ class ViewRowBuilder {
       kind: LineChangeKind.Changed,
       oldLine: this.nextOldLine(markedOldHtml),
       newLine: this.nextNewLine(markedNewHtml),
-      changeDetails: formatChanges.details,
+      changeDetails: describedChanges.details,
     };
   }
 
@@ -124,4 +129,23 @@ class ViewRowBuilder {
 /** A numbered line. Its HTML is sanitized again, because marking changes edits it. */
 function viewLine(number: number, html: string): ViewLine {
   return { number, html: sanitizeHtml(html) };
+}
+
+/** Both changes with one list of details: the first's details, then the second's. */
+function joinDescribedChanges(first: DescribedChanges, second: DescribedChanges): DescribedChanges {
+  const detailShift = first.details.length;
+  const shiftedOldRanges = second.oldRanges.map((range) => withShiftedDetails(range, detailShift));
+  const shiftedNewRanges = second.newRanges.map((range) => withShiftedDetails(range, detailShift));
+
+  return {
+    oldRanges: [...first.oldRanges, ...shiftedOldRanges],
+    newRanges: [...first.newRanges, ...shiftedNewRanges],
+    details: [...first.details, ...second.details],
+  };
+}
+
+/** The range with the positions of its details moved by `shift`. */
+function withShiftedDetails(range: MarkedRange, shift: number): MarkedRange {
+  const detailIndices = range.detailIndices?.map((detailIndex) => detailIndex + shift);
+  return { ...range, detailIndices };
 }

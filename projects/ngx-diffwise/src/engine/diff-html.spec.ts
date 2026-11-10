@@ -15,12 +15,15 @@ import { parseHtml } from './html/parse-html';
 import { readerText } from './html/reader-text';
 import { splitLines } from './html/split-lines';
 import {
+  type ChangeDetail,
   ChangeDetailKind,
   DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   FormattingValue,
   type FormattingValueChange,
   type HtmlDiff,
+  type ImageProperties,
+  ImageProperty,
   LineChangeKind,
   TextStyle,
   type ViewLine,
@@ -32,8 +35,11 @@ const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
 const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
 const MARKER_SELECTOR = `${REMOVED_SELECTOR}, ${ADDED_SELECTOR}`;
 const DETAILS_MARKER_SELECTOR = '[data-diffwise-change-details]';
+const FRAMED_IMAGE_SELECTOR = '.diffwise-html-diff__highlight--image img';
 const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
 const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
+const IMAGE_CLASS = 'diffwise-html-diff__highlight--image';
+const SRC_ATTRIBUTE = 'src';
 const RTL_PARAGRAPH = '<p dir="rtl">';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
 const NO_CHANGES = { addedLines: 0, removedLines: 0, changedLines: 0 };
@@ -129,8 +135,55 @@ function detailShape(row: ViewRow) {
   return [row.oldLine?.number, row.newLine?.number, row.changeDetails.map(({ kind }) => kind)];
 }
 
+/** A row as `[old number, new number, old framed images, new framed images, changed properties]`. */
+function imageSummary(row: ViewRow) {
+  const changedProperties = row.changeDetails.map((detail) =>
+    detail.kind === ChangeDetailKind.Image ? detail.changedProperties : [],
+  );
+
+  return [
+    row.oldLine?.number,
+    row.newLine?.number,
+    framedImages(row.oldLine),
+    framedImages(row.newLine),
+    changedProperties,
+  ];
+}
+
+/** Files of the line's framed images, in reading order. */
+function framedImages(line: ViewLine | null) {
+  if (line === null) {
+    return [];
+  }
+
+  const images = fragmentOf(line.html).querySelectorAll(FRAMED_IMAGE_SELECTOR);
+
+  return Array.from(images, (image) => image.getAttribute(SRC_ATTRIBUTE));
+}
+
+/** Expected details of an image change. */
+function imageDetail(
+  oldImage: ImageProperties,
+  newImage: ImageProperties,
+  changedProperties: ImageProperty[],
+) {
+  return { kind: ChangeDetailKind.Image, oldImage, newImage, changedProperties };
+}
+
 function hasChangeDetails(row: ViewRow): boolean {
   return row.changeDetails.length > 0;
+}
+
+function hasFormattingOrLinkDetails(row: ViewRow): boolean {
+  return row.changeDetails.some(isFormattingOrLinkDetail);
+}
+
+function isFormattingOrLinkDetail({ kind }: ChangeDetail): boolean {
+  return kind === ChangeDetailKind.Formatting || kind === ChangeDetailKind.Link;
+}
+
+function hasFramedImages({ oldLine, newLine }: ViewRow): boolean {
+  return [oldLine, newLine].some((line) => framedImages(line).length > 0);
 }
 
 function hasMarkers({ oldLine, newLine }: ViewRow): boolean {
@@ -415,7 +468,7 @@ describe('diffHtml', () => {
     const sharedTexts = ['anyone with the link', 'note settings'];
 
     expect(
-      compare(enLongBefore, enLongAfter).rows.filter(hasChangeDetails).map(detailSummary),
+      compare(enLongBefore, enLongAfter).rows.filter(hasFormattingOrLinkDetails).map(detailSummary),
     ).toEqual([
       [28, 28, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
       [29, 29, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
@@ -450,6 +503,78 @@ describe('diffHtml', () => {
     expect(compare(html, html).rows.map(rowShape)).toEqual([
       [LineChangeKind.Unchanged, 1, 1],
       [LineChangeKind.Unchanged, 2, 2],
+    ]);
+  });
+
+  it('frames a replaced image on both sides and describes it (T23)', () => {
+    const oldImage = { source: 'images/logo-2025.svg', width: null, height: null, altText: 'Logo' };
+    const newImage = { ...oldImage, source: 'images/logo-2026.svg' };
+    const oldImageHtml = '<img src="images/logo-2025.svg" alt="Logo">';
+    const newImageHtml = '<img src="images/logo-2026.svg" alt="Logo">';
+    const detailsAttribute = 'data-diffwise-change-details="0"';
+    const removedMarker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
+    const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
+
+    expect(compare(`<p>${oldImageHtml} Notatnik</p>`, `<p>${newImageHtml} Notatnik</p>`)).toEqual({
+      rows: [
+        {
+          kind: LineChangeKind.Changed,
+          oldLine: { number: 1, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
+          newLine: { number: 1, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
+          changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
+        },
+      ],
+      stats: { ...NO_CHANGES, changedLines: 1 },
+    });
+  });
+
+  it('frames the changed images of the long sample and describes them', () => {
+    const logo2025 = 'images/logo-2025.svg';
+    const logo2026 = 'images/logo-2026.svg';
+    const screenshot = 'images/editor-screenshot.svg';
+    const chart = 'images/usage-chart.svg';
+
+    expect(
+      compare(enLongBefore, enLongAfter).rows.filter(hasFramedImages).map(imageSummary),
+    ).toEqual([
+      [3, 3, [logo2025], [logo2026], [[ImageProperty.Source]]],
+      [25, 25, ['images/icon-share.svg'], [], []],
+      [30, 30, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
+      [49, 50, [chart], [chart], [[ImageProperty.AltText]]],
+      [53, 53, [logo2025], [logo2026], [[ImageProperty.Source]]],
+    ]);
+  });
+
+  it('gives an image with another link and size one marker with both details', () => {
+    const oldImage = { source: 'images/logo.svg', width: '32px', height: null, altText: null };
+    const newImage = { ...oldImage, width: '48px' };
+    const detailsAttribute = 'data-diffwise-change-details="0 1"';
+    const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
+    const [row] = compare(
+      '<p><a href="/stara"><img src="images/logo.svg" width="32"></a> Notatnik</p>',
+      '<p><a href="/nowa"><img src="images/logo.svg" width="48"></a> Notatnik</p>',
+    ).rows;
+
+    expect(row.newLine?.html).toBe(
+      `<p><a href="/nowa">${addedMarker}<img src="images/logo.svg" width="48"></ins></a> Notatnik</p>`,
+    );
+    expect(row.changeDetails).toEqual([
+      linkDetail('/stara', '/nowa'),
+      imageDetail(oldImage, newImage, [ImageProperty.Width]),
+    ]);
+  });
+
+  it('shows a line with only an image added or removed as a whole line (T25)', () => {
+    const textHtml = '<p>Notatki synchronizują się w tle.</p>';
+    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
+
+    expect(compare(textHtml, textHtml + imageHtml).rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Unchanged, 1, 1, [], []],
+      [LineChangeKind.Added, null, 2, [], []],
+    ]);
+    expect(compare(textHtml + imageHtml, textHtml).rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Unchanged, 1, 1, [], []],
+      [LineChangeKind.Removed, 2, null, [], []],
     ]);
   });
 

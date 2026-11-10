@@ -1,7 +1,9 @@
+import { unchangedTokens } from './diff-words';
 import { PLAIN_FORMAT } from '../html/text-format';
 import {
   type ChangeDetail,
   ChangeDetailKind,
+  type DescribedChanges,
   type DiffOptions,
   type FormattedRange,
   type FormattingChangeDetail,
@@ -13,19 +15,9 @@ import {
   type TextRange,
   type WordChanges,
 } from '../model';
-import { type Token, TokenKind, splitWords } from './split-words';
 
 const WHITESPACE_ONLY = /^\s*$/;
 const FORMATTING_VALUES = Object.values(FormattingValue);
-
-/** Formatting and link changes of a changed line pair. */
-export interface FormatChanges {
-  /** Ranges in the old line's text, with the positions of their details. */
-  readonly oldRanges: readonly MarkedRange[];
-  /** Ranges in the new line's text, with the positions of their details. */
-  readonly newRanges: readonly MarkedRange[];
-  readonly details: readonly ChangeDetail[];
-}
 
 /** One side of the comparison: its line and the ranges of its changed text. */
 interface ComparedSide {
@@ -48,7 +40,7 @@ interface FormatChangeRun {
   readonly difference: FormatDifference;
 }
 
-const NO_FORMAT_CHANGES: FormatChanges = { oldRanges: [], newRanges: [], details: [] };
+const NO_FORMAT_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], details: [] };
 
 /**
  * Compares the formats of unchanged words in a changed line pair. Characters next to each other
@@ -59,7 +51,7 @@ export function diffFormats(
   newLine: Line,
   wordChanges: WordChanges,
   options: DiffOptions,
-): FormatChanges {
+): DescribedChanges {
   if (options.ignoreFormatting && options.ignoreLinkChanges) {
     return NO_FORMAT_CHANGES;
   }
@@ -86,8 +78,8 @@ function* unchangedCharacterPairs(
   oldSide: ComparedSide,
   newSide: ComparedSide,
 ): Generator<[number, number]> {
-  const oldTokens = unchangedTokens(oldSide);
-  const newTokens = unchangedTokens(newSide);
+  const oldTokens = unchangedTokens(oldSide.line.text, oldSide.changedText);
+  const newTokens = unchangedTokens(newSide.line.text, newSide.changedText);
   const tokenCount = Math.min(oldTokens.length, newTokens.length);
 
   for (let index = 0; index < tokenCount; index++) {
@@ -99,18 +91,6 @@ function* unchangedCharacterPairs(
       yield [oldToken.start + offset, newToken.start + offset];
     }
   }
-}
-
-/** Words and symbols outside the changed text; both sides have the same ones, in the same order. */
-function unchangedTokens({ line, changedText }: ComparedSide): Token[] {
-  return splitWords(line.text).filter(
-    (token) => token.kind !== TokenKind.Whitespace && !overlapsAny(token, changedText),
-  );
-}
-
-function overlapsAny(token: Token, ranges: readonly TextRange[]): boolean {
-  const tokenEnd = token.start + token.text.length;
-  return ranges.some((range) => range.start < tokenEnd && token.start < range.end);
 }
 
 /** Finds the format at increasing positions of a line's text. */
@@ -277,7 +257,7 @@ class FormatChangesBuilder {
     };
   }
 
-  build(): FormatChanges {
+  build(): DescribedChanges {
     this.closeRun();
     return { oldRanges: this.oldRanges, newRanges: this.newRanges, details: this.details };
   }

@@ -1,4 +1,5 @@
 import { ALIGN_ATTRIBUTE_TAGS, BLOCK_TAGS, HEADING_TAGS, STYLE_TAGS } from './html-tags';
+import { inlineStyle, styleValue } from './inline-style';
 import { FormattingValue, type FormattingValues, type TextFormat, TextStyle } from '../model';
 
 const LINK_TAG = 'a';
@@ -34,15 +35,6 @@ const StyleProperty = {
   TextTransform: 'text-transform',
   VerticalAlign: 'vertical-align',
 } as const;
-
-/** Values that leave a property to the parent or to its default. */
-const CSS_WIDE_KEYWORDS: ReadonlySet<string> = new Set([
-  'inherit',
-  'initial',
-  'revert',
-  'revert-layer',
-  'unset',
-]);
 
 const BOLD_WEIGHTS: ReadonlySet<string> = new Set(['bold', 'bolder']);
 const MIN_BOLD_WEIGHT = 600;
@@ -124,8 +116,8 @@ let probe: HTMLElement | undefined;
 export class TextFormatReader {
   private readonly elementFormats = new Map<Element, TextFormat>();
 
-  /** Format of a text node: formatting and link of the elements around it. */
-  formatOf(node: Text): TextFormat {
+  /** Format of a text node or an image: formatting and link of the elements around it. */
+  formatOf(node: Text | Element): TextFormat {
     return this.formatInside(node.parentElement);
   }
 
@@ -156,15 +148,6 @@ function withOwnFormat(element: Element, parentFormat: TextFormat): TextFormat {
   };
 
   return sameFormat(format, parentFormat) ? parentFormat : format;
-}
-
-/** The element's `style` attribute; `null` without one. */
-function inlineStyle(element: Element): CSSStyleDeclaration | null {
-  if (!element.hasAttribute(Attribute.Style)) {
-    return null;
-  }
-
-  return (element as Partial<ElementCSSInlineStyle>).style ?? null;
 }
 
 /** Styles of text inside the element: the style of its tag, then its `style`, over the parent's. */
@@ -343,18 +326,6 @@ function blockAlignment(block: Element, style: CSSStyleDeclaration | null): stri
   const setsAlignment = alignment !== undefined && alignment.length > 0;
 
   return setsAlignment ? alignment : null;
-}
-
-/** A property of a style; `null` when it does not set it or leaves it to the parent. */
-function styleValue(style: CSSStyleDeclaration | null, property: string): string | null {
-  if (style === null) {
-    return null;
-  }
-
-  const value = style.getPropertyValue(property);
-  const isSet = value.length > 0 && !CSS_WIDE_KEYWORDS.has(value);
-
-  return isSet ? value : null;
 }
 
 /** Address of a link, as its `href` gives it; `null` for other elements and anchors. */

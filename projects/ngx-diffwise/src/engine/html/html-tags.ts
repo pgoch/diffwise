@@ -54,17 +54,23 @@ export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   'ul',
 ]);
 
+/** An image; it is one character of the reader text, so it is compared like a word. */
+export const IMAGE_TAG = 'img';
+
+/** Holds the sources of an image together with the image itself. */
+export const PICTURE_TAG = 'picture';
+
 /** Elements a reader sees even without text, such as an image. */
 export const VISIBLE_WITHOUT_TEXT_TAGS: ReadonlySet<string> = new Set([
   'audio',
   'button',
   'canvas',
   'hr',
-  'img',
+  IMAGE_TAG,
   'input',
   'math',
   'meter',
-  'picture',
+  PICTURE_TAG,
   'progress',
   'select',
   'svg',

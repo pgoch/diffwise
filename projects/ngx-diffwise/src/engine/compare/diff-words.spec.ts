@@ -1,20 +1,38 @@
 import { diffWords } from './diff-words';
-import { DEFAULT_DIFF_OPTIONS, type DiffOptions } from '../model';
+import { parseHtml } from '../html/parse-html';
+import { IMAGE_CHARACTER } from '../html/reader-text';
+import { splitLines } from '../html/split-lines';
+import { DEFAULT_DIFF_OPTIONS, type DiffOptions, type LineContent } from '../model';
 
 const SENTENCE = 'Usługa działa przez całą dobę, także w święta i długie weekendy. ';
 const SENTENCES_AROUND_CHANGE = 5;
+const ID_PREFIX = 'diff-';
+const NO_CHANGES = { removed: [], added: [] };
 
-/** Removed and added text, instead of their ranges. */
-function changedTexts(
-  oldText: string,
-  newText: string,
+/** Removed and added text of two lines, instead of their ranges. */
+function changedContent(
+  oldLine: LineContent,
+  newLine: LineContent,
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ) {
-  const { removed, added } = diffWords(oldText, newText, options);
-  const removedTexts = removed.map((range) => oldText.slice(range.start, range.end));
-  const addedTexts = added.map((range) => newText.slice(range.start, range.end));
+  const { removed, added } = diffWords(oldLine, newLine, options);
+  const removedTexts = removed.map((range) => oldLine.text.slice(range.start, range.end));
+  const addedTexts = added.map((range) => newLine.text.slice(range.start, range.end));
 
   return { removed: removedTexts, added: addedTexts };
+}
+
+/** Removed and added text of two texts without images. */
+function changedTexts(oldText: string, newText: string, options?: DiffOptions) {
+  return changedContent({ text: oldText, images: [] }, { text: newText, images: [] }, options);
+}
+
+/** Removed and added text of the first lines of two documents. */
+function changedLineTexts(oldHtml: string, newHtml: string) {
+  const [oldLine] = splitLines(parseHtml(oldHtml), ID_PREFIX);
+  const [newLine] = splitLines(parseHtml(newHtml), ID_PREFIX);
+
+  return changedContent(oldLine, newLine);
 }
 
 /** A paragraph of about 700 characters with one chosen word in the middle (T10). */
@@ -110,5 +128,32 @@ describe('diffWords', () => {
       removed: ['全天'],
       added: ['每天'],
     });
+  });
+
+  it('compares images by their files, like words (T23)', () => {
+    expect(
+      changedLineTexts(
+        '<p><img src="images/logo-2025.svg" alt="Logo"> Notatnik Online</p>',
+        '<p><img src="images/logo-2026.svg" alt="Logo"> Notatnik Online</p>',
+      ),
+    ).toEqual({ removed: [IMAGE_CHARACTER], added: [IMAGE_CHARACTER] });
+  });
+
+  it('keeps the same file unchanged as a word, whatever its size or alternative text', () => {
+    expect(
+      changedLineTexts(
+        '<p><img src="images/logo-2025.svg" alt="Logo" width="160"> Notatnik</p>',
+        '<p><img src="images/logo-2025.svg" alt="Logo serwisu" width="220"> Notatnik</p>',
+      ),
+    ).toEqual(NO_CHANGES);
+  });
+
+  it('marks an image added to a sentence like an added word', () => {
+    expect(
+      changedLineTexts(
+        '<p>Kliknij <strong>Udostępnij</strong>.</p>',
+        '<p>Kliknij <img src="images/icon-share.svg" alt=""> <strong>Udostępnij</strong>.</p>',
+      ),
+    ).toEqual({ removed: [], added: [IMAGE_CHARACTER] });
   });
 });
