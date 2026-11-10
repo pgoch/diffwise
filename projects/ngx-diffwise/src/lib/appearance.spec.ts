@@ -25,6 +25,7 @@ describe('appearanceClasses', () => {
       dividerStyle: 'line',
       gapStyle: 'empty',
       versionHeaderAlignment: 'end',
+      changeDetails: 'icon',
     });
 
     expect(appearanceClasses(config, {})).toEqual([
@@ -34,6 +35,7 @@ describe('appearanceClasses', () => {
       'diffwise-html-diff--divider-style-line',
       'diffwise-html-diff--gap-style-empty',
       'diffwise-html-diff--version-header-alignment-end',
+      'diffwise-html-diff--change-details-icon',
       'diffwise-html-diff--diff-intensity-1',
       'diffwise-html-diff--ui-contrast-5',
     ]);

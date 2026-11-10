@@ -16,6 +16,7 @@ const VALUE_MODIFIERS = {
   dividerStyle: 'diffwise-html-diff--divider-style-',
   gapStyle: 'diffwise-html-diff--gap-style-',
   versionHeaderAlignment: 'diffwise-html-diff--version-header-alignment-',
+  changeDetails: 'diffwise-html-diff--change-details-',
 } as const;
 
 type ValueOption = keyof typeof VALUE_MODIFIERS;

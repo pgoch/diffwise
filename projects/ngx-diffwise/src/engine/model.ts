@@ -178,6 +178,9 @@ export const DIFFWISE_DATA_ATTRIBUTE_START = 'data-diffwise-';
 /** Positions of the change details a marker shows, separated by spaces, such as `0 1`. */
 export const CHANGE_DETAILS_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}change-details`;
 
+/** Separates the positions in `CHANGE_DETAILS_ATTRIBUTE`. */
+export const DETAIL_INDEX_SEPARATOR = ' ';
+
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
   /** Positions in the row's change details; changed text has none. */

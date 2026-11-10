@@ -1,11 +1,15 @@
 import { NO_MARKER_TAGS, PICTURE_TAG } from '../html/html-tags';
 import { type TextPiece, mapReaderText } from '../html/reader-text';
-import { CHANGE_DETAILS_ATTRIBUTE, type Line, type MarkedRange } from '../model';
+import {
+  CHANGE_DETAILS_ATTRIBUTE,
+  DETAIL_INDEX_SEPARATOR,
+  type Line,
+  type MarkedRange,
+} from '../model';
 
 const TEMPLATE_TAG = 'template';
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const HIGHLIGHT_CLASS = 'diffwise-html-diff__highlight';
-const DETAIL_INDEX_SEPARATOR = ' ';
 
 /** Added to the classes of a marker around an image, which frames the image. */
 const IMAGE_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--image`;

@@ -5,6 +5,7 @@ import { LineChangeKind } from '../engine';
 import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
 import {
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   DiffwiseGapStyle,
   DiffwiseLanguage,
@@ -31,6 +32,7 @@ const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
 const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
 const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
 const ID_SELECTOR = '[id]';
+const CONTENT_ID_SELECTOR = '.diffwise-html-diff__content [id]';
 const FRAGMENT_LINK_SELECTOR = 'a[href^="#"]';
 const CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 const HREF_ATTRIBUTE = 'href';
@@ -52,6 +54,45 @@ const STRONGER_CONTRAST_CLASS = 'diffwise-html-diff--ui-contrast-4';
 const STRONGEST_INTENSITY_CLASS = 'diffwise-html-diff--diff-intensity-5';
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
+const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
+const CHANGE_DETAILS_COUNT_SELECTOR = '.diffwise-html-diff__change-details-count';
+const ICON_KIND_CLASS_START = 'diffwise-html-diff__change-details-icon--';
+const TOOLTIP_SELECTOR = '.diffwise-html-diff__tooltip';
+const TOOLTIP_LINE_SELECTOR = [
+  '.diffwise-html-diff__tooltip-title',
+  '.diffwise-html-diff__tooltip-subtitle',
+  '.diffwise-html-diff__tooltip-description',
+  '.diffwise-html-diff__tooltip-row',
+].join();
+const REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-html-diff__tooltip-highlight--removed';
+const ADDED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-html-diff__tooltip-highlight--added';
+const DESCRIBED_MARKER_SELECTOR = '[data-diffwise-change-details]';
+const ICON_ONLY_CLASS = 'diffwise-html-diff--change-details-icon';
+const DESCRIBED_BY_ATTRIBUTE = 'aria-describedby';
+const TABINDEX_ATTRIBUTE = 'tabindex';
+const TITLE_ATTRIBUTE = 'title';
+const IN_TAB_ORDER = '0';
+const MOUSEOVER_EVENT = 'mouseover';
+const MOUSEOUT_EVENT = 'mouseout';
+const KEYDOWN_EVENT = 'keydown';
+const SCROLL_EVENT = 'scroll';
+const ESCAPE_KEY = 'Escape';
+const TAB_KEY = 'Tab';
+const PART_SEPARATOR = ' ';
+const ID_SELECTOR_START = '#';
+const SVG_SELECTOR = 'svg';
+
+/** Versions with one change of each kind besides text, and with two changes in one line. */
+const ITALIC_HTML = '<p><i>Important:</i> back up your notes.</p>';
+const BOLD_HTML = '<p><b>Important:</b> back up your notes.</p>';
+const OLD_LINK_HTML = '<p>Read <a href="https://example.com/terms-2025">the terms</a> first.</p>';
+const NEW_LINK_HTML = '<p>Read <a href="https://example.com/terms-2026">the terms</a> first.</p>';
+const OLD_IMAGE_HTML = '<p><img src="img/logo-2025.svg" alt="Logo"> Notes</p>';
+const NEW_IMAGE_HTML = '<p><img src="img/logo-2026.svg" alt="Logo"> Notes</p>';
+const OLD_TWO_CHANGES_HTML =
+  '<p><a href="https://example.com/a">Public links</a> let anyone view.</p>';
+const NEW_TWO_CHANGES_HTML =
+  '<p><a href="https://example.com/b">Public links</a> let <b>anyone</b> view.</p>';
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -63,6 +104,17 @@ const scrolledTo: Element[] = [];
 
 Element.prototype.scrollIntoView = function (this: Element) {
   scrolledTo.push(this);
+};
+
+/** Open popovers; jsdom has no Popover API, so tests define it and record the calls instead. */
+const openPopovers = new Set<Element>();
+
+HTMLElement.prototype.showPopover = function (this: HTMLElement) {
+  openPopovers.add(this);
+};
+
+HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
+  openPopovers.delete(this);
 };
 
 /** Clicks the footnote link of the new version and returns the click event. */
@@ -135,6 +187,55 @@ function iconNamesOf(element: HTMLElement) {
   );
 }
 
+/** Moves the pointer onto the element, from the element it was on. */
+function pointTo(element: Element, from: Element | null = null): void {
+  element.dispatchEvent(new MouseEvent(MOUSEOVER_EVENT, { bubbles: true, relatedTarget: from }));
+}
+
+/** Moves the pointer from the element onto another one, or out of the page. */
+function pointAwayFrom(element: Element, to: Element | null = null): void {
+  element.dispatchEvent(new MouseEvent(MOUSEOUT_EVENT, { bubbles: true, relatedTarget: to }));
+}
+
+function pressEscape(): void {
+  document.dispatchEvent(new KeyboardEvent(KEYDOWN_EVENT, { key: ESCAPE_KEY }));
+}
+
+/** Focuses the element as the Tab key does; jsdom counts a focus after a mouse event as a click. */
+function focusFromKeyboard(element: HTMLElement): void {
+  document.dispatchEvent(new KeyboardEvent(KEYDOWN_EVENT, { key: TAB_KEY }));
+  element.focus();
+}
+
+/** The first icon of changes between the versions. */
+function iconOf(element: HTMLElement): HTMLElement {
+  return element.querySelector(CHANGE_DETAILS_ICON_SELECTOR) as HTMLElement;
+}
+
+function tooltipOf(element: HTMLElement): HTMLElement {
+  return element.querySelector(TOOLTIP_SELECTOR) as HTMLElement;
+}
+
+function isTooltipShown(element: HTMLElement): boolean {
+  return openPopovers.has(tooltipOf(element));
+}
+
+/** Lines of the tooltip, from the title on; a row is its label and its value. */
+function tooltipLinesOf(element: HTMLElement) {
+  return Array.from(tooltipOf(element).querySelectorAll(TOOLTIP_LINE_SELECTOR), tooltipLineText);
+}
+
+function tooltipLineText(line: Element) {
+  const parts = line.children.length > 0 ? Array.from(line.children) : [line];
+  return parts.map((part) => part.textContent).join(PART_SEPARATOR);
+}
+
+/** Marked changes with details in the new version. */
+function newMarkersOf(element: HTMLElement) {
+  const selector = `${NEW_CONTENT_SELECTOR} ${DESCRIBED_MARKER_SELECTOR}`;
+  return Array.from(element.querySelectorAll<HTMLElement>(selector));
+}
+
 /** Two diffs of the same document on one page. */
 @Component({
   imports: [DiffwiseHtmlDiff],
@@ -202,7 +303,7 @@ describe('DiffwiseHtmlDiff', () => {
     fixture.detectChanges();
 
     const element = fixture.nativeElement as HTMLElement;
-    const ids = Array.from(element.querySelectorAll(ID_SELECTOR), (found) => found.id);
+    const ids = Array.from(element.querySelectorAll(CONTENT_ID_SELECTOR), (found) => found.id);
     const links = Array.from(element.querySelectorAll(FRAGMENT_LINK_SELECTOR), (link) =>
       link.getAttribute(HREF_ATTRIBUTE),
     );
@@ -440,5 +541,216 @@ describe('DiffwiseHtmlDiff', () => {
     const element = renderElement('', '', { fontFamily: 'Georgia' });
 
     expect(element.style.fontFamily).toContain('"Georgia"');
+  });
+});
+
+describe('DiffwiseHtmlDiff change details', () => {
+  it('shows an icon between the versions for a change besides text, named by its kind (R40)', () => {
+    const versions = [
+      [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
+      [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
+      [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', 'Image changed'],
+    ];
+
+    for (const [oldHtml, newHtml, iconKind, name] of versions) {
+      const icon = iconOf(renderElement(oldHtml, newHtml));
+
+      expect(icon.classList).toContain(ICON_KIND_CLASS_START + iconKind);
+      expect(icon.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe(name);
+    }
+  });
+
+  it('shows one icon with the number of changes for several changes in a line (R41, U24 B)', () => {
+    const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML);
+    const icons = element.querySelectorAll(CHANGE_DETAILS_ICON_SELECTOR);
+
+    expect(icons.length).toBe(1);
+    expect(icons[0].classList).toContain(ICON_KIND_CLASS_START + 'multiple');
+    expect(icons[0].getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Formatting changes: 2');
+    expect(textsOf(element, CHANGE_DETAILS_COUNT_SELECTOR)).toEqual(['2']);
+  });
+
+  it('shows no icon for changed text', () => {
+    const element = renderElement('<p>Zasady ogólne.</p>', '<p>Zasady szczegółowe.</p>');
+
+    expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+  });
+
+  it('shows the tooltip of an icon on hover, with the changed part of a value highlighted', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+
+    pointTo(iconOf(element).querySelector(SVG_SELECTOR) as Element);
+
+    expect(isTooltipShown(element)).toBe(true);
+    expect(tooltipLinesOf(element)).toEqual([
+      'Link address changed',
+      'Before https://example.com/terms-2025',
+      'After https://example.com/terms-2026',
+    ]);
+    expect(textsOf(element, REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR)).toEqual(['2025']);
+    expect(textsOf(element, ADDED_TOOLTIP_HIGHLIGHT_SELECTOR)).toEqual(['2026']);
+  });
+
+  it('lists every change of a line in the tooltip of its icon (U27 E)', () => {
+    const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML);
+
+    pointTo(iconOf(element));
+
+    expect(tooltipLinesOf(element)).toEqual([
+      'Formatting changes: 2',
+      'Link address changed',
+      'Before https://example.com/a',
+      'After https://example.com/b',
+      'Formatting change',
+      'bold added',
+    ]);
+  });
+
+  it('describes an icon for screen readers with the lines under the title of its tooltip', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+    const icon = iconOf(element);
+
+    pointTo(icon);
+
+    const descriptionId = icon.getAttribute(DESCRIBED_BY_ATTRIBUTE);
+    const description = element.querySelector(ID_SELECTOR_START + descriptionId);
+
+    expect(description?.textContent).toContain('https://example.com/terms-2025');
+    expect(description?.textContent).not.toContain('Link address changed');
+  });
+
+  it('keeps the tooltip while the pointer moves onto it, and hides it after both (WCAG 1.4.13)', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+    const icon = iconOf(element);
+    const tooltip = tooltipOf(element);
+
+    pointTo(icon);
+    pointAwayFrom(icon, tooltip);
+
+    expect(isTooltipShown(element)).toBe(true);
+
+    pointAwayFrom(tooltip, element);
+
+    expect(isTooltipShown(element)).toBe(false);
+    expect(icon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
+  });
+
+  it('shows the tooltip of an icon focused from the keyboard until the focus leaves', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+    const icon = iconOf(element);
+
+    focusFromKeyboard(icon);
+    pointAwayFrom(icon, element);
+
+    expect(isTooltipShown(element)).toBe(true);
+
+    icon.blur();
+
+    expect(isTooltipShown(element)).toBe(false);
+  });
+
+  it('hides the tooltip on Escape', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+
+    pointTo(iconOf(element));
+    pressEscape();
+
+    expect(isTooltipShown(element)).toBe(false);
+  });
+
+  it('hides the tooltip when the page scrolls, which would move its trigger away', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML);
+
+    pointTo(iconOf(element));
+    document.dispatchEvent(new Event(SCROLL_EVENT));
+
+    expect(isTooltipShown(element)).toBe(false);
+  });
+
+  it('shows the details a marked change points to on hover, by default', () => {
+    const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML);
+    const [, boldMarker] = newMarkersOf(element);
+
+    pointTo(boldMarker);
+
+    expect(tooltipLinesOf(element)).toEqual(['Formatting change', 'bold added']);
+    expect(boldMarker.getAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(tooltipOf(element).id);
+    expect(boldMarker.hasAttribute(TABINDEX_ATTRIBUTE)).toBe(false);
+  });
+
+  it('shows details only from the icons in icon mode', () => {
+    const element = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML, {
+      changeDetails: DiffwiseChangeDetails.Icon,
+    });
+
+    pointTo(newMarkersOf(element)[0]);
+
+    expect(isTooltipShown(element)).toBe(false);
+    expect(element.classList).toContain(ICON_ONLY_CLASS);
+    expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).not.toBeNull();
+  });
+
+  it('shows details only on marked changes in hover mode; the new version takes the focus', async () => {
+    const fixture = render(OLD_LINK_HTML, NEW_LINK_HTML, {
+      changeDetails: DiffwiseChangeDetails.Hover,
+    });
+
+    await fixture.whenStable();
+
+    const element = fixture.nativeElement as HTMLElement;
+    const markers = element.querySelectorAll<HTMLElement>(DESCRIBED_MARKER_SELECTOR);
+    const tabIndexes = Array.from(markers, (marker) => marker.getAttribute(TABINDEX_ATTRIBUTE));
+
+    expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+    expect(tabIndexes).toEqual([null, IN_TAB_ORDER]);
+
+    focusFromKeyboard(markers[1]);
+
+    expect(isTooltipShown(element)).toBe(true);
+    expect(tooltipLinesOf(element)[0]).toBe('Link address changed');
+  });
+
+  it('shows the texts of the tooltips in the language of the interface, and custom texts', () => {
+    const polish = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, { language: DiffwiseLanguage.PL });
+    const custom = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, {
+      customTexts: { linkChangeLabel: 'Other address' },
+    });
+
+    pointTo(iconOf(polish));
+
+    expect(tooltipLinesOf(polish)).toEqual([
+      'Zmieniony adres linku',
+      'Było https://example.com/terms-2025',
+      'Jest https://example.com/terms-2026',
+    ]);
+    expect(iconOf(custom).getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Other address');
+  });
+
+  it('shows the names of the version icons in the tooltip, also on focus from the keyboard', () => {
+    const element = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.Icons });
+    const [oldIcon, newIcon] = element.querySelectorAll<HTMLElement>(VERSION_HEADER_ICON_SELECTOR);
+
+    pointTo(oldIcon);
+
+    expect(tooltipLinesOf(element)).toEqual(['Previous version']);
+    expect(oldIcon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
+
+    focusFromKeyboard(newIcon);
+
+    expect(tooltipLinesOf(element)).toEqual(['New version']);
+    expect(newIcon.getAttribute(TABINDEX_ATTRIBUTE)).toBe(IN_TAB_ORDER);
+    expect(newIcon.hasAttribute(TITLE_ATTRIBUTE)).toBe(false);
+  });
+
+  it('hides the tooltip when the rows change, since its trigger may be gone', async () => {
+    const fixture = render(OLD_LINK_HTML, NEW_LINK_HTML);
+    const element = fixture.nativeElement as HTMLElement;
+
+    await fixture.whenStable();
+    pointTo(iconOf(element));
+    fixture.componentRef.setInput(NEW_HTML_INPUT, OLD_LINK_HTML);
+    await fixture.whenStable();
+
+    expect(isTooltipShown(element)).toBe(false);
   });
 });

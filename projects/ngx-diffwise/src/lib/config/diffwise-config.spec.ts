@@ -1,6 +1,7 @@
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
 import {
   DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -34,6 +35,7 @@ const DEFAULT_OPTIONS = {
   fontFamily: DiffwiseFontFamily.Inherit,
   versionHeaderFontSize: 0.75,
   lineNumberFontSize: 0.75,
+  changeDetails: DiffwiseChangeDetails.Both,
   ignoreWhitespace: false,
   ignoreCase: false,
   language: DiffwiseLanguage.Auto,

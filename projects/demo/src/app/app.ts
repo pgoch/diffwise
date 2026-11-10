@@ -9,6 +9,7 @@ import {
 import {
   Diffwise,
   DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   type DiffwiseConfigOptions,
   type DiffwiseDiffColors,
@@ -133,6 +134,13 @@ const VERTICAL_ALIGNMENT_CHOICES: readonly Choice<DiffwiseVerticalAlignment>[] =
   { value: DiffwiseVerticalAlignment.Bottom, label: 'Bottom' },
 ];
 
+/** Where details of changes besides text show, as in the section of the mockup. */
+const CHANGE_DETAILS_CHOICES: readonly Choice<DiffwiseChangeDetails>[] = [
+  { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
+  { value: DiffwiseChangeDetails.Icon, label: 'Icon in the middle' },
+  { value: DiffwiseChangeDetails.Both, label: 'Both' },
+];
+
 /** Fonts in the panel: the one of the app, the built-in one, or a font named in the panel. */
 const FontChoice = {
   App: 'app',
@@ -190,6 +198,7 @@ export class App {
   protected readonly alignments = ALIGNMENT_CHOICES;
   protected readonly lineNumberStyles = LINE_NUMBER_STYLE_CHOICES;
   protected readonly verticalAlignments = VERTICAL_ALIGNMENT_CHOICES;
+  protected readonly changeDetailsChoices = CHANGE_DETAILS_CHOICES;
   protected readonly fonts = FONT_CHOICES;
   protected readonly fontChoices = FontChoice;
 

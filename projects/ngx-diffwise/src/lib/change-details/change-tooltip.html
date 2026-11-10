@@ -1,0 +1,48 @@
+<div class="diffwise-html-diff__tooltip-title">{{ content().title }}</div>
+
+@if (content().sections.length > 0) {
+  <div [id]="detailsId()">
+    @for (section of content().sections; track $index) {
+      <div [class.diffwise-html-diff__tooltip-item]="section.title !== null">
+        @if (section.title !== null) {
+          <div class="diffwise-html-diff__tooltip-subtitle">{{ section.title }}</div>
+        }
+
+        @for (line of section.lines; track $index) {
+          <div [class]="lineClasses[line.kind]">
+            @if (line.label !== null) {
+              <span class="diffwise-html-diff__tooltip-label">{{ line.label }}</span>
+            }
+
+            <span [class.diffwise-html-diff__tooltip-value]="line.label !== null">
+              @for (part of line.parts; track $index) {
+                @switch (part.kind) {
+                  @case (partKinds.Color) {
+                    <span
+                      class="diffwise-html-diff__tooltip-color"
+                      [style.background-color]="part.text"
+                    ></span>
+                  }
+                  @case (partKinds.Code) {
+                    @if (part.highlight === null) {
+                      <code>{{ part.text }}</code>
+                    } @else {
+                      <code [class]="highlights[part.highlight]">{{ part.text }}</code>
+                    }
+                  }
+                  @default {
+                    @if (part.highlight === null) {
+                      <span>{{ part.text }}</span>
+                    } @else {
+                      <mark [class]="highlights[part.highlight]">{{ part.text }}</mark>
+                    }
+                  }
+                }
+              }
+            </span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

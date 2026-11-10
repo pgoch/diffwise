@@ -125,6 +125,14 @@
     </label>
   }
 
+  <h2>Change details</h2>
+  <demo-choice-buttons
+    label="Where details show"
+    [choices]="changeDetailsChoices"
+    [value]="diffwise.config().changeDetails"
+    (chosen)="update({ changeDetails: $event })"
+  />
+
   <h2>Fonts</h2>
   <demo-choice-buttons
     label="Font"

@@ -6,6 +6,7 @@ import { DIFF_COLOR_VARIABLES, type DiffwiseDiffColors, type ThemeDiffColors } f
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import {
   DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -77,6 +78,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   fontFamily: isFontFamily,
   versionHeaderFontSize: isFontSize,
   lineNumberFontSize: isFontSize,
+  changeDetails: isChangeDetails,
   ignoreWhitespace: isBoolean,
   ignoreCase: isBoolean,
   language: isLanguage,
@@ -234,6 +236,10 @@ function isFontName(text: string): boolean {
 /** True for a font size in rem, from 0.5 to 10. */
 function isFontSize(value: unknown): boolean {
   return isNumber(value) && isInRange(value, FONT_SIZE_RANGE);
+}
+
+function isChangeDetails(value: unknown): boolean {
+  return isValueOf(DiffwiseChangeDetails, value);
 }
 
 function isLanguage(value: unknown): boolean {

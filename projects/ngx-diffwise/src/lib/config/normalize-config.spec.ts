@@ -2,6 +2,7 @@ import type { DiffwiseConfigOptions } from './diffwise-config';
 import { normalizeConfig } from './normalize-config';
 import {
   DiffwiseAlignment,
+  DiffwiseChangeDetails,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -159,6 +160,14 @@ describe('normalizeConfig', () => {
       lineNumberFontSize: 0.5,
     });
     expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('keeps where details of changes show, and ignores another place with a warning', () => {
+    expect(normalizeConfig({ changeDetails: 'hover' })).toEqual({
+      changeDetails: DiffwiseChangeDetails.Hover,
+    });
+    expect(normalizeConfig({ changeDetails: 'tooltip' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledTimes(1);
   });
 
   it('ignores levels and font sizes out of their ranges, with a warning for each', () => {
