@@ -1,8 +1,8 @@
 # ngx-diffwise
 
-Side-by-side diffs of rendered HTML for Angular. Diffwise shows two versions of a document side by side, the way a reader sees them, with the changed lines and words marked.
+Side-by-side diffs of rendered HTML for Angular. Diffwise shows two versions of a document side by side, the way a reader sees them, with the changed lines, words, formatting, links and images marked.
 
-> Version 0.1, an early preview. The API may change before 1.0.
+> Version 0.2, an early preview. The API may change before 1.0.
 
 ## Installation
 

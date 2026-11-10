@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.1. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.2. Diffwise works without any setup: every option has a default, and you set only what you want to change.
 
 ## Where to set options
 
@@ -84,15 +84,30 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 | `versionHeaders` | `DiffwiseVersionHeaders.Default`, `Icons`, `None`, or `{ old, new }` | `Default` | Headers above the versions: "Previous version" and "New version", icons named by these texts, no headers, or your own texts, such as `{ old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' }` |
 | `versionHeaderAlignment` | `DiffwiseAlignment.Start`, `Center`, `End` | `Center` | Where the headers sit in their columns. Start and end follow the direction of the text |
 
+### Change details
+
+Changes besides the text, such as italic → bold, another link address or another image, have details: a tooltip says what changed. See [How it works](how-it-works.md#5-mark-and-display) for what each change shows.
+
+| Option | Values | Default | What it does |
+|---|---|---|---|
+| `changeDetails` | `DiffwiseChangeDetails.Hover`, `Icon`, `Both` | `Both` | Where the details show: in a tooltip of the marked text, from an icon in the column between the versions, or both |
+| `changeDetailsIconStyle` | `DiffwiseChangeDetailsIconStyle.Plain`, `Gradient`, `Filled` | `Gradient` | The look of the icons: a gray frame, a frame with a gradient from the color of the earlier version to the color of the later one, or a background with that gradient |
+| `tooltipColorMode` | `DiffwiseTooltipColorMode.Component`, `Reversed` | `Component` | The colors of the tooltips: those of the diff, or those of the opposite theme, such as dark tooltips on a light diff |
+| `highlightTooltipChanges` | `true`, `false` | `true` | Highlights the part of a value that changed, such as `2025` → `2026` in a link address, a file name or an alternative text. With `false`, the tooltip shows whole values |
+| `tooltipTitleAlignment` | `DiffwiseAlignment.Start`, `Center`, `End` | `Start` | Where the titles of the tooltips sit. Start and end follow the direction of the text |
+
+A tooltip shows on hover, and when its icon or marked change gets the focus from the keyboard. The pointer can move onto it, and Escape hides it. The icons are in the tab order; with `Hover`, there are no icons, so the marked changes of the later version take the focus instead. An icon is named by the title of its tooltip, and the lines under the title describe it for screen readers.
+
 ### Fonts
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
 | `fontFamily` | `DiffwiseFontFamily.Inherit`, `Builtin`, or a font name | `Inherit` | The font of the element around the diff, the font of the system, or a font your app loads, such as `'Inter'`. The built-in font is used while yours is missing |
 | `versionHeaderFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the headers |
-| `lineNumberFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the line numbers. Their column and the column between the versions grow with it |
+| `lineNumberFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the line numbers. Their column and the column between the versions, with its icons, grow with it |
+| `tooltipFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the tooltips |
 
-The content keeps the font size of your app.
+The content keeps the font size of your app. The tooltips have the font of the diff.
 
 ### Comparison
 
@@ -100,6 +115,10 @@ The content keeps the font size of your app.
 |---|---|---|---|
 | `ignoreWhitespace` | `true`, `false` | `false` | Ignores differences in whitespace |
 | `ignoreCase` | `true`, `false` | `false` | Ignores differences in letter case |
+| `ignoreFormatting` | `true`, `false` | `false` | Ignores changes of formatting alone, such as italic → bold, another color or another heading level |
+| `ignoreLinkChanges` | `true`, `false` | `false` | Ignores links added, removed or pointing elsewhere around the same text |
+
+Only these options compare the versions again; the other options change only the look. Changes of images always count. [How it works](how-it-works.md#2-read-the-text-and-its-format) describes what counts as formatting.
 
 ### Language
 
@@ -145,6 +164,53 @@ provideDiffwise({ customTexts: { oldVersionLabel: 'Draft', newVersionLabel: 'Pub
 
 Each level of the configuration changes only the texts it sets. `null` takes away the texts of the levels below. The component element has the `region` role, named by `diffLabel`; to name it with a heading of your page instead, set `aria-labelledby` on the element.
 
+### Texts of the tooltips
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `formattingChangeLabel` | Formatting change | Zmiana formatowania | The title of a tooltip about formatting, and the name of its icon |
+| `linkChangeLabel` | Link address changed | Zmieniony adres linku | The title of a tooltip about another address of a link around the same text |
+| `addedLinkLabel` | Link added | Dodany link | The title of a tooltip about a link added around unchanged text |
+| `removedLinkLabel` | Link removed | Usunięty link | The title of a tooltip about a link removed from unchanged text |
+| `imageChangeLabel` | Image changed | Zmieniony obrazek | The title of a tooltip about an image with another file, size or alternative text |
+| `multipleChangesLabel` | Formatting changes: {count} | Zmiany formatowania: {count} | The title of a tooltip about several changes in one line; `{count}` stands for their number |
+| `oldValueLabel`, `newValueLabel` | Before, After | Było, Jest | The labels of the old and the new value, such as an address |
+| `imageFileLabel` | file | plik | Heads the old and the new file of an image when more of the image changed |
+| `imageSizeLabel` | size | rozmiar | Before the old and the new size of an image: "size: 480 × 270 → 640 × 360 px" |
+| `imageAltTextLabel` | alternative text | tekst alternatywny | Heads the old and the new alternative text of an image |
+
+### Names of formatting
+
+A tooltip names formatting in three forms: the name, used with an arrow, as in "italic → bold"; the form for formatting added to unchanged text, as in "bold added"; and the form for formatting removed from it. Each form has its own text, since some languages need other word forms, such as Polish "dodane pogrubienie" and "dodana kursywa". The texts follow one pattern: `boldLabel`, `addedBoldLabel`, `removedBoldLabel`.
+
+| Formatting | Texts | English | Polish |
+|---|---|---|---|
+| Bold | `boldLabel`, `addedBoldLabel`, `removedBoldLabel` | bold, bold added, bold removed | pogrubienie, dodane pogrubienie, usunięte pogrubienie |
+| Italic | `italicLabel`, `addedItalicLabel`, `removedItalicLabel` | italic, italic added, italic removed | kursywa, dodana kursywa, usunięta kursywa |
+| Underline | `underlineLabel`, `addedUnderlineLabel`, `removedUnderlineLabel` | underline, underline added, underline removed | podkreślenie, dodane podkreślenie, usunięte podkreślenie |
+| Strikethrough | `strikethroughLabel`, `addedStrikethroughLabel`, `removedStrikethroughLabel` | strikethrough, strikethrough added, strikethrough removed | przekreślenie, dodane przekreślenie, usunięte przekreślenie |
+| Superscript | `superscriptLabel`, `addedSuperscriptLabel`, `removedSuperscriptLabel` | superscript, superscript added, superscript removed | indeks górny, dodany indeks górny, usunięty indeks górny |
+| Subscript | `subscriptLabel`, `addedSubscriptLabel`, `removedSubscriptLabel` | subscript, subscript added, subscript removed | indeks dolny, dodany indeks dolny, usunięty indeks dolny |
+| Code font | `codeLabel`, `addedCodeLabel`, `removedCodeLabel` | code font, code font added, code font removed | czcionka kodu, dodana czcionka kodu, usunięta czcionka kodu |
+| Highlight (`<mark>`) | `textHighlightLabel`, `addedTextHighlightLabel`, `removedTextHighlightLabel` | highlight, highlight added, highlight removed | zakreślenie, dodane zakreślenie, usunięte zakreślenie |
+| Smaller font (`<small>`) | `smallTextLabel`, `addedSmallTextLabel`, `removedSmallTextLabel` | smaller font, smaller font added, smaller font removed | mniejsza czcionka, dodana mniejsza czcionka, usunięta mniejsza czcionka |
+| Upper case | `uppercaseLabel`, `addedUppercaseLabel`, `removedUppercaseLabel` | uppercase, uppercase added, uppercase removed | wielkie litery, dodane wielkie litery, usunięte wielkie litery |
+| Lower case | `lowercaseLabel`, `addedLowercaseLabel`, `removedLowercaseLabel` | lowercase, lowercase added, lowercase removed | małe litery, dodane małe litery, usunięte małe litery |
+| Capitalized | `capitalizedLabel`, `addedCapitalizedLabel`, `removedCapitalizedLabel` | capitalized, capitalization added, capitalization removed | wielkie pierwsze litery, dodane wielkie pierwsze litery, usunięte wielkie pierwsze litery |
+| Text color | `textColorLabel`, `addedTextColorLabel`, `removedTextColorLabel` | text color, text color added, text color removed | kolor tekstu, dodany kolor tekstu, usunięty kolor tekstu |
+| Background color | `backgroundColorLabel`, `addedBackgroundColorLabel`, `removedBackgroundColorLabel` | background color, background color added, background color removed | kolor tła, dodany kolor tła, usunięty kolor tła |
+| Font | `fontFamilyLabel`, `addedFontFamilyLabel`, `removedFontFamilyLabel` | font, font added, font removed | czcionka, dodana czcionka, usunięta czcionka |
+| Font size | `fontSizeLabel`, `addedFontSizeLabel`, `removedFontSizeLabel` | font size, font size added, font size removed | rozmiar tekstu, dodany rozmiar tekstu, usunięty rozmiar tekstu |
+| Alignment | `textAlignmentLabel`, `addedTextAlignmentLabel`, `removedTextAlignmentLabel` | alignment, alignment added, alignment removed | wyrównanie, dodane wyrównanie, usunięte wyrównanie |
+
+A color, a font, a size or an alignment is shown with its value, as in "text color: ■ #c0392b → ■ #1e7d4f" or "font size added: 18px". A few more texts complete the names:
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `headingLabel` | heading {level} | nagłówek {level} | A heading level, as in "heading 3 → heading 2"; `{level}` stands for the level |
+| `paragraphLabel` | paragraph | akapit | Text that is not a heading, as in "paragraph → heading 2" |
+| `alignLeftLabel`, `alignCenterLabel`, `alignRightLabel`, `alignJustifyLabel` | left, center, right, justified | do lewej, do środka, do prawej, do obu krawędzi | Values of the alignment; rare values, such as `start`, show as CSS writes them |
+
 ## The `Diffwise` service
 
 | Member | What it does |
@@ -189,8 +255,21 @@ diffwise-html-diff.diffwise-html-diff--dark-theme {
 | `--diffwise-gap-gray` | The background of the gap with `gapStyle: 'gray'` |
 | `--diffwise-line-number-font-size`, `--diffwise-version-header-font-size` | Font sizes |
 | `--diffwise-line-number-digits` | Digits of the highest line number, which set the width of the numbers; the component sets it |
+| `--diffwise-tooltip-background`, `--diffwise-tooltip-text`, `--diffwise-tooltip-border` | Background, text and frame of the tooltips |
+| `--diffwise-tooltip-shadow` | Shadow of the tooltips |
+| `--diffwise-tooltip-removed-highlight`, `--diffwise-tooltip-added-highlight` | Backgrounds of the changed parts of the old and the new value in a tooltip |
+| `--diffwise-tooltip-font-size` | Font size of the tooltips |
+| `--diffwise-focus` | The outline of an icon or a marked change with the focus |
 
-The options `diffColors`, `lineNumberFontSize` and `versionHeaderFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
+The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize` and `tooltipFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
+
+The tooltip shows in the top layer of the page, so no `overflow` of your app cuts it, but it stays inside the component element, and the variables reach it. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
+
+```css
+diffwise-html-diff.diffwise-html-diff--tooltip-color-mode-reversed {
+  --diffwise-tooltip-background: #0b1f3a;
+}
+```
 
 ### Modifier classes
 
@@ -198,7 +277,7 @@ The component element shows the options in its classes:
 
 - An option with a value other than its default adds a class with its name and value, such as `diffwise-html-diff--gap-style-gray` or `diffwise-html-diff--highlight-style-underline`.
 - The levels always have a class, such as `diffwise-html-diff--diff-intensity-3` and `diffwise-html-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
-- `diffwise-html-diff--no-line-numbers`, `--no-changed-line-highlight` and `--highlight-whole-lines` turn parts of the lines off or on.
+- `diffwise-html-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
 - `diffwise-html-diff--dark-theme` shows the dark theme.
 
 ### Parts of the view
@@ -214,4 +293,16 @@ The component element shows the options in its classes:
 | `diffwise-html-diff__content`, with `--old` or `--new` | The content of a line |
 | `diffwise-html-diff__divider` | The column between the versions |
 | `diffwise-html-diff__gap` | The empty place opposite an added or a removed line |
-| `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words: `<del>` in the earlier version, `<ins>` in the later one |
+| `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
+| `diffwise-html-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
+| `diffwise-html-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
+| `diffwise-html-diff__change-details-count` | The number of changes on the icon of several changes |
+| `diffwise-html-diff__tooltip` | The tooltip; one for each diff |
+| `diffwise-html-diff__tooltip-title` | The title of the tooltip, such as "Link address changed" |
+| `diffwise-html-diff__tooltip-item` | One of several changes in the tooltip, under a line |
+| `diffwise-html-diff__tooltip-subtitle` | The title of one of several changes, or of a part of an image, such as "alternative text" |
+| `diffwise-html-diff__tooltip-description` | A line that describes a change, such as "italic → bold" |
+| `diffwise-html-diff__tooltip-row` | A row with a label and a value, such as the old address |
+| `diffwise-html-diff__tooltip-label`, `diffwise-html-diff__tooltip-value` | The label and the value of that row |
+| `diffwise-html-diff__tooltip-highlight`, with `--removed` or `--added` | The changed part of a value |
+| `diffwise-html-diff__tooltip-color` | A swatch before a color |
