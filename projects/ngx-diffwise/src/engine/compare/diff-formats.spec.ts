@@ -76,13 +76,13 @@ function link(oldLink: string | null, newLink: string | null): LinkChangeDetail 
 }
 
 describe('diffFormats', () => {
-  it('finds italic changed to bold (T16)', () => {
+  it('finds italic changed to bold', () => {
     expect(
       formatChanges('<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'),
     ).toEqual([['Ważne:', 'Ważne:', [formatting([TextStyle.Italic], [TextStyle.Bold])]]]);
   });
 
-  it('joins words with the same change across the spaces between them (T17)', () => {
+  it('joins words with the same change across the spaces between them', () => {
     const oldHtml = '<p>Szczegółowe warunki opisano niżej.</p>';
     const newHtml = '<p><b>Szczegółowe warunki</b> opisano niżej.</p>';
 
@@ -91,7 +91,7 @@ describe('diffFormats', () => {
     ]);
   });
 
-  it('compares the formatting of unchanged words only (T18)', () => {
+  it('compares the formatting of unchanged words only', () => {
     const oldHtml = '<p><i>Uwaga:</i> jedno konto.</p>';
     const newHtml = '<p><b>Uwaga:</b> <b>trzy</b> konta.</p>';
 
@@ -100,7 +100,7 @@ describe('diffFormats', () => {
     ]);
   });
 
-  it('finds another address of a link (T19)', () => {
+  it('finds another address of a link', () => {
     const oldLink = 'https://example.com/regulamin-2025';
     const newLink = 'https://example.com/regulamin-2026';
     const oldHtml = `<p>Zasady są w <a href="${oldLink}">regulaminie</a>.</p>`;
@@ -111,14 +111,14 @@ describe('diffFormats', () => {
     ]);
   });
 
-  it('finds no link change when only the text of a link changed (T20)', () => {
+  it('finds no link change when only the text of a link changed', () => {
     const oldHtml = '<p>Zobacz <a href="/pomoc">pomocy</a>.</p>';
     const newHtml = '<p>Zobacz <a href="/pomoc">centrum pomocy</a>.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([]);
   });
 
-  it('finds a link added around unchanged text (T21)', () => {
+  it('finds a link added around unchanged text', () => {
     const oldHtml = '<p>Zobacz regulamin.</p>';
     const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
 
@@ -127,7 +127,7 @@ describe('diffFormats', () => {
     ]);
   });
 
-  it('describes each change of a line separately, for markers on both sides (T22)', () => {
+  it('describes each change of a line separately, for markers on both sides', () => {
     const oldHtml = '<p>Szczegółowe warunki są w <a href="/regulamin-2025">regulaminie</a>.</p>';
     const newHtml =
       '<p><b>Szczegółowe warunki</b> są w <a href="/regulamin-2026">regulaminie</a>.</p>';
@@ -141,7 +141,7 @@ describe('diffFormats', () => {
     expect(newRanges.map((range) => range.detailIndices)).toEqual([[0], [1]]);
   });
 
-  it('finds a changed heading level in the whole heading (T12)', () => {
+  it('finds a changed heading level in the whole heading', () => {
     const headingChange = valueChange(FormattingValue.HeadingLevel, '2', '3');
     const paragraphChange = valueChange(FormattingValue.HeadingLevel, null, '2');
 

@@ -29,7 +29,7 @@ function summary(oldHtml: string, newHtml: string, options?: DiffOptions) {
 }
 
 describe('diffLines', () => {
-  it('finds no changes in identical documents (T1)', () => {
+  it('finds no changes in identical documents', () => {
     const html = '<p>Serwis działa całą dobę.</p>';
 
     expect(summary(html, html)).toEqual([
@@ -38,7 +38,7 @@ describe('diffLines', () => {
     expect(diff(html, html).stats).toEqual(NO_CHANGES);
   });
 
-  it('pairs a line with a changed word as one changed line (T2)', () => {
+  it('pairs a line with a changed word as one changed line', () => {
     const oldHtml = '<p>Konto można usunąć w ustawieniach.</p>';
     const newHtml = '<p>Konto można zamknąć w ustawieniach.</p>';
 
@@ -52,7 +52,7 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
   });
 
-  it('finds a paragraph added in the middle (T4)', () => {
+  it('finds a paragraph added in the middle', () => {
     const oldHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p>';
     const newHtml = '<p>Zasady ogólne.</p><p>Płatności.</p><p>Kontakt.</p>';
 
@@ -64,7 +64,7 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1 });
   });
 
-  it('finds a removed paragraph (T5)', () => {
+  it('finds a removed paragraph', () => {
     const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
     const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p>';
 
@@ -76,7 +76,7 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, removedLines: 1 });
   });
 
-  it('shows swapped paragraphs as removed and added (T6)', () => {
+  it('shows swapped paragraphs as removed and added', () => {
     const oldHtml = '<p>Rejestracja.</p><p>Logowanie.</p>';
     const newHtml = '<p>Logowanie.</p><p>Rejestracja.</p>';
 
@@ -87,7 +87,7 @@ describe('diffLines', () => {
     });
   });
 
-  it('adds every line when the old document is empty (T7)', () => {
+  it('adds every line when the old document is empty', () => {
     const newHtml = '<p>Jeden.</p><p>Dwa.</p><p>Trzy.</p>';
 
     expect(summary('', newHtml)).toEqual([
@@ -98,7 +98,7 @@ describe('diffLines', () => {
     expect(diff('', newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 3 });
   });
 
-  it('finds a change of letter case unless case is ignored (T9)', () => {
+  it('finds a change of letter case unless case is ignored', () => {
     const oldHtml = '<p>Konto Firmowe</p>';
     const newHtml = '<p>Konto firmowe</p>';
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
@@ -122,7 +122,7 @@ describe('diffLines', () => {
     ]);
   });
 
-  it('finds a change of formatting or of a link in the same text (T16, T19)', () => {
+  it('finds a change of formatting or of a link in the same text', () => {
     const italicToBold = ['<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'];
     const otherAddress = [
       '<p><a href="/regulamin-2025">Regulamin</a></p>',
@@ -146,7 +146,7 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
   });
 
-  it('ignores formatting and heading levels with ignoreFormatting (T12)', () => {
+  it('ignores formatting and heading levels with ignoreFormatting', () => {
     const ignoreFormatting = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
 
     expect(diff('<h2>Cennik</h2>', '<h3>Cennik</h3>').stats).toEqual({
@@ -159,7 +159,7 @@ describe('diffLines', () => {
     );
   });
 
-  it('ignores links added, removed or changed with ignoreLinkChanges (T21)', () => {
+  it('ignores links added, removed or changed with ignoreLinkChanges', () => {
     const ignoreLinkChanges = { ...DEFAULT_DIFF_OPTIONS, ignoreLinkChanges: true };
     const oldHtml = '<p>Zobacz regulamin.</p>';
     const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
@@ -174,7 +174,7 @@ describe('diffLines', () => {
     expect(diff(html, html).stats).toEqual(NO_CHANGES);
   });
 
-  it('finds another file, size or alternative text of an image (T23, T24, T26)', () => {
+  it('finds another file, size or alternative text of an image', () => {
     const logo = '<p><img src="images/logo-2025.svg" alt="Logo" width="160"></p>';
     const otherVersions = [
       '<p><img src="images/logo-2026.svg" alt="Logo" width="160"></p>',
@@ -198,7 +198,7 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml, ignoreCase).stats).toEqual(NO_CHANGES);
   });
 
-  it('finds a line with only an image added or removed (T25)', () => {
+  it('finds a line with only an image added or removed', () => {
     const textHtml = '<p>Notatki synchronizują się w tle.</p>';
     const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
 

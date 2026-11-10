@@ -346,7 +346,7 @@ describe('diffHtml', () => {
     expect([...markedKinds]).toEqual([LineChangeKind.Changed]);
   });
 
-  it('numbers removed and added lines only on their own side (T4, T5)', () => {
+  it('numbers removed and added lines only on their own side', () => {
     const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
     const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p><p>Płatności.</p>';
 
@@ -358,7 +358,7 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('applies the options to lines and words (T9)', () => {
+  it('applies the options to lines and words', () => {
     const oldHtml = '<p>Konto Firmowe</p>';
     const newHtml = '<p>Konto firmowe</p>';
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
@@ -371,7 +371,7 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('marks an added emoji whole and only the changed word in Chinese (T13, T14)', () => {
+  it('marks an added emoji whole and only the changed word in Chinese', () => {
     expect(
       compare('<p>Zażółć gęślą jaźń 🙂</p>', '<p>Zażółć gęślą jaźń 🙂🎉</p>').rows.map(rowSummary),
     ).toEqual([[LineChangeKind.Changed, 1, 1, [], ['🎉']]]);
@@ -380,7 +380,7 @@ describe('diffHtml', () => {
     ).toEqual([[LineChangeKind.Changed, 1, 1, ['全天'], ['每天']]]);
   });
 
-  it('marks the changed words of right-to-left text and keeps its direction (T15)', () => {
+  it('marks the changed words of right-to-left text and keeps its direction', () => {
     const { rows } = compare(
       '<p dir="rtl">الخدمة متاحة طوال اليوم.</p>',
       '<p dir="rtl">الخدمة متاحة كل يوم.</p>',
@@ -392,7 +392,7 @@ describe('diffHtml', () => {
     expect(rows[0].newLine?.html).toContain(RTL_PARAGRAPH);
   });
 
-  it('shows no scripts, event handlers or javascript: links (T35, T36)', () => {
+  it('shows no scripts, event handlers or javascript: links', () => {
     const unsafeLink = '<a href="javascript:alert(1)">';
     const script = '<script>alert(1)</script>';
     const oldHtml = `<p onclick="alert(1)">Regulamin ${unsafeLink}Kliknij</a></p>${script}`;
@@ -432,7 +432,7 @@ describe('diffHtml', () => {
     expect(idsIn(newLines)).toEqual(expect.arrayContaining(linkTargetsIn(newLines)));
   });
 
-  it('marks a change of formatting on both sides and describes it (T16)', () => {
+  it('marks a change of formatting on both sides and describes it', () => {
     const { rows, stats } = compare(
       '<p><i>Ważne:</i> chroń hasło.</p>',
       '<p><b>Ważne:</b> chroń hasło.</p>',
@@ -506,7 +506,7 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('frames a replaced image on both sides and describes it (T23)', () => {
+  it('frames a replaced image on both sides and describes it', () => {
     const oldImage = { source: 'images/logo-2025.svg', width: null, height: null, altText: 'Logo' };
     const newImage = { ...oldImage, source: 'images/logo-2026.svg' };
     const oldImageHtml = '<img src="images/logo-2025.svg" alt="Logo">';
@@ -564,7 +564,7 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('shows a line with only an image added or removed as a whole line (T25)', () => {
+  it('shows a line with only an image added or removed as a whole line', () => {
     const textHtml = '<p>Notatki synchronizują się w tle.</p>';
     const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
 

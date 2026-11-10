@@ -17,6 +17,9 @@ const VALUE_MODIFIERS = {
   gapStyle: 'diffwise-html-diff--gap-style-',
   versionHeaderAlignment: 'diffwise-html-diff--version-header-alignment-',
   changeDetails: 'diffwise-html-diff--change-details-',
+  changeDetailsIconStyle: 'diffwise-html-diff--change-details-icon-style-',
+  tooltipColorMode: 'diffwise-html-diff--tooltip-color-mode-',
+  tooltipTitleAlignment: 'diffwise-html-diff--tooltip-title-alignment-',
 } as const;
 
 type ValueOption = keyof typeof VALUE_MODIFIERS;
@@ -30,14 +33,16 @@ const UI_CONTRAST_MODIFIER = 'diffwise-html-diff--ui-contrast-';
 const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
 const NO_CHANGED_LINE_HIGHLIGHT_CLASS = 'diffwise-html-diff--no-changed-line-highlight';
 const HIGHLIGHT_WHOLE_LINES_CLASS = 'diffwise-html-diff--highlight-whole-lines';
+const NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS = 'diffwise-html-diff--no-tooltip-change-highlight';
 
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const LINE_NUMBER_FONT_SIZE_VARIABLE = '--diffwise-line-number-font-size';
 const VERSION_HEADER_FONT_SIZE_VARIABLE = '--diffwise-version-header-font-size';
+const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
 const FONT_FAMILY_PROPERTY = 'font-family';
 const REM_UNIT = 'rem';
 
-/** The built-in font: the font of the system, as in the mockups. */
+/** The built-in font: the font of the system. */
 const BUILTIN_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
 
 const FONT_NAME_QUOTE = '"';
@@ -54,7 +59,7 @@ export function appearanceClasses(config: DiffwiseConfig, customColors: ThemeDif
   );
   const valueClasses = changedOptions.map((option) => VALUE_MODIFIERS[option] + config[option]);
 
-  return [...valueClasses, ...levelClasses(config, customColors), ...lineClasses(config)];
+  return [...valueClasses, ...levelClasses(config, customColors), ...toggleClasses(config)];
 }
 
 /**
@@ -76,6 +81,10 @@ export function appearanceStyles(
 
   if (config.versionHeaderFontSize !== DEFAULT_CONFIG.versionHeaderFontSize) {
     styles[VERSION_HEADER_FONT_SIZE_VARIABLE] = config.versionHeaderFontSize + REM_UNIT;
+  }
+
+  if (config.tooltipFontSize !== DEFAULT_CONFIG.tooltipFontSize) {
+    styles[TOOLTIP_FONT_SIZE_VARIABLE] = config.tooltipFontSize + REM_UNIT;
   }
 
   if (config.fontFamily !== DiffwiseFontFamily.Inherit) {
@@ -111,9 +120,10 @@ function levelClasses(config: DiffwiseConfig, customColors: ThemeDiffColors): st
   return [DIFF_INTENSITY_MODIFIER + config.diffIntensity, contrastClass];
 }
 
-/** Modifier classes of the options that turn parts of the lines on or off. */
-function lineClasses(config: DiffwiseConfig): string[] {
-  const { showLineNumbers, highlightChangedLines, highlightWholeLines } = config;
+/** Modifier classes of the options that turn parts of the diff on or off. */
+function toggleClasses(config: DiffwiseConfig): string[] {
+  const { showLineNumbers, highlightChangedLines, highlightWholeLines, highlightTooltipChanges } =
+    config;
   const classes: string[] = [];
 
   if (!showLineNumbers) {
@@ -126,6 +136,10 @@ function lineClasses(config: DiffwiseConfig): string[] {
 
   if (!highlightChangedLines && highlightWholeLines) {
     classes.push(HIGHLIGHT_WHOLE_LINES_CLASS);
+  }
+
+  if (!highlightTooltipChanges) {
+    classes.push(NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS);
   }
 
   return classes;

@@ -159,13 +159,13 @@ describe('splitLines', () => {
     expect(line.formats).toEqual([{ start: 0, end: 1, format: linkFormat }]);
   });
 
-  it('gives the same lines for unclosed and closed tags (T37)', () => {
+  it('gives the same lines for unclosed and closed tags', () => {
     expect(lines('<p>Akapit <b>bez zamknięcia')).toEqual(
       lines('<p>Akapit <b>bez zamknięcia</b></p>'),
     );
   });
 
-  it('leaves scripts out of the text and the HTML (T35)', () => {
+  it('leaves scripts out of the text and the HTML', () => {
     expect(lines('<p onclick="alert(1)">Tekst</p><script>alert(1)</script>')).toEqual([
       { kind: LineKind.Paragraph, tag: 'p', text: 'Tekst', html: '<p>Tekst</p>' },
     ]);

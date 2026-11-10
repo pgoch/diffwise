@@ -35,20 +35,20 @@ function changedLineTexts(oldHtml: string, newHtml: string) {
   return changedContent(oldLine, newLine);
 }
 
-/** A paragraph of about 700 characters with one chosen word in the middle (T10). */
+/** A paragraph of about 700 characters with one chosen word in the middle. */
 function longParagraph(middleWord: string): string {
   const around = SENTENCE.repeat(SENTENCES_AROUND_CHANGE);
   return `${around}Pomoc jest ${middleWord} dla klientów. ${around}`;
 }
 
 describe('diffWords', () => {
-  it('marks only the changed word (T2)', () => {
+  it('marks only the changed word', () => {
     expect(
       changedTexts('Konto można usunąć w ustawieniach.', 'Konto można zamknąć w ustawieniach.'),
     ).toEqual({ removed: ['usunąć'], added: ['zamknąć'] });
   });
 
-  it('marks two changes in one line separately (T3)', () => {
+  it('marks two changes in one line separately', () => {
     expect(
       changedTexts(
         'Opłata wynosi 19 zł i jest pobierana z góry.',
@@ -64,7 +64,7 @@ describe('diffWords', () => {
     });
   });
 
-  it('marks a change of letter case unless case is ignored (T9)', () => {
+  it('marks a change of letter case unless case is ignored', () => {
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
     expect(changedTexts('Konto Firmowe', 'Konto firmowe')).toEqual({
@@ -109,28 +109,28 @@ describe('diffWords', () => {
     });
   });
 
-  it('finds one changed word in a long paragraph (T10)', () => {
+  it('finds one changed word in a long paragraph', () => {
     expect(changedTexts(longParagraph('bezpłatna'), longParagraph('płatna'))).toEqual({
       removed: ['bezpłatna'],
       added: ['płatna'],
     });
   });
 
-  it('marks an added emoji whole, never half of it (T13)', () => {
+  it('marks an added emoji whole, never half of it', () => {
     expect(changedTexts('Zażółć gęślą jaźń 🙂', 'Zażółć gęślą jaźń 🙂🎉')).toEqual({
       removed: [],
       added: ['🎉'],
     });
   });
 
-  it('marks only the changed word in Chinese text (T14)', () => {
+  it('marks only the changed word in Chinese text', () => {
     expect(changedTexts('我们的服务全天开放。', '我们的服务每天开放。')).toEqual({
       removed: ['全天'],
       added: ['每天'],
     });
   });
 
-  it('compares images by their files, like words (T23)', () => {
+  it('compares images by their files, like words', () => {
     expect(
       changedLineTexts(
         '<p><img src="images/logo-2025.svg" alt="Logo"> Notatnik Online</p>',

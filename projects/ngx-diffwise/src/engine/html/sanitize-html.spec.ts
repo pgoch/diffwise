@@ -9,13 +9,13 @@ function sanitize(html: string): DocumentFragment {
 }
 
 describe('sanitizeHtml', () => {
-  it('removes scripts and event handlers (T35)', () => {
+  it('removes scripts and event handlers', () => {
     expect(sanitizeHtml('<p onclick="alert(1)">Text</p><script>alert(1)</script>')).toBe(
       '<p>Text</p>',
     );
   });
 
-  it('removes javascript: link addresses (T36)', () => {
+  it('removes javascript: link addresses', () => {
     expect(sanitizeHtml('<a href="javascript:alert(1)">Click</a>')).toBe('<a>Click</a>');
   });
 

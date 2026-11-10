@@ -9,7 +9,7 @@ export const TooltipPartKind = {
 
 export type TooltipPartKind = (typeof TooltipPartKind)[keyof typeof TooltipPartKind];
 
-/** Changes that a highlighted part of a value shows (U9 C). */
+/** Changes that a highlighted part of a value shows. */
 export const TooltipHighlight = {
   /** A part only the old value has. */
   Removed: 'removed',

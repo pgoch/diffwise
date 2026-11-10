@@ -10,6 +10,7 @@ import {
   Diffwise,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   type DiffwiseConfigOptions,
   type DiffwiseDiffColors,
@@ -21,6 +22,7 @@ import {
   DiffwiseLanguage,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -134,11 +136,22 @@ const VERTICAL_ALIGNMENT_CHOICES: readonly Choice<DiffwiseVerticalAlignment>[] =
   { value: DiffwiseVerticalAlignment.Bottom, label: 'Bottom' },
 ];
 
-/** Where details of changes besides text show, as in the section of the mockup. */
+/** Where details of changes besides text show. */
 const CHANGE_DETAILS_CHOICES: readonly Choice<DiffwiseChangeDetails>[] = [
   { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
   { value: DiffwiseChangeDetails.Icon, label: 'Icon in the middle' },
   { value: DiffwiseChangeDetails.Both, label: 'Both' },
+];
+
+const CHANGE_DETAILS_ICON_STYLE_CHOICES: readonly Choice<DiffwiseChangeDetailsIconStyle>[] = [
+  { value: DiffwiseChangeDetailsIconStyle.Plain, label: 'Gray frame' },
+  { value: DiffwiseChangeDetailsIconStyle.Gradient, label: 'Gradient frame' },
+  { value: DiffwiseChangeDetailsIconStyle.Filled, label: 'Full gradient' },
+];
+
+const TOOLTIP_COLOR_MODE_CHOICES: readonly Choice<DiffwiseTooltipColorMode>[] = [
+  { value: DiffwiseTooltipColorMode.Reversed, label: 'Reversed' },
+  { value: DiffwiseTooltipColorMode.Component, label: 'Colors of the diff' },
 ];
 
 /** Fonts in the panel: the one of the app, the built-in one, or a font named in the panel. */
@@ -159,7 +172,7 @@ const FONT_CHOICES: readonly Choice<FontChoice>[] = [
 /** A font that comes with Windows and macOS, so the custom font shows without loading it. */
 const DEFAULT_CUSTOM_FONT = 'Georgia';
 
-/** Colors an app could give, magenta and teal, as in the mockups. */
+/** Colors an app could give: magenta and teal. */
 const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
   light: {
     removedLine: '#fbeefe',
@@ -199,6 +212,8 @@ export class App {
   protected readonly lineNumberStyles = LINE_NUMBER_STYLE_CHOICES;
   protected readonly verticalAlignments = VERTICAL_ALIGNMENT_CHOICES;
   protected readonly changeDetailsChoices = CHANGE_DETAILS_CHOICES;
+  protected readonly changeDetailsIconStyles = CHANGE_DETAILS_ICON_STYLE_CHOICES;
+  protected readonly tooltipColorModes = TOOLTIP_COLOR_MODE_CHOICES;
   protected readonly fonts = FONT_CHOICES;
   protected readonly fontChoices = FontChoice;
 

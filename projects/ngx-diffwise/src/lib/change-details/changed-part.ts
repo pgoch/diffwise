@@ -16,7 +16,7 @@ export interface ChangedParts {
 
 /**
  * Splits two values around their changed parts: the longest start and end they share, whole
- * words at a time, so `2025` → `2026` highlights the whole number (U9 C, R65).
+ * words at a time, so `2025` → `2026` highlights the whole number.
  */
 export function splitChangedParts(
   oldValue: string,
