@@ -10,6 +10,7 @@ import {
   Diffwise,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   type DiffwiseConfigOptions,
   type DiffwiseDiffColors,
@@ -21,6 +22,7 @@ import {
   DiffwiseLanguage,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -141,6 +143,17 @@ const CHANGE_DETAILS_CHOICES: readonly Choice<DiffwiseChangeDetails>[] = [
   { value: DiffwiseChangeDetails.Both, label: 'Both' },
 ];
 
+const CHANGE_DETAILS_ICON_STYLE_CHOICES: readonly Choice<DiffwiseChangeDetailsIconStyle>[] = [
+  { value: DiffwiseChangeDetailsIconStyle.Plain, label: 'Gray frame' },
+  { value: DiffwiseChangeDetailsIconStyle.Gradient, label: 'Gradient frame' },
+  { value: DiffwiseChangeDetailsIconStyle.Filled, label: 'Full gradient' },
+];
+
+const TOOLTIP_COLOR_MODE_CHOICES: readonly Choice<DiffwiseTooltipColorMode>[] = [
+  { value: DiffwiseTooltipColorMode.Reversed, label: 'Reversed' },
+  { value: DiffwiseTooltipColorMode.Component, label: 'Colors of the diff' },
+];
+
 /** Fonts in the panel: the one of the app, the built-in one, or a font named in the panel. */
 const FontChoice = {
   App: 'app',
@@ -199,6 +212,8 @@ export class App {
   protected readonly lineNumberStyles = LINE_NUMBER_STYLE_CHOICES;
   protected readonly verticalAlignments = VERTICAL_ALIGNMENT_CHOICES;
   protected readonly changeDetailsChoices = CHANGE_DETAILS_CHOICES;
+  protected readonly changeDetailsIconStyles = CHANGE_DETAILS_ICON_STYLE_CHOICES;
+  protected readonly tooltipColorModes = TOOLTIP_COLOR_MODE_CHOICES;
   protected readonly fonts = FONT_CHOICES;
   protected readonly fontChoices = FontChoice;
 

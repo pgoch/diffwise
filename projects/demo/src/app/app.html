@@ -132,6 +132,33 @@
     [value]="diffwise.config().changeDetails"
     (chosen)="update({ changeDetails: $event })"
   />
+  <demo-choice-buttons
+    label="Icons in the middle"
+    [choices]="changeDetailsIconStyles"
+    [value]="diffwise.config().changeDetailsIconStyle"
+    (chosen)="update({ changeDetailsIconStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Tooltip colors"
+    [choices]="tooltipColorModes"
+    [value]="diffwise.config().tooltipColorMode"
+    (chosen)="update({ tooltipColorMode: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().highlightTooltipChanges"
+      (change)="update({ highlightTooltipChanges: isChecked($event) })"
+    />
+    Highlight the changed part
+  </label>
+  <p class="demo-hint">The changed part of a link address, a file name or an alternative text.</p>
+  <demo-choice-buttons
+    label="Tooltip title"
+    [choices]="alignments"
+    [value]="diffwise.config().tooltipTitleAlignment"
+    (chosen)="update({ tooltipTitleAlignment: $event })"
+  />
 
   <h2>Fonts</h2>
   <demo-choice-buttons
@@ -168,6 +195,17 @@
       (change)="update({ lineNumberFontSize: numberOf($event) })"
     />
   </label>
+  <label class="demo-field">
+    Tooltip size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().tooltipFontSize"
+      (change)="update({ tooltipFontSize: numberOf($event) })"
+    />
+  </label>
   <p class="demo-hint">From 0.5 to 10; the diff ignores other sizes.</p>
 
   <h2>Comparison</h2>
@@ -186,6 +224,22 @@
       (change)="update({ ignoreCase: isChecked($event) })"
     />
     Ignore letter case
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreFormatting"
+      (change)="update({ ignoreFormatting: isChecked($event) })"
+    />
+    Ignore formatting
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreLinkChanges"
+      (change)="update({ ignoreLinkChanges: isChecked($event) })"
+    />
+    Ignore link changes
   </label>
 </aside>
 
