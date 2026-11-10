@@ -108,6 +108,13 @@ describe('markChanges', () => {
       `<details><summary>${removed('Jeden')}</summary><p>${removed('Dwa')}</p></details>`,
     );
   });
+
+  it('marks text inside a list item and keeps its number', () => {
+    expect(mark('<ol start="3"><li>Dodaj tagi</li><li>Przypnij</li></ol>', ['tagi'])).toBe(
+      `<ol start="3"><li value="3" data-diffwise-line-item="">Dodaj ${removed('tagi')}</li></ol>`,
+    );
+  });
+
   it('keeps entities and no-break spaces', () => {
     expect(mark('<p>Rabat &lt; 20&nbsp;zł &amp; dostawa</p>', ['20 zł'])).toBe(
       `<p>Rabat &lt; ${removed('20&nbsp;zł')} &amp; dostawa</p>`,

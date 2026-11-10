@@ -13,6 +13,12 @@ const HEADINGS_SELECTOR = 'h1, h2, h3, h4, h5, h6';
 const LIST_ITEMS_SELECTOR = 'li, dt, dd';
 const ID_PREFIX = 'diff-';
 
+/** Marks the list item that a line belongs to. */
+const LINE_ITEM = 'data-diffwise-line-item=""';
+
+/** Marks a copy of a list item in a later line of the item. */
+const CONTINUED_ITEM = 'data-diffwise-continued-item=""';
+
 /** Long samples from `test-data/`, which contain everything an editor can produce. */
 const LONG_SAMPLES: [string, string][] = [
   ['en/long/before.html', enLongBefore],
@@ -126,46 +132,68 @@ describe('splitLines', () => {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'Osobisty',
-        html: '<ul class="plany"><li>Osobisty</li></ul>',
+        html: `<ul class="plany"><li value="1" ${LINE_ITEM}>Osobisty</li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'Firmowy',
-        html: '<ul class="plany"><li>Firmowy</li></ul>',
+        html: `<ul class="plany"><li value="2" ${LINE_ITEM}>Firmowy</li></ul>`,
       },
     ]);
   });
 
-  it('splits an item with a nested list into its text and the nested items', () => {
+  it('gives the copy of each item the number it has in its list', () => {
+    const html =
+      '<ol start="5" type="a"><li>Import</li><li value="9">Eksport</li><li>Kopia</li></ol>'
+      + '<ol reversed><li>Dwa</li><li>Jeden</li></ol>';
+
+    expect(htmlOfLines(html)).toEqual([
+      `<ol start="5" type="a"><li value="5" ${LINE_ITEM}>Import</li></ol>`,
+      `<ol start="5" type="a"><li value="9" ${LINE_ITEM}>Eksport</li></ol>`,
+      `<ol start="5" type="a"><li value="10" ${LINE_ITEM}>Kopia</li></ol>`,
+      `<ol reversed=""><li value="2" ${LINE_ITEM}>Dwa</li></ol>`,
+      `<ol reversed=""><li value="1" ${LINE_ITEM}>Jeden</li></ol>`,
+    ]);
+  });
+
+  it('splits an item with a nested list and shows its marker only in its first line', () => {
     const html =
       '<ul><li>Konta<ul><li>osobiste</li><li>firmowe</li></ul>i ich ustawienia</li></ul>';
+    const outerItemCopy = `<ul><li value="1" ${CONTINUED_ITEM}>`;
 
     expect(lines(html)).toEqual([
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'Konta',
-        html: '<ul><li>Konta</li></ul>',
+        html: `<ul><li value="1" ${LINE_ITEM}>Konta</li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'osobiste',
-        html: '<ul><li><ul><li>osobiste</li></ul></li></ul>',
+        html: `${outerItemCopy}<ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'firmowe',
-        html: '<ul><li><ul><li>firmowe</li></ul></li></ul>',
+        html: `${outerItemCopy}<ul><li value="2" ${LINE_ITEM}>firmowe</li></ul></li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'i ich ustawienia',
-        html: '<ul><li>i ich ustawienia</li></ul>',
+        html: `<ul><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}>i ich ustawienia</li></ul>`,
       },
+    ]);
+  });
+
+  it('shows the marker of an item that starts with a nested list next to its first item', () => {
+    expect(htmlOfLines('<ol><li><ul><li>osobiste</li><li>firmowe</li></ul></li></ol>')).toEqual([
+      `<ol><li value="1"><ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ol>`,
+      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="2" ${LINE_ITEM}>firmowe</li></ul></li></ol>`,
     ]);
   });
 
@@ -175,13 +203,13 @@ describe('splitLines', () => {
         kind: LineKind.Paragraph,
         tag: 'p',
         text: 'Pierwszy akapit',
-        html: '<ol><li><p>Pierwszy akapit</p></li></ol>',
+        html: `<ol><li value="1" ${LINE_ITEM}><p>Pierwszy akapit</p></li></ol>`,
       },
       {
         kind: LineKind.Paragraph,
         tag: 'p',
         text: 'Drugi akapit',
-        html: '<ol><li><p>Drugi akapit</p></li></ol>',
+        html: `<ol><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}><p>Drugi akapit</p></li></ol>`,
       },
     ]);
   });
@@ -195,40 +223,40 @@ describe('splitLines', () => {
         kind: LineKind.ListItem,
         tag: 'li',
         text: 'Jeden',
-        html: '<ol><li>Jeden</li></ol>',
+        html: `<ol><li value="1" ${LINE_ITEM}>Jeden</li></ol>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: '',
-        html: '<ol><li></li></ol>',
+        html: `<ol><li value="2" ${LINE_ITEM}></li></ol>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
         text: '',
-        html: '<ol><li><p> </p></li></ol>',
+        html: `<ol><li value="3" ${LINE_ITEM}><p> </p></li></ol>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'dt',
         text: 'Termin',
-        html: '<dl><dt>Termin</dt></dl>',
+        html: `<dl><dt ${LINE_ITEM}>Termin</dt></dl>`,
       },
     ]);
   });
 
   it('makes a line of each term and description of a definition list', () => {
     expect(htmlOfLines('<dl><dt>Notatnik</dt><dd>Zbiór notatek</dd></dl>')).toEqual([
-      '<dl><dt>Notatnik</dt></dl>',
-      '<dl><dd>Zbiór notatek</dd></dl>',
+      `<dl><dt ${LINE_ITEM}>Notatnik</dt></dl>`,
+      `<dl><dd ${LINE_ITEM}>Zbiór notatek</dd></dl>`,
     ]);
   });
 
   it('splits a list inside a quote and keeps both around each item', () => {
     expect(htmlOfLines('<blockquote><ul><li>Jeden</li><li>Dwa</li></ul></blockquote>')).toEqual([
-      '<blockquote><ul><li>Jeden</li></ul></blockquote>',
-      '<blockquote><ul><li>Dwa</li></ul></blockquote>',
+      `<blockquote><ul><li value="1" ${LINE_ITEM}>Jeden</li></ul></blockquote>`,
+      `<blockquote><ul><li value="2" ${LINE_ITEM}>Dwa</li></ul></blockquote>`,
     ]);
   });
 
@@ -237,8 +265,8 @@ describe('splitLines', () => {
     const quote = '<blockquote id="cytat"><p>Jeden</p><p>Dwa</p></blockquote>';
 
     expect(htmlOfLines(list + quote)).toEqual([
-      '<ol id="diff-kroki"><li id="diff-konto">Konto</li></ol>',
-      '<ol><li><ul><li>osobiste</li></ul></li></ol>',
+      `<ol id="diff-kroki"><li id="diff-konto" value="1" ${LINE_ITEM}>Konto</li></ol>`,
+      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ol>`,
       '<blockquote id="diff-cytat"><p>Jeden</p></blockquote>',
       '<blockquote><p>Dwa</p></blockquote>',
     ]);

@@ -508,14 +508,14 @@
 
 /*
  * An added or a removed line highlighted as a whole looks like changed words, in every style,
- * but keeps its rounded corners.
+ * but keeps its rounded corners. A list item line highlights only its item; see the list styles.
  */
 .diffwise-html-diff--highlight-whole-lines
   :is(
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
   )
-  > * {
+  > :not(:has([data-diffwise-line-item])) {
   padding-inline: 6px;
   border-radius: 4px;
   background: var(--diffwise-side-highlight);
@@ -527,7 +527,7 @@
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
   )
-  > * {
+  > :not(:has([data-diffwise-line-item])) {
   box-shadow: none;
 }
 
@@ -536,7 +536,7 @@
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
   )
-  > * {
+  > :not(:has([data-diffwise-line-item])) {
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
 
@@ -545,7 +545,7 @@
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
   )
-  > * {
+  > :not(:has([data-diffwise-line-item])) {
   box-shadow:
     inset 0 2px 0 var(--diffwise-side-accent),
     inset 0 -2px 0 var(--diffwise-side-accent);

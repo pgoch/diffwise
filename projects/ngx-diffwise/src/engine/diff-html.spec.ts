@@ -51,6 +51,12 @@ const FRAGMENT_START = '#';
 
 const LIST_ITEM_SELECTOR = 'li, dt, dd';
 
+/** Marks the list item that a line belongs to. */
+const LINE_ITEM = 'data-diffwise-line-item=""';
+
+/** A nested item keeps copies of the outer list and of its item, without the item's marker. */
+const NESTED_ITEM_START = /^<ol><li value="4" data-diffwise-continued-item=""><ul><li value="1"/;
+
 /** Sample pairs from `test-data/`, as `[name, before, after]`. */
 const SAMPLES: [string, string, string][] = [
   ['en/short', enShortBefore, enShortAfter],
@@ -331,6 +337,18 @@ describe('diffHtml', () => {
       [LineChangeKind.Changed, 77, 80, [], ['or newer']],
     ]);
   });
+
+  it('keeps the numbers and the nesting of list items in their lines', () => {
+    const { rows } = compare(enLongBefore, enLongAfter);
+    const addedContentsItem = rows.find((row) => row.newLine?.number === 11);
+    const changedNestedItem = rows.find((row) => row.newLine?.number === 25);
+
+    expect(addedContentsItem?.newLine?.html).toBe(
+      `<ol><li value="5" ${LINE_ITEM}><a href="#diff-new-shortcuts">Keyboard shortcuts</a></li></ol>`,
+    );
+    expect(changedNestedItem?.newLine?.html).toMatch(NESTED_ITEM_START);
+  });
+
   it.each(TRANSLATED_SAMPLES)(
     'shows the same rows for the English and Polish %s samples',
     (_, [enBefore, enAfter], [plBefore, plAfter]) => {

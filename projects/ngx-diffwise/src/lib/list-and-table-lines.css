@@ -1,0 +1,57 @@
+/*
+ * Lines of lists. Each list item is a line inside copies of its lists, so it keeps the indentation
+ * and the number it has in the document. Separate from the main styles because of their size.
+ */
+
+/*
+ * An item split into several lines, such as one with a nested list, shows its marker only in its
+ * first line. `!important` wins over a marker style on the item itself, as Google Docs writes it.
+ */
+.diffwise-html-diff__content [data-diffwise-continued-item] {
+  list-style-type: none !important;
+}
+
+/*
+ * A list item highlighted as a whole: the item itself, not the copies of its lists, so the marker
+ * and the indentation stay as in the document.
+ */
+.diffwise-html-diff--highlight-whole-lines
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  )
+  [data-diffwise-line-item] {
+  padding-inline: 6px;
+  border-radius: 4px;
+  background: var(--diffwise-side-highlight);
+  box-shadow: inset 0 0 0 2px var(--diffwise-side-accent);
+}
+
+.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-background
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  )
+  [data-diffwise-line-item] {
+  box-shadow: none;
+}
+
+.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-underline
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  )
+  [data-diffwise-line-item] {
+  box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
+}
+
+.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-top-bottom
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  )
+  [data-diffwise-line-item] {
+  box-shadow:
+    inset 0 2px 0 var(--diffwise-side-accent),
+    inset 0 -2px 0 var(--diffwise-side-accent);
+}

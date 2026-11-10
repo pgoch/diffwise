@@ -186,6 +186,12 @@ export const CHANGE_DETAILS_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}change-
 /** Separates the positions in `CHANGE_DETAILS_ATTRIBUTE`. */
 export const DETAIL_INDEX_SEPARATOR = ' ';
 
+/** Marks the list item that a line belongs to, such as the `li` of an item line, in its HTML. */
+export const LINE_ITEM_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}line-item`;
+
+/** Marks a copy of a list item in a later line of the item, which hides its marker. */
+export const CONTINUED_ITEM_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continued-item`;
+
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
   /** Positions in the row's change details; changed text has none. */

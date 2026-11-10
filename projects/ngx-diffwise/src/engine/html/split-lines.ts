@@ -1,19 +1,28 @@
 import {
   BLOCK_TAGS,
   HEADING_TAGS,
+  LIST_ITEM_TAG,
   LIST_ITEM_TAGS,
   PARAGRAPH_TAGS,
   SPLIT_BLOCK_TAGS,
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
 import { lineImages } from './line-images';
-import { type FormattedRange, type Line, LineKind } from '../model';
+import { ListItemNumbers } from './list-items';
+import {
+  CONTINUED_ITEM_ATTRIBUTE,
+  type FormattedRange,
+  LINE_ITEM_ATTRIBUTE,
+  type Line,
+  LineKind,
+} from '../model';
 import { prefixIds } from './prefix-ids';
 import { type TextPiece, mapReaderText } from './reader-text';
 import { TextFormatReader } from './text-format';
 
 const TEMPLATE_TAG = 'template';
 const ID_ATTRIBUTE = 'id';
+const VALUE_ATTRIBUTE = 'value';
 
 /** What a line is built from. */
 interface LineSource {
@@ -47,6 +56,7 @@ class LineCollector {
   readonly lines: Line[] = [];
 
   private readonly formatReader = new TextFormatReader();
+  private readonly itemNumbers = new ListItemNumbers();
 
   /** Containers copied into the HTML of a line so far; a later copy is not the first one. */
   private readonly copiedWrappers = new Set<Element>();
@@ -138,40 +148,90 @@ class LineCollector {
     return formats;
   }
 
-  /** HTML of the nodes inside shallow copies of the wrappers, built in an inert template. */
+  /**
+   * HTML of the nodes inside shallow copies of the wrappers, built in an inert template. The list
+   * item that the line belongs to, the innermost one, is marked for the view.
+   */
   private lineHtml(nodes: readonly Node[], wrappers: readonly Element[]): string {
     const template = document.createElement(TEMPLATE_TAG);
     let parent: Node = template.content;
+    let lineItem: Element | null = null;
 
     for (const wrapper of wrappers) {
-      parent = parent.appendChild(this.wrapperCopy(wrapper));
+      const copy = this.wrapperCopy(wrapper);
+
+      parent = parent.appendChild(copy);
+
+      if (isListItem(copy)) {
+        lineItem = copy;
+      }
     }
 
     for (const node of nodes) {
-      parent.appendChild(node.cloneNode(true));
+      const copy = parent.appendChild(this.nodeCopy(node));
+
+      if (isListItem(copy)) {
+        lineItem = copy;
+      }
     }
 
+    lineItem?.toggleAttribute(LINE_ITEM_ATTRIBUTE, true);
     prefixIds(template.content, this.idPrefix);
 
     return template.innerHTML;
   }
 
-  /** A shallow copy of a container. Only its first copy keeps its id, so ids stay unique. */
+  /**
+   * A shallow copy of a container. Only its first copy keeps its id, so ids stay unique. A later
+   * copy of a list item hides the marker, which its first line shows.
+   */
   private wrapperCopy(wrapper: Element): Element {
     const copy = shallowCopy(wrapper);
+    const isFirstCopy = !this.copiedWrappers.has(wrapper);
 
-    if (this.copiedWrappers.has(wrapper)) {
+    if (!isFirstCopy) {
       copy.removeAttribute(ID_ATTRIBUTE);
+    }
+
+    if (isMarkerItem(wrapper)) {
+      this.setItemNumber(copy, wrapper);
+      copy.toggleAttribute(CONTINUED_ITEM_ATTRIBUTE, !isFirstCopy);
     }
 
     this.copiedWrappers.add(wrapper);
 
     return copy;
   }
+
+  /** A deep copy of a node; a list item keeps its number, as alone it would count from 1. */
+  private nodeCopy(node: Node): Node {
+    const copy = node.cloneNode(true);
+
+    if (isMarkerItem(node) && isMarkerItem(copy)) {
+      this.setItemNumber(copy, node);
+    }
+
+    return copy;
+  }
+
+  /** Gives the copy of a list item the number the item has in its list, as its `value`. */
+  private setItemNumber(copy: Element, item: Element): void {
+    copy.setAttribute(VALUE_ATTRIBUTE, String(this.itemNumbers.numberOf(item)));
+  }
 }
 
 function isBlock(node: Node): node is Element {
   return node instanceof Element && BLOCK_TAGS.has(node.localName);
+}
+
+/** True for `li`, `dt` and `dd`. */
+function isListItem(node: Node): node is Element {
+  return node instanceof Element && LIST_ITEM_TAGS.has(node.localName);
+}
+
+/** True for `li`, the item that shows a marker, such as a bullet or a number. */
+function isMarkerItem(node: Node): node is Element {
+  return node instanceof Element && node.localName === LIST_ITEM_TAG;
 }
 
 /** A container, such as a quote, a list or a list item, whose blocks become separate lines. */
