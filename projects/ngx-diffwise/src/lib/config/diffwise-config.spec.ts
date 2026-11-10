@@ -2,6 +2,7 @@ import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
 import {
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -9,6 +10,7 @@ import {
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from './option-values';
@@ -35,9 +37,16 @@ const DEFAULT_OPTIONS = {
   fontFamily: DiffwiseFontFamily.Inherit,
   versionHeaderFontSize: 0.75,
   lineNumberFontSize: 0.75,
+  tooltipFontSize: 0.8,
   changeDetails: DiffwiseChangeDetails.Both,
+  changeDetailsIconStyle: DiffwiseChangeDetailsIconStyle.Gradient,
+  tooltipColorMode: DiffwiseTooltipColorMode.Component,
+  highlightTooltipChanges: true,
+  tooltipTitleAlignment: DiffwiseAlignment.Start,
   ignoreWhitespace: false,
   ignoreCase: false,
+  ignoreFormatting: false,
+  ignoreLinkChanges: false,
   language: DiffwiseLanguage.Auto,
   customTexts: {},
 };

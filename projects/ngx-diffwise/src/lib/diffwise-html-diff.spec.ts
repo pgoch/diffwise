@@ -5,10 +5,13 @@ import { LineChangeKind } from '../engine';
 import { ColorScheme } from './color-scheme';
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './config/diffwise-config';
 import {
+  DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   DiffwiseGapStyle,
   DiffwiseLanguage,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
 } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
@@ -17,6 +20,9 @@ import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
+const TOOLTIP_COLOR_MODE_INPUT = 'tooltipColorMode';
+const IGNORE_LINK_CHANGES_INPUT = 'ignoreLinkChanges';
+const WARN_METHOD = 'warn';
 const VERSION_HEADERS_SELECTOR = '.diffwise-html-diff__version-headers';
 const VERSION_HEADER_SELECTOR = '.diffwise-html-diff__version-header';
 const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
@@ -54,6 +60,15 @@ const STRONGER_CONTRAST_CLASS = 'diffwise-html-diff--ui-contrast-4';
 const STRONGEST_INTENSITY_CLASS = 'diffwise-html-diff--diff-intensity-5';
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
+const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
+
+/** Classes of the looks of the icons and the tooltips, other than the defaults. */
+const ICON_AND_TOOLTIP_CLASSES = [
+  'diffwise-html-diff--change-details-icon-style-filled',
+  'diffwise-html-diff--tooltip-color-mode-reversed',
+  'diffwise-html-diff--tooltip-title-alignment-end',
+  'diffwise-html-diff--no-tooltip-change-highlight',
+];
 const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
 const CHANGE_DETAILS_COUNT_SELECTOR = '.diffwise-html-diff__change-details-count';
 const ICON_KIND_CLASS_START = 'diffwise-html-diff__change-details-icon--';
@@ -373,6 +388,55 @@ describe('DiffwiseHtmlDiff', () => {
     ]);
   });
 
+  it('ignores changes of formatting alone on request (T16)', () => {
+    const element = renderElement(ITALIC_HTML, BOLD_HTML, { ignoreFormatting: true });
+
+    expect(rowsOf(element)).toEqual([[LineChangeKind.Unchanged, 1, 1]]);
+    expect(element.querySelector(DESCRIBED_MARKER_SELECTOR)).toBeNull();
+    expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+  });
+
+  it('ignores link changes on request, and keeps other changes of the line (T19, T22)', () => {
+    const linkOnly = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, { ignoreLinkChanges: true });
+    const withFormatting = renderElement(OLD_TWO_CHANGES_HTML, NEW_TWO_CHANGES_HTML, {
+      ignoreLinkChanges: true,
+    });
+
+    expect(rowsOf(linkOnly)).toEqual([[LineChangeKind.Unchanged, 1, 1]]);
+    expect(iconOf(withFormatting).classList).toContain(ICON_KIND_CLASS_START + 'formatting');
+    expect(withFormatting.querySelector(CHANGE_DETAILS_COUNT_SELECTOR)).toBeNull();
+  });
+
+  it('compares the versions again only when an option of the comparison changes', () => {
+    const fixture = render(ITALIC_HTML, BOLD_HTML);
+    const element = fixture.nativeElement as HTMLElement;
+    const [marker] = newMarkersOf(element);
+
+    fixture.componentRef.setInput(TOOLTIP_COLOR_MODE_INPUT, DiffwiseTooltipColorMode.Reversed);
+    fixture.detectChanges();
+
+    expect(element.contains(marker)).toBe(true);
+
+    fixture.componentRef.setInput(IGNORE_LINK_CHANGES_INPUT, true);
+    fixture.detectChanges();
+
+    expect(element.contains(marker)).toBe(false);
+    expect(newMarkersOf(element)).toHaveLength(1);
+  });
+
+  it('takes an option from the level below when its value is invalid, with a warning (R49)', () => {
+    const warn = vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
+    const invalidValue = 'yes' as unknown as boolean;
+
+    TestBed.configureTestingModule({ providers: [provideDiffwise({ ignoreFormatting: true })] });
+
+    const element = renderElement(ITALIC_HTML, BOLD_HTML, { ignoreFormatting: invalidValue });
+
+    expect(rowsOf(element)).toEqual([[LineChangeKind.Unchanged, 1, 1]]);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it('uses the global configuration, and its own options win over it', () => {
     const globalOptions = { showLineNumbers: false, versionHeaders: DiffwiseVersionHeaders.None };
 
@@ -542,6 +606,19 @@ describe('DiffwiseHtmlDiff', () => {
 
     expect(element.style.fontFamily).toContain('"Georgia"');
   });
+
+  it('shows the looks of the icons and the tooltips as modifier classes, and their font size', () => {
+    const element = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, {
+      changeDetailsIconStyle: DiffwiseChangeDetailsIconStyle.Filled,
+      tooltipColorMode: DiffwiseTooltipColorMode.Reversed,
+      tooltipTitleAlignment: DiffwiseAlignment.End,
+      highlightTooltipChanges: false,
+      tooltipFontSize: 1,
+    });
+
+    expect(Array.from(element.classList)).toEqual(expect.arrayContaining(ICON_AND_TOOLTIP_CLASSES));
+    expect(element.style.getPropertyValue(TOOLTIP_FONT_SIZE_VARIABLE)).toBe('1rem');
+  });
 });
 
 describe('DiffwiseHtmlDiff change details', () => {
@@ -589,6 +666,20 @@ describe('DiffwiseHtmlDiff change details', () => {
     ]);
     expect(textsOf(element, REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR)).toEqual(['2025']);
     expect(textsOf(element, ADDED_TOOLTIP_HIGHLIGHT_SELECTOR)).toEqual(['2026']);
+  });
+
+  it('shows whole values in the tooltip when highlights of changed parts are off', () => {
+    const element = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, { highlightTooltipChanges: false });
+
+    pointTo(iconOf(element));
+
+    expect(tooltipLinesOf(element)).toEqual([
+      'Link address changed',
+      'Before https://example.com/terms-2025',
+      'After https://example.com/terms-2026',
+    ]);
+    expect(element.querySelector(REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR)).toBeNull();
+    expect(element.querySelector(ADDED_TOOLTIP_HIGHLIGHT_SELECTOR)).toBeNull();
   });
 
   it('lists every change of a line in the tooltip of its icon (U27 E)', () => {

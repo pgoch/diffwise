@@ -26,6 +26,9 @@ describe('appearanceClasses', () => {
       gapStyle: 'empty',
       versionHeaderAlignment: 'end',
       changeDetails: 'icon',
+      changeDetailsIconStyle: 'plain',
+      tooltipColorMode: 'reversed',
+      tooltipTitleAlignment: 'center',
     });
 
     expect(appearanceClasses(config, {})).toEqual([
@@ -36,6 +39,9 @@ describe('appearanceClasses', () => {
       'diffwise-html-diff--gap-style-empty',
       'diffwise-html-diff--version-header-alignment-end',
       'diffwise-html-diff--change-details-icon',
+      'diffwise-html-diff--change-details-icon-style-plain',
+      'diffwise-html-diff--tooltip-color-mode-reversed',
+      'diffwise-html-diff--tooltip-title-alignment-center',
       'diffwise-html-diff--diff-intensity-1',
       'diffwise-html-diff--ui-contrast-5',
     ]);
@@ -58,6 +64,15 @@ describe('appearanceClasses', () => {
     expect(appearanceClasses(withBackgrounds, {})).toEqual(DEFAULT_LEVEL_CLASSES);
   });
 
+  it('turns off the highlights of changed parts in the tooltips', () => {
+    const config = new DiffwiseConfig({ highlightTooltipChanges: false });
+
+    expect(appearanceClasses(config, {})).toEqual([
+      ...DEFAULT_LEVEL_CLASSES,
+      'diffwise-html-diff--no-tooltip-change-highlight',
+    ]);
+  });
+
   it('leaves out the intensity when the app gives colors of changes', () => {
     const config = new DiffwiseConfig({ diffIntensity: 5 });
 
@@ -78,6 +93,7 @@ describe('appearanceStyles', () => {
     const config = new DiffwiseConfig({
       versionHeaderFontSize: 0.9,
       lineNumberFontSize: 1,
+      tooltipFontSize: 0.7,
       fontFamily: 'Source Sans 3',
     });
     const colors = { removedLine: '#fbeefe', addedAccent: '#0f766e' };
@@ -86,6 +102,7 @@ describe('appearanceStyles', () => {
       '--diffwise-line-number-digits': '3',
       '--diffwise-line-number-font-size': '1rem',
       '--diffwise-version-header-font-size': '0.9rem',
+      '--diffwise-tooltip-font-size': '0.7rem',
       [FONT_FAMILY_PROPERTY]: '"Source Sans 3", ' + BUILTIN_FONT_FAMILY,
       '--diffwise-removed-line': '#fbeefe',
       '--diffwise-added-accent': '#0f766e',

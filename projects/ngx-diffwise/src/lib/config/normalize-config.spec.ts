@@ -3,6 +3,7 @@ import { normalizeConfig } from './normalize-config';
 import {
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -10,6 +11,7 @@ import {
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from './option-values';
@@ -142,6 +144,7 @@ describe('normalizeConfig', () => {
       fontFamily: 'builtin',
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
+      tooltipFontSize: 10,
     };
 
     expect(normalizeConfig(options)).toEqual({
@@ -158,8 +161,46 @@ describe('normalizeConfig', () => {
       fontFamily: DiffwiseFontFamily.Builtin,
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
+      tooltipFontSize: 10,
     });
     expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('keeps the looks of the icons and the tooltips, and ignores other values with a warning', () => {
+    const options = {
+      changeDetailsIconStyle: 'filled',
+      tooltipColorMode: 'reversed',
+      highlightTooltipChanges: false,
+      tooltipTitleAlignment: 'center',
+    };
+    const invalidOptions = [
+      { changeDetailsIconStyle: 'outline' },
+      { tooltipColorMode: 'dark' },
+      { highlightTooltipChanges: 'false' },
+      { tooltipTitleAlignment: 'left' },
+    ];
+
+    expect(normalizeConfig(options)).toEqual({
+      changeDetailsIconStyle: DiffwiseChangeDetailsIconStyle.Filled,
+      tooltipColorMode: DiffwiseTooltipColorMode.Reversed,
+      highlightTooltipChanges: false,
+      tooltipTitleAlignment: DiffwiseAlignment.Center,
+    });
+
+    for (const invalid of invalidOptions) {
+      expect(normalizeConfig(invalid)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps the options of the comparison, and ignores values that are not true or false', () => {
+    expect(normalizeConfig({ ignoreFormatting: true, ignoreLinkChanges: false })).toEqual({
+      ignoreFormatting: true,
+      ignoreLinkChanges: false,
+    });
+    expect(normalizeConfig({ ignoreFormatting: 'true', ignoreLinkChanges: 0 })).toEqual({});
+    expect(console.warn).toHaveBeenCalledTimes(2);
   });
 
   it('keeps where details of changes show, and ignores another place with a warning', () => {
@@ -179,6 +220,7 @@ describe('normalizeConfig', () => {
       { versionHeaderFontSize: 0.4 },
       { lineNumberFontSize: 11 },
       { lineNumberFontSize: Number.NaN },
+      { tooltipFontSize: 0 },
     ];
 
     for (const options of invalidOptions) {

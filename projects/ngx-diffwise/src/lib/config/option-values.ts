@@ -105,6 +105,30 @@ export const DiffwiseChangeDetails = {
 export type DiffwiseChangeDetails =
   (typeof DiffwiseChangeDetails)[keyof typeof DiffwiseChangeDetails];
 
+/** Looks of the icons between the versions that show the details of changes. */
+export const DiffwiseChangeDetailsIconStyle = {
+  /** A gray frame. */
+  Plain: 'plain',
+  /** A frame with a gradient from the color of the old version to the color of the new one. */
+  Gradient: 'gradient',
+  /** A background with the gradient of the frame. */
+  Filled: 'filled',
+} as const;
+
+export type DiffwiseChangeDetailsIconStyle =
+  (typeof DiffwiseChangeDetailsIconStyle)[keyof typeof DiffwiseChangeDetailsIconStyle];
+
+/** Colors of the tooltips. */
+export const DiffwiseTooltipColorMode = {
+  /** The colors of the opposite theme: dark tooltips on a light diff, light ones on a dark diff. */
+  Reversed: 'reversed',
+  /** The colors of the diff. */
+  Component: 'component',
+} as const;
+
+export type DiffwiseTooltipColorMode =
+  (typeof DiffwiseTooltipColorMode)[keyof typeof DiffwiseTooltipColorMode];
+
 /** Headers above the two versions; an app can also give its own texts instead. */
 export const DiffwiseVersionHeaders = {
   /** No headers. */

@@ -7,6 +7,7 @@ import type { DiffwiseConfigOptions } from './diffwise-config';
 import {
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -14,6 +15,7 @@ import {
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -78,9 +80,16 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   fontFamily: isFontFamily,
   versionHeaderFontSize: isFontSize,
   lineNumberFontSize: isFontSize,
+  tooltipFontSize: isFontSize,
   changeDetails: isChangeDetails,
+  changeDetailsIconStyle: isChangeDetailsIconStyle,
+  tooltipColorMode: isTooltipColorMode,
+  highlightTooltipChanges: isBoolean,
+  tooltipTitleAlignment: isAlignment,
   ignoreWhitespace: isBoolean,
   ignoreCase: isBoolean,
+  ignoreFormatting: isBoolean,
+  ignoreLinkChanges: isBoolean,
   language: isLanguage,
   customTexts: isObjectOrNull,
 };
@@ -240,6 +249,14 @@ function isFontSize(value: unknown): boolean {
 
 function isChangeDetails(value: unknown): boolean {
   return isValueOf(DiffwiseChangeDetails, value);
+}
+
+function isChangeDetailsIconStyle(value: unknown): boolean {
+  return isValueOf(DiffwiseChangeDetailsIconStyle, value);
+}
+
+function isTooltipColorMode(value: unknown): boolean {
+  return isValueOf(DiffwiseTooltipColorMode, value);
 }
 
 function isLanguage(value: unknown): boolean {

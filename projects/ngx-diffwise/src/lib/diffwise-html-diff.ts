@@ -18,7 +18,6 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import {
   CHANGE_DETAILS_ATTRIBUTE,
   type ChangeDetail,
-  DEFAULT_DIFF_OPTIONS,
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   type LineChangeKind,
@@ -41,6 +40,7 @@ import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-co
 import {
   type DiffwiseAlignment,
   DiffwiseChangeDetails,
+  type DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   type DiffwiseDividerStyle,
   type DiffwiseGapStyle,
@@ -48,6 +48,7 @@ import {
   type DiffwiseLanguage,
   type DiffwiseLevel,
   type DiffwiseLineNumberStyle,
+  type DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
@@ -216,14 +217,41 @@ export class DiffwiseHtmlDiff {
   /** Font size of the line numbers in rem; wins over `config` and the global configuration. */
   readonly lineNumberFontSize = input<number>();
 
+  /** Font size of the tooltips in rem; wins over `config` and the global configuration. */
+  readonly tooltipFontSize = input<number>();
+
   /** Where details of changes besides text show; wins over `config` and the global configuration. */
   readonly changeDetails = input<DiffwiseChangeDetails>();
+
+  /** Look of the icons between the versions; wins over `config` and the global configuration. */
+  readonly changeDetailsIconStyle = input<DiffwiseChangeDetailsIconStyle>();
+
+  /** Colors of the tooltips; wins over `config` and the global configuration. */
+  readonly tooltipColorMode = input<DiffwiseTooltipColorMode>();
+
+  /**
+   * Highlights in a tooltip the part of a value that changed; wins over `config` and the global
+   * configuration.
+   */
+  readonly highlightTooltipChanges = input<boolean>();
+
+  /** Place of the titles in the tooltips; wins over `config` and the global configuration. */
+  readonly tooltipTitleAlignment = input<DiffwiseAlignment>();
 
   /** Ignores differences in whitespace; wins over `config` and the global configuration. */
   readonly ignoreWhitespace = input<boolean>();
 
   /** Ignores differences in letter case; wins over `config` and the global configuration. */
   readonly ignoreCase = input<boolean>();
+
+  /** Ignores changes of formatting alone; wins over `config` and the global configuration. */
+  readonly ignoreFormatting = input<boolean>();
+
+  /**
+   * Ignores links added, removed or pointing elsewhere around the same text; wins over `config`
+   * and the global configuration.
+   */
+  readonly ignoreLinkChanges = input<boolean>();
 
   /** Language of the interface; wins over `config` and the global configuration. */
   readonly language = input<DiffwiseLanguage>();
@@ -271,9 +299,16 @@ export class DiffwiseHtmlDiff {
     fontFamily: this.fontFamily(),
     versionHeaderFontSize: this.versionHeaderFontSize(),
     lineNumberFontSize: this.lineNumberFontSize(),
+    tooltipFontSize: this.tooltipFontSize(),
     changeDetails: this.changeDetails(),
+    changeDetailsIconStyle: this.changeDetailsIconStyle(),
+    tooltipColorMode: this.tooltipColorMode(),
+    highlightTooltipChanges: this.highlightTooltipChanges(),
+    tooltipTitleAlignment: this.tooltipTitleAlignment(),
     ignoreWhitespace: this.ignoreWhitespace(),
     ignoreCase: this.ignoreCase(),
+    ignoreFormatting: this.ignoreFormatting(),
+    ignoreLinkChanges: this.ignoreLinkChanges(),
     language: this.language(),
     customTexts: this.customTexts(),
   }));
@@ -283,14 +318,13 @@ export class DiffwiseHtmlDiff {
     this.diffwise.config().with(this.config()).with(this.inputOptions()),
   );
 
-  /**
-   * What counts as a difference; other options change without comparing the versions again.
-   * Options of the engine that the configuration does not have yet keep their defaults.
-   */
+  /** What counts as a difference; other options change without comparing the versions again. */
   private readonly diffOptions = computed<DiffOptions>(
     () => {
-      const { ignoreWhitespace, ignoreCase } = this.effectiveConfig();
-      return { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace, ignoreCase };
+      const { ignoreWhitespace, ignoreCase, ignoreFormatting, ignoreLinkChanges } =
+        this.effectiveConfig();
+
+      return { ignoreWhitespace, ignoreCase, ignoreFormatting, ignoreLinkChanges };
     },
     { equal: areDiffOptionsEqual },
   );
@@ -318,9 +352,10 @@ export class DiffwiseHtmlDiff {
   });
 
   /** Describes changes besides text in the language of the interface. */
-  protected readonly describer = computed(
-    () => new ChangeDescriber(this.texts(), this.uiLanguage()),
-  );
+  protected readonly describer = computed(() => {
+    const { highlightTooltipChanges } = this.effectiveConfig();
+    return new ChangeDescriber(this.texts(), this.uiLanguage(), highlightTooltipChanges);
+  });
 
   /** True when icons between the versions show the details of changes. */
   protected readonly showsChangeIcons = computed(

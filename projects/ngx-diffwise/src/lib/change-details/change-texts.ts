@@ -184,9 +184,11 @@ export class ChangeDescriber {
   /** Joins names in the language of the interface, such as "bold and italic". */
   private readonly listFormat: Intl.ListFormat;
 
+  /** Highlights the changed parts of values, unless `highlightsChanges` is false. */
   constructor(
     private readonly texts: UiTexts,
     language: string,
+    private readonly highlightsChanges = true,
   ) {
     this.listFormat = new Intl.ListFormat(language, LIST_FORMAT_OPTIONS);
   }
@@ -428,7 +430,7 @@ export class ChangeDescriber {
 
   /** Rows "Before" and "After", each with the part that changed highlighted (U9 C, R65). */
   private valueRows(oldValue: string, newValue: string, kind: TooltipPartKind): TooltipLine[] {
-    const [oldParts, newParts] = splitChangedParts(oldValue, newValue);
+    const [oldParts, newParts] = this.changedPartsOf(oldValue, newValue);
     const oldValueParts = highlightedParts(oldParts, kind, TooltipHighlight.Removed);
     const newValueParts = highlightedParts(newParts, kind, TooltipHighlight.Added);
 
@@ -437,6 +439,20 @@ export class ChangeDescriber {
       rowLine(this.texts.newValueLabel, newValueParts),
     ];
   }
+
+  /** Both values split around their changed parts; without highlights, each value is whole. */
+  private changedPartsOf(oldValue: string, newValue: string): [ChangedParts, ChangedParts] {
+    if (this.highlightsChanges) {
+      return splitChangedParts(oldValue, newValue);
+    }
+
+    return [wholeValue(oldValue), wholeValue(newValue)];
+  }
+}
+
+/** A value as one part that both values have, so no part of it is highlighted. */
+function wholeValue(value: string): ChangedParts {
+  return { start: value, changed: NO_TEXT, end: NO_TEXT };
 }
 
 /** Parts of a value: the start and the end as they are, and the changed part highlighted. */

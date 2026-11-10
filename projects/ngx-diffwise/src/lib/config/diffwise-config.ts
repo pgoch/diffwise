@@ -4,6 +4,7 @@ import { normalizeConfig } from './normalize-config';
 import {
   DiffwiseAlignment,
   DiffwiseChangeDetails,
+  DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
@@ -12,6 +13,7 @@ import {
   DiffwiseLanguage,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
+  DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -79,15 +81,41 @@ export interface DiffwiseConfigOptions {
   readonly versionHeaderFontSize?: number;
   /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
   readonly lineNumberFontSize?: number;
+  /** Font size of the tooltips in rem, from 0.5 to 10. Default: `0.8`. */
+  readonly tooltipFontSize?: number;
   /**
    * Where details of changes besides text show, such as link addresses: on hover of the change,
    * from an icon between the versions, or both. Default: `DiffwiseChangeDetails.Both`.
    */
   readonly changeDetails?: DiffwiseChangeDetails;
+  /**
+   * Look of the icons between the versions: a gray frame, a frame with a gradient, or a background
+   * with the gradient. Default: `DiffwiseChangeDetailsIconStyle.Gradient`.
+   */
+  readonly changeDetailsIconStyle?: DiffwiseChangeDetailsIconStyle;
+  /**
+   * Colors of the tooltips: those of the opposite theme, or those of the diff.
+   * Default: `DiffwiseTooltipColorMode.Component`.
+   */
+  readonly tooltipColorMode?: DiffwiseTooltipColorMode;
+  /**
+   * Highlights in a tooltip the part of a value that changed, such as a part of a link address or
+   * of a file name. Default: `true`.
+   */
+  readonly highlightTooltipChanges?: boolean;
+  /** Place of the titles in the tooltips. Default: `DiffwiseAlignment.Start`. */
+  readonly tooltipTitleAlignment?: DiffwiseAlignment;
   /** Ignores differences in whitespace. Default: `false`. */
   readonly ignoreWhitespace?: boolean;
   /** Ignores differences in letter case. Default: `false`. */
   readonly ignoreCase?: boolean;
+  /**
+   * Ignores changes of formatting alone, such as italic → bold or another heading level.
+   * Default: `false`.
+   */
+  readonly ignoreFormatting?: boolean;
+  /** Ignores links added, removed or pointing elsewhere around the same text. Default: `false`. */
+  readonly ignoreLinkChanges?: boolean;
   /** Language of the interface; `auto` takes the one of the app. Default: `DiffwiseLanguage.Auto`. */
   readonly language?: DiffwiseLanguage;
   /**
@@ -163,14 +191,36 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Font size of the line numbers in rem. */
   readonly lineNumberFontSize: number = 0.75;
 
+  /** Font size of the tooltips in rem. */
+  readonly tooltipFontSize: number = 0.8;
+
   /** Where the details of a change besides its text show. */
   readonly changeDetails: DiffwiseChangeDetails = DiffwiseChangeDetails.Both;
+
+  /** Look of the icons between the versions. */
+  readonly changeDetailsIconStyle: DiffwiseChangeDetailsIconStyle =
+    DiffwiseChangeDetailsIconStyle.Gradient;
+
+  /** Colors of the tooltips: those of the opposite theme, or those of the diff. */
+  readonly tooltipColorMode: DiffwiseTooltipColorMode = DiffwiseTooltipColorMode.Component;
+
+  /** Highlights in a tooltip the part of a value that changed. */
+  readonly highlightTooltipChanges: boolean = true;
+
+  /** Place of the titles in the tooltips. */
+  readonly tooltipTitleAlignment: DiffwiseAlignment = DiffwiseAlignment.Start;
 
   /** Ignores differences in whitespace. */
   readonly ignoreWhitespace: boolean = false;
 
   /** Ignores differences in letter case. */
   readonly ignoreCase: boolean = false;
+
+  /** Ignores changes of formatting alone. */
+  readonly ignoreFormatting: boolean = false;
+
+  /** Ignores links added, removed or pointing elsewhere around the same text. */
+  readonly ignoreLinkChanges: boolean = false;
 
   /** Language of the interface; `auto` takes the one of the app. */
   readonly language: DiffwiseLanguage = DiffwiseLanguage.Auto;

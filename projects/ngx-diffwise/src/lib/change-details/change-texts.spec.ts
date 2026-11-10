@@ -239,6 +239,28 @@ describe('ChangeDescriber', () => {
     expect(partKindsOf(content)).toEqual(new Set([TooltipPartKind.Code]));
   });
 
+  it('shows whole values without highlights when the highlights are off', () => {
+    const withoutHighlights = new ChangeDescriber(ENGLISH_TEXTS, ENGLISH, false);
+    const linkDetail = link('https://example.com/terms-2025', 'https://example.com/terms-2026');
+    const imageDetail = image(
+      { source: 'img/logo-2025.svg', altText: 'Old logo' },
+      { source: 'img/logo-2026.svg', altText: 'New logo' },
+    );
+
+    expect(linesOf(withoutHighlights, linkDetail)).toEqual([
+      'Before: https://example.com/terms-2025',
+      'After: https://example.com/terms-2026',
+    ]);
+    expect(linesOf(withoutHighlights, imageDetail)).toEqual([
+      '# file',
+      'Before: logo-2025.svg',
+      'After: logo-2026.svg',
+      '# alternative text',
+      'Before: Old logo',
+      'After: New logo',
+    ]);
+  });
+
   it('titles an added or a removed link and shows its address (U40 A)', () => {
     const address = 'https://example.com/pomoc/linki-publiczne';
 
