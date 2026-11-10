@@ -70,6 +70,7 @@ const DESCRIBED_MARKER_SELECTOR = '[data-diffwise-change-details]';
 const ICON_ONLY_CLASS = 'diffwise-html-diff--change-details-icon';
 const DESCRIBED_BY_ATTRIBUTE = 'aria-describedby';
 const TABINDEX_ATTRIBUTE = 'tabindex';
+const TITLE_ATTRIBUTE = 'title';
 const IN_TAB_ORDER = '0';
 const MOUSEOVER_EVENT = 'mouseover';
 const MOUSEOUT_EVENT = 'mouseout';
@@ -723,6 +724,22 @@ describe('DiffwiseHtmlDiff change details', () => {
       'Jest https://example.com/terms-2026',
     ]);
     expect(iconOf(custom).getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Other address');
+  });
+
+  it('shows the names of the version icons in the tooltip, also on focus from the keyboard', () => {
+    const element = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.Icons });
+    const [oldIcon, newIcon] = element.querySelectorAll<HTMLElement>(VERSION_HEADER_ICON_SELECTOR);
+
+    pointTo(oldIcon);
+
+    expect(tooltipLinesOf(element)).toEqual(['Previous version']);
+    expect(oldIcon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
+
+    focusFromKeyboard(newIcon);
+
+    expect(tooltipLinesOf(element)).toEqual(['New version']);
+    expect(newIcon.getAttribute(TABINDEX_ATTRIBUTE)).toBe(IN_TAB_ORDER);
+    expect(newIcon.hasAttribute(TITLE_ATTRIBUTE)).toBe(false);
   });
 
   it('hides the tooltip when the rows change, since its trigger may be gone', async () => {

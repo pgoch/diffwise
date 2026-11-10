@@ -34,6 +34,7 @@ import {
   type TooltipRequest,
   TriggerDescription,
 } from './change-details/change-tooltip';
+import { titleOnlyTooltip } from './change-details/tooltip-content';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
@@ -76,6 +77,11 @@ const TOOLTIP_ID_END = '-tooltip';
 const ROW_SELECTOR = '.diffwise-html-diff__row';
 const CONTENT_SELECTOR = '.diffwise-html-diff__content';
 const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
+const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
+const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+
+/** Icons with a tooltip: icons of changes, and icons in place of the version headers. */
+const ICON_TRIGGER_SELECTOR = [CHANGE_DETAILS_ICON_SELECTOR, VERSION_HEADER_ICON_SELECTOR].join();
 const FOCUS_VISIBLE_SELECTOR = ':focus-visible';
 const MOUSEOVER_EVENT = 'mouseover';
 const MOUSEOUT_EVENT = 'mouseout';
@@ -239,7 +245,7 @@ export class DiffwiseHtmlDiff {
   /** Id of the tooltip of this diff. */
   protected readonly tooltipId = this.idPrefix + TOOLTIP_ID_END;
 
-  /** The one tooltip of this diff, for the icons of changes and the marked changes. */
+  /** The one tooltip of this diff, for the icons of changes and versions, and the marked changes. */
   private readonly tooltip = viewChild.required(ChangeTooltip);
 
   /** True while the diff is inside an element that matches the dark mode marker of the app. */
@@ -480,7 +486,7 @@ export class DiffwiseHtmlDiff {
     }
   }
 
-  /** The element with a tooltip at the target: an icon of changes, or a marked change. */
+  /** The element with a tooltip at the target: an icon, or a marked change. */
   private triggerOf(target: EventTarget | null): HTMLElement | null {
     if (!(target instanceof Element) || this.tooltip().contains(target)) {
       return null;
@@ -492,7 +498,7 @@ export class DiffwiseHtmlDiff {
       return this.markerOf(target, content);
     }
 
-    const icon = target.closest<HTMLElement>(CHANGE_DETAILS_ICON_SELECTOR);
+    const icon = target.closest<HTMLElement>(ICON_TRIGGER_SELECTOR);
     const isOwnIcon = icon !== null && this.host.nativeElement.contains(icon);
 
     return isOwnIcon ? icon : null;
@@ -508,6 +514,10 @@ export class DiffwiseHtmlDiff {
 
   /** What the tooltip of a trigger shows; `null` when there is nothing to show. */
   private tooltipRequest(trigger: HTMLElement, byFocus: boolean): TooltipRequest | null {
+    if (trigger.matches(VERSION_HEADER_ICON_SELECTOR)) {
+      return versionNameRequest(trigger, byFocus);
+    }
+
     const details = this.detailsOf(trigger);
 
     if (details.length === 0) {
@@ -589,6 +599,22 @@ function highestLineNumber(rows: readonly ShownRow[]): number {
       Math.max(highest, oldLine?.number ?? 0, newLine?.number ?? 0),
     0,
   );
+}
+
+/**
+ * The tooltip of a version icon: the name of the version. The name also names the icon for screen
+ * readers, so the tooltip does not describe the icon again.
+ */
+function versionNameRequest(icon: HTMLElement, byFocus: boolean): TooltipRequest | null {
+  const versionName = icon.getAttribute(ARIA_LABEL_ATTRIBUTE);
+
+  if (versionName === null) {
+    return null;
+  }
+
+  const content = titleOnlyTooltip(versionName);
+
+  return { trigger: icon, content, description: TriggerDescription.None, byFocus };
 }
 
 function hasChangeDetails(row: ShownRow): boolean {

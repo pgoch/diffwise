@@ -109,9 +109,15 @@ diffwise-change-details-button {
 }
 
 .diffwise-html-diff__change-details-icon:focus-visible,
+.diffwise-html-diff__version-header-icon:focus-visible,
 .diffwise-html-diff__content [data-diffwise-change-details]:focus-visible {
   outline: 2px solid var(--diffwise-focus);
   outline-offset: 2px;
+}
+
+/* The icons in place of the version headers show the names of the versions in the tooltip. */
+.diffwise-html-diff__version-header-icon {
+  cursor: help;
 }
 
 /* Marked changes with details show them on hover, unless only the icons show them. */
