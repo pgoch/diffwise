@@ -4,7 +4,11 @@ import {
   TABLE_ROW_GROUP_TAGS,
   TABLE_ROW_TAG,
 } from './html-tags';
-import { DIFFWISE_DATA_ATTRIBUTE_START, TABLE_COPY_ATTRIBUTE } from '../model';
+import {
+  CONTINUED_CELL_ATTRIBUTE,
+  DIFFWISE_DATA_ATTRIBUTE_START,
+  TABLE_COPY_ATTRIBUTE,
+} from '../model';
 import type { GridRow } from './table-grid';
 
 const ID_ATTRIBUTE = 'id';
@@ -22,9 +26,6 @@ const LAST_TABLE_ROW_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}last-table-row
 
 /** Marks a cell that spans more rows, so no line closes it below. */
 const SPANS_ROWS_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}spans-rows`;
-
-/** Marks the copy of a cell from a row above, without content, in a lower row that it spans. */
-const CONTINUED_CELL_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continued-cell`;
 
 /** Finds the copy of the row in a table copy, inside the copy of its row group. */
 const ROW_COPY_SELECTOR = `:scope > * > ${TABLE_ROW_TAG}`;

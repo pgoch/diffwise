@@ -1,7 +1,9 @@
+import { type ColumnMatches, alignTableColumns } from './compare/align-table-columns';
 import { diffFormats } from './compare/diff-formats';
 import { diffImages } from './compare/diff-images';
 import { diffLines } from './compare/diff-lines';
 import { diffListMarkers } from './compare/diff-list-markers';
+import { type CellChanges, allChangedText, diffTableCells } from './compare/diff-table-cells';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
 import { sanitizeHtml } from './html/sanitize-html';
@@ -12,6 +14,7 @@ import {
   type ListItemMarks,
   REMOVED_TEXT_MARKER,
   markChanges,
+  markWholeCells,
   markWholeTableLine,
 } from './mark/mark-changes';
 import { addTableColumns } from './mark/table-columns';
@@ -36,6 +39,9 @@ const OLD_VERSION_ID_PART = 'old';
 const NEW_VERSION_ID_PART = 'new';
 
 const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
+
+/** Whole cells of a pair that is not a pair of table rows. */
+const NO_CELLS: readonly number[] = [];
 const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], details: [] };
 
 /**
@@ -46,7 +52,8 @@ export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSet
   const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
   const newLines = versionLines(newHtml, settings.idPrefix, NEW_VERSION_ID_PART);
   const { changes, stats } = diffLines(oldLines, newLines, settings.options);
-  const rowBuilder = new ViewRowBuilder(settings.options);
+  const columns = alignTableColumns(changes, settings.options);
+  const rowBuilder = new ViewRowBuilder(settings.options, columns);
   const markedRows = changes.map((change) => rowBuilder.toRow(change));
   const rows = withTableColumns(markedRows).map(sanitizedRow);
 
@@ -67,7 +74,10 @@ class ViewRowBuilder {
   private oldLineCount = 0;
   private newLineCount = 0;
 
-  constructor(private readonly options: DiffOptions) {}
+  constructor(
+    private readonly options: DiffOptions,
+    private readonly columns: ColumnMatches,
+  ) {}
 
   toRow(change: LineChange): ViewRow {
     switch (change.kind) {
@@ -94,21 +104,25 @@ class ViewRowBuilder {
   /**
    * A row of a changed pair. Removed text and described changes are marked in the old line, added
    * text and described changes in the new one; their markers point to the row's details. Details of
-   * the list item come first.
+   * the list item come first. A cell with no place on the other side is marked whole.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
     const itemDetails = diffListMarkers(oldLine, newLine, this.options);
-    const wordChanges = diffWords(oldLine, newLine, this.options);
-    const formatChanges = diffFormats(oldLine, newLine, wordChanges, this.options);
-    const imageChanges = diffImages(oldLine, newLine, wordChanges, this.options);
+    const cellChanges = this.cellChangesOf(oldLine, newLine);
+    const changedText = allChangedText(oldLine, newLine, cellChanges);
+    const formatChanges = diffFormats(oldLine, newLine, changedText, this.options);
+    const imageChanges = diffImages(oldLine, newLine, changedText, this.options);
     const itemChanges = { ...NO_DESCRIBED_CHANGES, details: itemDetails };
     const textChanges = joinDescribedChanges(formatChanges, imageChanges);
     const describedChanges = joinDescribedChanges(itemChanges, textChanges);
     const itemMarks = listItemMarks(itemDetails);
+    const { wordChanges, removedCells, addedCells } = cellChanges;
     const oldRanges = [...wordChanges.removed, ...describedChanges.oldRanges];
     const newRanges = [...wordChanges.added, ...describedChanges.newRanges];
-    const markedOldHtml = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER, itemMarks);
-    const markedNewHtml = markChanges(newLine, newRanges, ADDED_TEXT_MARKER, itemMarks);
+    const markedOldText = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER, itemMarks);
+    const markedNewText = markChanges(newLine, newRanges, ADDED_TEXT_MARKER, itemMarks);
+    const markedOldHtml = markWholeCells(markedOldText, removedCells, REMOVED_TEXT_MARKER);
+    const markedNewHtml = markWholeCells(markedNewText, addedCells, ADDED_TEXT_MARKER);
 
     return {
       kind: LineChangeKind.Changed,
@@ -116,6 +130,18 @@ class ViewRowBuilder {
       newLine: this.nextNewLine(newLine, markedNewHtml),
       changeDetails: describedChanges.details,
     };
+  }
+
+  /** Changed text of a pair: cell by cell in rows of matched tables, word by word in other lines. */
+  private cellChangesOf(oldLine: Line, newLine: Line): CellChanges {
+    const columns = this.columns.of(oldLine, newLine);
+
+    if (columns === null) {
+      const wordChanges = diffWords(oldLine, newLine, this.options);
+      return { wordChanges, removedCells: NO_CELLS, addedCells: NO_CELLS };
+    }
+
+    return diffTableCells(oldLine, newLine, columns, this.options);
   }
 
   private removedRow(oldLine: Line): ViewRow {

@@ -59,6 +59,7 @@ const CHECKBOX_MARKER_CLASS = 'diffwise-html-diff__highlight--checkbox';
 const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
 const COPIED_ROWS_SELECTOR = `${COLUMN_SIZERS_SELECTOR} > tr`;
 const CELL_MARKER_SELECTOR = '.diffwise-html-diff__highlight--cell';
+const ROW_CELLS_SELECTOR = '[data-diffwise-table-copy] > * > tr > *';
 const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
 
 /** Stands for a framed checkbox among the texts of markers. */
@@ -256,6 +257,16 @@ function tableRowSummary(row: ViewRow) {
 function markedCells(line: ViewLine | null) {
   const cells = line === null ? [] : fragmentOf(line.html).querySelectorAll(CELL_MARKER_SELECTOR);
   return Array.from(cells, (cell) => readerText([cell]));
+}
+
+/** Positions of the cells of a line that are marked as a whole, among all cells of its row. */
+function markedCellPositions(line: ViewLine | null) {
+  const cells = line === null ? [] : fragmentOf(line.html).querySelectorAll(ROW_CELLS_SELECTOR);
+  const positions = Array.from(cells, (cell, position) =>
+    cell.matches(CELL_MARKER_SELECTOR) ? position : -1,
+  );
+
+  return positions.filter((position) => position >= 0);
 }
 
 /** True for a row of lines of the given table. */
@@ -801,13 +812,63 @@ describe('diffHtml', () => {
       [LineChangeKind.Changed, 71, 75, ['F', 'F'], ['K', 'K'], [], []],
       [LineChangeKind.Removed, 72, null, [], [], savedCopyCells, []],
     ]);
-    expect(rows.filter((row) => isRowOfTable(row, 1)).map(rowShape)).toEqual([
-      [LineChangeKind.Changed, 23, 25],
-      [LineChangeKind.Changed, 24, 26],
-      [LineChangeKind.Changed, 25, 27],
-      [LineChangeKind.Changed, 26, 28],
-      [LineChangeKind.Changed, 27, 29],
+  });
+
+  it('marks the cells of the column added to the long sample whole, in the same column of each row', () => {
+    const { rows } = compare(enLongBefore, enLongAfter);
+    const familyColumnRows = rows.filter((row) => isRowOfTable(row, 1));
+    const familyColumn = 3;
+
+    expect(familyColumnRows.map(tableRowSummary)).toEqual([
+      [LineChangeKind.Changed, 23, 25, [], [], [], ['Family']],
+      [LineChangeKind.Changed, 24, 26, [], [], [], ['✓']],
+      [LineChangeKind.Changed, 25, 27, [], [], [], ['1 year']],
+      [LineChangeKind.Changed, 26, 28, [], [], [], ['Unlimited']],
+      [LineChangeKind.Changed, 27, 29, [], [], [], ['–']],
     ]);
+    expect(familyColumnRows.map((row) => markedCellPositions(row.newLine))).toEqual(
+      Array.from(familyColumnRows, () => [familyColumn]),
+    );
+  });
+
+  it('marks a new column and a new row at once', () => {
+    const oldHtml =
+      '<table><tr><th>Plan</th><th>Price</th></tr><tr><td>Free</td><td>0</td></tr></table>';
+    const newHtml = `
+      <table>
+        <tr><th>Plan</th><th>Price</th><th>Users</th></tr>
+        <tr><td>Free</td><td>0</td><td>1</td></tr>
+        <tr><td>Team</td><td>8</td><td>20</td></tr>
+      </table>`;
+
+    expect(compare(oldHtml, newHtml).rows.map(tableRowSummary)).toEqual([
+      [LineChangeKind.Changed, 1, 1, [], [], [], ['Users']],
+      [LineChangeKind.Changed, 2, 2, [], [], [], ['1']],
+      [LineChangeKind.Added, null, 3, [], [], [], ['Team', '8', '20']],
+    ]);
+  });
+
+  it('describes changes of formatting, links and images inside the cells of a row', () => {
+    const oldHtml = `
+      <table><tr>
+        <td><b>Personal</b></td>
+        <td><a href="https://example.com/plans-2025">plans</a></td>
+        <td><img src="images/logo-2025.svg" alt=""></td>
+      </tr></table>`;
+    const newHtml = `
+      <table><tr>
+        <td><i>Personal</i></td>
+        <td><a href="https://example.com/plans">plans</a></td>
+        <td><img src="images/logo-2026.svg" alt=""></td>
+      </tr></table>`;
+    const [row] = compare(oldHtml, newHtml).rows;
+
+    expect(detailShape(row)).toEqual([
+      1,
+      1,
+      [ChangeDetailKind.Formatting, ChangeDetailKind.Link, ChangeDetailKind.Image],
+    ]);
+    expect(detailPositions(row.newLine)).toEqual(['0', '1', '2']);
   });
 
   it('marks every cell of an added or a removed row, and the whole text of an added caption', () => {

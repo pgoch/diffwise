@@ -3,6 +3,7 @@ import { startCheckbox } from '../html/list-items';
 import { type TextPiece, mapReaderText } from '../html/reader-text';
 import {
   CHANGE_DETAILS_ATTRIBUTE,
+  CONTINUED_CELL_ATTRIBUTE,
   CONTINUED_ITEM_ATTRIBUTE,
   DETAIL_INDEX_SEPARATOR,
   LINE_ITEM_ATTRIBUTE,
@@ -22,6 +23,9 @@ const LINE_ITEM_SELECTOR = `[${LINE_ITEM_ATTRIBUTE}]`;
 
 /** Cells of the row in a table line: children of the row, in the copies of its table and group. */
 const ROW_CELLS_SELECTOR = `[${TABLE_COPY_ATTRIBUTE}] > * > ${TABLE_ROW_TAG} > *`;
+
+/** Cells of the row in a table line without the places of cells from rows above. */
+const OWN_ROW_CELLS_SELECTOR = `${ROW_CELLS_SELECTOR}:not([${CONTINUED_CELL_ATTRIBUTE}])`;
 
 /** Added to the classes of a whole table cell marked as added or removed. */
 const CELL_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--cell`;
@@ -128,10 +132,41 @@ export function markWholeTableLine(line: Line, marker: ChangeMarker): string {
   template.innerHTML = line.html;
 
   for (const cell of template.content.querySelectorAll(ROW_CELLS_SELECTOR)) {
-    cell.classList.add(...marker.classNames, CELL_HIGHLIGHT_CLASS);
+    markWholeCell(cell, marker);
   }
 
   return template.innerHTML;
+}
+
+/**
+ * Marks whole cells of the row in a table line's HTML, such as the cells of an added column. The
+ * positions count the row's own cells, without the places of cells from rows above.
+ */
+export function markWholeCells(
+  html: string,
+  positions: readonly number[],
+  marker: ChangeMarker,
+): string {
+  if (positions.length === 0) {
+    return html;
+  }
+
+  const template = document.createElement(TEMPLATE_TAG);
+
+  template.innerHTML = html;
+
+  const cells = template.content.querySelectorAll(OWN_ROW_CELLS_SELECTOR);
+
+  for (const position of positions) {
+    markWholeCell(cells[position], marker);
+  }
+
+  return template.innerHTML;
+}
+
+/** Gives a cell the classes of the marker, since no marker element can wrap a cell. */
+function markWholeCell(cell: Element | undefined, marker: ChangeMarker): void {
+  cell?.classList.add(...marker.classNames, CELL_HIGHLIGHT_CLASS);
 }
 
 /**

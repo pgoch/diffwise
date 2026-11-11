@@ -281,6 +281,9 @@ export const LIST_MARKER_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}list-marke
 /** Marks the copy of a table in the HTML of a table line, which holds its caption or one row. */
 export const TABLE_COPY_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}table-copy`;
 
+/** Marks the copy of a cell from a row above, without content, in a lower row that it spans. */
+export const CONTINUED_CELL_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continued-cell`;
+
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
   /** Positions in the row's change details; changed text has none. */

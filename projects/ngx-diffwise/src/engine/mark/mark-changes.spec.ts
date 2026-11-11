@@ -9,6 +9,7 @@ import {
   NO_LIST_ITEM_MARKS,
   REMOVED_TEXT_MARKER,
   markChanges,
+  markWholeCells,
   markWholeTableLine,
 } from './mark-changes';
 
@@ -354,5 +355,24 @@ describe('markWholeTableLine', () => {
     expect(markWholeTableLine(caption, ADDED_TEXT_MARKER)).toBe(
       `<table data-diffwise-table-copy="" data-diffwise-first-table-line=""><caption>${added('Plans and ')}<b>${added('prices')}</b></caption></table>`,
     );
+  });
+});
+
+describe('markWholeCells', () => {
+  it('marks the cells at the positions, counting only the cells of the row itself', () => {
+    const html =
+      '<table><tr><td rowspan="2">Free</td><td>0</td></tr><tr><td>1 GB</td><td>2</td></tr></table>';
+    const [, row] = splitLines(parseHtml(html), ID_PREFIX);
+    const marked = fragmentOf(markWholeCells(row.html, [1], ADDED_TEXT_MARKER));
+
+    expect(marked.querySelector(ROW_SELECTOR)?.outerHTML).toBe(
+      `<tr><td data-diffwise-continued-cell=""></td><td>1 GB</td><td class="${ADDED_CELL_CLASSES}">2</td></tr>`,
+    );
+  });
+
+  it('leaves the HTML as it is without positions', () => {
+    const row = lineOf('<table><tr><td>Free</td></tr></table>');
+
+    expect(markWholeCells(row.html, [], REMOVED_TEXT_MARKER)).toBe(row.html);
   });
 });
