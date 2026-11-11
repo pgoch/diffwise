@@ -1,10 +1,13 @@
 import {
   BLOCK_TAGS,
+  FIGURE_TAG,
   HEADING_TAGS,
   LIST_ITEM_TAG,
   LIST_ITEM_TAGS,
   PARAGRAPH_TAGS,
   SPLIT_BLOCK_TAGS,
+  TABLE_CAPTION_TAG,
+  TABLE_TAG,
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
 import { lineImages } from './line-images';
@@ -15,14 +18,23 @@ import {
   LINE_ITEM_ATTRIBUTE,
   type Line,
   LineKind,
+  type TableCell,
 } from '../model';
 import { prefixIds } from './prefix-ids';
 import { type TextPiece, mapReaderText } from './reader-text';
+import { type GridRow, rowCells, tableGrid } from './table-grid';
+import { type TableLinePlace, type TablePart, completeTableCopy } from './table-row-html';
 import { TextFormatReader } from './text-format';
 
 const TEMPLATE_TAG = 'template';
 const ID_ATTRIBUTE = 'id';
 const VALUE_ATTRIBUTE = 'value';
+
+/** Cells of a line that is not a table row. */
+const NO_CELLS: readonly TableCell[] = [];
+
+/** The place of a caption: the first line of its table, above its rows. */
+const CAPTION_PLACE: TableLinePlace = { isFirstLine: true, isFirstRow: false, isLastRow: false };
 
 /** What a line is built from. */
 interface LineSource {
@@ -30,6 +42,8 @@ interface LineSource {
   readonly tag: string | null;
   readonly nodes: readonly Node[];
   readonly wrappers: readonly Element[];
+  /** The part of a table the line shows; none outside tables. */
+  readonly tablePart?: TablePart;
 }
 
 /** Kind and tag of a line. */
@@ -67,6 +81,9 @@ class LineCollector {
   /** Containers copied into the HTML of a line so far; a later copy is not the first one. */
   private readonly copiedWrappers = new Set<Element>();
 
+  /** Tables split into lines so far. */
+  private tableCount = 0;
+
   constructor(private readonly idPrefix: string) {}
 
   /** Adds lines for the children of a container; containers of blocks are split further. */
@@ -89,6 +106,8 @@ class LineCollector {
 
       if (LIST_ITEM_TAGS.has(child.localName)) {
         this.addListItem(child, wrappers);
+      } else if (child.localName === TABLE_TAG) {
+        this.addTable(child, wrappers);
       } else if (isContainerOfBlocks(child)) {
         this.addChildren(child, [...wrappers, child]);
       } else {
@@ -115,8 +134,48 @@ class LineCollector {
     }
   }
 
+  /**
+   * Adds the lines of a table: its caption, then its rows in the order a browser shows them. A row
+   * without cells shows nothing, so it gives no line.
+   */
+  private addTable(table: Element, wrappers: readonly Element[]): void {
+    const number = this.tableCount;
+    const caption = Array.from(table.children).find(isCaption);
+    const rows = tableGrid(table).filter(hasCells);
+    const tableWrappers = [...wrappers, table];
+    const lineCountBefore = this.lines.length;
+
+    this.tableCount++;
+
+    if (caption !== undefined) {
+      const tablePart = { table, number, row: null, place: CAPTION_PLACE };
+
+      this.addLine({
+        ...captionLineType(caption),
+        nodes: [caption],
+        wrappers: tableWrappers,
+        tablePart,
+      });
+    }
+
+    const captionShown = this.lines.length > lineCountBefore;
+
+    for (const [index, row] of rows.entries()) {
+      const place = {
+        isFirstLine: !captionShown && index === 0,
+        isFirstRow: index === 0,
+        isLastRow: index === rows.length - 1,
+      };
+      const tablePart = { table, number, row, place };
+      const rowWrappers = [...tableWrappers, row.group];
+
+      this.addLine({ ...rowLineType(row), nodes: [row.element], wrappers: rowWrappers, tablePart });
+    }
+  }
+
   /** Adds a line unless a reader would see nothing in it. */
-  private addLine({ kind, tag, nodes, wrappers }: LineSource): void {
+  private addLine(source: LineSource): void {
+    const { kind, tag, nodes, wrappers, tablePart } = source;
     const { text, pieces } = mapReaderText(nodes);
     const readerSeesNothing = text.length === 0 && !nodes.some(hasVisibleContent);
 
@@ -127,9 +186,12 @@ class LineCollector {
     const formats = this.formatsOf(pieces);
     const images = lineImages(pieces);
     const itemStart = this.itemStartOf(nodes, wrappers);
-    const html = this.lineHtml(nodes, wrappers);
+    const table = tablePart?.number ?? null;
+    const row = tablePart?.row ?? null;
+    const cells = row === null ? NO_CELLS : rowCells(row, pieces);
+    const html = this.lineHtml(source);
 
-    this.lines.push({ kind, tag, text, formats, images, html, ...itemStart });
+    this.lines.push({ kind, tag, text, formats, images, html, ...itemStart, table, cells });
   }
 
   /**
@@ -172,32 +234,30 @@ class LineCollector {
 
   /**
    * HTML of the nodes inside shallow copies of the wrappers, built in an inert template. The list
-   * item that the line belongs to, the innermost one, is marked for the view.
+   * item that the line belongs to, the innermost one, is marked for the view, and the copy of a
+   * table holds the part of the table that the line shows.
    */
-  private lineHtml(nodes: readonly Node[], wrappers: readonly Element[]): string {
+  private lineHtml({ nodes, wrappers, tablePart }: LineSource): string {
     const template = document.createElement(TEMPLATE_TAG);
-    let parent: Node = template.content;
-    let lineItem: Element | null = null;
+    const tableKeepsIds = tablePart !== undefined && !this.copiedWrappers.has(tablePart.table);
+    const wrapperCopies = wrappers.map((wrapper) => this.wrapperCopy(wrapper));
+    const nodeCopies = nodes.map((node) => this.nodeCopy(node));
+    const lineItem = [...wrapperCopies, ...nodeCopies].filter(isListItem).at(-1);
+    let parent: ParentNode = template.content;
 
-    for (const wrapper of wrappers) {
-      const copy = this.wrapperCopy(wrapper);
-
+    for (const copy of wrapperCopies) {
       parent = parent.appendChild(copy);
-
-      if (isListItem(copy)) {
-        lineItem = copy;
-      }
     }
 
-    for (const node of nodes) {
-      const copy = parent.appendChild(this.nodeCopy(node));
-
-      if (isListItem(copy)) {
-        lineItem = copy;
-      }
-    }
-
+    parent.append(...nodeCopies);
     lineItem?.toggleAttribute(LINE_ITEM_ATTRIBUTE, true);
+
+    if (tablePart !== undefined) {
+      const tableCopy = wrapperCopies[wrappers.indexOf(tablePart.table)];
+
+      completeTableCopy(tableCopy, tablePart, tableKeepsIds);
+    }
+
     prefixIds(template.content, this.idPrefix);
 
     return template.innerHTML;
@@ -256,9 +316,34 @@ function isMarkerItem(node: Node): node is Element {
   return node instanceof Element && node.localName === LIST_ITEM_TAG;
 }
 
-/** A container, such as a quote, a list or a list item, whose blocks become separate lines. */
+/**
+ * A container, such as a quote, a list or a list item, whose blocks become separate lines; also a
+ * figure that holds a table, so the table splits into rows.
+ */
 function isContainerOfBlocks(element: Element): boolean {
-  return SPLIT_BLOCK_TAGS.has(element.localName) && Array.from(element.children).some(isBlock);
+  const splitsBlocks = SPLIT_BLOCK_TAGS.has(element.localName) || isFigureOfTable(element);
+  return splitsBlocks && Array.from(element.children).some(isBlock);
+}
+
+function isFigureOfTable(element: Element): boolean {
+  const holdsTable = Array.from(element.children).some((child) => child.localName === TABLE_TAG);
+  return element.localName === FIGURE_TAG && holdsTable;
+}
+
+function isCaption(element: Element): boolean {
+  return element.localName === TABLE_CAPTION_TAG;
+}
+
+function hasCells(row: GridRow): boolean {
+  return row.cells.length > 0;
+}
+
+function captionLineType(caption: Element): LineType {
+  return { kind: LineKind.TableCaption, tag: caption.localName };
+}
+
+function rowLineType(row: GridRow): LineType {
+  return { kind: LineKind.TableRow, tag: row.element.localName };
 }
 
 /** Kind and tag of text next to the blocks of a container: a list item's text, or a paragraph. */

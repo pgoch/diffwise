@@ -399,13 +399,13 @@
 
 .diffwise-html-diff:not(.diffwise-html-diff--no-changed-line-highlight)
   .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__content--old {
+  .diffwise-html-diff__content--old:not([data-diffwise-table]) {
   background: var(--diffwise-removed-line);
 }
 
 .diffwise-html-diff:not(.diffwise-html-diff--no-changed-line-highlight)
   .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__content--new {
+  .diffwise-html-diff__content--new:not([data-diffwise-table]) {
   background: var(--diffwise-added-line);
 }
 
@@ -508,13 +508,14 @@
 
 /*
  * An added or a removed line highlighted as a whole looks like changed words, in every style,
- * but keeps its rounded corners. A list item line highlights only its item; see the list styles.
+ * but keeps its rounded corners. A list item line highlights only its item, and a table line its
+ * cells; see the list and table styles.
  */
 .diffwise-html-diff--highlight-whole-lines
   :is(
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
-  )
+  ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   padding-inline: 6px;
   border-radius: 4px;
@@ -526,7 +527,7 @@
   :is(
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
-  )
+  ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow: none;
 }
@@ -535,7 +536,7 @@
   :is(
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
-  )
+  ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
@@ -544,7 +545,7 @@
   :is(
     .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
     .diffwise-html-diff__row--added .diffwise-html-diff__content--new
-  )
+  ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow:
     inset 0 2px 0 var(--diffwise-side-accent),

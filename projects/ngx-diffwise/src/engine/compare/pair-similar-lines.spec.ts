@@ -6,7 +6,7 @@ import {
   LineChangeKind,
   LineKind,
 } from '../model';
-import { pairSimilarLines } from './pair-similar-lines';
+import { highestScoringPairs, pairSimilarLines } from './pair-similar-lines';
 
 const PARAGRAPH_TAG = 'p';
 const LARGE_BLOCK_SIZE = 101;
@@ -23,6 +23,8 @@ function paragraph(text: string): Line {
     html: `<p>${text}</p>`,
     marker: null,
     checkbox: null,
+    table: null,
+    cells: [],
   };
 }
 
@@ -57,6 +59,8 @@ function imageParagraph(source: string): Line {
     html: `<p><img src="${source}"></p>`,
     marker: null,
     checkbox: null,
+    table: null,
+    cells: [],
   };
 }
 
@@ -179,5 +183,32 @@ describe('pairSimilarLines', () => {
       `Akapit ${LARGE_BLOCK_SIZE - 1} stary`,
       `Akapit ${LARGE_BLOCK_SIZE - 1} nowy`,
     ]);
+  });
+});
+
+describe('highestScoringPairs', () => {
+  it('pairs items in the order of both sides with the highest total score', () => {
+    const scores = [
+      [5, 0, 0],
+      [0, 4, 5],
+    ];
+
+    expect(highestScoringPairs(scores, 2, 3)).toEqual([
+      { oldIndex: 0, newIndex: 0 },
+      { oldIndex: 1, newIndex: 2 },
+    ]);
+  });
+
+  it('keeps the better of two pairs that would cross', () => {
+    const scores = [
+      [0, 2],
+      [3, 0],
+    ];
+
+    expect(highestScoringPairs(scores, 2, 2)).toEqual([{ oldIndex: 1, newIndex: 0 }]);
+  });
+
+  it('pairs no items whose score is 0', () => {
+    expect(highestScoringPairs([[0, 0]], 1, 2)).toEqual([]);
   });
 });

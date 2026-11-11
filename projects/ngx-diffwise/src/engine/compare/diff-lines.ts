@@ -10,6 +10,7 @@ import {
   LineChangeKind,
   type LineDiff,
   LineKind,
+  type TableCell,
   type TextFormat,
 } from '../model';
 import { EditKind, myersDiff } from './myers';
@@ -71,14 +72,26 @@ function matchedPair(oldLine: Line, newLine: Line, options: DiffOptions): LineCh
 }
 
 /**
- * Lines are equal when their structures, compared texts, formats and images are. List markers are
- * compared after matching, so an item with another marker stays the same line.
+ * Lines are equal when their structures, compared texts, formats and images are. Rows are equal
+ * when their cells are too, so text moved to another cell changes a row. List markers are compared
+ * after matching, so an item with another marker stays the same line.
  */
 function lineKey(line: Line, options: DiffOptions): string {
   const text = comparisonText(line.text, options);
   const images = line.images.map((image) => comparisonImage(image.properties, options));
+  const cells = line.cells.map((cell) => cellKey(line, cell, options));
 
-  return JSON.stringify([structureTag(line), text, formatRuns(line, options), images]);
+  return JSON.stringify([structureTag(line), text, formatRuns(line, options), images, cells]);
+}
+
+/** The columns of a cell and its compared text. */
+function cellKey(
+  line: Line,
+  { start, end, column, columnSpan }: TableCell,
+  options: DiffOptions,
+): (number | string)[] {
+  const text = comparisonText(line.text.slice(start, end), options);
+  return [column, columnSpan, text];
 }
 
 /**

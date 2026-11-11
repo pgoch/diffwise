@@ -19,6 +19,14 @@ const LINE_ITEM = 'data-diffwise-line-item=""';
 /** Marks a copy of a list item in a later line of the item. */
 const CONTINUED_ITEM = 'data-diffwise-continued-item=""';
 
+/** Marks the copy of a table in a table line, and the place of the line in its table. */
+const TABLE_COPY = 'data-diffwise-table-copy=""';
+const FIRST_TABLE_LINE = 'data-diffwise-first-table-line=""';
+const FIRST_TABLE_ROW = 'data-diffwise-first-table-row=""';
+const LAST_TABLE_ROW = 'data-diffwise-last-table-row=""';
+
+const TABLE_LINE_PARTS_SELECTOR = 'tr, caption';
+
 /** Long samples from `test-data/`, which contain everything an editor can produce. */
 const LONG_SAMPLES: [string, string][] = [
   ['en/long/before.html', enLongBefore],
@@ -311,11 +319,122 @@ describe('splitLines', () => {
     ]);
   });
 
-  it('keeps a table whole for now, with the lists in its cells', () => {
-    const html = '<table><tr><td>49 zł</td><td><ul><li>bez limitu</li></ul></td></tr></table>';
+  it('makes a line of the caption and of each row of a table, in the order a browser shows them', () => {
+    const html = `
+      <table>
+        <caption>Plans</caption>
+        <tfoot><tr><td>Prices include VAT.</td></tr></tfoot>
+        <thead><tr><th>Plan</th><th>Price</th></tr></thead>
+        <tbody><tr><td>Free</td><td>0</td></tr></tbody>
+      </table>`;
 
     expect(linesWithoutHtml(html)).toEqual([
-      { kind: LineKind.Block, tag: 'table', text: '49 zł bez limitu' },
+      { kind: LineKind.TableCaption, tag: 'caption', text: 'Plans' },
+      { kind: LineKind.TableRow, tag: 'tr', text: 'Plan Price' },
+      { kind: LineKind.TableRow, tag: 'tr', text: 'Free 0' },
+      { kind: LineKind.TableRow, tag: 'tr', text: 'Prices include VAT.' },
+    ]);
+  });
+
+  it('puts each row in copies of its table and row group, which keep their ids in their first line', () => {
+    const html = `
+      <table id="plans">
+        <thead><tr><th>Plan</th></tr></thead>
+        <tbody id="paid-plans"><tr><td>Free</td></tr><tr><td>Personal</td></tr></tbody>
+      </table>`;
+
+    expect(htmlOfLines(html)).toEqual([
+      `<table id="diff-plans" ${TABLE_COPY} ${FIRST_TABLE_LINE} ${FIRST_TABLE_ROW}><thead><tr><th>Plan</th></tr></thead></table>`,
+      `<table ${TABLE_COPY}><tbody id="diff-paid-plans"><tr><td>Free</td></tr></tbody></table>`,
+      `<table ${TABLE_COPY} ${LAST_TABLE_ROW}><tbody><tr><td>Personal</td></tr></tbody></table>`,
+    ]);
+  });
+
+  it('makes the caption the first line of its table', () => {
+    const html = '<table><caption>Plans</caption><tr><td>Free</td></tr></table>';
+
+    expect(htmlOfLines(html)).toEqual([
+      `<table ${TABLE_COPY} ${FIRST_TABLE_LINE}><caption>Plans</caption></table>`,
+      `<table ${TABLE_COPY} ${FIRST_TABLE_ROW} ${LAST_TABLE_ROW}><tbody><tr><td>Free</td></tr></tbody></table>`,
+    ]);
+  });
+
+  it('keeps an empty row as a line, as its cells show, and skips a row without cells', () => {
+    const html = '<table><tr><td></td><td></td></tr><tr></tr><tr><td>Free</td></tr></table>';
+
+    expect(linesWithoutHtml(html)).toEqual([
+      { kind: LineKind.TableRow, tag: 'tr', text: '' },
+      { kind: LineKind.TableRow, tag: 'tr', text: 'Free' },
+    ]);
+  });
+
+  it('gives a row its cells: their parts of the text and the columns they take', () => {
+    const html = `
+      <table>
+        <tr><th colspan="2">Plan</th><th>Price</th></tr>
+        <tr><td></td><td>Free</td><td>0 EUR</td></tr>
+      </table>`;
+    const [header, row] = splitDocument(html);
+
+    expect(header.cells).toEqual([
+      { start: 0, end: 4, column: 0, columnSpan: 2 },
+      { start: 5, end: 10, column: 2, columnSpan: 1 },
+    ]);
+    expect(row.cells).toEqual([
+      { start: 0, end: 0, column: 0, columnSpan: 1 },
+      { start: 0, end: 4, column: 1, columnSpan: 1 },
+      { start: 5, end: 10, column: 2, columnSpan: 1 },
+    ]);
+  });
+
+  it('gives each line the position of its table, and no cells outside table rows', () => {
+    const html = `
+      <p>Plans</p>
+      <table><tr><td>Free</td></tr></table>
+      <table><caption>Shortcuts</caption><tr><td>Search</td></tr></table>`;
+
+    expect(
+      splitDocument(html).map(({ text, table, cells }) => [text, table, cells.length]),
+    ).toEqual([
+      ['Plans', null, 0],
+      ['Free', 0, 1],
+      ['Shortcuts', 1, 0],
+      ['Search', 1, 1],
+    ]);
+  });
+
+  it('splits a table in a quote and in a list item, inside copies of both', () => {
+    const quote =
+      '<blockquote><table><tr><td>Free</td></tr><tr><td>Personal</td></tr></table></blockquote>';
+    const list = '<ul><li>Plans:<table><tr><td>Team</td></tr></table></li></ul>';
+
+    expect(htmlOfLines(quote + list)).toEqual([
+      `<blockquote><table ${TABLE_COPY} ${FIRST_TABLE_LINE} ${FIRST_TABLE_ROW}><tbody><tr><td>Free</td></tr></tbody></table></blockquote>`,
+      `<blockquote><table ${TABLE_COPY} ${LAST_TABLE_ROW}><tbody><tr><td>Personal</td></tr></tbody></table></blockquote>`,
+      `<ul><li value="1" ${LINE_ITEM}>Plans:</li></ul>`,
+      `<ul><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}><table ${TABLE_COPY} ${FIRST_TABLE_LINE} ${FIRST_TABLE_ROW} ${LAST_TABLE_ROW}><tbody><tr><td>Team</td></tr></tbody></table></li></ul>`,
+    ]);
+  });
+
+  it('keeps a table and a list inside a cell as parts of the cell', () => {
+    const html =
+      '<table><tr><td>49 EUR</td><td><ul><li>unlimited</li></ul><table><tr><td>notes</td></tr></table></td></tr></table>';
+
+    expect(linesWithoutHtml(html)).toEqual([
+      { kind: LineKind.TableRow, tag: 'tr', text: '49 EUR unlimited notes' },
+    ]);
+  });
+
+  it('splits a table in a figure, as editors such as CKEditor write it, but not a figure of an image', () => {
+    const tableFigure =
+      '<figure class="table"><table><tr><td>Free</td></tr></table><figcaption>Plans</figcaption></figure>';
+    const imageFigure =
+      '<figure><img src="images/logo-2025.svg" alt=""><figcaption>Logo</figcaption></figure>';
+
+    expect(linesWithoutHtml(tableFigure + imageFigure)).toEqual([
+      { kind: LineKind.TableRow, tag: 'tr', text: 'Free' },
+      { kind: LineKind.Block, tag: 'figcaption', text: 'Plans' },
+      { kind: LineKind.Block, tag: 'figure', text: `${IMAGE_CHARACTER} Logo` },
     ]);
   });
 
@@ -421,6 +540,13 @@ describe('splitLines', () => {
     const itemLines = allLines.filter((line) => line.kind === LineKind.ListItem);
 
     expect(itemLines).toHaveLength(body.querySelectorAll(LIST_ITEMS_SELECTOR).length);
+  });
+
+  it.each(LONG_SAMPLES)('makes a line of every row and caption of the tables in %s', (_, html) => {
+    const body = parseHtml(html);
+    const tableLines = splitLines(body, ID_PREFIX).filter((line) => line.table !== null);
+
+    expect(tableLines).toHaveLength(body.querySelectorAll(TABLE_LINE_PARTS_SELECTOR).length);
   });
 
   it('gives each piece of text its format', () => {

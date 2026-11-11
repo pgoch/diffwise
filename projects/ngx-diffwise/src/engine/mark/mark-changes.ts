@@ -1,15 +1,18 @@
-import { LIST_ITEM_TAG, NO_MARKER_TAGS, PICTURE_TAG } from '../html/html-tags';
+import { LIST_ITEM_TAG, NO_MARKER_TAGS, PICTURE_TAG, TABLE_ROW_TAG } from '../html/html-tags';
 import { startCheckbox } from '../html/list-items';
 import { type TextPiece, mapReaderText } from '../html/reader-text';
 import {
   CHANGE_DETAILS_ATTRIBUTE,
+  CONTINUED_CELL_ATTRIBUTE,
   CONTINUED_ITEM_ATTRIBUTE,
   DETAIL_INDEX_SEPARATOR,
   LINE_ITEM_ATTRIBUTE,
   LIST_MARKER_ATTRIBUTE,
   type Line,
+  LineKind,
   type ListMarker,
   type MarkedRange,
+  TABLE_COPY_ATTRIBUTE,
 } from '../model';
 import { listMarkerText } from './list-marker-text';
 
@@ -17,6 +20,15 @@ const TEMPLATE_TAG = 'template';
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const HIGHLIGHT_CLASS = 'diffwise-html-diff__highlight';
 const LINE_ITEM_SELECTOR = `[${LINE_ITEM_ATTRIBUTE}]`;
+
+/** Cells of the row in a table line: children of the row, in the copies of its table and group. */
+const ROW_CELLS_SELECTOR = `[${TABLE_COPY_ATTRIBUTE}] > * > ${TABLE_ROW_TAG} > *`;
+
+/** Cells of the row in a table line without the places of cells from rows above. */
+const OWN_ROW_CELLS_SELECTOR = `${ROW_CELLS_SELECTOR}:not([${CONTINUED_CELL_ATTRIBUTE}])`;
+
+/** Added to the classes of a whole table cell marked as added or removed. */
+const CELL_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--cell`;
 
 /** Added to the classes of a marker around an image, which frames the image. */
 const IMAGE_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--image`;
@@ -104,6 +116,57 @@ export function markChanges(
   markListItem(template.content, line.marker, itemMarks, marker);
 
   return template.innerHTML;
+}
+
+/**
+ * Marks a whole added or removed table line: the whole text of a caption, or each cell of a row.
+ * A cell takes the classes of the marker itself, since no marker element can wrap a cell.
+ */
+export function markWholeTableLine(line: Line, marker: ChangeMarker): string {
+  if (line.kind === LineKind.TableCaption) {
+    return markChanges(line, [{ start: 0, end: line.text.length }], marker);
+  }
+
+  const template = document.createElement(TEMPLATE_TAG);
+
+  template.innerHTML = line.html;
+
+  for (const cell of template.content.querySelectorAll(ROW_CELLS_SELECTOR)) {
+    markWholeCell(cell, marker);
+  }
+
+  return template.innerHTML;
+}
+
+/**
+ * Marks whole cells of the row in a table line's HTML, such as the cells of an added column. The
+ * positions count the row's own cells, without the places of cells from rows above.
+ */
+export function markWholeCells(
+  html: string,
+  positions: readonly number[],
+  marker: ChangeMarker,
+): string {
+  if (positions.length === 0) {
+    return html;
+  }
+
+  const template = document.createElement(TEMPLATE_TAG);
+
+  template.innerHTML = html;
+
+  const cells = template.content.querySelectorAll(OWN_ROW_CELLS_SELECTOR);
+
+  for (const position of positions) {
+    markWholeCell(cells[position], marker);
+  }
+
+  return template.innerHTML;
+}
+
+/** Gives a cell the classes of the marker, since no marker element can wrap a cell. */
+function markWholeCell(cell: Element | undefined, marker: ChangeMarker): void {
+  cell?.classList.add(...marker.classNames, CELL_HIGHLIGHT_CLASS);
 }
 
 /**

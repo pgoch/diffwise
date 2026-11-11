@@ -52,6 +52,37 @@ export const SPLIT_BLOCK_TAGS: ReadonlySet<string> = new Set([
   ...LIST_ITEM_TAGS,
 ]);
 
+/** A table; its caption and each of its rows become separate lines. */
+export const TABLE_TAG = 'table';
+
+/** The caption of a table. */
+export const TABLE_CAPTION_TAG = 'caption';
+
+/** A row of a table. */
+export const TABLE_ROW_TAG = 'tr';
+
+/** Rows a browser shows above the others, however the table orders them. */
+export const TABLE_HEADER_TAG = 'thead';
+
+/** Rows a browser shows below the others, however the table orders them. */
+export const TABLE_FOOTER_TAG = 'tfoot';
+
+/** Groups of table rows; a cell spans rows only within its group. */
+export const TABLE_ROW_GROUP_TAGS: ReadonlySet<string> = new Set([
+  TABLE_HEADER_TAG,
+  'tbody',
+  TABLE_FOOTER_TAG,
+]);
+
+/** Cells of a table row. */
+export const TABLE_CELL_TAGS: ReadonlySet<string> = new Set(['td', 'th']);
+
+/** Widths of table columns, set apart from the rows. */
+export const COLUMN_GROUP_TAG = 'colgroup';
+
+/** A figure; editors such as CKEditor put a table in one, with its caption below. */
+export const FIGURE_TAG = 'figure';
+
 /** Tags that start a block; all other tags are inline. */
 export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   ...HEADING_TAGS,
@@ -63,19 +94,17 @@ export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   'details',
   'fieldset',
   'figcaption',
-  'figure',
+  FIGURE_TAG,
   'hgroup',
   'hr',
   'legend',
   'pre',
   'summary',
-  'table',
-  'tbody',
-  'td',
-  'tfoot',
-  'th',
-  'thead',
-  'tr',
+  TABLE_TAG,
+  TABLE_CAPTION_TAG,
+  TABLE_ROW_TAG,
+  ...TABLE_ROW_GROUP_TAGS,
+  ...TABLE_CELL_TAGS,
 ]);
 
 /** An image; it is one character of the reader text, so it is compared like a word. */
@@ -84,7 +113,10 @@ export const IMAGE_TAG = 'img';
 /** Holds the sources of an image together with the image itself. */
 export const PICTURE_TAG = 'picture';
 
-/** Elements a reader sees even without text, such as an image, or a list item by its marker. */
+/**
+ * Elements a reader sees even without text, such as an image, a list item by its marker or a
+ * table cell by its borders.
+ */
 export const VISIBLE_WITHOUT_TEXT_TAGS: ReadonlySet<string> = new Set([
   'audio',
   'button',
@@ -99,6 +131,7 @@ export const VISIBLE_WITHOUT_TEXT_TAGS: ReadonlySet<string> = new Set([
   'progress',
   'select',
   'svg',
+  ...TABLE_CELL_TAGS,
   'textarea',
   'video',
 ]);

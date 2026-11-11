@@ -19,10 +19,10 @@ interface WordCounts {
   readonly total: number;
 }
 
-/** A removed and an added line, by position in the block, shown as one changed line. */
-interface LinePair {
-  readonly removedIndex: number;
-  readonly addedIndex: number;
+/** Positions of an old and a new item that make a pair, such as two lines or two table columns. */
+export interface ItemPair {
+  readonly oldIndex: number;
+  readonly newIndex: number;
 }
 
 /**
@@ -44,30 +44,44 @@ export function pairSimilarLines(
   return toChanges(removed, added, pairs);
 }
 
-/** Order-keeping pairs with the highest total similarity, found like a longest common subsequence. */
+/**
+ * Pairs of old and new items that keep the order of both sides and have the highest total score,
+ * found like a longest common subsequence. Only items whose score is above 0 make a pair.
+ */
+export function highestScoringPairs(
+  scores: readonly (readonly number[])[],
+  oldCount: number,
+  newCount: number,
+): ItemPair[] {
+  const best = bestTotals(scores, oldCount, newCount);
+  return collectPairs(scores, best, oldCount, newCount);
+}
+
+/** Order-keeping pairs of removed and added lines with the highest total similarity. */
 function pairBySimilarity(
   removedWords: readonly WordCounts[],
   addedWords: readonly WordCounts[],
-): LinePair[] {
+): ItemPair[] {
   const scores = removedWords.map((removedLine) =>
     addedWords.map((addedLine) => pairScore(removedLine, addedLine)),
   );
-  const best = bestTotals(scores, removedWords.length, addedWords.length);
 
-  return collectPairs(scores, best, removedWords.length, addedWords.length);
+  return highestScoringPairs(scores, removedWords.length, addedWords.length);
 }
 
 /**
- * `best[i][j]`: the highest total score of pairs among the first `i` removed lines and the first
- * `j` added lines.
+ * `best[i][j]`: the highest total score of pairs among the first `i` old items and the first `j`
+ * new items.
  */
-function bestTotals(scores: number[][], removedCount: number, addedCount: number): number[][] {
-  const best = Array.from({ length: removedCount + 1 }, () =>
-    new Array<number>(addedCount + 1).fill(0),
-  );
+function bestTotals(
+  scores: readonly (readonly number[])[],
+  oldCount: number,
+  newCount: number,
+): number[][] {
+  const best = Array.from({ length: oldCount + 1 }, () => new Array<number>(newCount + 1).fill(0));
 
-  for (let i = 1; i <= removedCount; i++) {
-    for (let j = 1; j <= addedCount; j++) {
+  for (let i = 1; i <= oldCount; i++) {
+    for (let j = 1; j <= newCount; j++) {
       const score = scores[i - 1][j - 1];
       const totalIfPaired = best[i - 1][j - 1] + score;
       const pairingTotal = score > 0 ? totalIfPaired : 0;
@@ -81,25 +95,25 @@ function bestTotals(scores: number[][], removedCount: number, addedCount: number
 
 /** Walks the table of best totals back from the end and collects the pairs that made them. */
 function collectPairs(
-  scores: number[][],
+  scores: readonly (readonly number[])[],
   best: number[][],
-  removedCount: number,
-  addedCount: number,
-): LinePair[] {
-  const pairs: LinePair[] = [];
-  let i = removedCount;
-  let j = addedCount;
+  oldCount: number,
+  newCount: number,
+): ItemPair[] {
+  const pairs: ItemPair[] = [];
+  let i = oldCount;
+  let j = newCount;
 
   while (i > 0 && j > 0) {
     const score = scores[i - 1][j - 1];
     const pairedHere = score > 0 && best[i][j] === best[i - 1][j - 1] + score;
-    const removedLineUnpaired = best[i][j] === best[i - 1][j];
+    const oldItemUnpaired = best[i][j] === best[i - 1][j];
 
     if (pairedHere) {
-      pairs.push({ removedIndex: i - 1, addedIndex: j - 1 });
+      pairs.push({ oldIndex: i - 1, newIndex: j - 1 });
       i--;
       j--;
-    } else if (removedLineUnpaired) {
+    } else if (oldItemUnpaired) {
       i--;
     } else {
       j--;
@@ -113,13 +127,13 @@ function collectPairs(
 function pairByPosition(
   removedWords: readonly WordCounts[],
   addedWords: readonly WordCounts[],
-): LinePair[] {
-  const pairs: LinePair[] = [];
+): ItemPair[] {
+  const pairs: ItemPair[] = [];
   const count = Math.min(removedWords.length, addedWords.length);
 
   for (let index = 0; index < count; index++) {
     if (pairScore(removedWords[index], addedWords[index]) > 0) {
-      pairs.push({ removedIndex: index, addedIndex: index });
+      pairs.push({ oldIndex: index, newIndex: index });
     }
   }
 
@@ -130,7 +144,7 @@ function pairByPosition(
 function toChanges(
   removed: readonly Line[],
   added: readonly Line[],
-  pairs: readonly LinePair[],
+  pairs: readonly ItemPair[],
 ): LineChange[] {
   const changes: LineChange[] = [];
   let nextRemoved = 0;
@@ -149,11 +163,11 @@ function toChanges(
   };
 
   for (const pair of pairs) {
-    addUnpaired(pair.removedIndex, pair.addedIndex);
+    addUnpaired(pair.oldIndex, pair.newIndex);
     changes.push({
       kind: LineChangeKind.Changed,
-      oldLine: removed[pair.removedIndex],
-      newLine: added[pair.addedIndex],
+      oldLine: removed[pair.oldIndex],
+      newLine: added[pair.newIndex],
     });
     nextRemoved++;
     nextAdded++;

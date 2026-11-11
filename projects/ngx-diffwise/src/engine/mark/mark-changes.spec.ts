@@ -9,6 +9,8 @@ import {
   NO_LIST_ITEM_MARKS,
   REMOVED_TEXT_MARKER,
   markChanges,
+  markWholeCells,
+  markWholeTableLine,
 } from './mark-changes';
 
 const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
@@ -20,6 +22,10 @@ const CHECKBOX_MARKER_SELECTOR = `ins.${CHECKBOX_CLASS}`;
 const CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
 const TEMPLATE_TAG = 'template';
+const ROW_SELECTOR = 'tr';
+const CELL_CLASS = 'diffwise-html-diff__highlight--cell';
+const ADDED_CELL_CLASSES = `${ADDED_CLASSES} ${CELL_CLASS}`;
+const REMOVED_CELL_CLASSES = `${REMOVED_CLASSES} ${CELL_CLASS}`;
 const ID_PREFIX = 'diff-';
 
 /** Marks the list item that a line belongs to. */
@@ -187,6 +193,8 @@ describe('markChanges', () => {
       html: '<pre>\nkod</pre>',
       marker: null,
       checkbox: null,
+      table: null,
+      cells: [],
     };
 
     expect(markChanges(codeStartingWithNewline, [{ start: 1, end: 4 }], REMOVED_TEXT_MARKER)).toBe(
@@ -316,5 +324,55 @@ describe('markChanges', () => {
     expect(fragment.querySelectorAll(`[${DETAILS_ATTRIBUTE}]`).length).toBe(2);
     expect(readerText(fragment.childNodes)).toBe(line.text);
     expect(marked).toContain(added('family'));
+  });
+});
+
+describe('markWholeTableLine', () => {
+  it('gives every cell of a row the classes of the marker, also the place of a cell from above', () => {
+    const html =
+      '<table><tr><td rowspan="2">Free</td><td>0</td></tr><tr><th>1 GB</th></tr></table>';
+    const [, row] = splitLines(parseHtml(html), ID_PREFIX);
+    const marked = fragmentOf(markWholeTableLine(row, ADDED_TEXT_MARKER));
+
+    expect(marked.querySelector(ROW_SELECTOR)?.outerHTML).toBe(
+      `<tr><td data-diffwise-continued-cell="" class="${ADDED_CELL_CLASSES}"></td><th class="${ADDED_CELL_CLASSES}">1 GB</th></tr>`,
+    );
+  });
+
+  it('keeps the classes a cell has and leaves the cells of a table inside a cell as they are', () => {
+    const html =
+      '<table><tr><td class="price"><table><tr><td>4</td></tr></table></td></tr></table>';
+    const marked = markWholeTableLine(lineOf(html), REMOVED_TEXT_MARKER);
+
+    expect(marked).toContain(
+      `<td class="price ${REMOVED_CELL_CLASSES}"><table><tbody><tr><td>4</td>`,
+    );
+  });
+
+  it('marks the whole text of a caption', () => {
+    const caption = lineOf('<table><caption>Plans and <b>prices</b></caption></table>');
+
+    expect(markWholeTableLine(caption, ADDED_TEXT_MARKER)).toBe(
+      `<table data-diffwise-table-copy="" data-diffwise-first-table-line=""><caption>${added('Plans and ')}<b>${added('prices')}</b></caption></table>`,
+    );
+  });
+});
+
+describe('markWholeCells', () => {
+  it('marks the cells at the positions, counting only the cells of the row itself', () => {
+    const html =
+      '<table><tr><td rowspan="2">Free</td><td>0</td></tr><tr><td>1 GB</td><td>2</td></tr></table>';
+    const [, row] = splitLines(parseHtml(html), ID_PREFIX);
+    const marked = fragmentOf(markWholeCells(row.html, [1], ADDED_TEXT_MARKER));
+
+    expect(marked.querySelector(ROW_SELECTOR)?.outerHTML).toBe(
+      `<tr><td data-diffwise-continued-cell=""></td><td>1 GB</td><td class="${ADDED_CELL_CLASSES}">2</td></tr>`,
+    );
+  });
+
+  it('leaves the HTML as it is without positions', () => {
+    const row = lineOf('<table><tr><td>Free</td></tr></table>');
+
+    expect(markWholeCells(row.html, [], REMOVED_TEXT_MARKER)).toBe(row.html);
   });
 });
