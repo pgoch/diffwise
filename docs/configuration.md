@@ -216,12 +216,11 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 
 ### Names of list markers
 
-A tooltip about a list marker has a line for each part that changed, in this order: the list type, the style, the number and the level, as in "bulleted list → numbered list" or "number 5 → number 6".
+A tooltip about a list marker has a line for each part that changed, in this order: the list type, the style and the level, as in "bulleted list → numbered list" or "level 1 → level 2". Another item number is marked like changed text, with no tooltip.
 
 | Text | English | Polish | Where it shows |
 |---|---|---|---|
 | `bulletedListLabel`, `numberedListLabel` | bulleted list, numbered list | lista punktowana, lista numerowana | The list type, as in "bulleted list → numbered list" |
-| `itemNumberLabel` | number {number} | numer {number} | The number of an item, as in "number 5 → number 6"; `{number}` stands for it |
 | `listLevelLabel` | level {level} | poziom {level} | How deep an item is nested, as in "level 1 → level 2"; `{level}` stands for it |
 | `decimalNumberingLabel` | numbers | cyfry | Numbering with digits: 1, 2, 3 |
 | `lowerAlphaNumberingLabel`, `upperAlphaNumberingLabel` | lowercase letters, uppercase letters | małe litery, wielkie litery | Numbering with letters: a, b, c or A, B, C |
