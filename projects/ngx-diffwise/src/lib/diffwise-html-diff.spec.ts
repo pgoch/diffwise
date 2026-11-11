@@ -91,6 +91,11 @@ const MOUSEOVER_EVENT = 'mouseover';
 const MOUSEOUT_EVENT = 'mouseout';
 const KEYDOWN_EVENT = 'keydown';
 const SCROLL_EVENT = 'scroll';
+const TABLE_ATTRIBUTE = 'data-diffwise-table';
+
+/** Two tables: one with two rows, then one with one row. */
+const TWO_TABLES_HTML =
+  '<table><tr><td>Free</td></tr><tr><td>Personal</td></tr></table><table><tr><td>Search</td></tr></table>';
 const ESCAPE_KEY = 'Escape';
 const TAB_KEY = 'Tab';
 const PART_SEPARATOR = ' ';
@@ -194,6 +199,18 @@ function partText(part: Element) {
 
 function textsOf(element: HTMLElement, selector: string) {
   return Array.from(element.querySelectorAll(selector), (found) => found.textContent?.trim());
+}
+
+/** Positions of the tables of the lines of one version; `null` for a line outside tables. */
+function tablePositionsOf(element: HTMLElement, contentSelector: string) {
+  return Array.from(element.querySelectorAll(contentSelector), (content) =>
+    content.getAttribute(TABLE_ATTRIBUTE),
+  );
+}
+
+/** How far the lines of one version are scrolled to the side. */
+function scrollPositionsOf(element: HTMLElement, contentSelector: string) {
+  return Array.from(element.querySelectorAll(contentSelector), (content) => content.scrollLeft);
 }
 
 /** Digits of the highest line number, which the diff sets as a CSS variable. */
@@ -307,6 +324,25 @@ describe('DiffwiseHtmlDiff', () => {
     expect(paragraph?.style.color).toBe('rgb(200, 0, 0)');
     expect(checkbox?.checked).toBe(true);
     expect(checkbox?.disabled).toBe(true);
+  });
+
+  it('marks the content of each table line with the position of its table', () => {
+    const html = `<p>Plans</p>${TWO_TABLES_HTML}`;
+    const element = renderElement(html, html);
+
+    expect(tablePositionsOf(element, OLD_CONTENT_SELECTOR)).toEqual([null, '0', '0', '1']);
+    expect(tablePositionsOf(element, NEW_CONTENT_SELECTOR)).toEqual([null, '0', '0', '1']);
+  });
+
+  it('scrolls the lines of a table together, in each version on its own', () => {
+    const element = renderElement(TWO_TABLES_HTML, TWO_TABLES_HTML);
+    const [firstRow] = element.querySelectorAll<HTMLElement>(OLD_CONTENT_SELECTOR);
+
+    firstRow.scrollLeft = 120;
+    firstRow.dispatchEvent(new Event(SCROLL_EVENT));
+
+    expect(scrollPositionsOf(element, OLD_CONTENT_SELECTOR)).toEqual([120, 120, 0]);
+    expect(scrollPositionsOf(element, NEW_CONTENT_SELECTOR)).toEqual([0, 0, 0]);
   });
 
   it('compares again when a version changes', () => {

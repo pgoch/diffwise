@@ -8,10 +8,13 @@ import { sanitizeHtml } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import {
   ADDED_TEXT_MARKER,
+  type ChangeMarker,
   type ListItemMarks,
   REMOVED_TEXT_MARKER,
   markChanges,
+  markWholeTableLine,
 } from './mark/mark-changes';
+import { addTableColumns } from './mark/table-columns';
 import {
   type ChangeDetail,
   ChangeDetailKind,
@@ -35,13 +38,17 @@ const NEW_VERSION_ID_PART = 'new';
 const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], details: [] };
 
-/** Compares two HTML documents and returns the rows of the side-by-side view with change counts. */
+/**
+ * Compares two HTML documents and returns the rows of the side-by-side view with change counts.
+ * Table lines get the columns of their tables after marking, since marks widen cells.
+ */
 export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
   const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
   const newLines = versionLines(newHtml, settings.idPrefix, NEW_VERSION_ID_PART);
   const { changes, stats } = diffLines(oldLines, newLines, settings.options);
   const rowBuilder = new ViewRowBuilder(settings.options);
-  const rows = changes.map((change) => rowBuilder.toRow(change));
+  const markedRows = changes.map((change) => rowBuilder.toRow(change));
+  const rows = withTableColumns(markedRows).map(sanitizedRow);
 
   return { rows, stats };
 }
@@ -78,8 +85,8 @@ class ViewRowBuilder {
   private unchangedRow(oldLine: Line, newLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Unchanged,
-      oldLine: this.nextOldLine(oldLine.html),
-      newLine: this.nextNewLine(newLine.html),
+      oldLine: this.nextOldLine(oldLine, oldLine.html),
+      newLine: this.nextNewLine(newLine, newLine.html),
       changeDetails: NO_CHANGE_DETAILS,
     };
   }
@@ -105,8 +112,8 @@ class ViewRowBuilder {
 
     return {
       kind: LineChangeKind.Changed,
-      oldLine: this.nextOldLine(markedOldHtml),
-      newLine: this.nextNewLine(markedNewHtml),
+      oldLine: this.nextOldLine(oldLine, markedOldHtml),
+      newLine: this.nextNewLine(newLine, markedNewHtml),
       changeDetails: describedChanges.details,
     };
   }
@@ -114,7 +121,7 @@ class ViewRowBuilder {
   private removedRow(oldLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Removed,
-      oldLine: this.nextOldLine(oldLine.html),
+      oldLine: this.nextOldLine(oldLine, wholeLineHtml(oldLine, REMOVED_TEXT_MARKER)),
       newLine: null,
       changeDetails: NO_CHANGE_DETAILS,
     };
@@ -124,25 +131,49 @@ class ViewRowBuilder {
     return {
       kind: LineChangeKind.Added,
       oldLine: null,
-      newLine: this.nextNewLine(newLine.html),
+      newLine: this.nextNewLine(newLine, wholeLineHtml(newLine, ADDED_TEXT_MARKER)),
       changeDetails: NO_CHANGE_DETAILS,
     };
   }
 
-  private nextOldLine(html: string): ViewLine {
+  private nextOldLine(line: Line, html: string): ViewLine {
     this.oldLineCount++;
-    return viewLine(this.oldLineCount, html);
+    return { number: this.oldLineCount, html, table: line.table };
   }
 
-  private nextNewLine(html: string): ViewLine {
+  private nextNewLine(line: Line, html: string): ViewLine {
     this.newLineCount++;
-    return viewLine(this.newLineCount, html);
+    return { number: this.newLineCount, html, table: line.table };
   }
 }
 
-/** A numbered line. Its HTML is sanitized again, because marking changes edits it. */
-function viewLine(number: number, html: string): ViewLine {
-  return { number, html: sanitizeHtml(html) };
+/**
+ * HTML of an added or a removed line. A table line has its cells or its caption marked, since a
+ * table line has no background of its own.
+ */
+function wholeLineHtml(line: Line, marker: ChangeMarker): string {
+  return line.table === null ? line.html : markWholeTableLine(line, marker);
+}
+
+/** Rows whose table lines hold the columns of their tables, each side its own tables. */
+function withTableColumns(rows: readonly ViewRow[]): ViewRow[] {
+  const oldLines = addTableColumns(rows.map((row) => row.oldLine));
+  const newLines = addTableColumns(rows.map((row) => row.newLine));
+
+  return rows.map((row, index) => ({ ...row, oldLine: oldLines[index], newLine: newLines[index] }));
+}
+
+/** The row with its HTML sanitized again, because marking changes and adding columns edit it. */
+function sanitizedRow(row: ViewRow): ViewRow {
+  return { ...row, oldLine: sanitizedLine(row.oldLine), newLine: sanitizedLine(row.newLine) };
+}
+
+function sanitizedLine(line: ViewLine | null): ViewLine | null {
+  if (line === null) {
+    return null;
+  }
+
+  return { ...line, html: sanitizeHtml(line.html) };
 }
 
 /** Both changes with one list of details: the first's details, then the second's. */

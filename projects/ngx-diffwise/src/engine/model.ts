@@ -394,6 +394,8 @@ export interface ViewLine {
   readonly number: number;
   /** Sanitized HTML; in a changed line, changed text, formatting and images are marked. */
   readonly html: string;
+  /** Position of the line's table among the tables of its version, from 0; `null` outside tables. */
+  readonly table: number | null;
 }
 
 /** A row of the side-by-side view: a line of each version, or of one of them. */

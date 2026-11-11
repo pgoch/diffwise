@@ -56,6 +56,9 @@ const LIST_MARKER_ATTRIBUTE = 'data-diffwise-list-marker';
 const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
 const DRAWN_MARKER_SELECTOR = '.diffwise-html-diff__highlight--list-marker';
 const CHECKBOX_MARKER_CLASS = 'diffwise-html-diff__highlight--checkbox';
+const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
+const COPIED_ROWS_SELECTOR = `${COLUMN_SIZERS_SELECTOR} > tr`;
+const CELL_MARKER_SELECTOR = '.diffwise-html-diff__highlight--cell';
 const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
 
 /** Stands for a framed checkbox among the texts of markers. */
@@ -244,6 +247,49 @@ function hasFramedImages({ oldLine, newLine }: ViewRow): boolean {
   return [oldLine, newLine].some((line) => framedImages(line).length > 0);
 }
 
+/** A table row as `[kind, old number, new number, removed texts, added texts, removed cells, added cells]`. */
+function tableRowSummary(row: ViewRow) {
+  return [...rowSummary(row), markedCells(row.oldLine), markedCells(row.newLine)];
+}
+
+/** Texts of the cells of a line that are marked as a whole. */
+function markedCells(line: ViewLine | null) {
+  const cells = line === null ? [] : fragmentOf(line.html).querySelectorAll(CELL_MARKER_SELECTOR);
+  return Array.from(cells, (cell) => readerText([cell]));
+}
+
+/** True for a row of lines of the given table. */
+function isRowOfTable(row: ViewRow, table: number): boolean {
+  return (row.newLine ?? row.oldLine)?.table === table;
+}
+
+/** How many lines each table has among the lines of one version, by the position of the table. */
+function linesPerTable(lines: readonly (ViewLine | null)[]) {
+  const counts = new Map<number, number>();
+
+  for (const table of lines.map((line) => line?.table ?? null)) {
+    if (table !== null) {
+      counts.set(table, (counts.get(table) ?? 0) + 1);
+    }
+  }
+
+  return Object.fromEntries(counts);
+}
+
+/** How many hidden copies of rows each table line of one version has. */
+function copiedRowCounts(lines: readonly (ViewLine | null)[]) {
+  const tableLines = lines.filter((line) => line !== null && line.table !== null);
+  return tableLines.map((line) => copiedRowsOf(line).length);
+}
+
+function copiedRowsOf(line: ViewLine | null): NodeListOf<Element> {
+  const template = document.createElement(TEMPLATE_TAG);
+
+  template.innerHTML = line?.html ?? '';
+
+  return template.content.querySelectorAll(COPIED_ROWS_SELECTOR);
+}
+
 function hasMarkers({ oldLine, newLine }: ViewRow): boolean {
   return [oldLine, newLine].some(lineHasMarkers);
 }
@@ -261,10 +307,15 @@ function lineHasMarkers(line: ViewLine | null): boolean {
   return line !== null && fragmentOf(line.html).querySelector(MARKER_SELECTOR) !== null;
 }
 
+/** Content of line HTML without the hidden copies of table rows, which only set column widths. */
 function fragmentOf(html: string): DocumentFragment {
   const template = document.createElement(TEMPLATE_TAG);
 
   template.innerHTML = html;
+
+  for (const columnSizers of template.content.querySelectorAll(COLUMN_SIZERS_SELECTOR)) {
+    columnSizers.remove();
+  }
 
   return template.content;
 }
@@ -623,8 +674,8 @@ describe('diffHtml', () => {
     expect(rows).toEqual([
       {
         kind: LineChangeKind.Changed,
-        oldLine: { number: 1, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
-        newLine: { number: 1, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
+        oldLine: { number: 1, html: `<p><i>${removedMarker}</i> chroń hasło.</p>`, table: null },
+        newLine: { number: 1, html: `<p><b>${addedMarker}</b> chroń hasło.</p>`, table: null },
         changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
       },
     ]);
@@ -698,8 +749,16 @@ describe('diffHtml', () => {
       rows: [
         {
           kind: LineChangeKind.Changed,
-          oldLine: { number: 1, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
-          newLine: { number: 1, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
+          oldLine: {
+            number: 1,
+            html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>`,
+            table: null,
+          },
+          newLine: {
+            number: 1,
+            html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>`,
+            table: null,
+          },
           changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
         },
       ],
@@ -722,6 +781,58 @@ describe('diffHtml', () => {
       [84, 88, [chart], [chart], [[ImageProperty.AltText]]],
       [88, 91, [logo2025], [logo2026], [[ImageProperty.Source]]],
     ]);
+  });
+
+  it('shows the changes of the long sample tables row by row, with the cells of added rows marked', () => {
+    const { rows } = compare(enLongBefore, enLongAfter);
+    const changedRows = rows.filter((row) => row.kind !== LineChangeKind.Unchanged);
+    const pricesAndShortcuts = changedRows.filter(
+      (row) => isRowOfTable(row, 0) || isRowOfTable(row, 2),
+    );
+    const teamCells = ['Team', '8', '500 GB', 'Unlimited'];
+    const savedCopyCells = ['Save a copy', 'Ctrl + Shift + S', '⌘ + Shift + S'];
+
+    expect(pricesAndShortcuts.map(tableRowSummary)).toEqual([
+      [LineChangeKind.Changed, 17, 19, ['4'], ['5'], [], []],
+      [LineChangeKind.Changed, 18, 20, ['100'], ['200'], [], []],
+      [LineChangeKind.Added, null, 21, [], [], [], teamCells],
+      [LineChangeKind.Changed, 19, 22, ['1'], ['2'], [], []],
+      [LineChangeKind.Changed, 20, 23, ['50'], ['40'], [], []],
+      [LineChangeKind.Changed, 71, 75, ['F', 'F'], ['K', 'K'], [], []],
+      [LineChangeKind.Removed, 72, null, [], [], savedCopyCells, []],
+    ]);
+    expect(rows.filter((row) => isRowOfTable(row, 1)).map(rowShape)).toEqual([
+      [LineChangeKind.Changed, 23, 25],
+      [LineChangeKind.Changed, 24, 26],
+      [LineChangeKind.Changed, 25, 27],
+      [LineChangeKind.Changed, 26, 28],
+      [LineChangeKind.Changed, 27, 29],
+    ]);
+  });
+
+  it('marks every cell of an added or a removed row, and the whole text of an added caption', () => {
+    const oldHtml =
+      '<table><tr><td>Free</td><td>0</td></tr><tr><td>Personal</td><td>4</td></tr></table>';
+    const newHtml =
+      '<table><caption>Plans</caption><tr><td>Free</td><td>0</td></tr><tr><td>Team</td><td>8</td></tr></table>';
+
+    expect(compare(oldHtml, newHtml).rows.map(tableRowSummary)).toEqual([
+      [LineChangeKind.Added, null, 1, [], ['Plans'], [], []],
+      [LineChangeKind.Unchanged, 1, 2, [], [], [], []],
+      [LineChangeKind.Removed, 2, null, [], [], ['Personal', '4'], []],
+      [LineChangeKind.Added, null, 3, [], [], [], ['Team', '8']],
+    ]);
+  });
+
+  it('gives each table line the position of its table and copies of the rows of that table', () => {
+    const { rows } = compare(enLongBefore, enLongAfter);
+    const oldLines = rows.map((row) => row.oldLine);
+    const newLines = rows.map((row) => row.newLine);
+
+    expect(linesPerTable(oldLines)).toEqual({ 0: 7, 1: 5, 2: 4 });
+    expect(linesPerTable(newLines)).toEqual({ 0: 8, 1: 5, 2: 3 });
+    expect(new Set(copiedRowCounts(oldLines))).toEqual(new Set([6, 5, 4]));
+    expect(new Set(copiedRowCounts(newLines))).toEqual(new Set([7, 5, 3]));
   });
 
   it('gives an image with another link and size one marker with both details', () => {

@@ -56,6 +56,7 @@ import {
 import { Diffwise } from './diffwise';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
+import { scrollTablesTogether } from './table-scroll';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
 const ID_PREFIX_START = 'diffwise-';
@@ -111,6 +112,8 @@ interface ShownLine {
   readonly number: number;
   /** HTML that DOMPurify has sanitized, marked as safe so that Angular shows it as it is. */
   readonly html: SafeHtml;
+  /** Position of the line's table among the tables of its version; `null` outside tables. */
+  readonly table: number | null;
 }
 
 /** A row as the template shows it. */
@@ -426,6 +429,7 @@ export class DiffwiseHtmlDiff {
 
     afterRenderEffect(() => this.prepareMarkers());
     this.listenForTooltipTriggers();
+    this.scrollTablesTogether();
   }
 
   /**
@@ -497,6 +501,14 @@ export class DiffwiseHtmlDiff {
       (event) => this.tooltip().hideWhenFocusLeaves(event),
       options,
     );
+    this.destroyRef.onDestroy(() => listeners.abort());
+  }
+
+  /** Scrolls the lines of each table together, as one table, until the diff is destroyed. */
+  private scrollTablesTogether(): void {
+    const listeners = new AbortController();
+
+    scrollTablesTogether(this.host.nativeElement, listeners.signal);
     this.destroyRef.onDestroy(() => listeners.abort());
   }
 
@@ -612,7 +624,11 @@ export class DiffwiseHtmlDiff {
       return null;
     }
 
-    return { number: line.number, html: this.sanitizer.bypassSecurityTrustHtml(line.html) };
+    return {
+      number: line.number,
+      html: this.sanitizer.bypassSecurityTrustHtml(line.html),
+      table: line.table,
+    };
   }
 
   /** The element of this diff that a `#…` link points to. */

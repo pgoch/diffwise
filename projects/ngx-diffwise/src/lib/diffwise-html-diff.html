@@ -72,6 +72,7 @@
       }
       <div
         class="diffwise-html-diff__content diffwise-html-diff__content--old"
+        [attr.data-diffwise-table]="line.table"
         [innerHTML]="line.html"
       ></div>
     } @else {
@@ -94,6 +95,7 @@
       }
       <div
         class="diffwise-html-diff__content diffwise-html-diff__content--new"
+        [attr.data-diffwise-table]="line.table"
         [innerHTML]="line.html"
       ></div>
     } @else {
