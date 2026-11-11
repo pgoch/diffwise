@@ -122,6 +122,48 @@ describe('diffLines', () => {
     ]);
   });
 
+  it('finds an item added to a list and another removed from it', () => {
+    const oldHtml = '<ul><li>Osobisty</li><li>Rodzinny</li><li>Firmowy</li></ul>';
+    const newHtml = '<ul><li>Osobisty</li><li>Firmowy</li><li>Zespołowy</li></ul>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Unchanged, 'Osobisty', 'Osobisty'],
+      [LineChangeKind.Removed, 'Rodzinny', null],
+      [LineChangeKind.Unchanged, 'Firmowy', 'Firmowy'],
+      [LineChangeKind.Added, null, 'Zespołowy'],
+    ]);
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1, removedLines: 1 });
+  });
+
+  it('finds a change in a nested list only in its item', () => {
+    const oldHtml = '<ul><li>Konta<ul><li>konto osobiste</li><li>konto firmowe</li></ul></li></ul>';
+    const newHtml = '<ul><li>Konta<ul><li>konto prywatne</li><li>konto firmowe</li></ul></li></ul>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Unchanged, 'Konta', 'Konta'],
+      [LineChangeKind.Changed, 'konto osobiste', 'konto prywatne'],
+      [LineChangeKind.Unchanged, 'konto firmowe', 'konto firmowe'],
+    ]);
+  });
+
+  it('finds no change in an item whose text got a paragraph around it', () => {
+    const oldHtml = '<ol><li>Utwórz konto.</li><li>Zaloguj się.</li></ol>';
+    const newHtml = '<ol><li><p>Utwórz konto.</p></li><li><p>Zaloguj się.</p></li></ol>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
+  });
+
+  it('finds no change in the numbers of items that an added item moved', () => {
+    const oldHtml = '<ol><li>Utwórz konto.</li><li>Zaloguj się.</li></ol>';
+    const newHtml = '<ol><li>Utwórz konto.</li><li>Potwierdź adres.</li><li>Zaloguj się.</li></ol>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Unchanged, 'Utwórz konto.', 'Utwórz konto.'],
+      [LineChangeKind.Added, null, 'Potwierdź adres.'],
+      [LineChangeKind.Unchanged, 'Zaloguj się.', 'Zaloguj się.'],
+    ]);
+  });
+
   it('finds a change of formatting or of a link in the same text', () => {
     const italicToBold = ['<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'];
     const otherAddress = [

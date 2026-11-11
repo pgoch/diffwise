@@ -134,7 +134,11 @@ interface ShownVersionHeaders {
   selector: 'diffwise-html-diff',
   imports: [ChangeDetailsButton, ChangeTooltip],
   templateUrl: './diffwise-html-diff.html',
-  styleUrls: ['./diffwise-html-diff.css', './change-details/change-details.css'],
+  styleUrls: [
+    './diffwise-html-diff.css',
+    './list-and-table-lines.css',
+    './change-details/change-details.css',
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {

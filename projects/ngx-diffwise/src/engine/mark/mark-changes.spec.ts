@@ -104,8 +104,14 @@ describe('markChanges', () => {
   });
 
   it('leaves the space between blocks unmarked', () => {
-    expect(mark('<ul><li>Jeden</li><li>Dwa</li></ul>', ['Jeden Dwa'])).toBe(
-      `<ul><li>${removed('Jeden')}</li><li>${removed('Dwa')}</li></ul>`,
+    expect(mark('<details><summary>Jeden</summary><p>Dwa</p></details>', ['Jeden Dwa'])).toBe(
+      `<details><summary>${removed('Jeden')}</summary><p>${removed('Dwa')}</p></details>`,
+    );
+  });
+
+  it('marks text inside a list item and keeps its number', () => {
+    expect(mark('<ol start="3"><li>Dodaj tagi</li><li>Przypnij</li></ol>', ['tagi'])).toBe(
+      `<ol start="3"><li value="3" data-diffwise-line-item="">Dodaj ${removed('tagi')}</li></ol>`,
     );
   });
 

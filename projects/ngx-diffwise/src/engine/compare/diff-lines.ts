@@ -1,6 +1,6 @@
 import { comparisonImage } from './comparison-image';
 import { comparisonText } from './comparison-text';
-import { PARAGRAPH_TAG } from '../html/html-tags';
+import { LIST_ITEM_TAG, PARAGRAPH_TAG } from '../html/html-tags';
 import {
   type DiffOptions,
   type DiffStats,
@@ -73,9 +73,13 @@ function lineKey(line: Line, options: DiffOptions): string {
   return JSON.stringify([structureTag(line), text, formatRuns(line, options), images]);
 }
 
-/** Tag of the line's structure; a heading counts as a paragraph, as its level is formatting. */
+/**
+ * Tag of the line's structure. A heading counts as a paragraph, as its level is formatting, and so
+ * does an `li` item, as `<li>…</li>` reads the same as `<li><p>…</p></li>`.
+ */
 function structureTag(line: Line): string | null {
-  return line.kind === LineKind.Heading ? PARAGRAPH_TAG : line.tag;
+  const readsAsParagraph = line.kind === LineKind.Heading || line.tag === LIST_ITEM_TAG;
+  return readsAsParagraph ? PARAGRAPH_TAG : line.tag;
 }
 
 /** Compared formats of the line's text; whitespace and its formatting do not count. */
