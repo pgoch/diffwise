@@ -28,7 +28,71 @@ export interface Line {
    * and appear only in the first line of their element.
    */
   readonly html: string;
+  /** Marker of the list item that the line starts; `null` in other lines, or with no marker shown. */
+  readonly marker: ListMarker | null;
+  /** State of a checkbox that the list item starts with, as in a task list; `null` without one. */
+  readonly checkbox: CheckboxState | null;
 }
+
+/** Kinds of lists by the markers of their items. */
+export const ListType = {
+  /** Bullets, such as dots or squares. */
+  Bulleted: 'bulleted',
+  /** Numbers, letters or Roman numerals. */
+  Numbered: 'numbered',
+} as const;
+
+export type ListType = (typeof ListType)[keyof typeof ListType];
+
+/** Looks of list markers as `list-style-type` names them; Diffwise draws and names these. */
+export const ListStyle = {
+  /** 1, 2, 3. */
+  Decimal: 'decimal',
+  /** 01, 02, 03. */
+  DecimalLeadingZero: 'decimal-leading-zero',
+  /** a, b, c; `lower-latin` is the same. */
+  LowerAlpha: 'lower-alpha',
+  /** A, B, C; `upper-latin` is the same. */
+  UpperAlpha: 'upper-alpha',
+  LowerRoman: 'lower-roman',
+  UpperRoman: 'upper-roman',
+  /** α, β, γ. */
+  LowerGreek: 'lower-greek',
+  /** Filled circles. */
+  Disc: 'disc',
+  /** Hollow circles. */
+  Circle: 'circle',
+  /** Filled squares. */
+  Square: 'square',
+  /** No marker. */
+  None: 'none',
+} as const;
+
+export type ListStyle = (typeof ListStyle)[keyof typeof ListStyle];
+
+/** The marker a list item shows before its first line, such as a dot or a number. */
+export interface ListMarker {
+  readonly listType: ListType;
+  /** Look of the marker as `list-style-type` names it, such as `decimal` or `disc`. */
+  readonly style: string;
+  /** Number of the item in its list; a bulleted list counts its items too. */
+  readonly number: number;
+  /**
+   * The number without the shift from items before the item, or from items after it in a list that
+   * counts down from its length; items added or removed in the list leave it as it is.
+   */
+  readonly unshiftedNumber: number;
+  /** Lists around the item: 1 in a list outside other lists. */
+  readonly level: number;
+}
+
+/** States of a checkbox. */
+export const CheckboxState = {
+  Checked: 'checked',
+  Unchecked: 'unchecked',
+} as const;
+
+export type CheckboxState = (typeof CheckboxState)[keyof typeof CheckboxState];
 
 /** The text of a line and the images in it, which its words are compared by. */
 export type LineContent = Pick<Line, 'text' | 'images'>;
@@ -63,7 +127,10 @@ export interface DiffOptions {
   readonly ignoreWhitespace: boolean;
   /** Ignores differences in letter case. */
   readonly ignoreCase: boolean;
-  /** Ignores differences in formatting, such as italic → bold, and in heading levels. */
+  /**
+   * Ignores differences in formatting, such as italic → bold, heading levels and the look of list
+   * markers, such as bullets → numbers; another number of a list item still counts.
+   */
   readonly ignoreFormatting: boolean;
   /** Ignores links added, removed or pointing elsewhere around the same text. */
   readonly ignoreLinkChanges: boolean;
@@ -206,6 +273,10 @@ export const ChangeDetailKind = {
   Link: 'link',
   /** An image with another file, size or alternative text in the same place. */
   Image: 'image',
+  /** The marker of a list item, such as a bullet that became a number, or its level. */
+  ListMarker: 'listMarker',
+  /** A checkbox at the start of a list item, checked or cleared. */
+  Checkbox: 'checkbox',
 } as const;
 
 export type ChangeDetailKind = (typeof ChangeDetailKind)[keyof typeof ChangeDetailKind];
@@ -247,6 +318,40 @@ export interface ImageChangeDetail {
   /** Properties that differ, in the order of `ImageProperty`. */
   readonly changedProperties: readonly ImageProperty[];
 }
+
+/** What can differ in the marker of a list item. */
+export const ListMarkerProperty = {
+  /** Bullets or numbers; a paragraph turned into a list item, or the other way round. */
+  ListType: 'listType',
+  /** Look of the bullets or numbers within the same type, such as numbers → letters. */
+  Style: 'style',
+  /** A number that the item's place in its list does not explain, such as one from another start. */
+  Number: 'number',
+  Level: 'level',
+} as const;
+
+export type ListMarkerProperty = (typeof ListMarkerProperty)[keyof typeof ListMarkerProperty];
+
+/** The marker of a list item that differs between the versions. */
+export interface ListMarkerChangeDetail {
+  readonly kind: typeof ChangeDetailKind.ListMarker;
+  /** `null` when the old line shows no marker, such as a paragraph. */
+  readonly oldMarker: ListMarker | null;
+  /** `null` when the new line shows no marker. */
+  readonly newMarker: ListMarker | null;
+  /** Properties that differ, in the order of `ListMarkerProperty`. */
+  readonly changedProperties: readonly ListMarkerProperty[];
+}
+
+/** A checkbox at the start of a list item that was checked or cleared. */
+export interface CheckboxChangeDetail {
+  readonly kind: typeof ChangeDetailKind.Checkbox;
+  readonly oldState: CheckboxState;
+  readonly newState: CheckboxState;
+}
+
+/** A change of a list item besides its text: its marker, or its checkbox. */
+export type ListItemChangeDetail = ListMarkerChangeDetail | CheckboxChangeDetail;
 
 /** A change besides changed text, described in the view. */
 export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail;

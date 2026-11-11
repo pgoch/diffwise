@@ -8,7 +8,7 @@ import {
   VISIBLE_WITHOUT_TEXT_TAGS,
 } from './html-tags';
 import { lineImages } from './line-images';
-import { ListItemNumbers } from './list-items';
+import { ListMarkerReader, startCheckboxState } from './list-items';
 import {
   CONTINUED_ITEM_ATTRIBUTE,
   type FormattedRange,
@@ -35,6 +35,12 @@ interface LineSource {
 /** Kind and tag of a line. */
 type LineType = Pick<LineSource, 'kind' | 'tag'>;
 
+/** What a line shows of the list item it starts: its marker and its checkbox. */
+type ItemStart = Pick<Line, 'marker' | 'checkbox'>;
+
+/** A line that starts no list item. */
+const NO_ITEM_START: ItemStart = { marker: null, checkbox: null };
+
 /** Text outside any block, or next to the blocks of a container such as a quote. */
 const TEXT_OUTSIDE_BLOCKS: LineType = { kind: LineKind.Paragraph, tag: null };
 
@@ -56,7 +62,7 @@ class LineCollector {
   readonly lines: Line[] = [];
 
   private readonly formatReader = new TextFormatReader();
-  private readonly itemNumbers = new ListItemNumbers();
+  private readonly markerReader = new ListMarkerReader();
 
   /** Containers copied into the HTML of a line so far; a later copy is not the first one. */
   private readonly copiedWrappers = new Set<Element>();
@@ -120,9 +126,25 @@ class LineCollector {
 
     const formats = this.formatsOf(pieces);
     const images = lineImages(pieces);
+    const itemStart = this.itemStartOf(nodes, wrappers);
     const html = this.lineHtml(nodes, wrappers);
 
-    this.lines.push({ kind, tag, text, formats, images, html });
+    this.lines.push({ kind, tag, text, formats, images, html, ...itemStart });
+  }
+
+  /**
+   * Marker and checkbox of the line's innermost `li`, in the first line of the item. Runs before the
+   * line's HTML is built, which counts the item's copies.
+   */
+  private itemStartOf(nodes: readonly Node[], wrappers: readonly Element[]): ItemStart {
+    const item = [...wrappers, ...nodes].filter(isMarkerItem).at(-1);
+    const startsItem = item !== undefined && !this.copiedWrappers.has(item);
+
+    if (!startsItem) {
+      return NO_ITEM_START;
+    }
+
+    return { marker: this.markerReader.markerOf(item), checkbox: startCheckboxState(item) };
   }
 
   /**
@@ -216,7 +238,7 @@ class LineCollector {
 
   /** Gives the copy of a list item the number the item has in its list, as its `value`. */
   private setItemNumber(copy: Element, item: Element): void {
-    copy.setAttribute(VALUE_ATTRIBUTE, String(this.itemNumbers.numberOf(item)));
+    copy.setAttribute(VALUE_ATTRIBUTE, String(this.markerReader.numberOf(item)));
   }
 }
 

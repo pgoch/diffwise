@@ -151,6 +151,8 @@ describe('markChanges', () => {
       formats: [],
       images: [],
       html: '<pre>\nkod</pre>',
+      marker: null,
+      checkbox: null,
     };
 
     expect(markChanges(codeStartingWithNewline, [{ start: 1, end: 4 }], REMOVED_TEXT_MARKER)).toBe(
