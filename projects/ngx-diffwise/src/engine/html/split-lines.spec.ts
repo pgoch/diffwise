@@ -259,30 +259,30 @@ describe('splitLines', () => {
 
   it('gives the first line of a list item the marker and the checkbox of the item', () => {
     const html =
-      '<ol start="3"><li><input type="checkbox" checked> Konto<ul><li>Osobiste</li></ul>'
-      + 'i ustawienia</li></ol><p>Koniec</p>';
+      '<ol start="3"><li><input type="checkbox" checked> Account<ul><li>Personal</li></ul>'
+      + 'and settings</li></ol><p>End</p>';
 
     expect(itemStarts(html)).toEqual([
-      ['Konto', ListStyle.Decimal, 3, 1, CheckboxState.Checked],
-      ['Osobiste', ListStyle.Circle, 1, 2, null],
-      ['i ustawienia', null, null, null, null],
-      ['Koniec', null, null, null, null],
+      ['Account', ListStyle.Decimal, 3, 1, CheckboxState.Checked],
+      ['Personal', ListStyle.Circle, 1, 2, null],
+      ['and settings', null, null, null, null],
+      ['End', null, null, null, null],
     ]);
   });
 
   it('gives the marker of an item to the line of a term inside it, not to its description', () => {
-    const html = '<ul><li><dl><dt>Notatnik</dt><dd>Zbiór notatek</dd></dl></li></ul>';
+    const html = '<ul><li><dl><dt>Notebook</dt><dd>A set of notes</dd></dl></li></ul>';
 
     expect(itemStarts(html)).toEqual([
-      ['Notatnik', ListStyle.Disc, 1, 1, null],
-      ['Zbiór notatek', null, null, null, null],
+      ['Notebook', ListStyle.Disc, 1, 1, null],
+      ['A set of notes', null, null, null, null],
     ]);
   });
 
   it('reads the checkbox of an item whose style shows no marker', () => {
-    const html = '<ul style="list-style-type: none"><li><input type="checkbox"> Kopie</li></ul>';
+    const html = '<ul style="list-style-type: none"><li><input type="checkbox"> Backups</li></ul>';
 
-    expect(itemStarts(html)).toEqual([['Kopie', null, null, null, CheckboxState.Unchecked]]);
+    expect(itemStarts(html)).toEqual([['Backups', null, null, null, CheckboxState.Unchecked]]);
   });
 
   it('makes a line of each term and description of a definition list', () => {

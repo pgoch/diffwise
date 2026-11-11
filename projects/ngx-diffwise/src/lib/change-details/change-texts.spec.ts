@@ -461,21 +461,21 @@ describe('ChangeDescriber', () => {
     );
 
     expect(linesOf(english, greekToArmenian)).toEqual(['lower-greek → armenian']);
-    expect(linesOf(polish, romanToCircles)).toEqual([
-      'lista numerowana → lista punktowana',
-      'poziom 1 → poziom 2',
+    expect(linesOf(english, romanToCircles)).toEqual([
+      'numbered list → bulleted list',
+      'level 1 → level 2',
     ]);
     expect(
       linesOf(
-        polish,
+        english,
         markerChange(numbers(ListStyle.UpperRoman), numbers(), [ListMarkerProperty.Style]),
       ),
-    ).toEqual(['wielkie cyfry rzymskie → cyfry']);
+    ).toEqual(['uppercase Roman numerals → numbers']);
   });
 
   it('titles a checked or a cleared checkbox, with no lines under the title', () => {
-    expect(polish.tooltip([checkboxChange(CheckboxState.Checked)])).toEqual({
-      title: 'Zaznaczone pole wyboru',
+    expect(english.tooltip([checkboxChange(CheckboxState.Checked)])).toEqual({
+      title: 'Checkbox checked',
       sections: [],
     });
     expect(english.title([checkboxChange(CheckboxState.Unchecked)])).toBe('Checkbox cleared');
@@ -489,11 +489,11 @@ describe('ChangeDescriber', () => {
       checkboxChange(CheckboxState.Checked),
     ];
 
-    expect(tooltipText(polish.tooltip(details))).toEqual([
-      'Zmiany formatowania: 2',
-      '# Zmiana punktora',
-      'numer 5 → numer 6',
-      '# Zaznaczone pole wyboru',
+    expect(tooltipText(english.tooltip(details))).toEqual([
+      'Formatting changes: 2',
+      '# List marker changed',
+      'number 5 → number 6',
+      '# Checkbox checked',
     ]);
   });
 

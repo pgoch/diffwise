@@ -269,8 +269,8 @@ describe('markChanges', () => {
       `<ins class="${ADDED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-change-details="0" `
       + 'data-diffwise-list-marker="6."></ins>';
 
-    expect(markItem('<ol start="6"><li>Import notatek</li></ol>', CHANGED_LIST_MARKER)).toBe(
-      `<ol start="6"><li value="6" ${LINE_ITEM}>${drawnMarker}Import notatek</li></ol>`,
+    expect(markItem('<ol start="6"><li>Import notes</li></ol>', CHANGED_LIST_MARKER)).toBe(
+      `<ol start="6"><li value="6" ${LINE_ITEM}>${drawnMarker}Import notes</li></ol>`,
     );
   });
 
@@ -278,17 +278,17 @@ describe('markChanges', () => {
     const drawnMarker =
       `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-change-details="0" `
       + 'data-diffwise-list-marker="•"></del>';
-    const html = '<ul><li><p>Notatki</p></li></ul>';
+    const html = '<ul><li><p>Notes</p></li></ul>';
 
     expect(markItem(html, CHANGED_LIST_MARKER, REMOVED_TEXT_MARKER)).toBe(
-      `<ul><li value="1" ${LINE_ITEM}>${drawnMarker}<p>Notatki</p></li></ul>`,
+      `<ul><li value="1" ${LINE_ITEM}>${drawnMarker}<p>Notes</p></li></ul>`,
     );
   });
 
   it('draws no marker of a style it does not draw, in a later line of an item or without one', () => {
-    const rareStyle = lineOf('<ol style="list-style-type: armenian"><li>Notatki</li></ol>');
+    const rareStyle = lineOf('<ol style="list-style-type: armenian"><li>Notes</li></ol>');
     const [, laterLine] = splitLines(parseHtml('<ol><li><p>A</p><p>B</p></li></ol>'), ID_PREFIX);
-    const paragraph = lineOf('<p>Notatki</p>');
+    const paragraph = lineOf('<p>Notes</p>');
 
     for (const line of [rareStyle, laterLine, paragraph]) {
       expect(markChanges(line, [], ADDED_TEXT_MARKER, CHANGED_LIST_MARKER)).toBe(line.html);
@@ -296,7 +296,8 @@ describe('markChanges', () => {
   });
 
   it('frames a changed checkbox inside its label', () => {
-    const html = '<ul><li><label><input type="checkbox" checked> Zaproś rodzinę</label></li></ul>';
+    const html =
+      '<ul><li><label><input type="checkbox" checked> Invite your family</label></li></ul>';
     const marked = fragmentOf(markItem(html, CHANGED_CHECKBOX));
     const checkboxMarker = marked.querySelector(CHECKBOX_MARKER_SELECTOR);
 
@@ -307,18 +308,13 @@ describe('markChanges', () => {
   });
 
   it('marks text, the list marker and the checkbox of a line together, keeping its text', () => {
-    const line = lineOf('<ol start="2"><li><input type="checkbox"> Zaproś rodzinę</li></ol>');
+    const line = lineOf('<ol start="2"><li><input type="checkbox"> Invite your family</li></ol>');
     const itemMarks = { listMarkerDetails: [0], checkboxDetails: [1] };
-    const marked = markChanges(
-      line,
-      rangesOf(line.text, ['rodzinę']),
-      ADDED_TEXT_MARKER,
-      itemMarks,
-    );
+    const marked = markChanges(line, rangesOf(line.text, ['family']), ADDED_TEXT_MARKER, itemMarks);
     const fragment = fragmentOf(marked);
 
     expect(fragment.querySelectorAll(`[${DETAILS_ATTRIBUTE}]`).length).toBe(2);
     expect(readerText(fragment.childNodes)).toBe(line.text);
-    expect(marked).toContain(added('rodzinę'));
+    expect(marked).toContain(added('family'));
   });
 });

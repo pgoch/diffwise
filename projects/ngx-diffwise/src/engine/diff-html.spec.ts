@@ -433,23 +433,23 @@ describe('diffHtml', () => {
   });
 
   it('marks another number and changed text of one item separately', () => {
-    const oldHtml = '<ol start="5"><li>Import notatek</li></ol>';
-    const newHtml = '<ol start="6"><li>Import plików</li></ol>';
+    const oldHtml = '<ol start="5"><li>Import notes</li></ol>';
+    const newHtml = '<ol start="6"><li>Import files</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
 
     expect(rowSummary(row)).toEqual([
       LineChangeKind.Changed,
       1,
       1,
-      ['5.', 'notatek'],
-      ['6.', 'plików'],
+      ['5.', 'notes'],
+      ['6.', 'files'],
     ]);
     expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Number]]]);
   });
 
   it('puts the details of a list item before those of formatting, with markers pointing to them', () => {
-    const oldHtml = '<ul><li><i>Ważne:</i> rób kopie.</li></ul>';
-    const newHtml = '<ol><li><b>Ważne:</b> rób kopie.</li></ol>';
+    const oldHtml = '<ul><li><i>Important:</i> make backups.</li></ul>';
+    const newHtml = '<ol><li><b>Important:</b> make backups.</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
 
     expect(detailShape(row)).toEqual([
@@ -462,8 +462,8 @@ describe('diffHtml', () => {
   });
 
   it('describes a list marker of a style it does not draw only by its details', () => {
-    const oldHtml = '<ol><li>Notatki</li></ol>';
-    const newHtml = '<ol style="list-style-type: armenian"><li>Notatki</li></ol>';
+    const oldHtml = '<ol><li>Notes</li></ol>';
+    const newHtml = '<ol style="list-style-type: armenian"><li>Notes</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
 
     expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Style]]]);

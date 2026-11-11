@@ -176,9 +176,9 @@ describe('ListMarkerReader markers', () => {
 describe('startCheckboxState', () => {
   it('reads a checkbox at the start of an item, also in a label or a paragraph', () => {
     const html =
-      '<ul><li><input type="checkbox" checked> Konto</li>'
-      + '<li><label><input type="checkbox"> Rodzina</label></li>'
-      + '<li><p> <input type="CHECKBOX" checked>Kopie</p></li></ul>';
+      '<ul><li><input type="checkbox" checked> Account</li>'
+      + '<li><label><input type="checkbox"> Family</label></li>'
+      + '<li><p> <input type="CHECKBOX" checked>Backups</p></li></ul>';
 
     expect(checkboxStates(html)).toEqual([
       CheckboxState.Checked,
@@ -189,10 +189,10 @@ describe('startCheckboxState', () => {
 
   it('finds no checkbox after text or an image, in a nested item or of another type', () => {
     const html =
-      '<ul><li>Konto <input type="checkbox"></li>'
-      + '<li><ul><li><input type="checkbox"> Rodzina</li></ul></li>'
-      + '<li><input type="radio"> Kopie</li>'
-      + '<li><img src="ikona.png" alt=""><input type="checkbox"> Notatki</li></ul>';
+      '<ul><li>Account <input type="checkbox"></li>'
+      + '<li><ul><li><input type="checkbox"> Family</li></ul></li>'
+      + '<li><input type="radio"> Backups</li>'
+      + '<li><img src="icon.png" alt=""><input type="checkbox"> Notes</li></ul>';
 
     expect(checkboxStates(html)).toEqual([null, null, CheckboxState.Unchecked, null, null]);
   });
