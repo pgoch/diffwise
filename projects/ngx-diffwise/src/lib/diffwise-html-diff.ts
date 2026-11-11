@@ -33,7 +33,7 @@ import {
   type TooltipRequest,
   TriggerDescription,
 } from './change-details/change-tooltip';
-import { titleOnlyTooltip } from './change-details/tooltip-content';
+import { type TooltipContent, titleOnlyTooltip } from './change-details/tooltip-content';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
@@ -564,8 +564,7 @@ export class DiffwiseHtmlDiff {
     }
 
     const content = this.describer().tooltip(details);
-    const isIcon = trigger.matches(CHANGE_DETAILS_ICON_SELECTOR);
-    const description = isIcon ? TriggerDescription.Details : TriggerDescription.Whole;
+    const description = triggerDescriptionOf(trigger, content);
 
     return { trigger, content, description, byFocus };
   }
@@ -654,6 +653,18 @@ function versionNameRequest(icon: HTMLElement, byFocus: boolean): TooltipRequest
   const content = titleOnlyTooltip(versionName);
 
   return { trigger: icon, content, description: TriggerDescription.None, byFocus };
+}
+
+/**
+ * What of the tooltip describes its trigger. The title names an icon, so its lines describe it, if
+ * there are any; a marked change has no name of its own, so the whole tooltip describes it.
+ */
+function triggerDescriptionOf(trigger: Element, content: TooltipContent): TriggerDescription {
+  if (!trigger.matches(CHANGE_DETAILS_ICON_SELECTOR)) {
+    return TriggerDescription.Whole;
+  }
+
+  return content.sections.length > 0 ? TriggerDescription.Details : TriggerDescription.None;
 }
 
 function hasChangeDetails(row: ShownRow): boolean {

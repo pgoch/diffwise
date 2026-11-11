@@ -1,6 +1,8 @@
 import {
   type ChangeDetail,
   ChangeDetailKind,
+  type CheckboxChangeDetail,
+  CheckboxState,
   type FormattingChangeDetail,
   FormattingValue,
   type FormattingValueChange,
@@ -8,6 +10,11 @@ import {
   type ImageProperties,
   ImageProperty,
   type LinkChangeDetail,
+  type ListMarker,
+  type ListMarkerChangeDetail,
+  ListMarkerProperty,
+  ListStyle,
+  ListType,
   TextStyle,
 } from '../../engine';
 import type { UiTexts } from '../i18n/texts';
@@ -25,6 +32,7 @@ import {
   rowLine,
   subtitleLine,
   textPart,
+  titleOnlyTooltip,
   tooltipPart,
 } from './tooltip-content';
 
@@ -143,9 +151,34 @@ const COLOR_VALUES: ReadonlySet<FormattingValue> = new Set([
   FormattingValue.BackgroundColor,
 ]);
 
+/** Names of the list types. */
+const LIST_TYPE_TEXT_NAMES: Readonly<Record<ListType, TextName>> = {
+  [ListType.Bulleted]: 'bulletedListLabel',
+  [ListType.Numbered]: 'numberedListLabel',
+};
+
+/** List styles with names in the interface; tooltips show other styles as CSS names them. */
+const LIST_STYLE_TEXT_NAMES: ReadonlyMap<string, TextName> = new Map([
+  [ListStyle.Decimal, 'decimalNumberingLabel'],
+  [ListStyle.LowerAlpha, 'lowerAlphaNumberingLabel'],
+  [ListStyle.UpperAlpha, 'upperAlphaNumberingLabel'],
+  [ListStyle.LowerRoman, 'lowerRomanNumberingLabel'],
+  [ListStyle.UpperRoman, 'upperRomanNumberingLabel'],
+  [ListStyle.Disc, 'discBulletsLabel'],
+  [ListStyle.Circle, 'circleBulletsLabel'],
+  [ListStyle.Square, 'squareBulletsLabel'],
+]);
+
+/** Titles of a checkbox change by the new state of the checkbox. */
+const CHECKBOX_TEXT_NAMES: Readonly<Record<CheckboxState, TextName>> = {
+  [CheckboxState.Checked]: 'checkedCheckboxLabel',
+  [CheckboxState.Unchecked]: 'uncheckedCheckboxLabel',
+};
+
 const LIST_FORMAT_OPTIONS: Intl.ListFormatOptions = { type: 'conjunction' };
 const COUNT_PLACEHOLDER = '{count}';
 const LEVEL_PLACEHOLDER = '{level}';
+const NUMBER_PLACEHOLDER = '{number}';
 const ARROW = ' → ';
 const LABEL_SEPARATOR = ': ';
 const SIZE_SEPARATOR = ' × ';
@@ -197,13 +230,21 @@ export class ChangeDescriber {
       : this.multipleChangesTitle(details.length);
   }
 
-  /** Tooltip of changes: one change with its lines, or several, each under its own title. */
+  /**
+   * Tooltip of changes: one change with its lines, or several, each under its own title. A change
+   * that its title describes, such as a checked checkbox, has no lines.
+   */
   tooltip(details: readonly ChangeDetail[]): TooltipContent {
     if (details.length === 1) {
       const [detail] = details;
-      const section = { title: null, lines: this.changeLines(detail) };
+      const title = this.changeTitle(detail);
+      const lines = this.changeLines(detail);
 
-      return { title: this.changeTitle(detail), sections: [section] };
+      if (lines.length === 0) {
+        return titleOnlyTooltip(title);
+      }
+
+      return { title, sections: [{ title: null, lines }] };
     }
 
     const sections = details.map((detail) => this.titledSection(detail));
@@ -228,6 +269,10 @@ export class ChangeDescriber {
         return this.linkTitle(detail);
       case ChangeDetailKind.Image:
         return this.texts.imageChangeLabel;
+      case ChangeDetailKind.ListMarker:
+        return this.texts.listMarkerChangeLabel;
+      case ChangeDetailKind.Checkbox:
+        return this.checkboxTitle(detail);
     }
   }
 
@@ -239,6 +284,10 @@ export class ChangeDescriber {
         return this.linkLines(detail);
       case ChangeDetailKind.Image:
         return this.imageLines(detail);
+      case ChangeDetailKind.ListMarker:
+        return this.listMarkerLines(detail);
+      case ChangeDetailKind.Checkbox:
+        return [];
     }
   }
 
@@ -423,6 +472,51 @@ export class ChangeDescriber {
     const newSize = sizeText(newImage, inPixels);
 
     return this.texts.imageSizeLabel + LABEL_SEPARATOR + oldSize + ARROW + newSize + unit;
+  }
+
+  /**
+   * A line for each changed property of a list marker, such as "bulleted list → numbered list",
+   * "numbers → lowercase letters", "number 5 → number 6" or "level 1 → level 2".
+   */
+  private listMarkerLines({
+    oldMarker,
+    newMarker,
+    changedProperties,
+  }: ListMarkerChangeDetail): TooltipLine[] {
+    return changedProperties.map((property) => {
+      const oldName = this.markerPropertyName(oldMarker, property);
+      const newName = this.markerPropertyName(newMarker, property);
+
+      return descriptionLine([textPart(oldName + ARROW + newName)]);
+    });
+  }
+
+  /** A property of a marker as tooltips name it; a line without a marker is a paragraph. */
+  private markerPropertyName(marker: ListMarker | null, property: ListMarkerProperty): string {
+    if (marker === null) {
+      return this.texts.paragraphLabel;
+    }
+
+    switch (property) {
+      case ListMarkerProperty.ListType:
+        return this.texts[LIST_TYPE_TEXT_NAMES[marker.listType]];
+      case ListMarkerProperty.Style:
+        return this.listStyleName(marker.style);
+      case ListMarkerProperty.Number:
+        return this.texts.itemNumberLabel.replaceAll(NUMBER_PLACEHOLDER, String(marker.number));
+      case ListMarkerProperty.Level:
+        return this.texts.listLevelLabel.replaceAll(LEVEL_PLACEHOLDER, String(marker.level));
+    }
+  }
+
+  private listStyleName(style: string): string {
+    const textName = LIST_STYLE_TEXT_NAMES.get(style);
+    return textName === undefined ? style : this.texts[textName];
+  }
+
+  /** "Checkbox checked" or "Checkbox cleared". */
+  private checkboxTitle({ newState }: CheckboxChangeDetail): string {
+    return this.texts[CHECKBOX_TEXT_NAMES[newState]];
   }
 
   /** Rows "Before" and "After", each with the part that changed highlighted. */

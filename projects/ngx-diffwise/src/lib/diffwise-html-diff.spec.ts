@@ -108,6 +108,12 @@ const OLD_TWO_CHANGES_HTML =
   '<p><a href="https://example.com/a">Public links</a> let anyone view.</p>';
 const NEW_TWO_CHANGES_HTML =
   '<p><a href="https://example.com/b">Public links</a> let <b>anyone</b> view.</p>';
+const BULLETED_HTML = '<ul><li>Text notes</li><li>Checklists</li></ul>';
+const NUMBERED_HTML = '<ol><li>Text notes</li><li>Checklists</li></ol>';
+const UNCHECKED_HTML =
+  '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>';
+const CHECKED_HTML =
+  '<ul><li><label><input type="checkbox" checked> Invite your family</label></li></ul>';
 
 /** Inputs of the component besides the two versions. */
 type OptionInputs = DiffwiseConfigOptions & {
@@ -627,6 +633,8 @@ describe('DiffwiseHtmlDiff change details', () => {
       [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
       [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
       [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', 'Image changed'],
+      [BULLETED_HTML, NUMBERED_HTML, 'list-marker', 'List marker changed'],
+      [UNCHECKED_HTML, CHECKED_HTML, 'checkbox', 'Checkbox checked'],
     ];
 
     for (const [oldHtml, newHtml, iconKind, name] of versions) {
@@ -708,6 +716,30 @@ describe('DiffwiseHtmlDiff change details', () => {
 
     expect(description?.textContent).toContain('https://example.com/terms-2025');
     expect(description?.textContent).not.toContain('Link address changed');
+  });
+
+  it('shows only the title of a checkbox change, which names its icon already', () => {
+    const element = renderElement(UNCHECKED_HTML, CHECKED_HTML);
+    const icon = iconOf(element);
+
+    pointTo(icon);
+
+    expect(tooltipLinesOf(element)).toEqual(['Checkbox checked']);
+    expect(icon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
+  });
+
+  it('shows the tooltip of a drawn list marker and of a framed checkbox on hover', () => {
+    const markerElement = renderElement(BULLETED_HTML, NUMBERED_HTML);
+    const checkboxElement = renderElement(UNCHECKED_HTML, CHECKED_HTML);
+
+    pointTo(newMarkersOf(markerElement)[0]);
+    pointTo(newMarkersOf(checkboxElement)[0]);
+
+    expect(tooltipLinesOf(markerElement)).toEqual([
+      'List marker changed',
+      'bulleted list → numbered list',
+    ]);
+    expect(tooltipLinesOf(checkboxElement)).toEqual(['Checkbox checked']);
   });
 
   it('keeps the tooltip while the pointer moves onto it, and hides it after both (WCAG 1.4.13)', () => {

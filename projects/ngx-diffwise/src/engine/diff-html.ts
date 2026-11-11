@@ -1,13 +1,20 @@
 import { diffFormats } from './compare/diff-formats';
 import { diffImages } from './compare/diff-images';
 import { diffLines } from './compare/diff-lines';
+import { diffListMarkers } from './compare/diff-list-markers';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
 import { sanitizeHtml } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
-import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER, markChanges } from './mark/mark-changes';
+import {
+  ADDED_TEXT_MARKER,
+  type ListItemMarks,
+  REMOVED_TEXT_MARKER,
+  markChanges,
+} from './mark/mark-changes';
 import {
   type ChangeDetail,
+  ChangeDetailKind,
   type DescribedChanges,
   type DiffOptions,
   type HtmlDiff,
@@ -15,6 +22,7 @@ import {
   type Line,
   type LineChange,
   LineChangeKind,
+  type ListItemChangeDetail,
   type MarkedRange,
   type ViewLine,
   type ViewRow,
@@ -25,6 +33,7 @@ const OLD_VERSION_ID_PART = 'old';
 const NEW_VERSION_ID_PART = 'new';
 
 const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
+const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], details: [] };
 
 /** Compares two HTML documents and returns the rows of the side-by-side view with change counts. */
 export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
@@ -77,17 +86,22 @@ class ViewRowBuilder {
 
   /**
    * A row of a changed pair. Removed text and described changes are marked in the old line, added
-   * text and described changes in the new one; their markers point to the row's details.
+   * text and described changes in the new one; their markers point to the row's details. Details of
+   * the list item come first.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
+    const itemDetails = diffListMarkers(oldLine, newLine, this.options);
     const wordChanges = diffWords(oldLine, newLine, this.options);
     const formatChanges = diffFormats(oldLine, newLine, wordChanges, this.options);
     const imageChanges = diffImages(oldLine, newLine, wordChanges, this.options);
-    const describedChanges = joinDescribedChanges(formatChanges, imageChanges);
+    const itemChanges = { ...NO_DESCRIBED_CHANGES, details: itemDetails };
+    const textChanges = joinDescribedChanges(formatChanges, imageChanges);
+    const describedChanges = joinDescribedChanges(itemChanges, textChanges);
+    const itemMarks = listItemMarks(itemDetails);
     const oldRanges = [...wordChanges.removed, ...describedChanges.oldRanges];
     const newRanges = [...wordChanges.added, ...describedChanges.newRanges];
-    const markedOldHtml = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER);
-    const markedNewHtml = markChanges(newLine, newRanges, ADDED_TEXT_MARKER);
+    const markedOldHtml = markChanges(oldLine, oldRanges, REMOVED_TEXT_MARKER, itemMarks);
+    const markedNewHtml = markChanges(newLine, newRanges, ADDED_TEXT_MARKER, itemMarks);
 
     return {
       kind: LineChangeKind.Changed,
@@ -148,4 +162,16 @@ function joinDescribedChanges(first: DescribedChanges, second: DescribedChanges)
 function withShiftedDetails(range: MarkedRange, shift: number): MarkedRange {
   const detailIndices = range.detailIndices?.map((detailIndex) => detailIndex + shift);
   return { ...range, detailIndices };
+}
+
+/** Positions of the details of a changed list marker and checkbox, among the first details. */
+function listItemMarks(itemDetails: readonly ListItemChangeDetail[]): ListItemMarks {
+  return {
+    listMarkerDetails: positionsOfKind(itemDetails, ChangeDetailKind.ListMarker),
+    checkboxDetails: positionsOfKind(itemDetails, ChangeDetailKind.Checkbox),
+  };
+}
+
+function positionsOfKind(details: readonly ChangeDetail[], kind: ChangeDetailKind): number[] {
+  return details.flatMap((detail, position) => (detail.kind === kind ? [position] : []));
 }

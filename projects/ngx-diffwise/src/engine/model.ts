@@ -259,6 +259,9 @@ export const LINE_ITEM_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}line-item`;
 /** Marks a copy of a list item in a later line of the item, which hides its marker. */
 export const CONTINUED_ITEM_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continued-item`;
 
+/** Holds the text of a list marker that Diffwise draws in place of the browser's, such as `5.`. */
+export const LIST_MARKER_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}list-marker`;
+
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
   /** Positions in the row's change details; changed text has none. */
@@ -354,7 +357,8 @@ export interface CheckboxChangeDetail {
 export type ListItemChangeDetail = ListMarkerChangeDetail | CheckboxChangeDetail;
 
 /** A change besides changed text, described in the view. */
-export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail;
+export type ChangeDetail =
+  FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail | ListItemChangeDetail;
 
 /** Changes described in the view: their ranges in each line and their details. */
 export interface DescribedChanges {

@@ -1,18 +1,31 @@
-import { NO_MARKER_TAGS, PICTURE_TAG } from '../html/html-tags';
+import { LIST_ITEM_TAG, NO_MARKER_TAGS, PICTURE_TAG } from '../html/html-tags';
+import { startCheckbox } from '../html/list-items';
 import { type TextPiece, mapReaderText } from '../html/reader-text';
 import {
   CHANGE_DETAILS_ATTRIBUTE,
+  CONTINUED_ITEM_ATTRIBUTE,
   DETAIL_INDEX_SEPARATOR,
+  LINE_ITEM_ATTRIBUTE,
+  LIST_MARKER_ATTRIBUTE,
   type Line,
+  type ListMarker,
   type MarkedRange,
 } from '../model';
+import { listMarkerText } from './list-marker-text';
 
 const TEMPLATE_TAG = 'template';
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
 const HIGHLIGHT_CLASS = 'diffwise-html-diff__highlight';
+const LINE_ITEM_SELECTOR = `[${LINE_ITEM_ATTRIBUTE}]`;
 
 /** Added to the classes of a marker around an image, which frames the image. */
 const IMAGE_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--image`;
+
+/** Added to the classes of a list marker that Diffwise draws in place of the browser's. */
+const LIST_MARKER_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--list-marker`;
+
+/** Added to the classes of a marker around a checkbox, which frames the checkbox. */
+const CHECKBOX_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--checkbox`;
 
 /** The element that wraps changed text, with its classes. */
 export interface ChangeMarker {
@@ -41,18 +54,36 @@ interface NodeSegment {
   readonly detailIndices: readonly number[];
 }
 
+/** Changes of the list item a line starts, outside its text, and the change details they show. */
+export interface ListItemMarks {
+  /** Details of a changed marker, which Diffwise then draws; empty when the marker is the same. */
+  readonly listMarkerDetails: readonly number[];
+  /** Details of a checked or cleared checkbox; empty when the checkbox is the same. */
+  readonly checkboxDetails: readonly number[];
+}
+
 const NO_DETAILS: readonly number[] = [];
 
+/** Marks of a line whose list item, if any, is the same in both versions. */
+export const NO_LIST_ITEM_MARKS: ListItemMarks = {
+  listMarkerDetails: NO_DETAILS,
+  checkboxDetails: NO_DETAILS,
+};
+
 /**
- * Wraps ranges of a line's text in markers inside the formatting, so bold text or a link stays.
- * Returns the HTML unmarked if, parsed again, it reads differently from the line's text.
+ * Wraps ranges of a line's text in markers inside the formatting, so bold text or a link stays, and
+ * marks a changed list marker and checkbox. Returns the HTML unmarked if, parsed again, it reads
+ * differently from the line's text.
  */
 export function markChanges(
   line: Line,
   ranges: readonly MarkedRange[],
   marker: ChangeMarker,
+  itemMarks: ListItemMarks = NO_LIST_ITEM_MARKS,
 ): string {
-  if (ranges.length === 0) {
+  const marksItem = itemMarks.listMarkerDetails.length > 0 || itemMarks.checkboxDetails.length > 0;
+
+  if (ranges.length === 0 && !marksItem) {
     return line.html;
   }
 
@@ -70,8 +101,81 @@ export function markChanges(
   const rangesInReadingOrder = [...ranges].sort((first, second) => first.start - second.start);
 
   wrapSegments(rangeSegments(markablePieces, rangesInReadingOrder), marker);
+  markListItem(template.content, line.marker, itemMarks, marker);
 
   return template.innerHTML;
+}
+
+/**
+ * Frames a changed checkbox, and draws a changed list marker in place of the browser's, which takes
+ * no background. The drawn marker holds its text in an attribute, so the line's text stays.
+ */
+function markListItem(
+  content: DocumentFragment,
+  listMarker: ListMarker | null,
+  { listMarkerDetails, checkboxDetails }: ListItemMarks,
+  marker: ChangeMarker,
+): void {
+  const item = startedItemIn(content);
+
+  if (item === null) {
+    return;
+  }
+
+  if (checkboxDetails.length > 0) {
+    frameCheckbox(item, checkboxDetails, marker);
+  }
+
+  if (listMarker !== null && listMarkerDetails.length > 0) {
+    drawListMarker(item, listMarker, listMarkerDetails, marker);
+  }
+}
+
+/** Wraps the checkbox the item starts with in a marker that frames it. */
+function frameCheckbox(
+  item: Element,
+  detailIndices: readonly number[],
+  marker: ChangeMarker,
+): void {
+  const checkbox = startCheckbox(item);
+  const checkboxMarker = markerWithClass(marker, CHECKBOX_HIGHLIGHT_CLASS);
+
+  if (checkbox !== null) {
+    wrapNode(checkbox, markerElement(checkboxMarker, detailIndices));
+  }
+}
+
+/** Puts a drawn marker first in the item; a style Diffwise does not draw keeps the browser's. */
+function drawListMarker(
+  item: Element,
+  listMarker: ListMarker,
+  detailIndices: readonly number[],
+  marker: ChangeMarker,
+): void {
+  const text = listMarkerText(listMarker);
+
+  if (text === null) {
+    return;
+  }
+
+  const drawnMarker = markerElement(
+    markerWithClass(marker, LIST_MARKER_HIGHLIGHT_CLASS),
+    detailIndices,
+  );
+
+  drawnMarker.setAttribute(LIST_MARKER_ATTRIBUTE, text);
+  item.prepend(drawnMarker);
+}
+
+/**
+ * The `li` whose marker the line shows: the one around the line's innermost item, unless it is a
+ * copy in a later line of the item.
+ */
+function startedItemIn(content: DocumentFragment): Element | null {
+  const item = content.querySelector(LINE_ITEM_SELECTOR)?.closest(LIST_ITEM_TAG) ?? null;
+  const startsItem = item !== null && !item.hasAttribute(CONTINUED_ITEM_ATTRIBUTE);
+
+  return startsItem ? item : null;
 }
 
 /** The node a marker goes around: a text node, or an image with its picture, if it has one. */
@@ -193,7 +297,9 @@ function wrapSegment({ node, start, end, detailIndices }: NodeSegment, marker: C
     return;
   }
 
-  wrapNode(markedNodeOf(node), markerElement(imageMarkerOf(marker), detailIndices));
+  const imageMarker = markerWithClass(marker, IMAGE_HIGHLIGHT_CLASS);
+
+  wrapNode(markedNodeOf(node), markerElement(imageMarker, detailIndices));
 }
 
 /** Splits `[start, end)` of the text node out into a text node of its own. */
@@ -205,9 +311,9 @@ function textPart(node: Text, start: number, end: number): Text {
   return part;
 }
 
-/** The marker of an image: the same element, with the class that frames the image. */
-function imageMarkerOf({ tag, classNames }: ChangeMarker): ChangeMarker {
-  return { tag, classNames: [...classNames, IMAGE_HIGHLIGHT_CLASS] };
+/** The same marker with one more class, such as the one that frames an image. */
+function markerWithClass({ tag, classNames }: ChangeMarker, className: string): ChangeMarker {
+  return { tag, classNames: [...classNames, className] };
 }
 
 /** A new marker element. The marker of a described change lists the positions of its details. */

@@ -1,6 +1,7 @@
 /*
  * Lines of lists. Each list item is a line inside copies of its lists, so it keeps the indentation
- * and the number it has in the document. Separate from the main styles because of their size.
+ * and the number it has in the document. A changed marker and a changed checkbox are marked.
+ * Separate from the main styles because of their size.
  */
 
 /*
@@ -54,4 +55,102 @@
   box-shadow:
     inset 0 2px 0 var(--diffwise-side-accent),
     inset 0 -2px 0 var(--diffwise-side-accent);
+}
+
+/*
+ * A changed list marker, which Diffwise draws, since the browser's takes no background. It stands
+ * where the browser's would, before the item, in the item's font; the browser's marker hides.
+ */
+.diffwise-html-diff__content li:has(> .diffwise-html-diff__highlight--list-marker) {
+  position: relative;
+  list-style-type: none !important;
+}
+
+/* Half an em between the marker and the item, as browsers leave. */
+.diffwise-html-diff__content .diffwise-html-diff__highlight--list-marker {
+  position: absolute;
+  inset-inline-end: 100%;
+  margin-inline-end: 0.3em;
+  padding: 0 0.2em;
+  white-space: nowrap;
+}
+
+.diffwise-html-diff__highlight--list-marker::before {
+  content: attr(data-diffwise-list-marker);
+}
+
+/*
+ * Bullets are shapes of the size browsers draw them, not characters of the font, with their middle
+ * as high above the baseline as the browser's.
+ */
+.diffwise-html-diff__highlight--list-marker:is(
+    [data-diffwise-list-marker='\2022'],
+    [data-diffwise-list-marker='\25e6'],
+    [data-diffwise-list-marker='\25aa']
+  )::before {
+  display: inline-block;
+  box-sizing: border-box;
+  width: 0.36em;
+  height: 0.36em;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+  vertical-align: 0.18em;
+}
+
+.diffwise-html-diff__highlight--list-marker[data-diffwise-list-marker='\25e6']::before {
+  border: max(1px, 0.03em) solid currentColor;
+  background: none;
+}
+
+.diffwise-html-diff__highlight--list-marker[data-diffwise-list-marker='\25aa']::before {
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: 0;
+  vertical-align: 0.21em;
+}
+
+/* The drawn marker comes first in the item, so the block after it loses its top margin instead. */
+.diffwise-html-diff__content .diffwise-html-diff__highlight--list-marker + * {
+  margin-top: 0;
+}
+
+/*
+ * A checked or cleared checkbox: a thin frame with a gap, like a changed image, which follows the
+ * highlight style. The checkbox takes no pointer events, so its frame shows the tooltip.
+ */
+.diffwise-html-diff__content .diffwise-html-diff__highlight--checkbox {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.diffwise-html-diff__highlight--checkbox input {
+  pointer-events: none;
+}
+
+.diffwise-html-diff__highlight--checkbox::after {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--diffwise-side-accent);
+  border-radius: 6px;
+  content: '';
+  pointer-events: none;
+}
+
+.diffwise-html-diff--highlight-style-background .diffwise-html-diff__highlight--checkbox::after {
+  border-color: var(--diffwise-side-highlight);
+}
+
+.diffwise-html-diff--highlight-style-underline .diffwise-html-diff__highlight--checkbox::after {
+  border-width: 0 0 2px;
+  border-radius: 0;
+}
+
+.diffwise-html-diff--highlight-style-top-bottom .diffwise-html-diff__highlight--checkbox::after {
+  border-width: 2px 0;
+  border-radius: 0;
 }
