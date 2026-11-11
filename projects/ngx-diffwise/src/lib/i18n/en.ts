@@ -82,7 +82,6 @@ export const ENGLISH_TEXTS: UiTexts = {
 
   bulletedListLabel: 'bulleted list',
   numberedListLabel: 'numbered list',
-  itemNumberLabel: 'number {number}',
   listLevelLabel: 'level {level}',
   decimalNumberingLabel: 'numbers',
   lowerAlphaNumberingLabel: 'lowercase letters',

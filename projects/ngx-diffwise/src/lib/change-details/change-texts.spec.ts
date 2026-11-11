@@ -91,7 +91,7 @@ function listMarker(
   number = FIRST_NUMBER,
   level = TOP_LEVEL,
 ): ListMarker {
-  return { listType, style, number, unshiftedNumber: number, level };
+  return { listType, style, number, level };
 }
 
 function bullets(style: string = ListStyle.Disc, level = TOP_LEVEL): ListMarker {
@@ -423,9 +423,6 @@ describe('ChangeDescriber', () => {
   it('describes list marker changes by names, in the language of the interface', () => {
     const changes = [
       markerChange(bullets(), numbers(), [ListMarkerProperty.ListType]),
-      markerChange(numbers(ListStyle.Decimal, 5), numbers(ListStyle.Decimal, 6), [
-        ListMarkerProperty.Number,
-      ]),
       markerChange(numbers(), numbers(ListStyle.LowerAlpha), [ListMarkerProperty.Style]),
       markerChange(bullets(), bullets(ListStyle.Square), [ListMarkerProperty.Style]),
       markerChange(null, bullets(), [ListMarkerProperty.ListType]),
@@ -434,7 +431,6 @@ describe('ChangeDescriber', () => {
 
     expect(changes.map((change) => tooltipText(polish.tooltip([change])))).toEqual([
       ['Zmiana punktora', 'lista punktowana → lista numerowana'],
-      ['Zmiana punktora', 'numer 5 → numer 6'],
       ['Zmiana punktora', 'cyfry → małe litery'],
       ['Zmiana punktora', 'kropki → kwadraty'],
       ['Zmiana punktora', 'akapit → lista punktowana'],
@@ -442,7 +438,6 @@ describe('ChangeDescriber', () => {
     ]);
     expect(changes.map((change) => linesOf(english, change))).toEqual([
       ['bulleted list → numbered list'],
-      ['number 5 → number 6'],
       ['numbers → lowercase letters'],
       ['dots → squares'],
       ['paragraph → bulleted list'],
@@ -483,33 +478,27 @@ describe('ChangeDescriber', () => {
 
   it('lists a changed marker and a checkbox of one item under their titles', () => {
     const details = [
-      markerChange(numbers(ListStyle.Decimal, 5), numbers(ListStyle.Decimal, 6), [
-        ListMarkerProperty.Number,
-      ]),
+      markerChange(numbers(), numbers(ListStyle.LowerAlpha), [ListMarkerProperty.Style]),
       checkboxChange(CheckboxState.Checked),
     ];
 
     expect(tooltipText(english.tooltip(details))).toEqual([
       'Formatting changes: 2',
       '# List marker changed',
-      'number 5 → number 6',
+      'numbers → lowercase letters',
       '# Checkbox checked',
     ]);
   });
 
-  it('puts the number and the level in custom texts in place of their placeholders', () => {
-    const customTexts = {
-      ...ENGLISH_TEXTS,
-      itemNumberLabel: 'No. {number}',
-      listLevelLabel: 'L{level}',
-    };
+  it('puts the level in a custom text in place of its placeholder', () => {
+    const customTexts = { ...ENGLISH_TEXTS, listLevelLabel: 'L{level}' };
     const describer = new ChangeDescriber(customTexts, ENGLISH);
     const change = markerChange(
       numbers(ListStyle.Decimal, 2),
-      listMarker(ListType.Numbered, ListStyle.Decimal, 7, 2),
-      [ListMarkerProperty.Number, ListMarkerProperty.Level],
+      listMarker(ListType.Numbered, ListStyle.Decimal, 1, 2),
+      [ListMarkerProperty.Level],
     );
 
-    expect(linesOf(describer, change)).toEqual(['No. 2 → No. 7', 'L1 → L2']);
+    expect(linesOf(describer, change)).toEqual(['L1 → L2']);
   });
 });

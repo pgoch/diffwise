@@ -20,7 +20,6 @@ const FIRST_NUMBER = 1;
 const DECIMAL_RADIX = 10;
 const NEXT_NUMBER_STEP = 1;
 const REVERSED_NUMBER_STEP = -1;
-const NO_SHIFT = 0;
 const SELECTOR_SEPARATOR = ',';
 const NOT_WHITESPACE = /\S/;
 
@@ -65,24 +64,22 @@ const BULLET_TYPES: ReadonlySet<string> = new Set([
 /** Bullets of a bulleted list by the number of lists around it, as browsers show them. */
 const NESTED_LIST_BULLETS: readonly string[] = [ListStyle.Disc, ListStyle.Circle, ListStyle.Square];
 
-/** The number of an item, and the same number without the shift from other items of its list. */
-interface ItemNumber {
-  readonly number: number;
-  readonly unshiftedNumber: number;
-}
-
-const NUMBER_OUTSIDE_LISTS: ItemNumber = { number: FIRST_NUMBER, unshiftedNumber: FIRST_NUMBER };
-
 /**
  * Markers of list items as a browser shows them: numbers from `start`, `value` and `reversed`, and
  * styles. Counts the items of each list once, when one of them is asked for first.
  */
 export class ListMarkerReader {
-  private readonly numbers = new Map<Element, ItemNumber>();
+  private readonly numbers = new Map<Element, number>();
 
   /** Number of a list item; a bulleted list counts its items too, though it shows bullets. */
   numberOf(item: Element): number {
-    return this.itemNumberOf(item).number;
+    const list = listOf(item);
+
+    if (list !== null && !this.numbers.has(item)) {
+      this.countItems(list);
+    }
+
+    return this.numbers.get(item) ?? FIRST_NUMBER;
   }
 
   /** The marker of a list item; `null` for an item whose style shows none. */
@@ -96,37 +93,20 @@ export class ListMarkerReader {
     return {
       listType: listTypeOf(style),
       style,
-      ...this.itemNumberOf(item),
+      number: this.numberOf(item),
       level: markerListsAround(item),
     };
   }
 
-  private itemNumberOf(item: Element): ItemNumber {
-    const list = listOf(item);
-
-    if (list !== null && !this.numbers.has(item)) {
-      this.countItems(list);
-    }
-
-    return this.numbers.get(item) ?? NUMBER_OUTSIDE_LISTS;
-  }
-
-  /**
-   * Numbers each item of the list; a `value` sets the item's number, and the next ones go on. The
-   * shift is the item's position, or the number of items in a list that counts down from it.
-   */
+  /** Numbers each item of the list; a `value` sets the item's number, and the next ones go on. */
   private countItems(list: Element): void {
     const items = itemsOf(list);
     const step = isReversed(list) ? REVERSED_NUMBER_STEP : NEXT_NUMBER_STEP;
-    const lengthShift = startsAtItemCount(list) ? items.length : NO_SHIFT;
     let itemNumber = firstNumberOf(list, items.length);
 
-    for (const [position, item] of items.entries()) {
+    for (const item of items) {
       itemNumber = integerAttribute(item, VALUE_ATTRIBUTE) ?? itemNumber;
-
-      const shift = step * position + lengthShift;
-
-      this.numbers.set(item, { number: itemNumber, unshiftedNumber: itemNumber - shift });
+      this.numbers.set(item, itemNumber);
       itemNumber += step;
     }
   }
@@ -191,11 +171,6 @@ function isListItem(element: Element): boolean {
 /** True for a numbered list that counts down. */
 function isReversed(list: Element): boolean {
   return list.localName === NUMBERED_LIST_TAG && list.hasAttribute(REVERSED_ATTRIBUTE);
-}
-
-/** True for a list that counts down from its number of items, as it has no `start`. */
-function startsAtItemCount(list: Element): boolean {
-  return isReversed(list) && integerAttribute(list, START_ATTRIBUTE) === null;
 }
 
 /**

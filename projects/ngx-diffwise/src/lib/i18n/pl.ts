@@ -82,7 +82,6 @@ export const POLISH_TEXTS: UiTexts = {
 
   bulletedListLabel: 'lista punktowana',
   numberedListLabel: 'lista numerowana',
-  itemNumberLabel: 'numer {number}',
   listLevelLabel: 'poziom {level}',
   decimalNumberingLabel: 'cyfry',
   lowerAlphaNumberingLabel: 'małe litery',

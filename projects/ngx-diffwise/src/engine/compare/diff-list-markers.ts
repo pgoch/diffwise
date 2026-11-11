@@ -18,8 +18,30 @@ const ONLY_LIST_TYPE: readonly ListMarkerProperty[] = [ListMarkerProperty.ListTy
 type MarkerDifferences = Readonly<Record<ListMarkerProperty, boolean>>;
 
 /**
- * Compares the list markers and the checkboxes of a line pair, matched by their text: the marker
- * first, then the checkbox. With `ignoreFormatting`, only numbers and checkboxes count.
+ * True when the list items that the lines start differ: by a described change, or by their numbers.
+ * Numbers count also with `ignoreFormatting`, as readers cite them.
+ */
+export function listItemsDiffer(oldLine: Line, newLine: Line, options: DiffOptions): boolean {
+  const hasDescribedChanges = diffListMarkers(oldLine, newLine, options).length > 0;
+  return hasDescribedChanges || itemNumberChanged(oldLine, newLine);
+}
+
+/**
+ * True when both lines start items that show numbers, and the numbers differ, also when an item
+ * added or removed before shifts them. Another number reads as changed text, with no description.
+ */
+export function itemNumberChanged(oldLine: Line, newLine: Line): boolean {
+  const oldMarker = oldLine.marker;
+  const newMarker = newLine.marker;
+  const bothShowNumbers =
+    oldMarker?.listType === ListType.Numbered && newMarker?.listType === ListType.Numbered;
+
+  return bothShowNumbers && oldMarker.number !== newMarker.number;
+}
+
+/**
+ * Describes the changes of the list markers and the checkboxes of a line pair, matched by their
+ * text: the marker first, then the checkbox. With `ignoreFormatting`, only checkboxes count.
  */
 export function diffListMarkers(
   oldLine: Line,
@@ -89,27 +111,12 @@ function markerDifferences(
   const sameTypeAndLevel =
     oldMarker.listType === newMarker.listType && oldMarker.level === newMarker.level;
   const styleChanged = lookCounts && sameTypeAndLevel && oldMarker.style !== newMarker.style;
-  const numberChanged = numberDiffers(oldMarker, newMarker);
 
   return {
     [ListMarkerProperty.ListType]: typeChanged,
     [ListMarkerProperty.Style]: styleChanged,
-    [ListMarkerProperty.Number]: numberChanged,
     [ListMarkerProperty.Level]: levelChanged,
   };
-}
-
-/**
- * True when both markers show numbers that differ, and the item's place in its list does not
- * explain it: another `start` or `value` does, items added or removed before the item do not.
- */
-function numberDiffers(oldMarker: ListMarker, newMarker: ListMarker): boolean {
-  const bothShowNumbers =
-    oldMarker.listType === ListType.Numbered && newMarker.listType === ListType.Numbered;
-  const numbersDiffer = oldMarker.number !== newMarker.number;
-  const shiftDoesNotExplain = oldMarker.unshiftedNumber !== newMarker.unshiftedNumber;
-
-  return bothShowNumbers && numbersDiffer && shiftDoesNotExplain;
 }
 
 /** A checkbox checked or cleared; a checkbox in only one of the lines does not count. */

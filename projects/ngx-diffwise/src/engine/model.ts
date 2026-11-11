@@ -93,11 +93,6 @@ export interface ListMarker {
   readonly style: string;
   /** Number of the item in its list; a bulleted list counts its items too. */
   readonly number: number;
-  /**
-   * The number without the shift from items before the item, or from items after it in a list that
-   * counts down from its length; items added or removed in the list leave it as it is.
-   */
-  readonly unshiftedNumber: number;
   /** Lists around the item: 1 in a list outside other lists. */
   readonly level: number;
 }
@@ -344,14 +339,15 @@ export interface ImageChangeDetail {
   readonly changedProperties: readonly ImageProperty[];
 }
 
-/** What can differ in the marker of a list item. */
+/**
+ * What can differ in the marker of a list item and gets a description. Another number of an item
+ * reads as changed text, so it is marked without one.
+ */
 export const ListMarkerProperty = {
   /** Bullets or numbers; a paragraph turned into a list item, or the other way round. */
   ListType: 'listType',
   /** Look of the bullets or numbers within the same type, such as numbers → letters. */
   Style: 'style',
-  /** A number that the item's place in its list does not explain, such as one from another start. */
-  Number: 'number',
   Level: 'level',
 } as const;
 

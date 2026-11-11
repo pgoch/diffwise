@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup.
 
-> **Status: version 0.2, an early preview.** It is not on npm yet; the first release is planned after version 0.5, with the interface in 12 languages. The API may change before 1.0.
+> **Status: version 0.3, an early preview.** It is not on npm yet; the first release is planned after version 0.5, with the interface in 12 languages. The API may change before 1.0.
 
 ## Why Diffwise?
 
@@ -17,13 +17,15 @@ Diffwise fills that gap:
 - You can use it anywhere you have access to the HTML of both versions, whatever editor or system produced it.
 - It is designed to be highly configurable, so you can adapt it to your own needs: colors, marking styles, layout, line numbers and the controls your users see.
 
-## What 0.2 does
+## What 0.3 does
 
-- Shows two versions side by side, one row per paragraph or heading, with line numbers.
+- Shows two versions side by side, one row per paragraph, heading, list item or table row, with line numbers.
 - Tints changed lines and marks the changed words, also inside bold text, links and other formatting.
 - Marks changes of formatting, links and images in text that stayed: italic → bold, another color or heading level, another link address, an added link, an image with another file, size or alternative text.
+- Marks changes of list markers and task lists: bullets that became numbers, another numbering style, number or level, a checkbox checked or cleared.
+- Shows the rows of a table as one table, with its columns matched between the versions: an added column or row is marked whole, and a changed cell only where it changed.
 - Shows what changed in a tooltip, from an icon between the versions or on the marked text, such as the old and the new address with the changed part highlighted.
-- Shows an added or a removed paragraph on one side, with an empty place on the other.
+- Shows an added or a removed paragraph, list item or table row on one side, with an empty place on the other.
 - Cleans both versions with DOMPurify, so HTML from users or other systems is safe to show.
 - Light, dark and automatic color modes, following the system or the dark mode of your app.
 - Interface in English and Polish, or with your own texts.
@@ -31,7 +33,7 @@ Diffwise fills that gap:
 - Options to ignore whitespace, letter case, formatting or link changes.
 - Configuration on three levels: global defaults, changes while the app runs, and inputs of each diff.
 
-In 0.2, a list, a table or a code block is one line. The [roadmap](docs/roadmap.md) shows when lists and tables come, along with a single-column layout, navigation between changes and more languages.
+A code block is still one line. The [roadmap](docs/roadmap.md) shows what comes next: a single-column layout, navigation between changes, more languages and diffs of plain text.
 
 ## Installation
 

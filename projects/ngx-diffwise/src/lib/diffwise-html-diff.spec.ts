@@ -115,6 +115,9 @@ const NEW_TWO_CHANGES_HTML =
   '<p><a href="https://example.com/b">Public links</a> let <b>anyone</b> view.</p>';
 const BULLETED_HTML = '<ul><li>Text notes</li><li>Checklists</li></ul>';
 const NUMBERED_HTML = '<ol><li>Text notes</li><li>Checklists</li></ol>';
+const LIST_FROM_FIVE_HTML = '<ol start="5"><li>Import notes</li></ol>';
+const LIST_FROM_SIX_HTML = '<ol start="6"><li>Import notes</li></ol>';
+const NEW_DRAWN_MARKER_SELECTOR = `${NEW_CONTENT_SELECTOR} .diffwise-html-diff__highlight--list-marker`;
 const UNCHECKED_HTML =
   '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>';
 const CHECKED_HTML =
@@ -695,6 +698,15 @@ describe('DiffwiseHtmlDiff change details', () => {
     const element = renderElement('<p>Zasady ogólne.</p>', '<p>Zasady szczegółowe.</p>');
 
     expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+  });
+
+  it('marks another item number as changed text, with no icon and no tooltip', () => {
+    const element = renderElement(LIST_FROM_FIVE_HTML, LIST_FROM_SIX_HTML);
+    const drawnMarker = element.querySelector(NEW_DRAWN_MARKER_SELECTOR);
+
+    expect(drawnMarker?.matches(ADDED_SELECTOR)).toBe(true);
+    expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+    expect(newMarkersOf(element)).toEqual([]);
   });
 
   it('shows the tooltip of an icon on hover, with the changed part of a value highlighted', () => {

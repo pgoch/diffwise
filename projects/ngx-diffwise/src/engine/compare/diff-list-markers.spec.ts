@@ -9,7 +9,7 @@ import {
   ListMarkerProperty,
   ListStyle,
 } from '../model';
-import { diffListMarkers } from './diff-list-markers';
+import { diffListMarkers, itemNumberChanged, listItemsDiffer } from './diff-list-markers';
 
 const ID_PREFIX = 'diff-';
 const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
@@ -71,40 +71,13 @@ describe('diffListMarkers', () => {
     expect(changedProperties(dots, squares, 'Account')).toEqual([ListMarkerProperty.Style]);
   });
 
-  it('describes another start of a list as another number of each item', () => {
-    const oldHtml = '<ol start="5"><li>Import</li><li>Invitation</li></ol>';
-    const newHtml = '<ol start="6"><li>Import</li><li>Invitation</li></ol>';
+  it('describes no other number, from another start or shifted by an added item', () => {
+    const oldHtml = '<ol><li>Account</li><li>Notes</li></ol><ol start="3"><li>Import</li></ol>';
+    const newHtml =
+      '<ol><li>Account</li><li>Backups</li><li>Notes</li></ol><ol start="4"><li>Import</li></ol>';
 
-    expect(changedProperties(oldHtml, newHtml, 'Import')).toEqual([ListMarkerProperty.Number]);
-    expect(changedProperties(oldHtml, newHtml, 'Invitation')).toEqual([ListMarkerProperty.Number]);
-  });
-
-  it('describes another value of an item as another number', () => {
-    const oldHtml = '<ol><li>Introduction</li><li value="10">Prices</li></ol>';
-    const newHtml = '<ol><li>Introduction</li><li value="12">Prices</li></ol>';
-
-    expect(changedProperties(oldHtml, newHtml, 'Prices')).toEqual([ListMarkerProperty.Number]);
-  });
-
-  it('keeps numbers shifted by items added or removed in the list, also when written in value', () => {
-    const oldHtml = '<ol><li>Account</li><li>Sign-in</li><li>Notes</li></ol>';
-    const addedItem =
-      '<ol><li>Account</li><li>Verification</li><li>Sign-in</li><li>Notes</li></ol>';
-    const removedItem = '<ol><li>Sign-in</li><li>Notes</li></ol>';
-    const rewrittenValues =
-      '<ol><li value="1">Account</li><li value="2">Verification</li><li value="3">Sign-in</li></ol>';
-
-    expect(changedProperties(oldHtml, addedItem, 'Notes')).toEqual([]);
-    expect(changedProperties(oldHtml, removedItem, 'Sign-in')).toEqual([]);
-    expect(changedProperties(oldHtml, rewrittenValues, 'Sign-in')).toEqual([]);
-  });
-
-  it('keeps numbers of a list counting down shifted by items added after them', () => {
-    const oldHtml = '<ol reversed><li>Account</li><li>Notes</li></ol>';
-    const newHtml = '<ol reversed><li>Account</li><li>Notes</li><li>Backups</li></ol>';
-
-    expect(changedProperties(oldHtml, newHtml, 'Account')).toEqual([]);
-    expect(changedProperties(oldHtml, newHtml, 'Notes')).toEqual([]);
+    expect(itemChanges(oldHtml, newHtml, 'Notes')).toEqual([]);
+    expect(itemChanges(oldHtml, newHtml, 'Import')).toEqual([]);
   });
 
   it('describes a paragraph turned into a list item by the list type, with no old marker', () => {
@@ -136,30 +109,23 @@ describe('diffListMarkers', () => {
     ]);
   });
 
-  it('describes an item moved to a nested list with its own start by its number and level', () => {
+  it('describes an item moved to a nested list with its own start only by its level', () => {
     const oldHtml = '<ol><li>Accounts</li><li>Personal</li></ol>';
     const newHtml = '<ol><li>Accounts<ol start="3"><li>Personal</li></ol></li></ol>';
 
-    expect(changedProperties(oldHtml, newHtml, 'Personal')).toEqual([
-      ListMarkerProperty.Number,
-      ListMarkerProperty.Level,
-    ]);
+    expect(changedProperties(oldHtml, newHtml, 'Personal')).toEqual([ListMarkerProperty.Level]);
   });
 
-  it('counts only numbers with ignoreFormatting, also of an item moved to another level', () => {
+  it('describes no marker changes with ignoreFormatting', () => {
     const bullets = '<ul><li>Account</li><li>Notes</li></ul>';
     const numbers = '<ol><li>Account</li><li>Notes</li></ol>';
     const letters = '<ol type="a"><li>Account</li><li>Notes</li></ol>';
     const nested = '<ol><li>Account<ol><li>Notes</li></ol></li></ol>';
-    const nestedFromThree = '<ol><li>Account<ol start="3"><li>Notes</li></ol></li></ol>';
 
     expect(changedProperties(bullets, numbers, 'Notes', IGNORE_FORMATTING)).toEqual([]);
     expect(changedProperties(numbers, letters, 'Notes', IGNORE_FORMATTING)).toEqual([]);
     expect(changedProperties('<p>Notes</p>', numbers, 'Notes', IGNORE_FORMATTING)).toEqual([]);
     expect(changedProperties(numbers, nested, 'Notes', IGNORE_FORMATTING)).toEqual([]);
-    expect(changedProperties(numbers, nestedFromThree, 'Notes', IGNORE_FORMATTING)).toEqual([
-      ListMarkerProperty.Number,
-    ]);
   });
 
   it('describes a checked or cleared checkbox', () => {
@@ -195,5 +161,87 @@ describe('diffListMarkers', () => {
     const newHtml = '<p>Notes</p><dl><dt>Notes</dt></dl>';
 
     expect(itemChanges(oldHtml, newHtml, 'Notes')).toEqual([]);
+  });
+});
+
+/** Whether the numbers of the items with the text differ between the versions. */
+function numberChanged(oldHtml: string, newHtml: string, text: string): boolean {
+  return itemNumberChanged(lineWithText(oldHtml, text), lineWithText(newHtml, text));
+}
+
+describe('itemNumberChanged', () => {
+  it('finds another number of each item of a list with another start', () => {
+    const oldHtml = '<ol start="5"><li>Import</li><li>Invitation</li></ol>';
+    const newHtml = '<ol start="6"><li>Import</li><li>Invitation</li></ol>';
+
+    expect(numberChanged(oldHtml, newHtml, 'Import')).toBe(true);
+    expect(numberChanged(oldHtml, newHtml, 'Invitation')).toBe(true);
+  });
+
+  it('finds another number from the value of an item', () => {
+    const oldHtml = '<ol><li>Introduction</li><li value="10">Prices</li></ol>';
+    const newHtml = '<ol><li>Introduction</li><li value="12">Prices</li></ol>';
+
+    expect(numberChanged(oldHtml, newHtml, 'Prices')).toBe(true);
+    expect(numberChanged(oldHtml, newHtml, 'Introduction')).toBe(false);
+  });
+
+  it('finds numbers shifted by items added or removed in the list, also when written in value', () => {
+    const oldHtml = '<ol><li>Account</li><li>Sign-in</li><li>Notes</li></ol>';
+    const addedItem =
+      '<ol><li>Account</li><li>Verification</li><li>Sign-in</li><li>Notes</li></ol>';
+    const removedItem = '<ol><li>Sign-in</li><li>Notes</li></ol>';
+    const rewrittenValues =
+      '<ol><li value="1">Account</li><li value="2">Verification</li><li value="3">Sign-in</li></ol>';
+
+    expect(numberChanged(oldHtml, addedItem, 'Account')).toBe(false);
+    expect(numberChanged(oldHtml, addedItem, 'Notes')).toBe(true);
+    expect(numberChanged(oldHtml, removedItem, 'Sign-in')).toBe(true);
+    expect(numberChanged(oldHtml, rewrittenValues, 'Sign-in')).toBe(true);
+  });
+
+  it('finds shifted numbers both before and after a paragraph that splits a list', () => {
+    const oldHtml =
+      '<ol><li>Account</li><li>Sign-in</li></ol><p>Then:</p><ol start="3"><li>Import</li></ol>';
+    const newHtml =
+      '<ol><li>Account</li><li>Backups</li><li>Sign-in</li></ol>'
+      + '<p>Then:</p><ol start="4"><li>Import</li></ol>';
+
+    expect(numberChanged(oldHtml, newHtml, 'Sign-in')).toBe(true);
+    expect(numberChanged(oldHtml, newHtml, 'Import')).toBe(true);
+  });
+
+  it('finds numbers of a list counting down shifted by items added after them', () => {
+    const oldHtml = '<ol reversed><li>Account</li><li>Notes</li></ol>';
+    const newHtml = '<ol reversed><li>Account</li><li>Notes</li><li>Backups</li></ol>';
+
+    expect(numberChanged(oldHtml, newHtml, 'Account')).toBe(true);
+    expect(numberChanged(oldHtml, newHtml, 'Notes')).toBe(true);
+  });
+
+  it('compares numbers only when both items show them', () => {
+    const bullets = '<ul><li>Account</li><li>Notes</li></ul>';
+    const addedBullet = '<ul><li>Account</li><li>Backups</li><li>Notes</li></ul>';
+    const numbersFromThree = '<ol start="3"><li>Account</li><li>Notes</li></ol>';
+
+    expect(numberChanged(bullets, addedBullet, 'Notes')).toBe(false);
+    expect(numberChanged(bullets, numbersFromThree, 'Notes')).toBe(false);
+    expect(numberChanged('<p>Notes</p>', numbersFromThree, 'Notes')).toBe(false);
+  });
+});
+
+describe('listItemsDiffer', () => {
+  it('tells items apart by another number, also with ignoreFormatting, or by a described change', () => {
+    const numbers = '<ol><li>Account</li><li>Notes</li></ol>';
+    const shifted = '<ol><li>Backups</li><li>Account</li><li>Notes</li></ol>';
+    const letters = '<ol type="a"><li>Account</li><li>Notes</li></ol>';
+    const differ = (oldHtml: string, newHtml: string, options = DEFAULT_DIFF_OPTIONS) =>
+      listItemsDiffer(lineWithText(oldHtml, 'Notes'), lineWithText(newHtml, 'Notes'), options);
+
+    expect(differ(numbers, shifted)).toBe(true);
+    expect(differ(numbers, shifted, IGNORE_FORMATTING)).toBe(true);
+    expect(differ(numbers, letters)).toBe(true);
+    expect(differ(numbers, letters, IGNORE_FORMATTING)).toBe(false);
+    expect(differ(numbers, numbers)).toBe(false);
   });
 });

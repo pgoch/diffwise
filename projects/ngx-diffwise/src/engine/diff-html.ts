@@ -2,7 +2,7 @@ import { type ColumnMatches, alignTableColumns } from './compare/align-table-col
 import { diffFormats } from './compare/diff-formats';
 import { diffImages } from './compare/diff-images';
 import { diffLines } from './compare/diff-lines';
-import { diffListMarkers } from './compare/diff-list-markers';
+import { diffListMarkers, itemNumberChanged } from './compare/diff-list-markers';
 import { type CellChanges, allChangedText, diffTableCells } from './compare/diff-table-cells';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
@@ -115,7 +115,7 @@ class ViewRowBuilder {
     const itemChanges = { ...NO_DESCRIBED_CHANGES, details: itemDetails };
     const textChanges = joinDescribedChanges(formatChanges, imageChanges);
     const describedChanges = joinDescribedChanges(itemChanges, textChanges);
-    const itemMarks = listItemMarks(itemDetails);
+    const itemMarks = listItemMarks(itemDetails, itemNumberChanged(oldLine, newLine));
     const { wordChanges, removedCells, addedCells } = cellChanges;
     const oldRanges = [...wordChanges.removed, ...describedChanges.oldRanges];
     const newRanges = [...wordChanges.added, ...describedChanges.newRanges];
@@ -221,10 +221,19 @@ function withShiftedDetails(range: MarkedRange, shift: number): MarkedRange {
   return { ...range, detailIndices };
 }
 
-/** Positions of the details of a changed list marker and checkbox, among the first details. */
-function listItemMarks(itemDetails: readonly ListItemChangeDetail[]): ListItemMarks {
+/**
+ * Marks of a changed list item: positions of the details of its marker and checkbox, among the
+ * first details. Another number alone marks the marker without details.
+ */
+function listItemMarks(
+  itemDetails: readonly ListItemChangeDetail[],
+  numberChanged: boolean,
+): ListItemMarks {
+  const listMarkerDetails = positionsOfKind(itemDetails, ChangeDetailKind.ListMarker);
+
   return {
-    listMarkerDetails: positionsOfKind(itemDetails, ChangeDetailKind.ListMarker),
+    listMarkerChanged: numberChanged || listMarkerDetails.length > 0,
+    listMarkerDetails,
     checkboxDetails: positionsOfKind(itemDetails, ChangeDetailKind.Checkbox),
   };
 }

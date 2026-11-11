@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.2. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.3. Diffwise works without any setup: every option has a default, and you set only what you want to change.
 
 ## Where to set options
 
@@ -72,8 +72,8 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 | `showLineNumbers` | `true`, `false` | `true` | Shows the number of each line. Each version is numbered from 1 |
 | `lineNumberStyle` | `DiffwiseLineNumberStyle.Bar`, `Background` | `Bar` | What the number of a changed line gets: a colored number with a bar, or a colored background |
 | `lineNumberAlignment` | `DiffwiseVerticalAlignment.Top`, `Middle`, `Bottom` | `Top` | Where a number sits next to a line of several rows of text: at its first row, in the middle or at its last row |
-| `highlightChangedLines` | `true`, `false` | `true` | Gives changed lines a light background |
-| `highlightWholeLines` | `true`, `false` | `false` | Works only when `highlightChangedLines` is `false`. Then `true` marks an added or a removed line as a whole, like changed words, and `false` leaves the change to its number |
+| `highlightChangedLines` | `true`, `false` | `true` | Gives changed lines a light background. A table row gets none, so its cells keep their colors |
+| `highlightWholeLines` | `true`, `false` | `false` | Works only when `highlightChangedLines` is `false`. Then `true` marks an added or a removed line as a whole, like changed words, and `false` leaves the change to its number. In a list, it marks the item alone, so its marker and indentation stay. The cells of an added or a removed table row are marked with either value |
 
 ### Layout
 
@@ -86,7 +86,7 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 
 ### Change details
 
-Changes besides the text, such as italic → bold, another link address or another image, have details: a tooltip says what changed. See [How it works](how-it-works.md#5-mark-and-display) for what each change shows.
+Changes besides the text, such as italic → bold, another link address, another image, bullets that became numbers or a checked checkbox, have details: a tooltip says what changed. See [How it works](how-it-works.md#5-mark-and-display) for what each change shows.
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
@@ -115,10 +115,10 @@ The content keeps the font size of your app. The tooltips have the font of the d
 |---|---|---|---|
 | `ignoreWhitespace` | `true`, `false` | `false` | Ignores differences in whitespace |
 | `ignoreCase` | `true`, `false` | `false` | Ignores differences in letter case |
-| `ignoreFormatting` | `true`, `false` | `false` | Ignores changes of formatting alone, such as italic → bold, another color or another heading level |
+| `ignoreFormatting` | `true`, `false` | `false` | Ignores changes of formatting alone, such as italic → bold, another color or another heading level. It also ignores the look of list markers: bullets that became numbers, another bullet or numbering style, another level of an item, and a paragraph that became a list item or the other way around. Another item number still counts, as readers cite it, as in "see step 6" |
 | `ignoreLinkChanges` | `true`, `false` | `false` | Ignores links added, removed or pointing elsewhere around the same text |
 
-Only these options compare the versions again; the other options change only the look. Changes of images always count. [How it works](how-it-works.md#2-read-the-text-and-its-format) describes what counts as formatting.
+Only these options compare the versions again; the other options change only the look. Changes of images and checkboxes always count. [How it works](how-it-works.md#2-read-the-text-and-its-format) describes what counts as formatting.
 
 ### Language
 
@@ -173,6 +173,9 @@ Each level of the configuration changes only the texts it sets. `null` takes awa
 | `addedLinkLabel` | Link added | Dodany link | The title of a tooltip about a link added around unchanged text |
 | `removedLinkLabel` | Link removed | Usunięty link | The title of a tooltip about a link removed from unchanged text |
 | `imageChangeLabel` | Image changed | Zmieniony obrazek | The title of a tooltip about an image with another file, size or alternative text |
+| `listMarkerChangeLabel` | List marker changed | Zmiana punktora | The title of a tooltip about the marker of a list item, such as bullets that became numbers, and the name of its icon |
+| `checkedCheckboxLabel` | Checkbox checked | Zaznaczone pole wyboru | The title of a tooltip about a checkbox of a list item that was checked, and the name of its icon |
+| `uncheckedCheckboxLabel` | Checkbox cleared | Odznaczone pole wyboru | The same for a checkbox that was cleared |
 | `multipleChangesLabel` | Formatting changes: {count} | Zmiany formatowania: {count} | The title of a tooltip about several changes in one line; `{count}` stands for their number |
 | `oldValueLabel`, `newValueLabel` | Before, After | Było, Jest | The labels of the old and the new value, such as an address |
 | `imageFileLabel` | file | plik | Heads the old and the new file of an image when more of the image changed |
@@ -208,8 +211,23 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | Text | English | Polish | Where it shows |
 |---|---|---|---|
 | `headingLabel` | heading {level} | nagłówek {level} | A heading level, as in "heading 3 → heading 2"; `{level}` stands for the level |
-| `paragraphLabel` | paragraph | akapit | Text that is not a heading, as in "paragraph → heading 2" |
+| `paragraphLabel` | paragraph | akapit | Text that is not a heading, as in "paragraph → heading 2", or a line that is not a list item, as in "paragraph → bulleted list" |
 | `alignLeftLabel`, `alignCenterLabel`, `alignRightLabel`, `alignJustifyLabel` | left, center, right, justified | do lewej, do środka, do prawej, do obu krawędzi | Values of the alignment; rare values, such as `start`, show as CSS writes them |
+
+### Names of list markers
+
+A tooltip about a list marker has a line for each part that changed, in this order: the list type, the style and the level, as in "bulleted list → numbered list" or "level 1 → level 2". Another item number is marked like changed text, with no tooltip.
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `bulletedListLabel`, `numberedListLabel` | bulleted list, numbered list | lista punktowana, lista numerowana | The list type, as in "bulleted list → numbered list" |
+| `listLevelLabel` | level {level} | poziom {level} | How deep an item is nested, as in "level 1 → level 2"; `{level}` stands for it |
+| `decimalNumberingLabel` | numbers | cyfry | Numbering with digits: 1, 2, 3 |
+| `lowerAlphaNumberingLabel`, `upperAlphaNumberingLabel` | lowercase letters, uppercase letters | małe litery, wielkie litery | Numbering with letters: a, b, c or A, B, C |
+| `lowerRomanNumberingLabel`, `upperRomanNumberingLabel` | lowercase Roman numerals, uppercase Roman numerals | małe cyfry rzymskie, wielkie cyfry rzymskie | Numbering with Roman numerals: i, ii, iii or I, II, III |
+| `discBulletsLabel`, `circleBulletsLabel`, `squareBulletsLabel` | dots, circles, squares | kropki, kółka, kwadraty | Bullets: filled circles, hollow circles or filled squares |
+
+Rare styles, such as `lower-greek`, show as CSS writes them, as in "numbers → lower-greek".
 
 ## The `Diffwise` service
 
@@ -295,7 +313,10 @@ The component element shows the options in its classes:
 | `diffwise-html-diff__gap` | The empty place opposite an added or a removed line |
 | `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
 | `diffwise-html-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
-| `diffwise-html-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
+| `diffwise-html-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
+| `diffwise-html-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background |
+| `diffwise-html-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-html-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
+| `diffwise-html-diff__change-details-icon`, with `--formatting`, `--link`, `--image`, `--list-marker`, `--checkbox` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
 | `diffwise-html-diff__change-details-count` | The number of changes on the icon of several changes |
 | `diffwise-html-diff__tooltip` | The tooltip; one for each diff |
 | `diffwise-html-diff__tooltip-title` | The title of the tooltip, such as "Link address changed" |

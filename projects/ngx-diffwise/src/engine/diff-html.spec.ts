@@ -314,6 +314,17 @@ function isListItemLine(line: ViewLine | null): boolean {
   return line !== null && fragmentOf(line.html).querySelector(LIST_ITEM_SELECTOR) !== null;
 }
 
+/** The row that shows the new line with the number. */
+function rowWithNewLine(rows: readonly ViewRow[], number: number): ViewRow {
+  const row = rows.find(({ newLine }) => newLine?.number === number);
+
+  if (row === undefined) {
+    throw new Error(`No row with new line ${number}`);
+  }
+
+  return row;
+}
+
 function lineHasMarkers(line: ViewLine | null): boolean {
   return line !== null && fragmentOf(line.html).querySelector(MARKER_SELECTOR) !== null;
 }
@@ -417,7 +428,7 @@ describe('diffHtml', () => {
       [LineChangeKind.Unchanged, 16, 18, [], []],
       [LineChangeKind.Unchanged, 17, 19, [], []],
       [LineChangeKind.Added, null, 20, [], []],
-      [LineChangeKind.Changed, 18, 21, ['five'], ['ten']],
+      [LineChangeKind.Changed, 18, 21, ['4.', 'five'], ['5.', 'ten']],
       [LineChangeKind.Changed, 19, 22, ['month'], ['week']],
       [LineChangeKind.Unchanged, 20, 23, [], []],
       [LineChangeKind.Unchanged, 21, 24, [], []],
@@ -440,9 +451,12 @@ describe('diffHtml', () => {
 
     expect(changedItems).toEqual([
       [LineChangeKind.Added, null, 11, [], []],
+      [LineChangeKind.Changed, 11, 12, ['5.'], ['6.']],
       [LineChangeKind.Changed, 31, 33, ['24'], ['48']],
       [LineChangeKind.Added, null, 34, [], []],
+      [LineChangeKind.Changed, 32, 35, ['3.'], ['4.']],
       [LineChangeKind.Changed, 33, 36, ['macOS'], [', macOS', 'Linux']],
+      [LineChangeKind.Changed, 35, 38, ['4.'], ['5.']],
       [LineChangeKind.Changed, 37, 40, ['5.'], ['6.']],
       [LineChangeKind.Changed, 38, 41, ['6.'], ['7.']],
       [LineChangeKind.Changed, 41, 44, ['•'], ['1.']],
@@ -475,8 +489,6 @@ describe('diffHtml', () => {
     const toNumbers = [[ListMarkerProperty.ListType]];
 
     expect(itemChanges).toEqual([
-      [37, 40, [[ListMarkerProperty.Number]]],
-      [38, 41, [[ListMarkerProperty.Number]]],
       [41, 44, toNumbers],
       [42, 45, toNumbers],
       [43, 46, toNumbers],
@@ -485,16 +497,24 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('keeps numbers shifted by an added item unmarked in the medium sample', () => {
-    const { rows } = compare(enMediumBefore, enMediumAfter);
-    const shiftedItem = rows.find((row) => row.newLine?.number === 21);
+  it('marks numbers shifted by an added item like numbers from another start, with no details', () => {
+    const { rows } = compare(enLongBefore, enLongAfter);
+    const shiftedItem = rowWithNewLine(rows, 35);
+    const itemOfNewStart = rowWithNewLine(rows, 40);
 
-    expect(rows.some(hasListItemDetails)).toBe(false);
-    expect(shiftedItem?.newLine?.html).toContain('<li value="5"');
-    expect(shiftedItem?.oldLine?.html).toContain('<li value="4"');
+    expect([shiftedItem, itemOfNewStart].map(rowSummary)).toEqual([
+      [LineChangeKind.Changed, 32, 35, ['3.'], ['4.']],
+      [LineChangeKind.Changed, 37, 40, ['5.'], ['6.']],
+    ]);
+    expect([shiftedItem, itemOfNewStart].map(detailShape)).toEqual([
+      [32, 35, []],
+      [37, 40, []],
+    ]);
+    expect(detailPositions(shiftedItem.newLine)).toEqual([]);
+    expect(detailPositions(itemOfNewStart.newLine)).toEqual([]);
   });
 
-  it('marks another number and changed text of one item separately', () => {
+  it('marks another number and changed text of one item, with no details', () => {
     const oldHtml = '<ol start="5"><li>Import notes</li></ol>';
     const newHtml = '<ol start="6"><li>Import files</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
@@ -506,7 +526,7 @@ describe('diffHtml', () => {
       ['5.', 'notes'],
       ['6.', 'files'],
     ]);
-    expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Number]]]);
+    expect(detailShape(row)).toEqual([1, 1, []]);
   });
 
   it('puts the details of a list item before those of formatting, with markers pointing to them', () => {
@@ -533,15 +553,14 @@ describe('diffHtml', () => {
   });
 
   it('keeps only numbers and checkboxes of list items with ignoreFormatting', () => {
-    const itemChanges = compare(enLongBefore, enLongAfter, IGNORE_FORMATTING)
-      .rows.filter(hasListItemDetails)
-      .map(itemChangeSummary);
+    const { rows } = compare(enLongBefore, enLongAfter, IGNORE_FORMATTING);
+    const itemChanges = rows.filter(hasListItemDetails).map(itemChangeSummary);
+    const changedItems = rows.filter(isChangedListItem).map(rowShape);
 
-    expect(itemChanges).toEqual([
-      [37, 40, [[ListMarkerProperty.Number]]],
-      [38, 41, [[ListMarkerProperty.Number]]],
-      [47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
-    ]);
+    expect(itemChanges).toEqual([[47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]]]);
+    expect(changedItems).toContainEqual([LineChangeKind.Changed, 32, 35]);
+    expect(changedItems).toContainEqual([LineChangeKind.Changed, 37, 40]);
+    expect(changedItems).not.toContainEqual([LineChangeKind.Changed, 41, 44]);
   });
 
   it.each(TRANSLATED_SAMPLES)(

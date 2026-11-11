@@ -178,7 +178,6 @@ const CHECKBOX_TEXT_NAMES: Readonly<Record<CheckboxState, TextName>> = {
 const LIST_FORMAT_OPTIONS: Intl.ListFormatOptions = { type: 'conjunction' };
 const COUNT_PLACEHOLDER = '{count}';
 const LEVEL_PLACEHOLDER = '{level}';
-const NUMBER_PLACEHOLDER = '{number}';
 const ARROW = ' → ';
 const LABEL_SEPARATOR = ': ';
 const SIZE_SEPARATOR = ' × ';
@@ -476,7 +475,7 @@ export class ChangeDescriber {
 
   /**
    * A line for each changed property of a list marker, such as "bulleted list → numbered list",
-   * "numbers → lowercase letters", "number 5 → number 6" or "level 1 → level 2".
+   * "numbers → lowercase letters" or "level 1 → level 2".
    */
   private listMarkerLines({
     oldMarker,
@@ -502,8 +501,6 @@ export class ChangeDescriber {
         return this.texts[LIST_TYPE_TEXT_NAMES[marker.listType]];
       case ListMarkerProperty.Style:
         return this.listStyleName(marker.style);
-      case ListMarkerProperty.Number:
-        return this.texts.itemNumberLabel.replaceAll(NUMBER_PLACEHOLDER, String(marker.number));
       case ListMarkerProperty.Level:
         return this.texts.listLevelLabel.replaceAll(LEVEL_PLACEHOLDER, String(marker.level));
     }
