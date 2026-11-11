@@ -23,6 +23,8 @@ function paragraph(text: string): Line {
     html: `<p>${text}</p>`,
     marker: null,
     checkbox: null,
+    table: null,
+    cells: [],
   };
 }
 
@@ -57,6 +59,8 @@ function imageParagraph(source: string): Line {
     html: `<p><img src="${source}"></p>`,
     marker: null,
     checkbox: null,
+    table: null,
+    cells: [],
   };
 }
 

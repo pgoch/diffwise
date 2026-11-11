@@ -378,27 +378,27 @@ describe('diffHtml', () => {
 
     expect(changedItems).toEqual([
       [LineChangeKind.Added, null, 11, [], []],
-      [LineChangeKind.Changed, 21, 22, ['24'], ['48']],
-      [LineChangeKind.Added, null, 23, [], []],
-      [LineChangeKind.Changed, 23, 25, ['macOS'], [', macOS', 'Linux']],
-      [LineChangeKind.Changed, 27, 29, ['5.'], ['6.']],
-      [LineChangeKind.Changed, 28, 30, ['6.'], ['7.']],
-      [LineChangeKind.Changed, 31, 33, ['•'], ['1.']],
-      [LineChangeKind.Changed, 32, 34, ['•'], ['2.']],
-      [LineChangeKind.Changed, 33, 35, ['•'], ['3.']],
-      [LineChangeKind.Changed, 34, 36, ['•'], ['4.']],
-      [LineChangeKind.Changed, 37, 39, [FRAMED_CHECKBOX], [FRAMED_CHECKBOX]],
-      [LineChangeKind.Changed, 44, 46, ['and invite others'], []],
-      [LineChangeKind.Added, null, 47, [], []],
-      [LineChangeKind.Changed, 62, 65, [], ['and files']],
-      [LineChangeKind.Changed, 77, 80, [], ['or newer']],
+      [LineChangeKind.Changed, 31, 33, ['24'], ['48']],
+      [LineChangeKind.Added, null, 34, [], []],
+      [LineChangeKind.Changed, 33, 36, ['macOS'], [', macOS', 'Linux']],
+      [LineChangeKind.Changed, 37, 40, ['5.'], ['6.']],
+      [LineChangeKind.Changed, 38, 41, ['6.'], ['7.']],
+      [LineChangeKind.Changed, 41, 44, ['•'], ['1.']],
+      [LineChangeKind.Changed, 42, 45, ['•'], ['2.']],
+      [LineChangeKind.Changed, 43, 46, ['•'], ['3.']],
+      [LineChangeKind.Changed, 44, 47, ['•'], ['4.']],
+      [LineChangeKind.Changed, 47, 50, [FRAMED_CHECKBOX], [FRAMED_CHECKBOX]],
+      [LineChangeKind.Changed, 54, 57, ['and invite others'], []],
+      [LineChangeKind.Added, null, 58, [], []],
+      [LineChangeKind.Changed, 75, 78, [], ['and files']],
+      [LineChangeKind.Changed, 90, 93, [], ['or newer']],
     ]);
   });
 
   it('keeps the numbers and the nesting of list items in their lines', () => {
     const { rows } = compare(enLongBefore, enLongAfter);
     const addedContentsItem = rows.find((row) => row.newLine?.number === 11);
-    const changedNestedItem = rows.find((row) => row.newLine?.number === 25);
+    const changedNestedItem = rows.find((row) => row.newLine?.number === 36);
 
     expect(addedContentsItem?.newLine?.html).toBe(
       `<ol><li value="5" ${LINE_ITEM}><a href="#diff-new-shortcuts">Keyboard shortcuts</a></li></ol>`,
@@ -413,13 +413,13 @@ describe('diffHtml', () => {
     const toNumbers = [[ListMarkerProperty.ListType]];
 
     expect(itemChanges).toEqual([
-      [27, 29, [[ListMarkerProperty.Number]]],
-      [28, 30, [[ListMarkerProperty.Number]]],
-      [31, 33, toNumbers],
-      [32, 34, toNumbers],
-      [33, 35, toNumbers],
-      [34, 36, toNumbers],
-      [37, 39, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
+      [37, 40, [[ListMarkerProperty.Number]]],
+      [38, 41, [[ListMarkerProperty.Number]]],
+      [41, 44, toNumbers],
+      [42, 45, toNumbers],
+      [43, 46, toNumbers],
+      [44, 47, toNumbers],
+      [47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
     ]);
   });
 
@@ -476,9 +476,9 @@ describe('diffHtml', () => {
       .map(itemChangeSummary);
 
     expect(itemChanges).toEqual([
-      [27, 29, [[ListMarkerProperty.Number]]],
-      [28, 30, [[ListMarkerProperty.Number]]],
-      [37, 39, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
+      [37, 40, [[ListMarkerProperty.Number]]],
+      [38, 41, [[ListMarkerProperty.Number]]],
+      [47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
     ]);
   });
 
@@ -649,19 +649,19 @@ describe('diffHtml', () => {
     expect(
       compare(enLongBefore, enLongAfter).rows.filter(hasFormattingOrLinkDetails).map(detailSummary),
     ).toEqual([
-      [45, 48, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
-      [46, 49, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
+      [55, 59, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
+      [56, 60, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
       [
-        52,
-        55,
+        62,
+        66,
         ['Important:'],
         ['Important:'],
         [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
       ],
-      [54, 57, ['color'], ['color'], [formattingDetail([], [], [textColor])]],
+      [64, 68, ['color'], ['color'], [formattingDetail([], [], [textColor])]],
       [
-        58,
-        61,
+        68,
+        72,
         ['Keyboard shortcuts'],
         ['Keyboard shortcuts'],
         [formattingDetail([], [], [headingLevel])],
@@ -717,10 +717,10 @@ describe('diffHtml', () => {
       compare(enLongBefore, enLongAfter).rows.filter(hasFramedImages).map(imageSummary),
     ).toEqual([
       [3, 3, [logo2025], [logo2026], [[ImageProperty.Source]]],
-      [40, 42, ['images/icon-share.svg'], [], []],
-      [47, 50, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
-      [71, 75, [chart], [chart], [[ImageProperty.AltText]]],
-      [75, 78, [logo2025], [logo2026], [[ImageProperty.Source]]],
+      [50, 53, ['images/icon-share.svg'], [], []],
+      [57, 61, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
+      [84, 88, [chart], [chart], [[ImageProperty.AltText]]],
+      [88, 91, [logo2025], [logo2026], [[ImageProperty.Source]]],
     ]);
   });
 

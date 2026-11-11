@@ -268,4 +268,41 @@ describe('diffLines', () => {
     expect(diff(textHtml, textHtml + imageHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1 });
     expect(diff(textHtml + imageHtml, textHtml).stats).toEqual({ ...NO_CHANGES, removedLines: 1 });
   });
+
+  it('compares the rows of a table one by one, as lines', () => {
+    const oldHtml =
+      '<table><tr><td>Free</td><td>0</td></tr><tr><td>Personal</td><td>4</td></tr></table>';
+    const newHtml =
+      '<table><tr><td>Free</td><td>0</td></tr><tr><td>Personal</td><td>5</td></tr></table>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Unchanged, 'Free 0', 'Free 0'],
+      [LineChangeKind.Changed, 'Personal 4', 'Personal 5'],
+    ]);
+  });
+
+  it('finds text moved to another cell of a row, which keeps the text of the row', () => {
+    const oldHtml = '<table><tr><td>Offline access</td><td>yes</td><td></td></tr></table>';
+    const newHtml = '<table><tr><td>Offline access</td><td></td><td>yes</td></tr></table>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Changed, 'Offline access yes', 'Offline access yes'],
+    ]);
+  });
+
+  it('finds two cells merged into one with the same text', () => {
+    const oldHtml = '<table><tr><td>1 TB</td><td></td></tr></table>';
+    const newHtml = '<table><tr><td colspan="2">1 TB</td></tr></table>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+  });
+
+  it('compares the texts of cells as the options say', () => {
+    const ignoreWhitespace = { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace: true };
+    const oldHtml = '<table><tr><td>Storage</td><td>1 GB for notes and files</td></tr></table>';
+    const newHtml = '<table><tr><td>Storage</td><td>1GB for notes and files</td></tr></table>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+    expect(diff(oldHtml, newHtml, ignoreWhitespace).stats).toEqual(NO_CHANGES);
+  });
 });

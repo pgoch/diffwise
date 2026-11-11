@@ -6,7 +6,11 @@ export const LineKind = {
   Paragraph: 'paragraph',
   /** `li`, `dt` or `dd`, or the text of one next to its inner blocks, such as a nested list. */
   ListItem: 'listItem',
-  /** Any other block, such as a table; one line for now. */
+  /** A row of a table, `tr`, with its cells. */
+  TableRow: 'tableRow',
+  /** The caption of a table. */
+  TableCaption: 'tableCaption',
+  /** Any other block, such as a code block or a figure. */
   Block: 'block',
 } as const;
 
@@ -32,6 +36,18 @@ export interface Line {
   readonly marker: ListMarker | null;
   /** State of a checkbox that the list item starts with, as in a task list; `null` without one. */
   readonly checkbox: CheckboxState | null;
+  /** Position of the line's table among the tables of its version, from 0; `null` outside tables. */
+  readonly table: number | null;
+  /** Cells of a table row, in reading order; empty in other lines. */
+  readonly cells: readonly TableCell[];
+}
+
+/** A cell of a table row: its part of the line's text, and the columns it takes in the table. */
+export interface TableCell extends TextRange {
+  /** Column the cell starts in, counted from 0. */
+  readonly column: number;
+  /** Columns the cell spans, at least 1. */
+  readonly columnSpan: number;
 }
 
 /** Kinds of lists by the markers of their items. */
@@ -261,6 +277,9 @@ export const CONTINUED_ITEM_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continu
 
 /** Holds the text of a list marker that Diffwise draws in place of the browser's, such as `5.`. */
 export const LIST_MARKER_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}list-marker`;
+
+/** Marks the copy of a table in the HTML of a table line, which holds its caption or one row. */
+export const TABLE_COPY_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}table-copy`;
 
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
