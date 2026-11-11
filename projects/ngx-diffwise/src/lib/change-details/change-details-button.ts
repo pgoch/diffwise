@@ -11,14 +11,25 @@ import type { ChangeDescriber } from './change-texts';
 
 /** Icons of the button: one for each kind of change, and one for several changes. */
 export const ChangeIconKind = {
-  Formatting: ChangeDetailKind.Formatting,
-  Link: ChangeDetailKind.Link,
-  Image: ChangeDetailKind.Image,
+  Formatting: 'formatting',
+  Link: 'link',
+  Image: 'image',
+  ListMarker: 'list-marker',
+  Checkbox: 'checkbox',
   /** Several changes in one line, with their number. */
   Multiple: 'multiple',
 } as const;
 
 export type ChangeIconKind = (typeof ChangeIconKind)[keyof typeof ChangeIconKind];
+
+/** The icon of each kind of change; it also names the icon's modifier class. */
+const DETAIL_ICONS: Readonly<Record<ChangeDetailKind, ChangeIconKind>> = {
+  [ChangeDetailKind.Formatting]: ChangeIconKind.Formatting,
+  [ChangeDetailKind.Link]: ChangeIconKind.Link,
+  [ChangeDetailKind.Image]: ChangeIconKind.Image,
+  [ChangeDetailKind.ListMarker]: ChangeIconKind.ListMarker,
+  [ChangeDetailKind.Checkbox]: ChangeIconKind.Checkbox,
+};
 
 /** The button between the versions in a row with changes besides text: their icon and name. */
 @Component({
@@ -44,5 +55,5 @@ export class ChangeDetailsButton {
 }
 
 function iconOf(details: readonly ChangeDetail[]): ChangeIconKind {
-  return details.length === 1 ? details[0].kind : ChangeIconKind.Multiple;
+  return details.length === 1 ? DETAIL_ICONS[details[0].kind] : ChangeIconKind.Multiple;
 }

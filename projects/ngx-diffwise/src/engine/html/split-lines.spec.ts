@@ -2,7 +2,7 @@ import enLongAfter from '../../../../../test-data/en/long/after.html?raw';
 import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
 import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
 import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
-import { LineKind, TextStyle } from '../model';
+import { CheckboxState, LineKind, ListStyle, TextStyle } from '../model';
 import { parseHtml } from './parse-html';
 import { IMAGE_CHARACTER, readerText } from './reader-text';
 import { splitLines } from './split-lines';
@@ -49,6 +49,17 @@ function linesWithoutHtml(html: string) {
 /** HTML of each line, for tests that check only the copies around the content. */
 function htmlOfLines(html: string) {
   return lines(html).map((line) => line.html);
+}
+
+/** Each line as `[text, marker style, number, level, checkbox]`; `null` where it has none. */
+function itemStarts(html: string) {
+  return splitDocument(html).map(({ text, marker, checkbox }) => [
+    text,
+    marker?.style ?? null,
+    marker?.number ?? null,
+    marker?.level ?? null,
+    checkbox,
+  ]);
 }
 
 describe('splitLines', () => {
@@ -244,6 +255,34 @@ describe('splitLines', () => {
         html: `<dl><dt ${LINE_ITEM}>Termin</dt></dl>`,
       },
     ]);
+  });
+
+  it('gives the first line of a list item the marker and the checkbox of the item', () => {
+    const html =
+      '<ol start="3"><li><input type="checkbox" checked> Account<ul><li>Personal</li></ul>'
+      + 'and settings</li></ol><p>End</p>';
+
+    expect(itemStarts(html)).toEqual([
+      ['Account', ListStyle.Decimal, 3, 1, CheckboxState.Checked],
+      ['Personal', ListStyle.Circle, 1, 2, null],
+      ['and settings', null, null, null, null],
+      ['End', null, null, null, null],
+    ]);
+  });
+
+  it('gives the marker of an item to the line of a term inside it, not to its description', () => {
+    const html = '<ul><li><dl><dt>Notebook</dt><dd>A set of notes</dd></dl></li></ul>';
+
+    expect(itemStarts(html)).toEqual([
+      ['Notebook', ListStyle.Disc, 1, 1, null],
+      ['A set of notes', null, null, null, null],
+    ]);
+  });
+
+  it('reads the checkbox of an item whose style shows no marker', () => {
+    const html = '<ul style="list-style-type: none"><li><input type="checkbox"> Backups</li></ul>';
+
+    expect(itemStarts(html)).toEqual([['Backups', null, null, null, CheckboxState.Unchecked]]);
   });
 
   it('makes a line of each term and description of a definition list', () => {

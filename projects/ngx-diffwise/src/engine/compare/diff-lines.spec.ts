@@ -164,6 +164,27 @@ describe('diffLines', () => {
     ]);
   });
 
+  it('counts an item with only another marker or checkbox as a changed line', () => {
+    const oldHtml = '<ul><li>Notes</li><li><input type="checkbox"> Backups</li></ul>';
+    const newHtml =
+      '<ol><li>Notes</li></ol><ul><li><input type="checkbox" checked> Backups</li></ul>';
+
+    expect(summary(oldHtml, newHtml)).toEqual([
+      [LineChangeKind.Changed, 'Notes', 'Notes'],
+      [LineChangeKind.Changed, 'Backups', 'Backups'],
+    ]);
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 2 });
+  });
+
+  it('counts a paragraph turned into a list item as changed, unless formatting is ignored', () => {
+    const ignoreFormatting = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
+    const oldHtml = '<p>Turn on backups.</p>';
+    const newHtml = '<ul><li>Turn on backups.</li></ul>';
+
+    expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
+    expect(diff(oldHtml, newHtml, ignoreFormatting).stats).toEqual(NO_CHANGES);
+  });
+
   it('finds a change of formatting or of a link in the same text', () => {
     const italicToBold = ['<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'];
     const otherAddress = [

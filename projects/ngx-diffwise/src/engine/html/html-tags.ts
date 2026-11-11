@@ -26,8 +26,15 @@ export const PARAGRAPH_TAGS: ReadonlySet<string> = new Set([PARAGRAPH_TAG, ...CO
 /** A numbered list; its `start` and `reversed` attributes set the numbers of its items. */
 export const NUMBERED_LIST_TAG = 'ol';
 
+/** A bulleted list; its `type` attribute sets the bullets of its items. */
+export const BULLETED_LIST_TAG = 'ul';
+
 /** Lists whose items show a marker, such as a bullet or a number. */
-export const MARKER_LIST_TAGS: ReadonlySet<string> = new Set(['menu', NUMBERED_LIST_TAG, 'ul']);
+export const MARKER_LIST_TAGS: ReadonlySet<string> = new Set([
+  'menu',
+  NUMBERED_LIST_TAG,
+  BULLETED_LIST_TAG,
+]);
 
 /** An item of a list with markers. */
 export const LIST_ITEM_TAG = 'li';

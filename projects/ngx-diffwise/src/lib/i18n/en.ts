@@ -11,6 +11,9 @@ export const ENGLISH_TEXTS: UiTexts = {
   addedLinkLabel: 'Link added',
   removedLinkLabel: 'Link removed',
   imageChangeLabel: 'Image changed',
+  listMarkerChangeLabel: 'List marker changed',
+  checkedCheckboxLabel: 'Checkbox checked',
+  uncheckedCheckboxLabel: 'Checkbox cleared',
   multipleChangesLabel: 'Formatting changes: {count}',
 
   oldValueLabel: 'Before',
@@ -76,4 +79,17 @@ export const ENGLISH_TEXTS: UiTexts = {
   alignCenterLabel: 'center',
   alignRightLabel: 'right',
   alignJustifyLabel: 'justified',
+
+  bulletedListLabel: 'bulleted list',
+  numberedListLabel: 'numbered list',
+  itemNumberLabel: 'number {number}',
+  listLevelLabel: 'level {level}',
+  decimalNumberingLabel: 'numbers',
+  lowerAlphaNumberingLabel: 'lowercase letters',
+  upperAlphaNumberingLabel: 'uppercase letters',
+  lowerRomanNumberingLabel: 'lowercase Roman numerals',
+  upperRomanNumberingLabel: 'uppercase Roman numerals',
+  discBulletsLabel: 'dots',
+  circleBulletsLabel: 'circles',
+  squareBulletsLabel: 'squares',
 };

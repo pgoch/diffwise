@@ -11,6 +11,9 @@ export const POLISH_TEXTS: UiTexts = {
   addedLinkLabel: 'Dodany link',
   removedLinkLabel: 'Usunięty link',
   imageChangeLabel: 'Zmieniony obrazek',
+  listMarkerChangeLabel: 'Zmiana punktora',
+  checkedCheckboxLabel: 'Zaznaczone pole wyboru',
+  uncheckedCheckboxLabel: 'Odznaczone pole wyboru',
   multipleChangesLabel: 'Zmiany formatowania: {count}',
 
   oldValueLabel: 'Było',
@@ -76,4 +79,17 @@ export const POLISH_TEXTS: UiTexts = {
   alignCenterLabel: 'do środka',
   alignRightLabel: 'do prawej',
   alignJustifyLabel: 'do obu krawędzi',
+
+  bulletedListLabel: 'lista punktowana',
+  numberedListLabel: 'lista numerowana',
+  itemNumberLabel: 'numer {number}',
+  listLevelLabel: 'poziom {level}',
+  decimalNumberingLabel: 'cyfry',
+  lowerAlphaNumberingLabel: 'małe litery',
+  upperAlphaNumberingLabel: 'wielkie litery',
+  lowerRomanNumberingLabel: 'małe cyfry rzymskie',
+  upperRomanNumberingLabel: 'wielkie cyfry rzymskie',
+  discBulletsLabel: 'kropki',
+  circleBulletsLabel: 'kółka',
+  squareBulletsLabel: 'kwadraty',
 };

@@ -17,6 +17,7 @@ import { splitLines } from './html/split-lines';
 import {
   type ChangeDetail,
   ChangeDetailKind,
+  CheckboxState,
   DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   FormattingValue,
@@ -25,6 +26,7 @@ import {
   type ImageProperties,
   ImageProperty,
   LineChangeKind,
+  ListMarkerProperty,
   TextStyle,
   type ViewLine,
   type ViewRow,
@@ -50,6 +52,14 @@ const HREF_ATTRIBUTE = 'href';
 const FRAGMENT_START = '#';
 
 const LIST_ITEM_SELECTOR = 'li, dt, dd';
+const LIST_MARKER_ATTRIBUTE = 'data-diffwise-list-marker';
+const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
+const DRAWN_MARKER_SELECTOR = '.diffwise-html-diff__highlight--list-marker';
+const CHECKBOX_MARKER_CLASS = 'diffwise-html-diff__highlight--checkbox';
+const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
+
+/** Stands for a framed checkbox among the texts of markers. */
+const FRAMED_CHECKBOX = '[checkbox]';
 
 /** Marks the list item that a line belongs to. */
 const LINE_ITEM = 'data-diffwise-line-item=""';
@@ -124,7 +134,47 @@ function markedTexts(line: ViewLine | null, selector: string) {
 
   const markers = fragmentOf(line.html).querySelectorAll(selector);
 
-  return Array.from(markers, (marker) => marker.textContent);
+  return Array.from(markers, markerText);
+}
+
+/** Text of a marker; a drawn list marker has its text in an attribute, and a checkbox has none. */
+function markerText(marker: Element): string | null {
+  if (marker.classList.contains(CHECKBOX_MARKER_CLASS)) {
+    return FRAMED_CHECKBOX;
+  }
+
+  return marker.getAttribute(LIST_MARKER_ATTRIBUTE) ?? marker.textContent;
+}
+
+/** A row as `[old number, new number, what changed]`: marker properties, or checkbox states. */
+function itemChangeSummary(row: ViewRow) {
+  const changes = row.changeDetails.map((detail) => {
+    switch (detail.kind) {
+      case ChangeDetailKind.ListMarker:
+        return detail.changedProperties;
+      case ChangeDetailKind.Checkbox:
+        return [detail.oldState, detail.newState];
+      default:
+        return detail.kind;
+    }
+  });
+
+  return [row.oldLine?.number, row.newLine?.number, changes];
+}
+
+function hasListItemDetails(row: ViewRow): boolean {
+  return row.changeDetails.some(isListItemDetail);
+}
+
+function isListItemDetail({ kind }: ChangeDetail): boolean {
+  return kind === ChangeDetailKind.ListMarker || kind === ChangeDetailKind.Checkbox;
+}
+
+/** Detail positions of the markers of a line, such as `['0', '1']`. */
+function detailPositions(line: ViewLine | null) {
+  const markers =
+    line === null ? [] : fragmentOf(line.html).querySelectorAll(DETAILS_MARKER_SELECTOR);
+  return Array.from(markers, (marker) => marker.getAttribute(DETAILS_ATTRIBUTE));
 }
 
 /** A row as `[old number, new number, old texts, new texts, details]` for markers with details. */
@@ -321,7 +371,7 @@ describe('diffHtml', () => {
     expect(diff.stats).toEqual({ addedLines: 6, removedLines: 3, changedLines: 8 });
   });
 
-  it('shows the list changes of the long sample item by item', () => {
+  it('shows the list changes of the long sample item by item, with their markers', () => {
     const changedItems = compare(enLongBefore, enLongAfter)
       .rows.filter(isChangedListItem)
       .map(rowSummary);
@@ -331,6 +381,13 @@ describe('diffHtml', () => {
       [LineChangeKind.Changed, 21, 22, ['24'], ['48']],
       [LineChangeKind.Added, null, 23, [], []],
       [LineChangeKind.Changed, 23, 25, ['macOS'], [', macOS', 'Linux']],
+      [LineChangeKind.Changed, 27, 29, ['5.'], ['6.']],
+      [LineChangeKind.Changed, 28, 30, ['6.'], ['7.']],
+      [LineChangeKind.Changed, 31, 33, ['•'], ['1.']],
+      [LineChangeKind.Changed, 32, 34, ['•'], ['2.']],
+      [LineChangeKind.Changed, 33, 35, ['•'], ['3.']],
+      [LineChangeKind.Changed, 34, 36, ['•'], ['4.']],
+      [LineChangeKind.Changed, 37, 39, [FRAMED_CHECKBOX], [FRAMED_CHECKBOX]],
       [LineChangeKind.Changed, 44, 46, ['and invite others'], []],
       [LineChangeKind.Added, null, 47, [], []],
       [LineChangeKind.Changed, 62, 65, [], ['and files']],
@@ -347,6 +404,82 @@ describe('diffHtml', () => {
       `<ol><li value="5" ${LINE_ITEM}><a href="#diff-new-shortcuts">Keyboard shortcuts</a></li></ol>`,
     );
     expect(changedNestedItem?.newLine?.html).toMatch(NESTED_ITEM_START);
+  });
+
+  it('describes the changes of list markers and checkboxes in the long sample', () => {
+    const itemChanges = compare(enLongBefore, enLongAfter)
+      .rows.filter(hasListItemDetails)
+      .map(itemChangeSummary);
+    const toNumbers = [[ListMarkerProperty.ListType]];
+
+    expect(itemChanges).toEqual([
+      [27, 29, [[ListMarkerProperty.Number]]],
+      [28, 30, [[ListMarkerProperty.Number]]],
+      [31, 33, toNumbers],
+      [32, 34, toNumbers],
+      [33, 35, toNumbers],
+      [34, 36, toNumbers],
+      [37, 39, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
+    ]);
+  });
+
+  it('keeps numbers shifted by an added item unmarked in the medium sample', () => {
+    const { rows } = compare(enMediumBefore, enMediumAfter);
+    const shiftedItem = rows.find((row) => row.newLine?.number === 21);
+
+    expect(rows.some(hasListItemDetails)).toBe(false);
+    expect(shiftedItem?.newLine?.html).toContain('<li value="5"');
+    expect(shiftedItem?.oldLine?.html).toContain('<li value="4"');
+  });
+
+  it('marks another number and changed text of one item separately', () => {
+    const oldHtml = '<ol start="5"><li>Import notes</li></ol>';
+    const newHtml = '<ol start="6"><li>Import files</li></ol>';
+    const [row] = compare(oldHtml, newHtml).rows;
+
+    expect(rowSummary(row)).toEqual([
+      LineChangeKind.Changed,
+      1,
+      1,
+      ['5.', 'notes'],
+      ['6.', 'files'],
+    ]);
+    expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Number]]]);
+  });
+
+  it('puts the details of a list item before those of formatting, with markers pointing to them', () => {
+    const oldHtml = '<ul><li><i>Important:</i> make backups.</li></ul>';
+    const newHtml = '<ol><li><b>Important:</b> make backups.</li></ol>';
+    const [row] = compare(oldHtml, newHtml).rows;
+
+    expect(detailShape(row)).toEqual([
+      1,
+      1,
+      [ChangeDetailKind.ListMarker, ChangeDetailKind.Formatting],
+    ]);
+    expect(detailPositions(row.oldLine)).toEqual(['0', '1']);
+    expect(detailPositions(row.newLine)).toEqual(['0', '1']);
+  });
+
+  it('describes a list marker of a style it does not draw only by its details', () => {
+    const oldHtml = '<ol><li>Notes</li></ol>';
+    const newHtml = '<ol style="list-style-type: armenian"><li>Notes</li></ol>';
+    const [row] = compare(oldHtml, newHtml).rows;
+
+    expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Style]]]);
+    expect(fragmentOf(row.newLine?.html ?? '').querySelector(DRAWN_MARKER_SELECTOR)).toBeNull();
+  });
+
+  it('keeps only numbers and checkboxes of list items with ignoreFormatting', () => {
+    const itemChanges = compare(enLongBefore, enLongAfter, IGNORE_FORMATTING)
+      .rows.filter(hasListItemDetails)
+      .map(itemChangeSummary);
+
+    expect(itemChanges).toEqual([
+      [27, 29, [[ListMarkerProperty.Number]]],
+      [28, 30, [[ListMarkerProperty.Number]]],
+      [37, 39, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
+    ]);
   });
 
   it.each(TRANSLATED_SAMPLES)(

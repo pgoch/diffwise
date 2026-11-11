@@ -1,5 +1,6 @@
 import { comparisonImage } from './comparison-image';
 import { comparisonText } from './comparison-text';
+import { diffListMarkers } from './diff-list-markers';
 import { LIST_ITEM_TAG, PARAGRAPH_TAG } from '../html/html-tags';
 import {
   type DiffOptions,
@@ -52,11 +53,7 @@ export function diffLines(
       added.push(newLines[edit.newIndex]);
     } else {
       addBlockOfChanges();
-      changes.push({
-        kind: LineChangeKind.Unchanged,
-        oldLine: oldLines[edit.oldIndex],
-        newLine: newLines[edit.newIndex],
-      });
+      changes.push(matchedPair(oldLines[edit.oldIndex], newLines[edit.newIndex], options));
     }
   }
 
@@ -65,7 +62,18 @@ export function diffLines(
   return { changes, stats: countChanges(changes) };
 }
 
-/** Lines are equal when their structures, compared texts, formats and images are. */
+/** Lines with equal keys: unchanged, or changed when their list markers or checkboxes differ. */
+function matchedPair(oldLine: Line, newLine: Line, options: DiffOptions): LineChange {
+  const itemChanged = diffListMarkers(oldLine, newLine, options).length > 0;
+  const kind = itemChanged ? LineChangeKind.Changed : LineChangeKind.Unchanged;
+
+  return { kind, oldLine, newLine };
+}
+
+/**
+ * Lines are equal when their structures, compared texts, formats and images are. List markers are
+ * compared after matching, so an item with another marker stays the same line.
+ */
 function lineKey(line: Line, options: DiffOptions): string {
   const text = comparisonText(line.text, options);
   const images = line.images.map((image) => comparisonImage(image.properties, options));

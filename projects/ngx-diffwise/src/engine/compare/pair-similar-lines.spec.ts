@@ -21,6 +21,8 @@ function paragraph(text: string): Line {
     formats: [],
     images: [],
     html: `<p>${text}</p>`,
+    marker: null,
+    checkbox: null,
   };
 }
 
@@ -53,6 +55,8 @@ function imageParagraph(source: string): Line {
     formats: [],
     images: [{ position: 0, properties }],
     html: `<p><img src="${source}"></p>`,
+    marker: null,
+    checkbox: null,
   };
 }
 
