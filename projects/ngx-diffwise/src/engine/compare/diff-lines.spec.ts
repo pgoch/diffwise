@@ -153,14 +153,15 @@ describe('diffLines', () => {
     expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
   });
 
-  it('finds no change in the numbers of items that an added item moved', () => {
-    const oldHtml = '<ol><li>Utwórz konto.</li><li>Zaloguj się.</li></ol>';
-    const newHtml = '<ol><li>Utwórz konto.</li><li>Potwierdź adres.</li><li>Zaloguj się.</li></ol>';
+  it('counts an item whose number an added item moved as a changed line', () => {
+    const oldHtml = '<ol><li>Create an account.</li><li>Sign in.</li></ol>';
+    const newHtml =
+      '<ol><li>Create an account.</li><li>Confirm your address.</li><li>Sign in.</li></ol>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
-      [LineChangeKind.Unchanged, 'Utwórz konto.', 'Utwórz konto.'],
-      [LineChangeKind.Added, null, 'Potwierdź adres.'],
-      [LineChangeKind.Unchanged, 'Zaloguj się.', 'Zaloguj się.'],
+      [LineChangeKind.Unchanged, 'Create an account.', 'Create an account.'],
+      [LineChangeKind.Added, null, 'Confirm your address.'],
+      [LineChangeKind.Changed, 'Sign in.', 'Sign in.'],
     ]);
   });
 

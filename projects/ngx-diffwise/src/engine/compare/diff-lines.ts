@@ -1,6 +1,6 @@
 import { comparisonImage } from './comparison-image';
 import { comparisonText } from './comparison-text';
-import { diffListMarkers } from './diff-list-markers';
+import { listItemsDiffer } from './diff-list-markers';
 import { LIST_ITEM_TAG, PARAGRAPH_TAG } from '../html/html-tags';
 import {
   type DiffOptions,
@@ -63,9 +63,9 @@ export function diffLines(
   return { changes, stats: countChanges(changes) };
 }
 
-/** Lines with equal keys: unchanged, or changed when their list markers or checkboxes differ. */
+/** Lines with equal keys: unchanged, or changed when the list items they start differ. */
 function matchedPair(oldLine: Line, newLine: Line, options: DiffOptions): LineChange {
-  const itemChanged = diffListMarkers(oldLine, newLine, options).length > 0;
+  const itemChanged = listItemsDiffer(oldLine, newLine, options);
   const kind = itemChanged ? LineChangeKind.Changed : LineChangeKind.Unchanged;
 
   return { kind, oldLine, newLine };

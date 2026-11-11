@@ -32,7 +32,14 @@ const ID_PREFIX = 'diff-';
 const LINE_ITEM = 'data-diffwise-line-item=""';
 
 /** Marks of a line whose list marker changed, described by the first detail of its row. */
-const CHANGED_LIST_MARKER: ListItemMarks = { ...NO_LIST_ITEM_MARKS, listMarkerDetails: [0] };
+const CHANGED_LIST_MARKER: ListItemMarks = {
+  ...NO_LIST_ITEM_MARKS,
+  listMarkerChanged: true,
+  listMarkerDetails: [0],
+};
+
+/** Marks of a line whose list marker differs only by its number, which has no description. */
+const CHANGED_ITEM_NUMBER: ListItemMarks = { ...NO_LIST_ITEM_MARKS, listMarkerChanged: true };
 
 /** Marks of a line whose checkbox changed, described by the second detail of its row. */
 const CHANGED_CHECKBOX: ListItemMarks = { ...NO_LIST_ITEM_MARKS, checkboxDetails: [1] };
@@ -282,6 +289,18 @@ describe('markChanges', () => {
     );
   });
 
+  it('draws a marker changed only by its number with no details', () => {
+    const drawnMarker = `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-list-marker="5."></del>`;
+
+    expect(
+      markItem(
+        '<ol start="5"><li>Import notes</li></ol>',
+        CHANGED_ITEM_NUMBER,
+        REMOVED_TEXT_MARKER,
+      ),
+    ).toBe(`<ol start="5"><li value="5" ${LINE_ITEM}>${drawnMarker}Import notes</li></ol>`);
+  });
+
   it('draws a bullet before the paragraph of an item', () => {
     const drawnMarker =
       `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-change-details="0" `
@@ -317,7 +336,7 @@ describe('markChanges', () => {
 
   it('marks text, the list marker and the checkbox of a line together, keeping its text', () => {
     const line = lineOf('<ol start="2"><li><input type="checkbox"> Invite your family</li></ol>');
-    const itemMarks = { listMarkerDetails: [0], checkboxDetails: [1] };
+    const itemMarks = { listMarkerChanged: true, listMarkerDetails: [0], checkboxDetails: [1] };
     const marked = markChanges(line, rangesOf(line.text, ['family']), ADDED_TEXT_MARKER, itemMarks);
     const fragment = fragmentOf(marked);
 

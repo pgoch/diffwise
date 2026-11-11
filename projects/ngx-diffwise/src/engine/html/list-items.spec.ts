@@ -156,20 +156,11 @@ describe('ListMarkerReader markers', () => {
     expect(itemMarkers(html).map((marker) => marker?.level)).toEqual([1, 2, 3, 1]);
   });
 
-  it('gives the items of a list counting up the same unshifted number', () => {
-    const fromStart = '<ol start="5"><li>A</li><li>B</li></ol>';
-    const fromValue = '<ol><li>A</li><li value="7">B</li><li>C</li></ol>';
+  it('gives each marker the number of its item', () => {
+    const html =
+      '<ol start="5"><li>A</li><li value="9">B</li></ol><ol reversed><li>C</li><li>D</li></ol>';
 
-    expect(itemMarkers(fromStart).map((marker) => marker?.unshiftedNumber)).toEqual([5, 5]);
-    expect(itemMarkers(fromValue).map((marker) => marker?.unshiftedNumber)).toEqual([1, 6, 6]);
-  });
-
-  it('shifts the numbers of a list counting down by its length, unless it has a start', () => {
-    const fromLength = '<ol reversed><li>A</li><li>B</li><li>C</li></ol>';
-    const fromStart = '<ol reversed start="5"><li>A</li><li>B</li></ol>';
-
-    expect(itemMarkers(fromLength).map((marker) => marker?.unshiftedNumber)).toEqual([0, 0, 0]);
-    expect(itemMarkers(fromStart).map((marker) => marker?.unshiftedNumber)).toEqual([5, 5]);
+    expect(itemMarkers(html).map((marker) => marker?.number)).toEqual([5, 9, 2, 1]);
   });
 });
 

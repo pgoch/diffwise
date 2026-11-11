@@ -6,7 +6,7 @@ const FIRST_NUMBER = 1;
 const TOP_LEVEL = 1;
 
 function markerOf(listType: ListType, style: string, number = FIRST_NUMBER): ListMarker {
-  return { listType, style, number, unshiftedNumber: number, level: TOP_LEVEL };
+  return { listType, style, number, level: TOP_LEVEL };
 }
 
 /** Text of a numbered marker of the style and number. */

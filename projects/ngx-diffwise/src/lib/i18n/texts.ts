@@ -159,8 +159,6 @@ export interface DiffwiseCustomTexts {
   readonly bulletedListLabel?: string;
   /** A list with numbers or letters. */
   readonly numberedListLabel?: string;
-  /** The number of a list item; `{number}` stands for it, as in "number 5 → number 6". */
-  readonly itemNumberLabel?: string;
   /** How deep a list item is nested; `{level}` stands for it, as in "level 1 → level 2". */
   readonly listLevelLabel?: string;
   /** Numbering with digits: 1, 2, 3. */

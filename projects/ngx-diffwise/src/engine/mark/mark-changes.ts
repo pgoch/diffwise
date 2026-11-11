@@ -68,7 +68,9 @@ interface NodeSegment {
 
 /** Changes of the list item a line starts, outside its text, and the change details they show. */
 export interface ListItemMarks {
-  /** Details of a changed marker, which Diffwise then draws; empty when the marker is the same. */
+  /** True when the marker differs, also only by its number; Diffwise then draws it. */
+  readonly listMarkerChanged: boolean;
+  /** Details of a changed marker; empty when only its number differs, which needs no description. */
   readonly listMarkerDetails: readonly number[];
   /** Details of a checked or cleared checkbox; empty when the checkbox is the same. */
   readonly checkboxDetails: readonly number[];
@@ -78,6 +80,7 @@ const NO_DETAILS: readonly number[] = [];
 
 /** Marks of a line whose list item, if any, is the same in both versions. */
 export const NO_LIST_ITEM_MARKS: ListItemMarks = {
+  listMarkerChanged: false,
   listMarkerDetails: NO_DETAILS,
   checkboxDetails: NO_DETAILS,
 };
@@ -93,7 +96,7 @@ export function markChanges(
   marker: ChangeMarker,
   itemMarks: ListItemMarks = NO_LIST_ITEM_MARKS,
 ): string {
-  const marksItem = itemMarks.listMarkerDetails.length > 0 || itemMarks.checkboxDetails.length > 0;
+  const marksItem = itemMarks.listMarkerChanged || itemMarks.checkboxDetails.length > 0;
 
   if (ranges.length === 0 && !marksItem) {
     return line.html;
@@ -176,7 +179,7 @@ function markWholeCell(cell: Element | undefined, marker: ChangeMarker): void {
 function markListItem(
   content: DocumentFragment,
   listMarker: ListMarker | null,
-  { listMarkerDetails, checkboxDetails }: ListItemMarks,
+  { listMarkerChanged, listMarkerDetails, checkboxDetails }: ListItemMarks,
   marker: ChangeMarker,
 ): void {
   const item = startedItemIn(content);
@@ -189,7 +192,7 @@ function markListItem(
     frameCheckbox(item, checkboxDetails, marker);
   }
 
-  if (listMarker !== null && listMarkerDetails.length > 0) {
+  if (listMarker !== null && listMarkerChanged) {
     drawListMarker(item, listMarker, listMarkerDetails, marker);
   }
 }
