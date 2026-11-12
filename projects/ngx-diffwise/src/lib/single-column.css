@@ -1,0 +1,184 @@
+/*
+ * The single column: each row shows one line under its numbers in the two versions, with a narrow
+ * column for the icon of its changes. Separate from the main styles because of their size.
+ */
+
+.diffwise-html-diff--layout-inline
+  :is(.diffwise-html-diff__version-headers, .diffwise-html-diff__row) {
+  grid-template-columns:
+    var(--diffwise-line-number-width) var(--diffwise-line-number-width)
+    calc(2.2 * var(--diffwise-line-number-font-size)) minmax(0, 1fr);
+}
+
+/* Fixed columns keep every part in place when the line numbers are hidden. */
+.diffwise-html-diff--layout-inline
+  :is(.diffwise-html-diff__line-number--old, .diffwise-html-diff__version-header--old) {
+  grid-column: 1;
+}
+
+.diffwise-html-diff--layout-inline
+  :is(.diffwise-html-diff__line-number--new, .diffwise-html-diff__version-header--new) {
+  grid-column: 2;
+}
+
+.diffwise-html-diff--layout-inline
+  :is(.diffwise-html-diff__content, .diffwise-html-diff__version-header--inline) {
+  grid-column: 4;
+}
+
+/* The icons of the versions stand above their numbers, at the same edge as the digits. */
+.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__version-header:not(.diffwise-html-diff__version-header--inline) {
+  padding-inline: 0 0.5rem;
+  text-align: right;
+  text-overflow: clip;
+}
+
+/*
+ * The column next to the content holds the icon of a row, at the first line of the text, like the
+ * line numbers. It stands above the content, which the number on an icon reaches into.
+ */
+.diffwise-html-diff__change-details-cell {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  grid-column: 3;
+  align-items: flex-start;
+  justify-content: center;
+  margin-bottom: -1px;
+  padding-block: calc(5px + 0.8em - 0.915 * var(--diffwise-line-number-font-size))
+    calc(6px + 0.8em - 0.915 * var(--diffwise-line-number-font-size));
+  background: var(--diffwise-background);
+}
+
+.diffwise-html-diff--line-number-alignment-middle .diffwise-html-diff__change-details-cell {
+  align-items: center;
+}
+
+.diffwise-html-diff--line-number-alignment-bottom .diffwise-html-diff__change-details-cell {
+  align-items: flex-end;
+}
+
+/* A row takes the colors of the version its line comes from: both numbers, and the bar. */
+.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__row:has(> .diffwise-html-diff__content--old) {
+  --diffwise-side-accent: var(--diffwise-removed-accent);
+  --diffwise-side-line-number: var(--diffwise-removed-line-number);
+}
+
+.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__row:has(> .diffwise-html-diff__content--new) {
+  --diffwise-side-accent: var(--diffwise-added-accent);
+  --diffwise-side-line-number: var(--diffwise-added-line-number);
+}
+
+/* A changed line has colored numbers; its bar stands between them instead of at their edge. */
+.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number {
+  box-shadow: none;
+  color: var(--diffwise-side-accent);
+}
+
+.diffwise-html-diff--layout-inline .diffwise-html-diff__line-number--new {
+  position: relative;
+}
+
+/*
+ * The bar goes with colored numbers: every changed line has one, and with colored backgrounds of
+ * the numbers only an added or a removed line that nothing else shows as changed.
+ */
+.diffwise-html-diff--layout-inline:not(.diffwise-html-diff--line-number-style-background)
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number--new::before,
+.diffwise-html-diff--layout-inline.diffwise-html-diff--line-number-style-background.diffwise-html-diff--no-changed-line-highlight:not(
+    .diffwise-html-diff--highlight-whole-lines
+  )
+  .diffwise-html-diff__row:is(.diffwise-html-diff__row--removed, .diffwise-html-diff__row--added)
+  .diffwise-html-diff__line-number--new::before,
+.diffwise-html-diff--layout-inline.diffwise-html-diff--no-line-numbers
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__change-details-cell:not(
+    :has(.diffwise-html-diff__change-details-icon)
+  )::before {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--diffwise-side-accent);
+  content: '';
+}
+
+.diffwise-html-diff--layout-inline .diffwise-html-diff__line-number--new::before {
+  left: -1.5px;
+}
+
+/* Without line numbers, the bar stands next to the content, in the place of an icon. */
+.diffwise-html-diff--layout-inline .diffwise-html-diff__change-details-cell::before {
+  left: calc(50% - 1.5px);
+}
+
+/* Colored backgrounds of the numbers, which go with the background of the changed line. */
+.diffwise-html-diff--layout-inline.diffwise-html-diff--line-number-style-background:not(
+    .diffwise-html-diff--no-changed-line-highlight
+  )
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number {
+  background: var(--diffwise-side-line-number);
+}
+
+/* Without backgrounds of changed lines, an added or a removed line keeps its colored numbers. */
+.diffwise-html-diff--layout-inline.diffwise-html-diff--line-number-style-background.diffwise-html-diff--no-changed-line-highlight:not(
+    .diffwise-html-diff--highlight-whole-lines
+  )
+  .diffwise-html-diff__row:is(.diffwise-html-diff__row--removed, .diffwise-html-diff__row--added)
+  .diffwise-html-diff__line-number {
+  box-shadow: none;
+  color: var(--diffwise-side-accent);
+}
+
+/*
+ * The lines of both versions of a table stand together. A line that is the first or the last one
+ * only in its own version looks like a line inside the table.
+ */
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='line-above']
+  table[data-diffwise-first-table-line] {
+  margin-top: 0;
+}
+
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='row-above']
+  table[data-diffwise-first-table-row] {
+  border-top-width: 0;
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='row-above']
+  [data-diffwise-first-table-row]
+  > *
+  > tr
+  > :is(:first-child, :last-child) {
+  border-start-start-radius: 0;
+  border-start-end-radius: 0;
+}
+
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='line-below'] {
+  scrollbar-width: none;
+}
+
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='line-below']
+  table[data-diffwise-last-table-row] {
+  margin-bottom: 0;
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}
+
+.diffwise-html-diff__content[data-diffwise-table-neighbors~='line-below']
+  [data-diffwise-last-table-row]
+  > *
+  > tr
+  > :is(:first-child, :last-child) {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+}

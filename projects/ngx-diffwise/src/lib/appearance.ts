@@ -1,6 +1,6 @@
 import { DIFF_COLOR_VARIABLES, type ThemeDiffColors } from './config/diff-colors';
 import { DiffwiseConfig } from './config/diffwise-config';
-import { DiffwiseFontFamily } from './config/option-values';
+import { DiffwiseFontFamily, DiffwiseLayout } from './config/option-values';
 
 /** The defaults: an option at its default needs no style, and most need no class. */
 const DEFAULT_CONFIG = new DiffwiseConfig();
@@ -24,12 +24,17 @@ const VALUE_MODIFIERS = {
 
 type ValueOption = keyof typeof VALUE_MODIFIERS;
 
+/** A layout the diff can show; the automatic layout shows one of them. */
+export type ShownLayout = typeof DiffwiseLayout.SideBySide | typeof DiffwiseLayout.Inline;
+
 const VALUE_OPTIONS = Object.keys(VALUE_MODIFIERS) as ValueOption[];
 
 /** Starts of the classes of the levels, which every level has, the default one too. */
 const DIFF_INTENSITY_MODIFIER = 'diffwise-html-diff--diff-intensity-';
 const UI_CONTRAST_MODIFIER = 'diffwise-html-diff--ui-contrast-';
 
+/** The class of a diff that shows a single column, also when the automatic layout chose it. */
+const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
 const NO_CHANGED_LINE_HIGHLIGHT_CLASS = 'diffwise-html-diff--no-changed-line-highlight';
 const HIGHLIGHT_WHOLE_LINES_CLASS = 'diffwise-html-diff--highlight-whole-lines';
@@ -50,16 +55,25 @@ const FONT_LIST_SEPARATOR = ', ';
 const COLOR_NAMES = Object.keys(DIFF_COLOR_VARIABLES) as (keyof ThemeDiffColors)[];
 
 /**
- * Modifier classes of the component: for the levels, and for the other options that differ from
- * their defaults.
+ * Modifier classes of the component: for the layout it shows, for the levels, and for the other
+ * options that differ from their defaults.
  */
-export function appearanceClasses(config: DiffwiseConfig, customColors: ThemeDiffColors): string[] {
+export function appearanceClasses(
+  config: DiffwiseConfig,
+  customColors: ThemeDiffColors,
+  shownLayout: ShownLayout,
+): string[] {
   const changedOptions = VALUE_OPTIONS.filter(
     (option) => config[option] !== DEFAULT_CONFIG[option],
   );
   const valueClasses = changedOptions.map((option) => VALUE_MODIFIERS[option] + config[option]);
 
-  return [...valueClasses, ...levelClasses(config, customColors), ...toggleClasses(config)];
+  return [
+    ...layoutClasses(shownLayout),
+    ...valueClasses,
+    ...levelClasses(config, customColors),
+    ...toggleClasses(config),
+  ];
 }
 
 /**
@@ -100,6 +114,11 @@ export function appearanceStyles(
   }
 
   return styles;
+}
+
+/** The class of the single column; the two versions side by side need none. */
+function layoutClasses(shownLayout: ShownLayout): string[] {
+  return shownLayout === DiffwiseLayout.Inline ? [INLINE_LAYOUT_CLASS] : [];
 }
 
 function hasColors(colors: ThemeDiffColors): boolean {

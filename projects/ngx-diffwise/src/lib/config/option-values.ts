@@ -82,6 +82,18 @@ export const DiffwiseVerticalAlignment = {
 export type DiffwiseVerticalAlignment =
   (typeof DiffwiseVerticalAlignment)[keyof typeof DiffwiseVerticalAlignment];
 
+/** Layouts of the diff. */
+export const DiffwiseLayout = {
+  /** The two versions next to each other. */
+  Auto: 'auto',
+  /** The two versions next to each other. */
+  SideBySide: 'side-by-side',
+  /** A single column with the lines of both versions. */
+  Inline: 'inline',
+} as const;
+
+export type DiffwiseLayout = (typeof DiffwiseLayout)[keyof typeof DiffwiseLayout];
+
 /** Fonts of the diff; an app can also give the name of a font it loads. */
 export const DiffwiseFontFamily = {
   /** The font of the element around the diff. */

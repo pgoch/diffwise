@@ -13,6 +13,7 @@ import {
   untracked,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import {
@@ -20,12 +21,16 @@ import {
   type ChangeDetail,
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
+  DocumentVersion,
   type LineChangeKind,
+  type SingleColumnRow,
+  type SingleColumnTablePlace,
   type ViewLine,
   type ViewRow,
   diffHtml,
+  singleColumnRows,
 } from '../engine';
-import { appearanceClasses, appearanceStyles } from './appearance';
+import { type ShownLayout, appearanceClasses, appearanceStyles } from './appearance';
 import { ChangeDetailsButton } from './change-details/change-details-button';
 import { ChangeDescriber } from './change-details/change-texts';
 import {
@@ -46,6 +51,7 @@ import {
   type DiffwiseGapStyle,
   type DiffwiseHighlightStyle,
   type DiffwiseLanguage,
+  DiffwiseLayout,
   type DiffwiseLevel,
   type DiffwiseLineNumberStyle,
   type DiffwiseTooltipColorMode,
@@ -107,6 +113,23 @@ const NO_COLORS: ThemeDiffColors = Object.freeze({});
 
 const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 
+/** Stands between the header texts of an app above the single column: "Version 3 → Version 4". */
+const VERSION_ARROW = ' → ';
+
+const NO_TEXT = '';
+
+/**
+ * What stands around a table line of the single column in its table, as the words of the
+ * attribute `data-diffwise-table-neighbors`.
+ */
+const TableNeighbor = {
+  LineAbove: 'line-above',
+  RowAbove: 'row-above',
+  LineBelow: 'line-below',
+} as const;
+
+const TABLE_NEIGHBOR_SEPARATOR = ' ';
+
 /** A line as the template shows it. */
 interface ShownLine {
   readonly number: number;
@@ -125,6 +148,33 @@ interface ShownRow {
   readonly changeDetails: readonly ChangeDetail[];
 }
 
+/** A row of the single column as the template shows it. */
+interface ShownSingleColumnRow {
+  readonly kind: LineChangeKind;
+  /** The version the line comes from, which sets its colors. */
+  readonly version: DocumentVersion;
+  /** HTML that DOMPurify has sanitized, marked as safe so that Angular shows it as it is. */
+  readonly html: SafeHtml;
+  readonly oldNumber: number | null;
+  readonly newNumber: number | null;
+  /** Position of the compared row with the change details of the line; `null` without details. */
+  readonly detailsRow: number | null;
+  /** Changes an icon next to the line shows: those of a changed pair, next to its new line. */
+  readonly iconDetails: readonly ChangeDetail[];
+  /** Position of the line's table among the tables of the single column; `null` outside tables. */
+  readonly table: number | null;
+  /** What stands around a table line in its table; `null` for a line with nothing around. */
+  readonly tableNeighbors: string | null;
+}
+
+/** The header of the single column as the template shows it. */
+interface ShownSingleColumnHeader {
+  /** Names of the icons above the numbers of the old and the new version. */
+  readonly iconNames: DiffwiseVersionHeaderTexts;
+  /** Text above the content; empty when only the icons head the column. */
+  readonly contentText: string;
+}
+
 /** Headers as the template shows them. */
 interface ShownVersionHeaders {
   readonly texts: DiffwiseVersionHeaderTexts;
@@ -132,15 +182,19 @@ interface ShownVersionHeaders {
   readonly asIcons: boolean;
 }
 
-/** Shows two versions of an HTML document side by side, with the changes marked. */
+/**
+ * Shows two versions of an HTML document with the changes marked: side by side, or in a single
+ * column.
+ */
 @Component({
   selector: 'diffwise-html-diff',
-  imports: [ChangeDetailsButton, ChangeTooltip],
+  imports: [ChangeDetailsButton, ChangeTooltip, NgTemplateOutlet],
   templateUrl: './diffwise-html-diff.html',
   styleUrls: [
     './diffwise-html-diff.css',
     './list-and-table-lines.css',
     './change-details/change-details.css',
+    './single-column.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -184,6 +238,9 @@ export class DiffwiseHtmlDiff {
    * configuration, and `null` shows none of their colors.
    */
   readonly diffColors = input<DiffwiseDiffColors | null>();
+
+  /** The versions side by side, or a single column; wins over `config` and the global configuration. */
+  readonly layout = input<DiffwiseLayout>();
 
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
@@ -294,6 +351,7 @@ export class DiffwiseHtmlDiff {
     diffIntensity: this.diffIntensity(),
     uiContrast: this.uiContrast(),
     diffColors: this.diffColors(),
+    layout: this.layout(),
     showLineNumbers: this.showLineNumbers(),
     lineNumberStyle: this.lineNumberStyle(),
     lineNumberAlignment: this.lineNumberAlignment(),
@@ -379,13 +437,35 @@ export class DiffwiseHtmlDiff {
     toShownVersionHeaders(this.effectiveConfig().versionHeaders, this.texts()),
   );
 
-  /** Rows of the view, compared again whenever either version or `diffOptions` changes. */
-  protected readonly rows = computed(() => {
-    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix };
-    const { rows } = diffHtml(this.oldHtml(), this.newHtml(), settings);
+  /** The header of the single column, or `null` without headers. */
+  protected readonly singleColumnHeader = computed(() =>
+    toSingleColumnHeader(this.effectiveConfig().versionHeaders, this.texts()),
+  );
 
-    return rows.map((row) => this.shownRow(row));
+  /** The layout shown now; the automatic layout shows the versions side by side. */
+  private readonly shownLayout = computed<ShownLayout>(() => {
+    const { layout } = this.effectiveConfig();
+    return layout === DiffwiseLayout.Auto ? DiffwiseLayout.SideBySide : layout;
   });
+
+  /** True when the diff shows a single column instead of the versions side by side. */
+  protected readonly showsSingleColumn = computed(
+    () => this.shownLayout() === DiffwiseLayout.Inline,
+  );
+
+  /** The versions compared, again whenever either of them or `diffOptions` changes. */
+  private readonly diff = computed(() => {
+    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix };
+    return diffHtml(this.oldHtml(), this.newHtml(), settings);
+  });
+
+  /** Rows of the versions side by side; the diff prepares them only for this layout. */
+  protected readonly rows = computed(() => this.diff().rows.map((row) => this.shownRow(row)));
+
+  /** Rows of the single column; the diff prepares them only for this layout. */
+  protected readonly singleColumnRows = computed(() =>
+    singleColumnRows(this.diff().rows).map((row) => this.shownSingleColumnRow(row)),
+  );
 
   /** Colors of changes the app gives for the theme shown now. */
   private readonly customColors = computed(() => {
@@ -396,11 +476,13 @@ export class DiffwiseHtmlDiff {
   });
 
   /** Digits of the highest line number, which set the width of the line numbers. */
-  private readonly lineNumberDigits = computed(() => String(highestLineNumber(this.rows())).length);
+  private readonly lineNumberDigits = computed(
+    () => String(highestLineNumber(this.diff().rows)).length,
+  );
 
   /** Modifier classes of the options with values other than the defaults. */
   protected readonly modifierClasses = computed(() =>
-    appearanceClasses(this.effectiveConfig(), this.customColors()),
+    appearanceClasses(this.effectiveConfig(), this.customColors(), this.shownLayout()),
   );
 
   /** Styles of the element: the width of the line numbers, and the app's sizes, font and colors. */
@@ -462,12 +544,14 @@ export class DiffwiseHtmlDiff {
   }
 
   /**
-   * After new rows, or with details in another place: hides the tooltip, whose trigger may be gone,
-   * and lets marked changes take the focus when no icons show their details.
+   * After new rows, in another layout, or with details in another place: hides the tooltip, whose
+   * trigger may be gone, and lets marked changes take the focus when no icons show their details.
    */
   private prepareMarkers(): void {
-    const rows = this.rows();
+    const { rows } = this.diff();
     const markersTakeFocus = !this.showsChangeIcons();
+
+    this.shownLayout();
 
     untracked(() => this.tooltip().hide());
 
@@ -595,15 +679,15 @@ export class DiffwiseHtmlDiff {
     return rowDetails.filter((_, position) => positions.includes(position));
   }
 
-  /** The row of an element, by the position its row element carries. */
-  private rowOf(element: Element): ShownRow | null {
+  /** The compared row of an element, by the position its row element carries. */
+  private rowOf(element: Element): ViewRow | null {
     const position = element.closest(ROW_SELECTOR)?.getAttribute(ROW_INDEX_ATTRIBUTE) ?? null;
 
     if (position === null) {
       return null;
     }
 
-    return this.rows().at(Number(position)) ?? null;
+    return this.diff().rows.at(Number(position)) ?? null;
   }
 
   private shownRow({ kind, oldLine, newLine, changeDetails }: ViewRow): ShownRow {
@@ -615,20 +699,42 @@ export class DiffwiseHtmlDiff {
     };
   }
 
-  /**
-   * Marks the line HTML as safe. DOMPurify has sanitized it, and sanitizing it again in Angular
-   * would remove inline styles and checkboxes.
-   */
   private shownLine(line: ViewLine | null): ShownLine | null {
     if (line === null) {
       return null;
     }
 
+    return { number: line.number, html: this.safeHtml(line), table: line.table };
+  }
+
+  /**
+   * A row of the single column. Both lines of a changed pair point to the change details of their
+   * pair, and the icon of these changes stands next to the new line.
+   */
+  private shownSingleColumnRow(row: SingleColumnRow): ShownSingleColumnRow {
+    const { kind, version, line, oldNumber, newNumber, sourceRow, changeDetails, tablePlace } = row;
+    const describesChanges = changeDetails.length > 0;
+    const showsIcon = describesChanges && version === DocumentVersion.New;
+
     return {
-      number: line.number,
-      html: this.sanitizer.bypassSecurityTrustHtml(line.html),
-      table: line.table,
+      kind,
+      version,
+      html: this.safeHtml(line),
+      oldNumber,
+      newNumber,
+      detailsRow: describesChanges ? sourceRow : null,
+      iconDetails: showsIcon ? changeDetails : NO_CHANGE_DETAILS,
+      table: tablePlace?.table ?? null,
+      tableNeighbors: tableNeighborsOf(tablePlace),
     };
+  }
+
+  /**
+   * Marks the line HTML as safe. DOMPurify has sanitized it, and sanitizing it again in Angular
+   * would remove inline styles and checkboxes.
+   */
+  private safeHtml(line: ViewLine): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(line.html);
   }
 
   /** The element of this diff that a `#…` link points to. */
@@ -647,7 +753,7 @@ function nextIdPrefix(): string {
 }
 
 /** The highest line number in the rows, of either version; `0` without lines. */
-function highestLineNumber(rows: readonly ShownRow[]): number {
+function highestLineNumber(rows: readonly ViewRow[]): number {
   return rows.reduce(
     (highest, { oldLine, newLine }) =>
       Math.max(highest, oldLine?.number ?? 0, newLine?.number ?? 0),
@@ -683,7 +789,7 @@ function triggerDescriptionOf(trigger: Element, content: TooltipContent): Trigge
   return content.sections.length > 0 ? TriggerDescription.Details : TriggerDescription.None;
 }
 
-function hasChangeDetails(row: ShownRow): boolean {
+function hasChangeDetails(row: ViewRow): boolean {
   return row.changeDetails.length > 0;
 }
 
@@ -722,6 +828,51 @@ function toShownVersionHeaders(
     default:
       return { texts: versionHeaders, asIcons: false };
   }
+}
+
+/**
+ * The header of the single column; `null` without headers. Icons named by the texts of the
+ * interface stand above the numbers, and the header texts of an app, joined, above the content.
+ */
+function toSingleColumnHeader(
+  versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
+  texts: UiTexts,
+): ShownSingleColumnHeader | null {
+  const iconNames = { old: texts.oldVersionLabel, new: texts.newVersionLabel };
+
+  switch (versionHeaders) {
+    case DiffwiseVersionHeaders.None:
+      return null;
+    case DiffwiseVersionHeaders.Default:
+      return { iconNames, contentText: texts.inlineContentLabel };
+    case DiffwiseVersionHeaders.Icons:
+      return { iconNames, contentText: NO_TEXT };
+    default:
+      return { iconNames, contentText: versionHeaders.old + VERSION_ARROW + versionHeaders.new };
+  }
+}
+
+/** The words that say what stands around a table line in its table; `null` without any. */
+function tableNeighborsOf(tablePlace: SingleColumnTablePlace | null): string | null {
+  if (tablePlace === null) {
+    return null;
+  }
+
+  const neighbors: string[] = [];
+
+  if (tablePlace.belowTableLine) {
+    neighbors.push(TableNeighbor.LineAbove);
+  }
+
+  if (tablePlace.belowTableRow) {
+    neighbors.push(TableNeighbor.RowAbove);
+  }
+
+  if (tablePlace.aboveTableLine) {
+    neighbors.push(TableNeighbor.LineBelow);
+  }
+
+  return neighbors.length > 0 ? neighbors.join(TABLE_NEIGHBOR_SEPARATOR) : null;
 }
 
 /** True for the element that `#fragment` points to: by its id or, for an anchor, by its name. */

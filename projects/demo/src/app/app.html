@@ -61,6 +61,12 @@
 
   <h2>Layout</h2>
   <demo-choice-buttons
+    label="Layout"
+    [choices]="layouts"
+    [value]="diffwise.config().layout"
+    (chosen)="update({ layout: $event })"
+  />
+  <demo-choice-buttons
     label="Between the versions"
     [choices]="dividerStyles"
     [value]="diffwise.config().dividerStyle"

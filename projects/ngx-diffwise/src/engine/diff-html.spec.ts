@@ -26,6 +26,7 @@ import {
   type ImageProperties,
   ImageProperty,
   LineChangeKind,
+  LineKind,
   ListMarkerProperty,
   TextStyle,
   type ViewLine,
@@ -731,12 +732,13 @@ describe('diffHtml', () => {
     const detailsAttribute = 'data-diffwise-change-details="0"';
     const removedMarker = `<del class="${REMOVED_CLASSES}" ${detailsAttribute}>Ważne:</del>`;
     const addedMarker = `<ins class="${ADDED_CLASSES}" ${detailsAttribute}>Ważne:</ins>`;
+    const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
     expect(rows).toEqual([
       {
         kind: LineChangeKind.Changed,
-        oldLine: { number: 1, html: `<p><i>${removedMarker}</i> chroń hasło.</p>`, table: null },
-        newLine: { number: 1, html: `<p><b>${addedMarker}</b> chroń hasło.</p>`, table: null },
+        oldLine: { ...paragraph, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
+        newLine: { ...paragraph, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
         changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
       },
     ]);
@@ -803,21 +805,14 @@ describe('diffHtml', () => {
     const detailsAttribute = 'data-diffwise-change-details="0"';
     const removedMarker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
     const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
+    const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
     expect(compare(`<p>${oldImageHtml} Notatnik</p>`, `<p>${newImageHtml} Notatnik</p>`)).toEqual({
       rows: [
         {
           kind: LineChangeKind.Changed,
-          oldLine: {
-            number: 1,
-            html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>`,
-            table: null,
-          },
-          newLine: {
-            number: 1,
-            html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>`,
-            table: null,
-          },
+          oldLine: { ...paragraph, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
+          newLine: { ...paragraph, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
           changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
         },
       ],

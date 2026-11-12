@@ -9,6 +9,7 @@ export {
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   type DiffStats,
+  DocumentVersion,
   type FormattingChangeDetail,
   FormattingValue,
   type FormattingValueChange,
@@ -24,7 +25,10 @@ export {
   ListMarkerProperty,
   ListStyle,
   ListType,
+  type SingleColumnRow,
+  type SingleColumnTablePlace,
   TextStyle,
   type ViewLine,
   type ViewRow,
 } from './model';
+export { singleColumnRows } from './view/single-column-rows';

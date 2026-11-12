@@ -20,6 +20,7 @@ const BIG_TABLE_ROW_COUNT = 40;
 /** Lines of a document as the view shows them, numbered from 1. */
 function viewLines(html: string): ViewLine[] {
   return splitLines(parseHtml(html), ID_PREFIX).map((line, index) => ({
+    kind: line.kind,
     number: index + 1,
     html: line.html,
     table: line.table,

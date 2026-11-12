@@ -389,6 +389,7 @@ export interface DescribedChanges {
 
 /** A line as the view shows it. */
 export interface ViewLine {
+  readonly kind: LineKind;
   /** Position of the line in its version, counted from 1. */
   readonly number: number;
   /** Sanitized HTML; in a changed line, changed text, formatting and images are marked. */
@@ -406,6 +407,48 @@ export interface ViewRow {
   readonly newLine: ViewLine | null;
   /** Changes besides changed text, such as formatting; markers point to them by position. */
   readonly changeDetails: readonly ChangeDetail[];
+}
+
+/** The two versions of a document. */
+export const DocumentVersion = {
+  Old: 'old',
+  New: 'new',
+} as const;
+
+export type DocumentVersion = (typeof DocumentVersion)[keyof typeof DocumentVersion];
+
+/**
+ * Where a table line stands in the single-column view, among the lines of both versions of its
+ * table. A line that is the first or the last one only in its own version joins the lines around.
+ */
+export interface SingleColumnTablePlace {
+  /** Position of the table among the tables of the single column, counted from 0. */
+  readonly table: number;
+  /** True when another line of the table stands above the line. */
+  readonly belowTableLine: boolean;
+  /** True when a row of the table stands above the line. */
+  readonly belowTableRow: boolean;
+  /** True when another line of the table stands under the line. */
+  readonly aboveTableLine: boolean;
+}
+
+/** A row of the single-column view: one line of one version, with its number in each version. */
+export interface SingleColumnRow {
+  /** How the line differs; each line of a changed pair has a row, the old line first. */
+  readonly kind: LineChangeKind;
+  /** The version the line comes from; an unchanged line comes from the new one. */
+  readonly version: DocumentVersion;
+  readonly line: ViewLine;
+  /** `null` for an added line, and for the new line of a changed pair. */
+  readonly oldNumber: number | null;
+  /** `null` for a removed line, and for the old line of a changed pair. */
+  readonly newNumber: number | null;
+  /** Position of the side-by-side row that the line comes from. */
+  readonly sourceRow: number;
+  /** Changes besides changed text of the side-by-side row; markers point to them by position. */
+  readonly changeDetails: readonly ChangeDetail[];
+  /** `null` outside tables. */
+  readonly tablePlace: SingleColumnTablePlace | null;
 }
 
 /** Two HTML documents compared: rows of the view in reading order, and change counts. */

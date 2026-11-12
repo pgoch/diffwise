@@ -20,6 +20,7 @@ import {
   DiffwiseHighlightStyle,
   DiffwiseHtmlDiff,
   DiffwiseLanguage,
+  DiffwiseLayout,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
   DiffwiseTooltipColorMode,
@@ -92,6 +93,12 @@ const LEVEL_CHOICES: readonly Choice<DiffwiseLevel>[] = [
   { value: 3, label: '3' },
   { value: 4, label: '4' },
   { value: 5, label: '5' },
+];
+
+const LAYOUT_CHOICES: readonly Choice<DiffwiseLayout>[] = [
+  { value: DiffwiseLayout.Auto, label: 'Auto' },
+  { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
+  { value: DiffwiseLayout.Inline, label: 'Single column' },
 ];
 
 const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
@@ -205,6 +212,7 @@ export class App {
   protected readonly colorModes = COLOR_MODE_CHOICES;
   protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
   protected readonly levels = LEVEL_CHOICES;
+  protected readonly layouts = LAYOUT_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;

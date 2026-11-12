@@ -10,6 +10,7 @@ import {
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
+  DiffwiseLayout,
   DiffwiseLineNumberStyle,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
@@ -222,6 +223,25 @@ describe('normalizeConfig', () => {
       { lineNumberFontSize: Number.NaN },
       { tooltipFontSize: 0 },
     ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps a layout, given as a constant or as plain text', () => {
+    expect(normalizeConfig({ layout: 'side-by-side' })).toEqual({
+      layout: DiffwiseLayout.SideBySide,
+    });
+    expect(normalizeConfig({ layout: 'inline' })).toEqual({ layout: DiffwiseLayout.Inline });
+    expect(normalizeConfig({ layout: 'auto' })).toEqual({ layout: DiffwiseLayout.Auto });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('ignores another layout, with a warning for each', () => {
+    const invalidOptions = [{ layout: 'stacked' }, { layout: true }];
 
     for (const options of invalidOptions) {
       expect(normalizeConfig(options)).toEqual({});

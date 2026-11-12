@@ -1,107 +1,180 @@
 @let lineNumbersShown = effectiveConfig().showLineNumbers;
 @let changeIconsShown = showsChangeIcons();
 
-@if (shownVersionHeaders(); as headers) {
-  <div class="diffwise-html-diff__version-headers">
-    <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
-      @if (headers.asIcons) {
-        <span
-          class="diffwise-html-diff__version-header-icon"
-          role="img"
-          tabindex="0"
-          [attr.aria-label]="headers.texts.old"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M2.9 3.4v2.9h2.9" />
-            <path d="M3.2 6.3a5.3 5.3 0 1 1-.1 3.6" />
-            <path d="M8.5 5.6v2.9l2 1.2" />
-          </svg>
-        </span>
-      } @else {
-        {{ headers.texts.old }}
-      }
-    </div>
-    <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--new">
-      @if (headers.asIcons) {
-        <span
-          class="diffwise-html-diff__version-header-icon"
-          role="img"
-          tabindex="0"
-          [attr.aria-label]="headers.texts.new"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="8" cy="8" r="5.6" />
-            <path d="M8 5.1V8l2 1.2" />
-          </svg>
-        </span>
-      } @else {
-        {{ headers.texts.new }}
-      }
-    </div>
-  </div>
-}
-
-@for (row of rows(); track $index) {
-  @let describesChanges = row.changeDetails.length > 0;
-
-  <div
-    class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
-    [attr.data-diffwise-row]="describesChanges ? $index : null"
+<ng-template #oldVersionIcon let-versionName>
+  <span
+    class="diffwise-html-diff__version-header-icon"
+    role="img"
+    tabindex="0"
+    [attr.aria-label]="versionName"
   >
-    @if (row.oldLine; as line) {
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M2.9 3.4v2.9h2.9" />
+      <path d="M3.2 6.3a5.3 5.3 0 1 1-.1 3.6" />
+      <path d="M8.5 5.6v2.9l2 1.2" />
+    </svg>
+  </span>
+</ng-template>
+
+<ng-template #newVersionIcon let-versionName>
+  <span
+    class="diffwise-html-diff__version-header-icon"
+    role="img"
+    tabindex="0"
+    [attr.aria-label]="versionName"
+  >
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <circle cx="8" cy="8" r="5.6" />
+      <path d="M8 5.1V8l2 1.2" />
+    </svg>
+  </span>
+</ng-template>
+
+@if (showsSingleColumn()) {
+  @if (singleColumnHeader(); as header) {
+    <div class="diffwise-html-diff__version-headers">
+      @if (lineNumbersShown) {
+        <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
+          <ng-container
+            [ngTemplateOutlet]="oldVersionIcon"
+            [ngTemplateOutletContext]="{ $implicit: header.iconNames.old }"
+          />
+        </div>
+        <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--new">
+          <ng-container
+            [ngTemplateOutlet]="newVersionIcon"
+            [ngTemplateOutletContext]="{ $implicit: header.iconNames.new }"
+          />
+        </div>
+      }
+      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--inline">
+        {{ header.contentText }}
+      </div>
+    </div>
+  }
+
+  @for (row of singleColumnRows(); track $index) {
+    <div
+      class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+      [attr.data-diffwise-row]="row.detailsRow"
+    >
       @if (lineNumbersShown) {
         <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
-          <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+          @if (row.oldNumber !== null) {
+            <span class="diffwise-html-diff__line-number-value">{{ row.oldNumber }}</span>
+          }
         </div>
-      }
-      <div
-        class="diffwise-html-diff__content diffwise-html-diff__content--old"
-        [attr.data-diffwise-table]="line.table"
-        [innerHTML]="line.html"
-      ></div>
-    } @else {
-      <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
-    }
-
-    @if (changeIconsShown && describesChanges) {
-      <div class="diffwise-html-diff__divider">
-        <diffwise-change-details-button [details]="row.changeDetails" [describer]="describer()" />
-      </div>
-    } @else {
-      <div class="diffwise-html-diff__divider" aria-hidden="true"></div>
-    }
-
-    @if (row.newLine; as line) {
-      @if (lineNumbersShown) {
         <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
-          <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+          @if (row.newNumber !== null) {
+            <span class="diffwise-html-diff__line-number-value">{{ row.newNumber }}</span>
+          }
         </div>
       }
+
+      @if (changeIconsShown && row.iconDetails.length > 0) {
+        <div class="diffwise-html-diff__change-details-cell">
+          <diffwise-change-details-button [details]="row.iconDetails" [describer]="describer()" />
+        </div>
+      } @else {
+        <div class="diffwise-html-diff__change-details-cell" aria-hidden="true"></div>
+      }
+
       <div
-        class="diffwise-html-diff__content diffwise-html-diff__content--new"
-        [attr.data-diffwise-table]="line.table"
-        [innerHTML]="line.html"
+        class="diffwise-html-diff__content diffwise-html-diff__content--{{ row.version }}"
+        [attr.data-diffwise-table]="row.table"
+        [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
+        [innerHTML]="row.html"
       ></div>
-    } @else {
-      <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
-    }
-  </div>
+    </div>
+  }
+} @else {
+  @if (shownVersionHeaders(); as headers) {
+    <div class="diffwise-html-diff__version-headers">
+      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
+        @if (headers.asIcons) {
+          <ng-container
+            [ngTemplateOutlet]="oldVersionIcon"
+            [ngTemplateOutletContext]="{ $implicit: headers.texts.old }"
+          />
+        } @else {
+          {{ headers.texts.old }}
+        }
+      </div>
+      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--new">
+        @if (headers.asIcons) {
+          <ng-container
+            [ngTemplateOutlet]="newVersionIcon"
+            [ngTemplateOutletContext]="{ $implicit: headers.texts.new }"
+          />
+        } @else {
+          {{ headers.texts.new }}
+        }
+      </div>
+    </div>
+  }
+
+  @for (row of rows(); track $index) {
+    @let describesChanges = row.changeDetails.length > 0;
+
+    <div
+      class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+      [attr.data-diffwise-row]="describesChanges ? $index : null"
+    >
+      @if (row.oldLine; as line) {
+        @if (lineNumbersShown) {
+          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
+            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+          </div>
+        }
+        <div
+          class="diffwise-html-diff__content diffwise-html-diff__content--old"
+          [attr.data-diffwise-table]="line.table"
+          [innerHTML]="line.html"
+        ></div>
+      } @else {
+        <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
+      }
+
+      @if (changeIconsShown && describesChanges) {
+        <div class="diffwise-html-diff__divider">
+          <diffwise-change-details-button [details]="row.changeDetails" [describer]="describer()" />
+        </div>
+      } @else {
+        <div class="diffwise-html-diff__divider" aria-hidden="true"></div>
+      }
+
+      @if (row.newLine; as line) {
+        @if (lineNumbersShown) {
+          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+          </div>
+        }
+        <div
+          class="diffwise-html-diff__content diffwise-html-diff__content--new"
+          [attr.data-diffwise-table]="line.table"
+          [innerHTML]="line.html"
+        ></div>
+      } @else {
+        <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
+      }
+    </div>
+  }
 }
 
 <diffwise-change-tooltip [tooltipId]="tooltipId" />

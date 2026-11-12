@@ -4,6 +4,7 @@ import type { UiTexts } from './texts';
 export const ENGLISH_TEXTS: UiTexts = {
   oldVersionLabel: 'Previous version',
   newVersionLabel: 'New version',
+  inlineContentLabel: 'Content after changes',
   diffLabel: 'Comparison of document versions',
 
   formattingChangeLabel: 'Formatting change',

@@ -11,6 +11,7 @@ import {
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
+  DiffwiseLayout,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
   DiffwiseTooltipColorMode,
@@ -48,6 +49,8 @@ export interface DiffwiseConfigOptions {
    * only the colors it sets, and `null` takes away the colors of the levels below. Default: none.
    */
   readonly diffColors?: DiffwiseDiffColors | null;
+  /** The two versions side by side, or a single column. Default: `DiffwiseLayout.Auto`. */
+  readonly layout?: DiffwiseLayout;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
   /**
@@ -153,6 +156,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Colors of changes for the light and the dark theme. */
   readonly diffColors: DiffwiseDiffColors = NO_DIFF_COLORS;
+
+  /** The two versions side by side, or a single column. */
+  readonly layout: DiffwiseLayout = DiffwiseLayout.Auto;
 
   /** Shows the number of each line. */
   readonly showLineNumbers: boolean = true;
