@@ -61,6 +61,19 @@
 
   <h2>Layout</h2>
   <demo-choice-buttons
+    label="Layout"
+    [choices]="layouts"
+    [value]="diffwise.config().layout"
+    (chosen)="update({ layout: $event })"
+  />
+  <demo-choice-buttons
+    label="Width"
+    [choices]="diffWidths"
+    [value]="diffWidth()"
+    (chosen)="diffWidth.set($event)"
+  />
+  <p class="demo-hint">The automatic layout shows a single column in a diff under 768 px.</p>
+  <demo-choice-buttons
     label="Between the versions"
     [choices]="dividerStyles"
     [value]="diffwise.config().dividerStyle"
@@ -247,10 +260,12 @@
   @if (sample.error()) {
     <p role="alert">The sample could not be loaded.</p>
   } @else if (sample.value(); as pair) {
-    <diffwise-html-diff
-      [oldHtml]="pair.oldHtml"
-      [newHtml]="pair.newHtml"
-      [language]="interfaceLanguage()"
-    />
+    <div class="demo-diff" [style.max-width]="diffWidth()">
+      <diffwise-html-diff
+        [oldHtml]="pair.oldHtml"
+        [newHtml]="pair.newHtml"
+        [language]="interfaceLanguage()"
+      />
+    </div>
   }
 </main>

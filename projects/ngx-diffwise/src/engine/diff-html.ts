@@ -164,12 +164,12 @@ class ViewRowBuilder {
 
   private nextOldLine(line: Line, html: string): ViewLine {
     this.oldLineCount++;
-    return { number: this.oldLineCount, html, table: line.table };
+    return { kind: line.kind, number: this.oldLineCount, html, table: line.table };
   }
 
   private nextNewLine(line: Line, html: string): ViewLine {
     this.newLineCount++;
-    return { number: this.newLineCount, html, table: line.table };
+    return { kind: line.kind, number: this.newLineCount, html, table: line.table };
   }
 }
 

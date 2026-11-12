@@ -24,9 +24,6 @@ const FIRST_TABLE_ROW_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}first-table-r
 /** Marks the table copy that holds the last row of a table, which closes the table below. */
 const LAST_TABLE_ROW_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}last-table-row`;
 
-/** Marks a cell that spans more rows, so no line closes it below. */
-const SPANS_ROWS_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}spans-rows`;
-
 /** Finds the copy of the row in a table copy, inside the copy of its row group. */
 const ROW_COPY_SELECTOR = `:scope > * > ${TABLE_ROW_TAG}`;
 
@@ -79,9 +76,8 @@ export function completeTableCopy(copy: Element, part: TablePart, keepsIds: bool
 function completeRowCopy(copy: Element, row: GridRow): void {
   const copiedCells = Array.from(copy.children).filter(isCell);
 
-  for (const [index, copiedCell] of copiedCells.entries()) {
+  for (const copiedCell of copiedCells) {
     copiedCell.removeAttribute(ROW_SPAN_ATTRIBUTE);
-    copiedCell.toggleAttribute(SPANS_ROWS_ATTRIBUTE, row.cells[index].rowSpan > 1);
   }
 
   for (const spanningCell of row.spanningCells) {

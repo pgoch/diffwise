@@ -1,5 +1,6 @@
 import { appearanceClasses, appearanceStyles } from './appearance';
 import { DiffwiseConfig } from './config/diffwise-config';
+import { DiffwiseLayout } from './config/option-values';
 
 const BUILTIN_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif';
 const FONT_FAMILY_PROPERTY = 'font-family';
@@ -12,7 +13,22 @@ const DEFAULT_LEVEL_CLASSES = [
 
 describe('appearanceClasses', () => {
   it('adds only the classes of the levels for the defaults', () => {
-    expect(appearanceClasses(new DiffwiseConfig(), {})).toEqual(DEFAULT_LEVEL_CLASSES);
+    expect(appearanceClasses(new DiffwiseConfig(), {}, DiffwiseLayout.SideBySide)).toEqual(
+      DEFAULT_LEVEL_CLASSES,
+    );
+  });
+
+  it('adds the class of the single column when the diff shows it', () => {
+    expect(appearanceClasses(new DiffwiseConfig(), {}, DiffwiseLayout.Inline)).toEqual([
+      'diffwise-html-diff--layout-inline',
+      ...DEFAULT_LEVEL_CLASSES,
+    ]);
+  });
+
+  it('adds no class for the layout an option asks for, only for the one shown', () => {
+    const config = new DiffwiseConfig({ layout: DiffwiseLayout.Inline });
+
+    expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual(DEFAULT_LEVEL_CLASSES);
   });
 
   it('adds a modifier class with the value of each option that differs from its default', () => {
@@ -31,7 +47,7 @@ describe('appearanceClasses', () => {
       tooltipTitleAlignment: 'center',
     });
 
-    expect(appearanceClasses(config, {})).toEqual([
+    expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual([
       'diffwise-html-diff--highlight-style-top-bottom',
       'diffwise-html-diff--line-number-style-background',
       'diffwise-html-diff--line-number-alignment-bottom',
@@ -55,19 +71,21 @@ describe('appearanceClasses', () => {
     });
     const withBackgrounds = new DiffwiseConfig({ highlightWholeLines: true });
 
-    expect(appearanceClasses(withoutBackgrounds, {})).toEqual([
+    expect(appearanceClasses(withoutBackgrounds, {}, DiffwiseLayout.SideBySide)).toEqual([
       ...DEFAULT_LEVEL_CLASSES,
       'diffwise-html-diff--no-line-numbers',
       'diffwise-html-diff--no-changed-line-highlight',
       'diffwise-html-diff--highlight-whole-lines',
     ]);
-    expect(appearanceClasses(withBackgrounds, {})).toEqual(DEFAULT_LEVEL_CLASSES);
+    expect(appearanceClasses(withBackgrounds, {}, DiffwiseLayout.SideBySide)).toEqual(
+      DEFAULT_LEVEL_CLASSES,
+    );
   });
 
   it('turns off the highlights of changed parts in the tooltips', () => {
     const config = new DiffwiseConfig({ highlightTooltipChanges: false });
 
-    expect(appearanceClasses(config, {})).toEqual([
+    expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual([
       ...DEFAULT_LEVEL_CLASSES,
       'diffwise-html-diff--no-tooltip-change-highlight',
     ]);
@@ -76,9 +94,9 @@ describe('appearanceClasses', () => {
   it('leaves out the intensity when the app gives colors of changes', () => {
     const config = new DiffwiseConfig({ diffIntensity: 5 });
 
-    expect(appearanceClasses(config, { addedAccent: '#0f766e' })).toEqual([
-      'diffwise-html-diff--ui-contrast-3',
-    ]);
+    expect(
+      appearanceClasses(config, { addedAccent: '#0f766e' }, DiffwiseLayout.SideBySide),
+    ).toEqual(['diffwise-html-diff--ui-contrast-3']);
   });
 });
 

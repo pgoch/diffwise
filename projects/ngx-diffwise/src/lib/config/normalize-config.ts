@@ -14,6 +14,7 @@ import {
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
   DiffwiseLanguage,
+  DiffwiseLayout,
   DiffwiseLineNumberStyle,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
@@ -68,6 +69,8 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   diffIntensity: isLevel,
   uiContrast: isLevel,
   diffColors: isObjectOrNull,
+  layout: isLayout,
+  layoutBreakpoint: isLayoutBreakpoint,
   showLineNumbers: isBoolean,
   lineNumberStyle: isLineNumberStyle,
   lineNumberAlignment: isVerticalAlignment,
@@ -206,6 +209,15 @@ function isHighlightStyle(value: unknown): boolean {
 /** True for a level of a scale: a whole number from 1 to 5. */
 function isLevel(value: unknown): boolean {
   return isNumber(value) && Number.isInteger(value) && isInRange(value, LEVEL_RANGE);
+}
+
+function isLayout(value: unknown): boolean {
+  return isValueOf(DiffwiseLayout, value);
+}
+
+/** True for a width in pixels: a number above zero. */
+function isLayoutBreakpoint(value: unknown): boolean {
+  return isNumber(value) && Number.isFinite(value) && value > 0;
 }
 
 function isLineNumberStyle(value: unknown): boolean {

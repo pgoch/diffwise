@@ -1,0 +1,211 @@
+import enLongAfter from '../../../../../test-data/en/long/after.html?raw';
+import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
+import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
+import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
+import { diffHtml } from '../diff-html';
+import {
+  DEFAULT_DIFF_OPTIONS,
+  DocumentVersion,
+  LineChangeKind,
+  type SingleColumnRow,
+  type ViewLine,
+  type ViewRow,
+} from '../model';
+import { singleColumnRows } from './single-column-rows';
+
+const ID_PREFIX = 'diff';
+const TEMPLATE_TAG = 'template';
+const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
+const OLD = DocumentVersion.Old;
+const NEW = DocumentVersion.New;
+
+/** The long samples from `test-data/`, as `[name, before, after]`. */
+const LONG_SAMPLES: [string, string, string][] = [
+  ['en/long', enLongBefore, enLongAfter],
+  ['pl/long', plLongBefore, plLongAfter],
+];
+
+const PLANS_HTML =
+  '<table><tr><th>Plan</th></tr><tr><td>Free</td></tr><tr><td>Team</td></tr></table>';
+
+/** Rows of the side-by-side view of two documents. */
+function sideBySideRows(oldHtml: string, newHtml: string): readonly ViewRow[] {
+  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX };
+  return diffHtml(oldHtml, newHtml, settings).rows;
+}
+
+/** Rows of the single column of two documents. */
+function compare(oldHtml: string, newHtml: string): SingleColumnRow[] {
+  return singleColumnRows(sideBySideRows(oldHtml, newHtml));
+}
+
+/** Text of a line as a reader sees it, without the hidden copies of the rows of its table. */
+function textOf(line: ViewLine): string {
+  const template = document.createElement(TEMPLATE_TAG);
+
+  template.innerHTML = line.html;
+  template.content.querySelector(COLUMN_SIZERS_SELECTOR)?.remove();
+
+  return template.content.textContent?.trim() ?? '';
+}
+
+/** A row as `[kind, version, old number, new number, text]`. */
+function rowSummary({ kind, version, oldNumber, newNumber, line }: SingleColumnRow) {
+  return [kind, version, oldNumber, newNumber, textOf(line)];
+}
+
+/** A table line as `[text, table, below a line, below a row, above a line]`; `null` outside tables. */
+function tablePlaceSummary({ line, tablePlace }: SingleColumnRow) {
+  if (tablePlace === null) {
+    return null;
+  }
+
+  const { table, belowTableLine, belowTableRow, aboveTableLine } = tablePlace;
+
+  return [textOf(line), table, belowTableLine, belowTableRow, aboveTableLine];
+}
+
+function linesOfVersion(rows: readonly SingleColumnRow[], version: DocumentVersion): ViewLine[] {
+  return rows.filter((row) => row.version === version).map((row) => row.line);
+}
+
+function isChanged(row: ViewRow): boolean {
+  return row.kind !== LineChangeKind.Unchanged;
+}
+
+function isLine(line: ViewLine | null): line is ViewLine {
+  return line !== null;
+}
+
+function numbersOf(numbers: readonly (number | null)[]): number[] {
+  return numbers.filter((number) => number !== null);
+}
+
+describe('singleColumnRows', () => {
+  it('shows an unchanged line once, from the new version, under both of its numbers', () => {
+    const rows = compare(
+      '<p>Old intro.</p><p>Terms of use.</p>',
+      '<p>Terms of use.</p><p>New outro.</p>',
+    );
+
+    expect(rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Removed, OLD, 1, null, 'Old intro.'],
+      [LineChangeKind.Unchanged, NEW, 2, 1, 'Terms of use.'],
+      [LineChangeKind.Added, NEW, null, 2, 'New outro.'],
+    ]);
+    expect(rows[1].line.html).toBe('<p>Terms of use.</p>');
+  });
+
+  it('shows a changed pair as its old line above its new line, each under its own number', () => {
+    const rows = compare(
+      '<p>Intro.</p><p>Reply within 24 hours.</p>',
+      '<p>Reply within 48 hours.</p>',
+    );
+
+    expect(rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Removed, OLD, 1, null, 'Intro.'],
+      [LineChangeKind.Changed, OLD, 2, null, 'Reply within 24 hours.'],
+      [LineChangeKind.Changed, NEW, null, 1, 'Reply within 48 hours.'],
+    ]);
+  });
+
+  it('keeps the marked changes of each line of a changed pair', () => {
+    const sourceRows = sideBySideRows(
+      '<p>Reply within 24 hours.</p>',
+      '<p>Reply within 48 hours.</p>',
+    );
+    const [oldRow, newRow] = singleColumnRows(sourceRows);
+
+    expect(oldRow.line).toBe(sourceRows[0].oldLine);
+    expect(newRow.line).toBe(sourceRows[0].newLine);
+  });
+
+  it('gives both lines of a changed pair the position and the change details of their row', () => {
+    const rows = compare(
+      '<p>Intro.</p><p><i>Important:</i> back up your notes.</p>',
+      '<p>Intro.</p><p><b>Important:</b> back up your notes.</p>',
+    );
+    const [, oldRow, newRow] = rows;
+
+    expect(rows.map((row) => row.sourceRow)).toEqual([0, 1, 1]);
+    expect(oldRow.changeDetails).toHaveLength(1);
+    expect(newRow.changeDetails).toBe(oldRow.changeDetails);
+    expect(rows[0].changeDetails).toEqual([]);
+  });
+
+  it('gives no rows for no rows', () => {
+    expect(singleColumnRows([])).toEqual([]);
+  });
+
+  it('counts the old and the new version of a table as one table', () => {
+    const rows = compare(
+      `<p>Plans</p>${PLANS_HTML}<table><tr><td>Search</td></tr></table>`,
+      `<table><tr><td>New table</td></tr></table><p>Plans</p>${PLANS_HTML}`,
+    );
+
+    expect(rows.map(tablePlaceSummary)).toEqual([
+      ['New table', 0, false, false, false],
+      null,
+      ['Plan', 1, false, false, true],
+      ['Free', 1, true, true, true],
+      ['Team', 1, true, true, false],
+      ['Search', 2, false, false, false],
+    ]);
+  });
+
+  it('places a line that is the first or the last one only in its version inside the table', () => {
+    const rows = compare(
+      '<table><tr><th>Plan</th></tr><tr><td>Free</td></tr><tr><td>Team of five</td></tr></table>',
+      '<table><tr><th>Plans</th></tr><tr><td>Free</td></tr><tr><td>Team of eight</td></tr></table>',
+    );
+
+    expect(rows.map(tablePlaceSummary)).toEqual([
+      ['Plan', 0, false, false, true],
+      ['Plans', 0, true, true, true],
+      ['Free', 0, true, true, true],
+      ['Team of five', 0, true, true, true],
+      ['Team of eight', 0, true, true, false],
+    ]);
+  });
+
+  it('places the first row of a table under its caption, but under no row', () => {
+    const rows = compare(
+      '<table><caption>Plans</caption><tr><td>Free</td></tr></table>',
+      '<table><caption>Plans</caption><tr><td>Free</td></tr><tr><td>Team</td></tr></table>',
+    );
+
+    expect(rows.map(tablePlaceSummary)).toEqual([
+      ['Plans', 0, false, false, true],
+      ['Free', 0, true, false, true],
+      ['Team', 0, true, true, false],
+    ]);
+  });
+
+  it('keeps the table of removed rows that stand above the first pair of the table', () => {
+    const rows = compare(
+      '<table><tr><td>Archive</td></tr><tr><td>Free</td></tr></table>',
+      '<table><tr><td>Free</td></tr></table>',
+    );
+
+    expect(rows.map(tablePlaceSummary)).toEqual([
+      ['Archive', 0, false, false, true],
+      ['Free', 0, true, true, false],
+    ]);
+  });
+
+  it.each(LONG_SAMPLES)(
+    'shows every line of %s that the side-by-side view shows, in the same order',
+    (_, before, after) => {
+      const sourceRows = sideBySideRows(before, after);
+      const rows = singleColumnRows(sourceRows);
+      const changedOldLines = sourceRows.filter(isChanged).map((row) => row.oldLine);
+      const newLines = sourceRows.map((row) => row.newLine);
+      const oldNumbers = numbersOf(rows.map((row) => row.oldNumber));
+      const allOldNumbers = numbersOf(sourceRows.map((row) => row.oldLine?.number ?? null));
+
+      expect(linesOfVersion(rows, OLD)).toEqual(changedOldLines.filter(isLine));
+      expect(linesOfVersion(rows, NEW)).toEqual(newLines.filter(isLine));
+      expect(oldNumbers).toEqual(allOldNumbers);
+    },
+  );
+});

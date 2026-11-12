@@ -7,6 +7,8 @@ export interface DiffwiseCustomTexts {
   readonly oldVersionLabel?: string;
   /** Names the later version: its header, and the icon shown in its place. */
   readonly newVersionLabel?: string;
+  /** Heads the content in the single column, which shows the lines of both versions. */
+  readonly inlineContentLabel?: string;
   /** Names the whole diff for screen readers. */
   readonly diffLabel?: string;
 

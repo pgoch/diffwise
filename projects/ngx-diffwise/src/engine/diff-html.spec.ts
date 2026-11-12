@@ -26,6 +26,7 @@ import {
   type ImageProperties,
   ImageProperty,
   LineChangeKind,
+  LineKind,
   ListMarkerProperty,
   TextStyle,
   type ViewLine,
@@ -46,6 +47,7 @@ const RTL_PARAGRAPH = '<p dir="rtl">';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
 const NO_CHANGES = { addedLines: 0, removedLines: 0, changedLines: 0 };
 const ID_PREFIX = 'diff';
+const UNKNOWN_SAMPLE = 'No sample has the name ';
 const ID_SELECTOR = '[id]';
 const FRAGMENT_LINK_SELECTOR = 'a[href^="#"]';
 const HREF_ATTRIBUTE = 'href';
@@ -71,22 +73,32 @@ const LINE_ITEM = 'data-diffwise-line-item=""';
 /** A nested item keeps copies of the outer list and of its item, without the item's marker. */
 const NESTED_ITEM_START = /^<ol><li value="4" data-diffwise-continued-item=""><ul><li value="1"/;
 
+const EN_SHORT = 'en/short';
+const EN_MEDIUM = 'en/medium';
+const EN_LONG = 'en/long';
+const PL_SHORT = 'pl/short';
+const PL_MEDIUM = 'pl/medium';
+const PL_LONG = 'pl/long';
+
 /** Sample pairs from `test-data/`, as `[name, before, after]`. */
 const SAMPLES: [string, string, string][] = [
-  ['en/short', enShortBefore, enShortAfter],
-  ['en/medium', enMediumBefore, enMediumAfter],
-  ['en/long', enLongBefore, enLongAfter],
-  ['pl/short', plShortBefore, plShortAfter],
-  ['pl/medium', plMediumBefore, plMediumAfter],
-  ['pl/long', plLongBefore, plLongAfter],
+  [EN_SHORT, enShortBefore, enShortAfter],
+  [EN_MEDIUM, enMediumBefore, enMediumAfter],
+  [EN_LONG, enLongBefore, enLongAfter],
+  [PL_SHORT, plShortBefore, plShortAfter],
+  [PL_MEDIUM, plMediumBefore, plMediumAfter],
+  [PL_LONG, plLongBefore, plLongAfter],
 ];
 
-/** English and Polish pairs of one size, as `[size, English pair, Polish pair]`. */
-const TRANSLATED_SAMPLES: [string, [string, string], [string, string]][] = [
-  ['short', [enShortBefore, enShortAfter], [plShortBefore, plShortAfter]],
-  ['medium', [enMediumBefore, enMediumAfter], [plMediumBefore, plMediumAfter]],
-  ['long', [enLongBefore, enLongAfter], [plLongBefore, plLongAfter]],
+/** Names of the English and the Polish sample of one size, as `[size, English, Polish]`. */
+const TRANSLATED_SAMPLES: [string, string, string][] = [
+  ['short', EN_SHORT, PL_SHORT],
+  ['medium', EN_MEDIUM, PL_MEDIUM],
+  ['long', EN_LONG, PL_LONG],
 ];
+
+/** Diffs of the samples with the default options, by sample name; each is compared on first use. */
+const sampleDiffs = new Map<string, HtmlDiff>();
 
 /** Compares two documents; ids of the versions start with `diff-old-` and `diff-new-`. */
 function compare(
@@ -95,6 +107,30 @@ function compare(
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ): HtmlDiff {
   return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX });
+}
+
+/**
+ * The diff of a sample with the default options. Tests share it, because comparing a long sample
+ * takes most of the time of a test.
+ */
+function sampleDiff(name: string): HtmlDiff {
+  const sharedDiff = sampleDiffs.get(name);
+
+  if (sharedDiff !== undefined) {
+    return sharedDiff;
+  }
+
+  const [, before, after] = SAMPLES.find(([sampleName]) => sampleName === name) ?? [];
+
+  if (before === undefined || after === undefined) {
+    throw new Error(UNKNOWN_SAMPLE + name);
+  }
+
+  const diff = compare(before, after);
+
+  sampleDiffs.set(name, diff);
+
+  return diff;
 }
 
 /** Expected HTML of an added part. */
@@ -445,9 +481,7 @@ describe('diffHtml', () => {
   });
 
   it('shows the list changes of the long sample item by item, with their markers', () => {
-    const changedItems = compare(enLongBefore, enLongAfter)
-      .rows.filter(isChangedListItem)
-      .map(rowSummary);
+    const changedItems = sampleDiff(EN_LONG).rows.filter(isChangedListItem).map(rowSummary);
 
     expect(changedItems).toEqual([
       [LineChangeKind.Added, null, 11, [], []],
@@ -472,7 +506,7 @@ describe('diffHtml', () => {
   });
 
   it('keeps the numbers and the nesting of list items in their lines', () => {
-    const { rows } = compare(enLongBefore, enLongAfter);
+    const { rows } = sampleDiff(EN_LONG);
     const addedContentsItem = rows.find((row) => row.newLine?.number === 11);
     const changedNestedItem = rows.find((row) => row.newLine?.number === 36);
 
@@ -483,9 +517,7 @@ describe('diffHtml', () => {
   });
 
   it('describes the changes of list markers and checkboxes in the long sample', () => {
-    const itemChanges = compare(enLongBefore, enLongAfter)
-      .rows.filter(hasListItemDetails)
-      .map(itemChangeSummary);
+    const itemChanges = sampleDiff(EN_LONG).rows.filter(hasListItemDetails).map(itemChangeSummary);
     const toNumbers = [[ListMarkerProperty.ListType]];
 
     expect(itemChanges).toEqual([
@@ -498,7 +530,7 @@ describe('diffHtml', () => {
   });
 
   it('marks numbers shifted by an added item like numbers from another start, with no details', () => {
-    const { rows } = compare(enLongBefore, enLongAfter);
+    const { rows } = sampleDiff(EN_LONG);
     const shiftedItem = rowWithNewLine(rows, 35);
     const itemOfNewStart = rowWithNewLine(rows, 40);
 
@@ -565,15 +597,15 @@ describe('diffHtml', () => {
 
   it.each(TRANSLATED_SAMPLES)(
     'shows the same rows for the English and Polish %s samples',
-    (_, [enBefore, enAfter], [plBefore, plAfter]) => {
-      expect(compare(plBefore, plAfter).rows.map(rowShape)).toEqual(
-        compare(enBefore, enAfter).rows.map(rowShape),
+    (_, englishName, polishName) => {
+      expect(sampleDiff(polishName).rows.map(rowShape)).toEqual(
+        sampleDiff(englishName).rows.map(rowShape),
       );
     },
   );
 
-  it.each(SAMPLES)('numbers the lines of each version of %s from 1', (_, before, after) => {
-    const { rows } = compare(before, after);
+  it.each(SAMPLES)('numbers the lines of each version of %s from 1', (name, before, after) => {
+    const { rows } = sampleDiff(name);
     const oldNumbers = rows.map((row) => row.oldLine?.number).filter(Number.isInteger);
     const newNumbers = rows.map((row) => row.newLine?.number).filter(Number.isInteger);
 
@@ -581,11 +613,11 @@ describe('diffHtml', () => {
     expect(newNumbers).toEqual(numbersUpTo(lineTexts(after).length));
   });
 
-  it.each(SAMPLES)('keeps the text of every line of %s', (_, before, after) => {
+  it.each(SAMPLES)('keeps the text of every line of %s', (name, before, after) => {
     const oldTexts = lineTexts(before);
     const newTexts = lineTexts(after);
 
-    for (const { oldLine, newLine } of compare(before, after).rows) {
+    for (const { oldLine, newLine } of sampleDiff(name).rows) {
       if (oldLine) {
         expect(textOf(oldLine)).toBe(oldTexts[oldLine.number - 1]);
       }
@@ -596,9 +628,9 @@ describe('diffHtml', () => {
     }
   });
 
-  it.each(SAMPLES)('marks words only in changed rows of %s', (_, before, after) => {
+  it.each(SAMPLES)('marks words only in changed rows of %s', (name) => {
     const markedKinds = new Set(
-      compare(before, after)
+      sampleDiff(name)
         .rows.filter(hasMarkers)
         .map((row) => row.kind),
     );
@@ -681,8 +713,8 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it.each(SAMPLES)('keeps ids of %s unique and links within their version', (_, before, after) => {
-    const { rows } = compare(before, after);
+  it.each(SAMPLES)('keeps ids of %s unique and links within their version', (name) => {
+    const { rows } = sampleDiff(name);
     const oldLines = rows.map((row) => row.oldLine);
     const newLines = rows.map((row) => row.newLine);
     const ids = [...idsIn(oldLines), ...idsIn(newLines)];
@@ -700,12 +732,13 @@ describe('diffHtml', () => {
     const detailsAttribute = 'data-diffwise-change-details="0"';
     const removedMarker = `<del class="${REMOVED_CLASSES}" ${detailsAttribute}>Ważne:</del>`;
     const addedMarker = `<ins class="${ADDED_CLASSES}" ${detailsAttribute}>Ważne:</ins>`;
+    const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
     expect(rows).toEqual([
       {
         kind: LineChangeKind.Changed,
-        oldLine: { number: 1, html: `<p><i>${removedMarker}</i> chroń hasło.</p>`, table: null },
-        newLine: { number: 1, html: `<p><b>${addedMarker}</b> chroń hasło.</p>`, table: null },
+        oldLine: { ...paragraph, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
+        newLine: { ...paragraph, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
         changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
       },
     ]);
@@ -727,9 +760,7 @@ describe('diffHtml', () => {
     const addedBold = formattingDetail([], [TextStyle.Bold]);
     const sharedTexts = ['anyone with the link', 'note settings'];
 
-    expect(
-      compare(enLongBefore, enLongAfter).rows.filter(hasFormattingOrLinkDetails).map(detailSummary),
-    ).toEqual([
+    expect(sampleDiff(EN_LONG).rows.filter(hasFormattingOrLinkDetails).map(detailSummary)).toEqual([
       [55, 59, ['the sharing guide'], ['the sharing guide'], [sharingGuide]],
       [56, 60, sharedTexts, sharedTexts, [addedBold, publicLinksHelp]],
       [
@@ -751,8 +782,8 @@ describe('diffHtml', () => {
   });
 
   it('describes the same changes in the Polish long sample', () => {
-    const englishShapes = compare(enLongBefore, enLongAfter).rows.filter(hasChangeDetails);
-    const polishShapes = compare(plLongBefore, plLongAfter).rows.filter(hasChangeDetails);
+    const englishShapes = sampleDiff(EN_LONG).rows.filter(hasChangeDetails);
+    const polishShapes = sampleDiff(PL_LONG).rows.filter(hasChangeDetails);
 
     expect(polishShapes.map(detailShape)).toEqual(englishShapes.map(detailShape));
   });
@@ -774,21 +805,14 @@ describe('diffHtml', () => {
     const detailsAttribute = 'data-diffwise-change-details="0"';
     const removedMarker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
     const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
+    const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
     expect(compare(`<p>${oldImageHtml} Notatnik</p>`, `<p>${newImageHtml} Notatnik</p>`)).toEqual({
       rows: [
         {
           kind: LineChangeKind.Changed,
-          oldLine: {
-            number: 1,
-            html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>`,
-            table: null,
-          },
-          newLine: {
-            number: 1,
-            html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>`,
-            table: null,
-          },
+          oldLine: { ...paragraph, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
+          newLine: { ...paragraph, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
           changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
         },
       ],
@@ -802,9 +826,7 @@ describe('diffHtml', () => {
     const screenshot = 'images/editor-screenshot.svg';
     const chart = 'images/usage-chart.svg';
 
-    expect(
-      compare(enLongBefore, enLongAfter).rows.filter(hasFramedImages).map(imageSummary),
-    ).toEqual([
+    expect(sampleDiff(EN_LONG).rows.filter(hasFramedImages).map(imageSummary)).toEqual([
       [3, 3, [logo2025], [logo2026], [[ImageProperty.Source]]],
       [50, 53, ['images/icon-share.svg'], [], []],
       [57, 61, [screenshot], [screenshot], [[ImageProperty.Width, ImageProperty.Height]]],
@@ -814,7 +836,7 @@ describe('diffHtml', () => {
   });
 
   it('shows the changes of the long sample tables row by row, with the cells of added rows marked', () => {
-    const { rows } = compare(enLongBefore, enLongAfter);
+    const { rows } = sampleDiff(EN_LONG);
     const changedRows = rows.filter((row) => row.kind !== LineChangeKind.Unchanged);
     const pricesAndShortcuts = changedRows.filter(
       (row) => isRowOfTable(row, 0) || isRowOfTable(row, 2),
@@ -834,7 +856,7 @@ describe('diffHtml', () => {
   });
 
   it('marks the cells of the column added to the long sample whole, in the same column of each row', () => {
-    const { rows } = compare(enLongBefore, enLongAfter);
+    const { rows } = sampleDiff(EN_LONG);
     const familyColumnRows = rows.filter((row) => isRowOfTable(row, 1));
     const familyColumn = 3;
 
@@ -905,7 +927,7 @@ describe('diffHtml', () => {
   });
 
   it('gives each table line the position of its table and copies of the rows of that table', () => {
-    const { rows } = compare(enLongBefore, enLongAfter);
+    const { rows } = sampleDiff(EN_LONG);
     const oldLines = rows.map((row) => row.oldLine);
     const newLines = rows.map((row) => row.newLine);
 

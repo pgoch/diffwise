@@ -4,6 +4,7 @@ import type { UiTexts } from './texts';
 export const POLISH_TEXTS: UiTexts = {
   oldVersionLabel: 'Poprzednia wersja',
   newVersionLabel: 'Nowa wersja',
+  inlineContentLabel: 'Treść po zmianach',
   diffLabel: 'Porównanie wersji dokumentu',
 
   formattingChangeLabel: 'Zmiana formatowania',
