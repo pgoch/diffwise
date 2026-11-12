@@ -182,7 +182,7 @@
 /* The rows look like one table with rounded corners; the caption stands above it. */
 .diffwise-html-diff__content table[data-diffwise-table-copy] {
   border: 1px solid var(--diffwise-border);
-  border-top-width: 0;
+  border-block-width: 0;
   border-collapse: separate;
   border-spacing: 0;
 }
@@ -203,6 +203,7 @@
 
 .diffwise-html-diff__content table[data-diffwise-last-table-row] {
   margin-bottom: 4px;
+  border-bottom-width: 1px;
   border-end-start-radius: 6px;
   border-end-end-radius: 6px;
 }
@@ -216,6 +217,18 @@
 
 .diffwise-html-diff__content [data-diffwise-table-copy] > * > tr > :first-child {
   border-inline-start: 0;
+}
+
+/*
+ * The line between two rows is the top edge of the lower one, as the next line of the diff can
+ * cover the last pixel of a line. A cell continued from a row above has no line above it.
+ */
+.diffwise-html-diff__content
+  [data-diffwise-table-copy]:not([data-diffwise-first-table-row])
+  > *
+  > tr
+  > :not([data-diffwise-continued-cell]) {
+  border-top: 1px solid var(--diffwise-border);
 }
 
 /* Corner cells round with the table, so their backgrounds stay inside its corners. */
@@ -247,31 +260,6 @@
   > tr:not(:has(> td))
   > :not(.diffwise-html-diff__highlight--cell) {
   background: color-mix(in srgb, var(--diffwise-ink) 3.5%, var(--diffwise-background));
-}
-
-/*
- * A cell that spans more rows covers the line under it, so it continues into its place in the next
- * row, which stays empty: the page background, then the background of the cell.
- */
-.diffwise-html-diff__content [data-diffwise-spans-rows] {
-  position: relative;
-}
-
-.diffwise-html-diff__content [data-diffwise-spans-rows]::before,
-.diffwise-html-diff__content [data-diffwise-spans-rows]::after {
-  position: absolute;
-  top: 100%;
-  inset-inline: 0;
-  height: 1px;
-  content: '';
-}
-
-.diffwise-html-diff__content [data-diffwise-spans-rows]::before {
-  background: var(--diffwise-background);
-}
-
-.diffwise-html-diff__content [data-diffwise-spans-rows]::after {
-  background: inherit;
 }
 
 /*

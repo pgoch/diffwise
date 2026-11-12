@@ -11,7 +11,6 @@ const TABLE_COPY = 'data-diffwise-table-copy=""';
 const FIRST_LINE = 'data-diffwise-first-table-line=""';
 const FIRST_ROW = 'data-diffwise-first-table-row=""';
 const LAST_ROW = 'data-diffwise-last-table-row=""';
-const SPANS_ROWS = 'data-diffwise-spans-rows=""';
 const CONTINUED_CELL = 'data-diffwise-continued-cell=""';
 
 /** A line in the middle of a table: neither its first line nor its first or last row. */
@@ -92,7 +91,7 @@ describe('completeTableCopy', () => {
 
   it('ends a cell that spans rows in its own row and drops every row span', () => {
     expect(rowLineHtml(PRICES, 0)).toBe(
-      `<table ${TABLE_COPY}><tbody><tr><td>Personal</td><td id="limit" colspan="2" class="wide" ${SPANS_ROWS}>Unlimited</td></tr></tbody></table>`,
+      `<table ${TABLE_COPY}><tbody><tr><td>Personal</td><td id="limit" colspan="2" class="wide">Unlimited</td></tr></tbody></table>`,
     );
     expect(rowLineHtml(PRICES, 2)).toBe(
       `<table ${TABLE_COPY}><tbody><tr><td>Team</td><td>5</td><td>6</td></tr></tbody></table>`,

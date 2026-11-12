@@ -149,7 +149,6 @@
 
 .diffwise-html-diff__content[data-diffwise-table-neighbors~='row-above']
   table[data-diffwise-first-table-row] {
-  border-top-width: 0;
   border-start-start-radius: 0;
   border-start-end-radius: 0;
 }
@@ -170,6 +169,7 @@
 .diffwise-html-diff__content[data-diffwise-table-neighbors~='line-below']
   table[data-diffwise-last-table-row] {
   margin-bottom: 0;
+  border-bottom-width: 0;
   border-end-start-radius: 0;
   border-end-end-radius: 0;
 }
