@@ -101,6 +101,21 @@ const LAYOUT_CHOICES: readonly Choice<DiffwiseLayout>[] = [
   { value: DiffwiseLayout.Inline, label: 'Single column' },
 ];
 
+/** Widths of the diff in the demo, as values of `max-width`; the automatic layout follows them. */
+const DiffWidth = {
+  Full: 'none',
+  Medium: '760px',
+  Narrow: '480px',
+} as const;
+
+type DiffWidth = (typeof DiffWidth)[keyof typeof DiffWidth];
+
+const DIFF_WIDTH_CHOICES: readonly Choice<DiffWidth>[] = [
+  { value: DiffWidth.Full, label: 'Full' },
+  { value: DiffWidth.Medium, label: '760 px' },
+  { value: DiffWidth.Narrow, label: '480 px' },
+];
+
 const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
   { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
   { value: DiffwiseDividerStyle.Line, label: 'Line' },
@@ -213,6 +228,7 @@ export class App {
   protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
   protected readonly levels = LEVEL_CHOICES;
   protected readonly layouts = LAYOUT_CHOICES;
+  protected readonly diffWidths = DIFF_WIDTH_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
@@ -230,6 +246,9 @@ export class App {
 
   protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
+
+  /** Width of the diff, which the page narrows to show the automatic layout. */
+  protected readonly diffWidth = signal<DiffWidth>(DiffWidth.Full);
 
   /** Language of the diff interface: the one of the sample, set through an input of the diff. */
   protected readonly interfaceLanguage = computed(() => INTERFACE_LANGUAGES[this.language()]);

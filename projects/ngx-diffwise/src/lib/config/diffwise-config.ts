@@ -49,8 +49,16 @@ export interface DiffwiseConfigOptions {
    * only the colors it sets, and `null` takes away the colors of the levels below. Default: none.
    */
   readonly diffColors?: DiffwiseDiffColors | null;
-  /** The two versions side by side, or a single column. Default: `DiffwiseLayout.Auto`. */
+  /**
+   * The two versions side by side, a single column, or automatic: a single column in a narrow
+   * diff. Default: `DiffwiseLayout.Auto`.
+   */
   readonly layout?: DiffwiseLayout;
+  /**
+   * Width of the diff in pixels under which the automatic layout shows a single column; a number
+   * above zero. Default: `768`.
+   */
+  readonly layoutBreakpoint?: number;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
   /**
@@ -157,8 +165,11 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Colors of changes for the light and the dark theme. */
   readonly diffColors: DiffwiseDiffColors = NO_DIFF_COLORS;
 
-  /** The two versions side by side, or a single column. */
+  /** The two versions side by side, a single column, or automatic by the width of the diff. */
   readonly layout: DiffwiseLayout = DiffwiseLayout.Auto;
+
+  /** Width of the diff in pixels under which the automatic layout shows a single column. */
+  readonly layoutBreakpoint: number = 768;
 
   /** Shows the number of each line. */
   readonly showLineNumbers: boolean = true;

@@ -13,6 +13,9 @@ import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
 const LAYOUT_INPUT = 'layout';
+const WARN_METHOD = 'warn';
+const RESIZE_OBSERVER = 'ResizeObserver';
+const OFFSET_WIDTH = 'offsetWidth';
 const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
 const ROW_SELECTOR = '.diffwise-html-diff__row';
@@ -73,16 +76,43 @@ HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
   openPopovers.delete(this);
 };
 
-/** A diff to render. */
+/** Stands in for the observer of the browser, which jsdom lacks; a test reports the resizes. */
+class FakeResizeObserver {
+  static readonly watching = new Set<FakeResizeObserver>();
+
+  constructor(private readonly report: () => void) {}
+
+  observe(): void {
+    FakeResizeObserver.watching.add(this);
+  }
+
+  disconnect(): void {
+    FakeResizeObserver.watching.delete(this);
+  }
+
+  static reportResize(): void {
+    for (const observer of FakeResizeObserver.watching) {
+      observer.report();
+    }
+  }
+}
+
+/** A diff to render, and the width its element has before it is first shown. */
 interface RenderedDiff {
   readonly oldHtml?: string;
   readonly newHtml?: string;
   readonly options?: DiffwiseConfigOptions;
+  /** Width of the element in pixels; jsdom lays out nothing, so without one it has no width. */
+  readonly width?: number;
+}
+
+function setWidth(element: HTMLElement, width: number): void {
+  Object.defineProperty(element, OFFSET_WIDTH, { configurable: true, value: width });
 }
 
 /** Renders the diff of the terms, or of the given versions, with its options. */
 function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtmlDiff> {
-  const { oldHtml = OLD_TERMS_HTML, newHtml = NEW_TERMS_HTML, options = {} } = diff;
+  const { oldHtml = OLD_TERMS_HTML, newHtml = NEW_TERMS_HTML, options = {}, width } = diff;
   const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
@@ -90,6 +120,10 @@ function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtmlDiff> {
 
   for (const [name, value] of Object.entries(options)) {
     fixture.componentRef.setInput(name, value);
+  }
+
+  if (width !== undefined) {
+    setWidth(fixture.nativeElement, width);
   }
 
   fixture.detectChanges();
@@ -101,6 +135,13 @@ function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtmlDiff> {
 function renderSingleColumn(diff: RenderedDiff = {}): HTMLElement {
   const options = { ...diff.options, layout: DiffwiseLayout.Inline };
   return render({ ...diff, options }).nativeElement;
+}
+
+/** Resizes the diff as the browser does: the observer reports it, and the diff shows it. */
+function resize(fixture: ComponentFixture<DiffwiseHtmlDiff>, width: number): void {
+  setWidth(fixture.nativeElement, width);
+  FakeResizeObserver.reportResize();
+  fixture.detectChanges();
 }
 
 function showsSingleColumn(element: HTMLElement): boolean {
@@ -166,18 +207,73 @@ function tooltipTitleOf(element: HTMLElement) {
   return isShown ? tooltip.querySelector(TOOLTIP_TITLE_SELECTOR)?.textContent : null;
 }
 
+beforeEach(() => {
+  vi.stubGlobal(RESIZE_OBSERVER, FakeResizeObserver);
+  vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
+});
+
 afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.restoreAllMocks();
+  FakeResizeObserver.watching.clear();
   openPopovers.clear();
 });
 
 describe('DiffwiseHtmlDiff layout', () => {
-  it('shows the versions side by side by default, and a single column on request', () => {
+  it('shows the versions side by side in a wide diff, and while its width is not known', () => {
+    expect(showsSingleColumn(render({ width: 768 }).nativeElement)).toBe(false);
+    expect(showsSingleColumn(render().nativeElement)).toBe(false);
+  });
+
+  it('shows a single column in a diff narrower than 768 pixels', () => {
+    expect(showsSingleColumn(render({ width: 767 }).nativeElement)).toBe(true);
+  });
+
+  it('changes the layout when the width of the diff crosses the breakpoint', () => {
+    const fixture = render({ width: 1024 });
+
+    resize(fixture, 480);
+
+    expect(showsSingleColumn(fixture.nativeElement)).toBe(true);
+
+    resize(fixture, 1024);
+
+    expect(showsSingleColumn(fixture.nativeElement)).toBe(false);
+    expect(fixture.nativeElement.querySelector(GAP_SELECTOR)).not.toBeNull();
+  });
+
+  it('follows the breakpoint of the app', () => {
+    const options = { layoutBreakpoint: 500 };
+
+    expect(showsSingleColumn(render({ options, width: 600 }).nativeElement)).toBe(false);
+    expect(showsSingleColumn(render({ options, width: 499 }).nativeElement)).toBe(true);
+  });
+
+  it.each([0, -500, Number.NaN, Number.POSITIVE_INFINITY])(
+    'keeps the breakpoint of 768 pixels for the invalid value %s, with a warning',
+    (layoutBreakpoint) => {
+      const options = { layoutBreakpoint };
+
+      expect(showsSingleColumn(render({ options, width: 767 }).nativeElement)).toBe(true);
+      expect(showsSingleColumn(render({ options, width: 768 }).nativeElement)).toBe(false);
+      expect(console.warn).toHaveBeenCalled();
+    },
+  );
+
+  it('keeps the layout the app sets at any width', () => {
     const inline = { layout: DiffwiseLayout.Inline };
     const sideBySide = { layout: DiffwiseLayout.SideBySide };
 
-    expect(showsSingleColumn(render().nativeElement)).toBe(false);
-    expect(showsSingleColumn(render({ options: sideBySide }).nativeElement)).toBe(false);
-    expect(showsSingleColumn(render({ options: inline }).nativeElement)).toBe(true);
+    expect(showsSingleColumn(render({ options: inline, width: 1600 }).nativeElement)).toBe(true);
+    expect(showsSingleColumn(render({ options: sideBySide, width: 320 }).nativeElement)).toBe(
+      false,
+    );
+  });
+
+  it('shows the versions side by side where the width cannot be watched, such as on a server', () => {
+    vi.stubGlobal(RESIZE_OBSERVER, undefined);
+
+    expect(showsSingleColumn(render({ width: 320 }).nativeElement)).toBe(false);
   });
 
   it('shows the same lines after a change of the layout, without comparing them again', () => {

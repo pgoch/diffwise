@@ -231,17 +231,26 @@ describe('normalizeConfig', () => {
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
   });
 
-  it('keeps a layout, given as a constant or as plain text', () => {
-    expect(normalizeConfig({ layout: 'side-by-side' })).toEqual({
+  it('keeps a layout and a breakpoint above zero, given as constants or as plain text', () => {
+    expect(normalizeConfig({ layout: 'side-by-side', layoutBreakpoint: 600.5 })).toEqual({
       layout: DiffwiseLayout.SideBySide,
+      layoutBreakpoint: 600.5,
     });
     expect(normalizeConfig({ layout: 'inline' })).toEqual({ layout: DiffwiseLayout.Inline });
     expect(normalizeConfig({ layout: 'auto' })).toEqual({ layout: DiffwiseLayout.Auto });
     expect(console.warn).not.toHaveBeenCalled();
   });
 
-  it('ignores another layout, with a warning for each', () => {
-    const invalidOptions = [{ layout: 'stacked' }, { layout: true }];
+  it('ignores another layout and a breakpoint that is not above zero, with a warning for each', () => {
+    const invalidOptions = [
+      { layout: 'stacked' },
+      { layout: true },
+      { layoutBreakpoint: 0 },
+      { layoutBreakpoint: -768 },
+      { layoutBreakpoint: '768' },
+      { layoutBreakpoint: Number.NaN },
+      { layoutBreakpoint: Number.POSITIVE_INFINITY },
+    ];
 
     for (const options of invalidOptions) {
       expect(normalizeConfig(options)).toEqual({});

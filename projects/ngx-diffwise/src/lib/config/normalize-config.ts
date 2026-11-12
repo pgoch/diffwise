@@ -70,6 +70,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   uiContrast: isLevel,
   diffColors: isObjectOrNull,
   layout: isLayout,
+  layoutBreakpoint: isLayoutBreakpoint,
   showLineNumbers: isBoolean,
   lineNumberStyle: isLineNumberStyle,
   lineNumberAlignment: isVerticalAlignment,
@@ -212,6 +213,11 @@ function isLevel(value: unknown): boolean {
 
 function isLayout(value: unknown): boolean {
   return isValueOf(DiffwiseLayout, value);
+}
+
+/** True for a width in pixels: a number above zero. */
+function isLayoutBreakpoint(value: unknown): boolean {
+  return isNumber(value) && Number.isFinite(value) && value > 0;
 }
 
 function isLineNumberStyle(value: unknown): boolean {

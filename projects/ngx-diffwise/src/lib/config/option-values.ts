@@ -84,7 +84,7 @@ export type DiffwiseVerticalAlignment =
 
 /** Layouts of the diff. */
 export const DiffwiseLayout = {
-  /** The two versions next to each other. */
+  /** A single column in a diff narrower than `layoutBreakpoint`, or else the versions side by side. */
   Auto: 'auto',
   /** The two versions next to each other. */
   SideBySide: 'side-by-side',

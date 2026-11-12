@@ -27,6 +27,7 @@ const DEFAULT_OPTIONS = {
   uiContrast: 3,
   diffColors: {},
   layout: DiffwiseLayout.Auto,
+  layoutBreakpoint: 768,
   showLineNumbers: true,
   lineNumberStyle: DiffwiseLineNumberStyle.Bar,
   lineNumberAlignment: DiffwiseVerticalAlignment.Top,

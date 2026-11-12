@@ -62,6 +62,7 @@ import {
 import { Diffwise } from './diffwise';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
+import { observedWidth } from './layout/diff-width';
 import { scrollTablesTogether } from './table-scroll';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
@@ -184,7 +185,7 @@ interface ShownVersionHeaders {
 
 /**
  * Shows two versions of an HTML document with the changes marked: side by side, or in a single
- * column.
+ * column, which a narrow diff shows by itself.
  */
 @Component({
   selector: 'diffwise-html-diff',
@@ -239,8 +240,17 @@ export class DiffwiseHtmlDiff {
    */
   readonly diffColors = input<DiffwiseDiffColors | null>();
 
-  /** The versions side by side, or a single column; wins over `config` and the global configuration. */
+  /**
+   * The versions side by side, a single column, or automatic by the width of the diff; wins over
+   * `config` and the global configuration.
+   */
   readonly layout = input<DiffwiseLayout>();
+
+  /**
+   * Width of the diff in pixels under which the automatic layout shows a single column; wins over
+   * `config` and the global configuration.
+   */
+  readonly layoutBreakpoint = input<number>();
 
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
@@ -334,6 +344,9 @@ export class DiffwiseHtmlDiff {
   private readonly destroyRef = inject(DestroyRef);
   private readonly idPrefix = nextIdPrefix();
 
+  /** Width of the diff in pixels; `null` until it is known. */
+  private readonly width = observedWidth(this.host.nativeElement, this.destroyRef);
+
   /** Id of the tooltip of this diff. */
   protected readonly tooltipId = this.idPrefix + TOOLTIP_ID_END;
 
@@ -352,6 +365,7 @@ export class DiffwiseHtmlDiff {
     uiContrast: this.uiContrast(),
     diffColors: this.diffColors(),
     layout: this.layout(),
+    layoutBreakpoint: this.layoutBreakpoint(),
     showLineNumbers: this.showLineNumbers(),
     lineNumberStyle: this.lineNumberStyle(),
     lineNumberAlignment: this.lineNumberAlignment(),
@@ -442,10 +456,21 @@ export class DiffwiseHtmlDiff {
     toSingleColumnHeader(this.effectiveConfig().versionHeaders, this.texts()),
   );
 
-  /** The layout shown now; the automatic layout shows the versions side by side. */
+  /**
+   * The layout shown now. The automatic layout shows a single column in a diff narrower than the
+   * breakpoint, and the versions side by side in a wider one or while the width is not known.
+   */
   private readonly shownLayout = computed<ShownLayout>(() => {
-    const { layout } = this.effectiveConfig();
-    return layout === DiffwiseLayout.Auto ? DiffwiseLayout.SideBySide : layout;
+    const { layout, layoutBreakpoint } = this.effectiveConfig();
+
+    if (layout !== DiffwiseLayout.Auto) {
+      return layout;
+    }
+
+    const width = this.width();
+    const isNarrow = width !== null && width < layoutBreakpoint;
+
+    return isNarrow ? DiffwiseLayout.Inline : DiffwiseLayout.SideBySide;
   });
 
   /** True when the diff shows a single column instead of the versions side by side. */
