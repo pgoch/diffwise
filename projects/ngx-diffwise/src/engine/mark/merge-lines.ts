@@ -21,8 +21,6 @@ import {
 const TEMPLATE_TAG = 'template';
 const SPAN_TAG = 'span';
 
-/** A place where a line may break, without a character of its own. */
-const LINE_BREAK_OPPORTUNITY_TAG = 'wbr';
 const CLASS_SELECTOR_START = '.';
 const ID_ATTRIBUTE = 'id';
 const ELEMENTS_WITH_ID_SELECTOR = `[${ID_ATTRIBUTE}]`;
@@ -42,6 +40,12 @@ const REMOVED_MARKER_SELECTOR = [REMOVED_TEXT_MARKER.tag, ...REMOVED_TEXT_MARKER
  * between the two.
  */
 const REPLACED_TEXT_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}replaced`;
+
+/**
+ * Marks the space between removed text and the added text that replaces it. Styles hide it, as the
+ * gap shows instead, but screen readers read it and copied text keeps it.
+ */
+const HIDDEN_SPACE_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}hidden-space`;
 
 /** The arrow between the old and the new image of a changed image; styles draw it. */
 const IMAGE_CHANGE_ARROW_CLASS = 'diffwise-html-diff__image-change-arrow';
@@ -366,7 +370,7 @@ function canHoldNodes({ parent, nextNode }: InsertionPoint): boolean {
 /**
  * The old part with what separates it from the text around: an arrow after the old image of a
  * changed image, or else a space wherever the old line had one and the new line has none. Before
- * added text that replaces it, the part is marked for a gap instead, and the line may break there.
+ * added text that replaces it, the part is marked for a gap, and a hidden space follows it.
  */
 function withSeparators(nodes: DocumentFragment, part: OldPart, pair: ChangedPair): Node[] {
   if (part.isChangedImage) {
@@ -392,7 +396,7 @@ function withSeparators(nodes: DocumentFragment, part: OldPart, pair: ChangedPai
 
   if (startsAddedText) {
     markAsReplaced(nodes);
-    separated.push(document.createElement(LINE_BREAK_OPPORTUNITY_TAG));
+    separated.push(hiddenSpace());
   } else if (hadSpaceAfter && textAfter) {
     separated.push(spaceNode());
   }
@@ -413,6 +417,16 @@ function isWhitespaceAt(text: string, position: number): boolean {
 
 function spaceNode(): Text {
   return document.createTextNode(SPACE);
+}
+
+/** A space that only screen readers and copied text see; the line may still break there. */
+function hiddenSpace(): HTMLElement {
+  const space = document.createElement(SPAN_TAG);
+
+  space.toggleAttribute(HIDDEN_SPACE_ATTRIBUTE, true);
+  space.append(spaceNode());
+
+  return space;
 }
 
 function imageChangeArrow(): HTMLElement {

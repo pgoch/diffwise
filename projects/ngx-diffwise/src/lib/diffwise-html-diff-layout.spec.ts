@@ -72,8 +72,8 @@ const OLD_PLANS_HTML =
 const NEW_PLANS_HTML =
   '<p>Plans</p><table><tr><th>Plans</th></tr><tr><td>Free</td></tr><tr><td>Team of eight</td></tr></table>';
 
-/** Text of the merged line of the changed pair of the terms; styles leave a gap between 24 and 48. */
-const MERGED_REPLY = 'Reply within 2448 hours.';
+/** Text of the merged line of the changed pair of the terms, with the hidden space between 24 and 48. */
+const MERGED_REPLY = 'Reply within 24 48 hours.';
 
 const CUSTOM_HEADER_TEXTS = { old: 'Version 3', new: 'Version 4' };
 

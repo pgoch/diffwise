@@ -152,7 +152,7 @@ describe('singleColumnRows', () => {
 
     expect(rows.map(rowSummary)).toEqual([
       [LineChangeKind.Removed, OLD, 1, null, 'Intro.'],
-      [LineChangeKind.Changed, NEW, 2, 1, 'Reply within 2448 hours.'],
+      [LineChangeKind.Changed, NEW, 2, 1, 'Reply within 24 48 hours.'],
       [LineChangeKind.Added, NEW, null, 2, 'Outro.'],
     ]);
     expect(rows.map((row) => row.isMerged)).toEqual([false, true, false]);
@@ -178,7 +178,7 @@ describe('singleColumnRows', () => {
     );
 
     expect(rows.map(rowSummary)).toEqual([
-      [LineChangeKind.Changed, NEW, 1, 1, 'Reply within 2448 hours.'],
+      [LineChangeKind.Changed, NEW, 1, 1, 'Reply within 24 48 hours.'],
       [LineChangeKind.Changed, OLD, 2, null, 'Personal4 USD'],
       [LineChangeKind.Changed, NEW, null, 2, 'Personal5 USD'],
     ]);
