@@ -3,6 +3,7 @@ import { type TextPiece, mapReaderText } from '../html/reader-text';
 import {
   type ChangeDetail,
   ChangeDetailKind,
+  DIFFWISE_DATA_ATTRIBUTE_START,
   type DescribedChanges,
   type Line,
   type MarkedRange,
@@ -19,6 +20,10 @@ import {
 
 const TEMPLATE_TAG = 'template';
 const SPAN_TAG = 'span';
+
+/** A place where a line may break, without a character of its own. */
+const LINE_BREAK_OPPORTUNITY_TAG = 'wbr';
+const CLASS_SELECTOR_START = '.';
 const ID_ATTRIBUTE = 'id';
 const ELEMENTS_WITH_ID_SELECTOR = `[${ID_ATTRIBUTE}]`;
 const ANY_ELEMENT_SELECTOR = '*';
@@ -26,6 +31,17 @@ const ARIA_HIDDEN_ATTRIBUTE = 'aria-hidden';
 const TRUE_ATTRIBUTE_VALUE = 'true';
 const SPACE = ' ';
 const WHITESPACE_CHARACTER = /\s/;
+
+/** Finds the markers of removed text. */
+const REMOVED_MARKER_SELECTOR = [REMOVED_TEXT_MARKER.tag, ...REMOVED_TEXT_MARKER.classNames].join(
+  CLASS_SELECTOR_START,
+);
+
+/**
+ * Marks the end of removed text that added text replaces right after it; styles leave a gap
+ * between the two.
+ */
+const REPLACED_TEXT_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}replaced`;
 
 /** The arrow between the old and the new image of a changed image; styles draw it. */
 const IMAGE_CHANGE_ARROW_CLASS = 'diffwise-html-diff__image-change-arrow';
@@ -53,7 +69,7 @@ interface OldPart {
 /** A part of the old line and its copy for the merged line. */
 interface CopiedPart {
   readonly part: OldPart;
-  readonly nodes: Node;
+  readonly nodes: DocumentFragment;
 }
 
 /** A place between the nodes of a parent: before `nextNode`, or last when it is `null`. */
@@ -212,7 +228,7 @@ function fromLastPlace(first: CopiedPart, second: CopiedPart): number {
  * around it, such as bold or a link, without their ids. Returns `null` when the part cannot be
  * marked, or holds a block, which would not fit inside the text of a line.
  */
-function partNodes(part: OldPart, oldPieces: readonly TextPiece[]): Node | null {
+function partNodes(part: OldPart, oldPieces: readonly TextPiece[]): DocumentFragment | null {
   const markers = wrapRanges(oldPieces, part.ranges, REMOVED_TEXT_MARKER);
   const firstMarker = markers.at(0);
   const lastMarker = markers.at(-1);
@@ -234,7 +250,11 @@ function partNodes(part: OldPart, oldPieces: readonly TextPiece[]): Node | null 
 
   removeIds(copy);
 
-  return insideInlineAncestors(copy, markedPart.commonAncestorContainer);
+  const copyInFormatting = document.createDocumentFragment();
+
+  copyInFormatting.append(insideInlineAncestors(copy, markedPart.commonAncestorContainer));
+
+  return copyInFormatting;
 }
 
 function holdsBlock(content: DocumentFragment): boolean {
@@ -345,10 +365,10 @@ function canHoldNodes({ parent, nextNode }: InsertionPoint): boolean {
 
 /**
  * The old part with what separates it from the text around: an arrow after the old image of a
- * changed image, or else a space wherever the old line had one and the new line has none, and
- * between the part and added text that follows it.
+ * changed image, or else a space wherever the old line had one and the new line has none. Before
+ * added text that replaces it, the part is marked for a gap instead, and the line may break there.
  */
-function withSeparators(nodes: Node, part: OldPart, pair: ChangedPair): Node[] {
+function withSeparators(nodes: DocumentFragment, part: OldPart, pair: ChangedPair): Node[] {
   if (part.isChangedImage) {
     return [nodes, imageChangeArrow()];
   }
@@ -370,11 +390,21 @@ function withSeparators(nodes: Node, part: OldPart, pair: ChangedPair): Node[] {
 
   separated.push(nodes);
 
-  if (textAfter && (hadSpaceAfter || startsAddedText)) {
+  if (startsAddedText) {
+    markAsReplaced(nodes);
+    separated.push(document.createElement(LINE_BREAK_OPPORTUNITY_TAG));
+  } else if (hadSpaceAfter && textAfter) {
     separated.push(spaceNode());
   }
 
   return separated;
+}
+
+/** Marks the last marker of the copy, which the added text follows. */
+function markAsReplaced(copy: DocumentFragment): void {
+  const markers = copy.querySelectorAll(REMOVED_MARKER_SELECTOR);
+
+  markers.item(markers.length - 1)?.toggleAttribute(REPLACED_TEXT_ATTRIBUTE, true);
 }
 
 function isWhitespaceAt(text: string, position: number): boolean {

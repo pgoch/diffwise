@@ -250,3 +250,8 @@
   text-decoration-thickness: 1.5px;
   text-decoration-color: color-mix(in srgb, var(--diffwise-removed-accent) 55%, transparent);
 }
+
+/* A gap between removed text and the added text that replaces it. */
+.diffwise-html-diff__content [data-diffwise-replaced] {
+  margin-inline-end: 0.3em;
+}

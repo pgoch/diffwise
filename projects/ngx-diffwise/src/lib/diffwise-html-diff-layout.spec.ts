@@ -72,6 +72,9 @@ const OLD_PLANS_HTML =
 const NEW_PLANS_HTML =
   '<p>Plans</p><table><tr><th>Plans</th></tr><tr><td>Free</td></tr><tr><td>Team of eight</td></tr></table>';
 
+/** Text of the merged line of the changed pair of the terms; styles leave a gap between 24 and 48. */
+const MERGED_REPLY = 'Reply within 2448 hours.';
+
 const CUSTOM_HEADER_TEXTS = { old: 'Version 3', new: 'Version 4' };
 
 /** Open popovers; jsdom has no Popover API, so tests define it and record the calls instead. */
@@ -497,7 +500,7 @@ describe('DiffwiseHtmlDiff merged lines', () => {
     expect(singleColumnRowsOf(element)).toEqual([
       [LineChangeKind.Removed, OLD, 1, null, 'Old intro.'],
       [LineChangeKind.Unchanged, NEW, 2, 1, 'Terms of use.'],
-      [LineChangeKind.Changed, MERGED, 3, 2, 'Reply within 24 48 hours.'],
+      [LineChangeKind.Changed, MERGED, 3, 2, MERGED_REPLY],
       [LineChangeKind.Added, NEW, null, 3, 'New outro.'],
     ]);
     expect(element.classList.contains(STRIKETHROUGH_CLASS)).toBe(false);
@@ -518,7 +521,7 @@ describe('DiffwiseHtmlDiff merged lines', () => {
     const element = renderMergedLines({ options });
 
     expect(element.classList.contains(STRIKETHROUGH_CLASS)).toBe(true);
-    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual([MERGED_REPLY]);
   });
 
   it('shows a changed pair as two lines, with a class of its own, when changes are stacked', () => {
@@ -541,7 +544,7 @@ describe('DiffwiseHtmlDiff merged lines', () => {
     fixture.componentRef.setInput(INLINE_DIFF_STYLE_INPUT, DiffwiseInlineDiffStyle.Merged);
     fixture.detectChanges();
 
-    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual([MERGED_REPLY]);
 
     fixture.componentRef.setInput(INLINE_DIFF_STYLE_INPUT, DiffwiseInlineDiffStyle.Stacked);
     fixture.detectChanges();
@@ -557,7 +560,7 @@ describe('DiffwiseHtmlDiff merged lines', () => {
 
     resize(fixture, 480);
 
-    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual([MERGED_REPLY]);
 
     resize(fixture, 1024);
 
