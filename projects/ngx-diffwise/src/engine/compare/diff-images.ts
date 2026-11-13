@@ -12,7 +12,7 @@ import {
   type LineImage,
   type MarkedRange,
   type TextRange,
-  type WordChanges,
+  type ChangedText,
 } from '../model';
 
 const IMAGE_PROPERTIES = Object.values(ImageProperty);
@@ -41,7 +41,7 @@ interface ImagePair {
 export function diffImages(
   oldLine: LineContent,
   newLine: LineContent,
-  wordChanges: WordChanges,
+  wordChanges: ChangedText,
   options: DiffOptions,
 ): DescribedChanges {
   if (oldLine.images.length === 0 || newLine.images.length === 0) {

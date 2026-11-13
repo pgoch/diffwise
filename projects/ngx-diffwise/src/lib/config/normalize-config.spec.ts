@@ -9,6 +9,7 @@ import {
   DiffwiseFontFamily,
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
+  DiffwiseInlineDiffStyle,
   DiffwiseLanguage,
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
@@ -251,6 +252,29 @@ describe('normalizeConfig', () => {
       { layoutBreakpoint: Number.NaN },
       { layoutBreakpoint: Number.POSITIVE_INFINITY },
     ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps a way to show changed lines in the single column, given as a constant or as plain text', () => {
+    expect(normalizeConfig({ inlineDiffStyle: 'strikethrough' })).toEqual({
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Strikethrough,
+    });
+    expect(normalizeConfig({ inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked })).toEqual({
+      inlineDiffStyle: 'stacked',
+    });
+    expect(normalizeConfig({ inlineDiffStyle: 'merged' })).toEqual({
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Merged,
+    });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('ignores another way to show changed lines in the single column, with a warning', () => {
+    const invalidOptions = [{ inlineDiffStyle: 'side-by-side' }, { inlineDiffStyle: 1 }];
 
     for (const options of invalidOptions) {
       expect(normalizeConfig(options)).toEqual({});

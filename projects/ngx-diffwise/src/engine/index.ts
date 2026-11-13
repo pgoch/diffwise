@@ -26,6 +26,7 @@ export {
   ListStyle,
   ListType,
   type SingleColumnRow,
+  type SingleColumnSettings,
   type SingleColumnTablePlace,
   TextStyle,
   type ViewLine,

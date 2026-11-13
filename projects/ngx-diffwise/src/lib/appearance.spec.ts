@@ -25,6 +25,18 @@ describe('appearanceClasses', () => {
     ]);
   });
 
+  it('adds a class for struck through and for stacked changes of the single column', () => {
+    const struckThrough = new DiffwiseConfig({ inlineDiffStyle: 'strikethrough' });
+    const stacked = new DiffwiseConfig({ inlineDiffStyle: 'stacked' });
+
+    expect(appearanceClasses(struckThrough, {}, DiffwiseLayout.Inline)).toContain(
+      'diffwise-html-diff--inline-diff-style-strikethrough',
+    );
+    expect(appearanceClasses(stacked, {}, DiffwiseLayout.Inline)).toContain(
+      'diffwise-html-diff--inline-diff-style-stacked',
+    );
+  });
+
   it('adds no class for the layout an option asks for, only for the one shown', () => {
     const config = new DiffwiseConfig({ layout: DiffwiseLayout.Inline });
 

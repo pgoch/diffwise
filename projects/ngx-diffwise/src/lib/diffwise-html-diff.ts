@@ -9,6 +9,7 @@ import {
   computed,
   inject,
   input,
+  linkedSignal,
   signal,
   untracked,
   viewChild,
@@ -50,6 +51,7 @@ import {
   type DiffwiseDividerStyle,
   type DiffwiseGapStyle,
   type DiffwiseHighlightStyle,
+  DiffwiseInlineDiffStyle,
   type DiffwiseLanguage,
   DiffwiseLayout,
   type DiffwiseLevel,
@@ -100,11 +102,19 @@ const FOCUSOUT_EVENT = 'focusout';
 /** Marks a row with changes besides text with its position, so its markers find their details. */
 const ROW_INDEX_ATTRIBUTE = 'data-diffwise-row';
 
+const SELECTOR_SEPARATOR = ', ';
+
 /** A marker of changed text that points to change details. */
 const DESCRIBED_MARKER_SELECTOR = `[${CHANGE_DETAILS_ATTRIBUTE}]`;
 
-/** Markers that can take the focus: the new version has one for each change, which is one stop. */
-const FOCUSABLE_MARKER_SELECTOR = `.diffwise-html-diff__content--new ${DESCRIBED_MARKER_SELECTOR}`;
+/**
+ * Markers that can take the focus, one stop for each change: those of the new version, and in a
+ * merged line those of the new text, not of the old image or the old list marker next to it.
+ */
+const FOCUSABLE_MARKER_SELECTOR = [
+  `.diffwise-html-diff__content--new ${DESCRIBED_MARKER_SELECTOR}`,
+  `.diffwise-html-diff__content--merged .diffwise-html-diff__highlight--added${DESCRIBED_MARKER_SELECTOR}`,
+].join(SELECTOR_SEPARATOR);
 
 /** Diffs created so far; numbers the id prefixes. */
 let createdDiffs = 0;
@@ -131,6 +141,9 @@ const TableNeighbor = {
 
 const TABLE_NEIGHBOR_SEPARATOR = ' ';
 
+/** Ends the class of the content of a merged line, which shows the text of both versions. */
+const MERGED_CONTENT = 'merged';
+
 /** A line as the template shows it. */
 interface ShownLine {
   readonly number: number;
@@ -152,8 +165,8 @@ interface ShownRow {
 /** A row of the single column as the template shows it. */
 interface ShownSingleColumnRow {
   readonly kind: LineChangeKind;
-  /** The version the line comes from, which sets its colors. */
-  readonly version: DocumentVersion;
+  /** What the content shows, which sets its colors: a line of one version, or a merged line. */
+  readonly content: DocumentVersion | typeof MERGED_CONTENT;
   /** HTML that DOMPurify has sanitized, marked as safe so that Angular shows it as it is. */
   readonly html: SafeHtml;
   readonly oldNumber: number | null;
@@ -251,6 +264,12 @@ export class DiffwiseHtmlDiff {
    * `config` and the global configuration.
    */
   readonly layoutBreakpoint = input<number>();
+
+  /**
+   * How the single column shows a changed line: merged into one line, merged with removed text
+   * struck through, or as two lines; wins over `config` and the global configuration.
+   */
+  readonly inlineDiffStyle = input<DiffwiseInlineDiffStyle>();
 
   /** Shows the number of each line; wins over `config` and the global configuration. */
   readonly showLineNumbers = input<boolean>();
@@ -366,6 +385,7 @@ export class DiffwiseHtmlDiff {
     diffColors: this.diffColors(),
     layout: this.layout(),
     layoutBreakpoint: this.layoutBreakpoint(),
+    inlineDiffStyle: this.inlineDiffStyle(),
     showLineNumbers: this.showLineNumbers(),
     lineNumberStyle: this.lineNumberStyle(),
     lineNumberAlignment: this.lineNumberAlignment(),
@@ -478,9 +498,32 @@ export class DiffwiseHtmlDiff {
     () => this.shownLayout() === DiffwiseLayout.Inline,
   );
 
-  /** The versions compared, again whenever either of them or `diffOptions` changes. */
+  /** True when the single column shows each changed line merged into one line. */
+  private readonly showsMergedLines = computed(() => {
+    const { inlineDiffStyle } = this.effectiveConfig();
+    return this.showsSingleColumn() && inlineDiffStyle !== DiffwiseInlineDiffStyle.Stacked;
+  });
+
+  /**
+   * True from the first time the diff shows merged lines. The versions are compared again then,
+   * with merged lines, and stay so, so that going back and forth compares them only once.
+   */
+  private readonly mergesChangedLines = linkedSignal<boolean, boolean>({
+    source: this.showsMergedLines,
+    computation: (showsMergedLines, previous) => showsMergedLines || (previous?.value ?? false),
+  });
+
+  /**
+   * The versions compared, again whenever either of them or `diffOptions` changes, and when the
+   * diff first needs merged lines.
+   */
   private readonly diff = computed(() => {
-    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix };
+    const settings = {
+      options: this.diffOptions(),
+      idPrefix: this.idPrefix,
+      mergesChangedLines: this.mergesChangedLines(),
+    };
+
     return diffHtml(this.oldHtml(), this.newHtml(), settings);
   });
 
@@ -488,9 +531,12 @@ export class DiffwiseHtmlDiff {
   protected readonly rows = computed(() => this.diff().rows.map((row) => this.shownRow(row)));
 
   /** Rows of the single column; the diff prepares them only for this layout. */
-  protected readonly singleColumnRows = computed(() =>
-    singleColumnRows(this.diff().rows).map((row) => this.shownSingleColumnRow(row)),
-  );
+  protected readonly singleColumnRows = computed(() => {
+    const settings = { showsMergedLines: this.showsMergedLines() };
+    const rows = singleColumnRows(this.diff().rows, settings);
+
+    return rows.map((row) => this.shownSingleColumnRow(row));
+  });
 
   /** Colors of changes the app gives for the theme shown now. */
   private readonly customColors = computed(() => {
@@ -569,14 +615,16 @@ export class DiffwiseHtmlDiff {
   }
 
   /**
-   * After new rows, in another layout, or with details in another place: hides the tooltip, whose
-   * trigger may be gone, and lets marked changes take the focus when no icons show their details.
+   * After new rows, in another layout, with changed lines shown another way, or with details in
+   * another place: hides the tooltip, whose trigger may be gone, and lets marked changes take the
+   * focus when no icons show their details.
    */
   private prepareMarkers(): void {
     const { rows } = this.diff();
     const markersTakeFocus = !this.showsChangeIcons();
 
     this.shownLayout();
+    this.showsMergedLines();
 
     untracked(() => this.tooltip().hide());
 
@@ -733,17 +781,18 @@ export class DiffwiseHtmlDiff {
   }
 
   /**
-   * A row of the single column. Both lines of a changed pair point to the change details of their
-   * pair, and the icon of these changes stands next to the new line.
+   * A row of the single column. The lines of a changed pair point to the change details of their
+   * pair, and the icon of these changes stands next to its merged line, or else its new line.
    */
   private shownSingleColumnRow(row: SingleColumnRow): ShownSingleColumnRow {
-    const { kind, version, line, oldNumber, newNumber, sourceRow, changeDetails, tablePlace } = row;
+    const { kind, version, isMerged, line, oldNumber, newNumber, sourceRow } = row;
+    const { changeDetails, tablePlace } = row;
     const describesChanges = changeDetails.length > 0;
     const showsIcon = describesChanges && version === DocumentVersion.New;
 
     return {
       kind,
-      version,
+      content: isMerged ? MERGED_CONTENT : version,
       html: this.safeHtml(line),
       oldNumber,
       newNumber,

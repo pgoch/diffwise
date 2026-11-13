@@ -157,6 +157,20 @@ describe('diffTableCells', () => {
   });
 });
 
+describe('diffTableCells with the places of removed text', () => {
+  it('counts the place of removed text in the text of the whole new row', () => {
+    const oldLine = rowLine('<td>Personal</td><td>4 EUR</td>');
+    const newLine = rowLine('<td>Personal plan</td><td>5 EUR</td>');
+    const { wordChanges } = diffTableCells(oldLine, newLine, SAME_COLUMNS, DEFAULT_DIFF_OPTIONS);
+    const removedTextPlaces = wordChanges.removed.map(({ start, end, newPosition }) => [
+      oldLine.text.slice(start, end),
+      newLine.text.slice(0, newPosition),
+    ]);
+
+    expect(removedTextPlaces).toEqual([['4', 'Personal plan ']]);
+  });
+});
+
 describe('allChangedText', () => {
   it('adds the text of whole cells to the changed words, in reading order', () => {
     const oldLine = rowLine('<td>Personal</td><td>4 EUR</td><td>yes</td>');

@@ -18,6 +18,8 @@ const TEMPLATE_TAG = 'template';
 const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
 const OLD = DocumentVersion.Old;
 const NEW = DocumentVersion.New;
+const STACKED_LINES = { showsMergedLines: false };
+const MERGED_LINES = { showsMergedLines: true };
 
 /** The long samples from `test-data/`, as `[name, before, after]`. */
 const LONG_SAMPLES: [string, string, string][] = [
@@ -30,13 +32,18 @@ const PLANS_HTML =
 
 /** Rows of the side-by-side view of two documents. */
 function sideBySideRows(oldHtml: string, newHtml: string): readonly ViewRow[] {
-  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX };
+  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX, mergesChangedLines: true };
   return diffHtml(oldHtml, newHtml, settings).rows;
 }
 
-/** Rows of the single column of two documents. */
+/** Rows of the single column of two documents, with each changed pair as two lines. */
 function compare(oldHtml: string, newHtml: string): SingleColumnRow[] {
-  return singleColumnRows(sideBySideRows(oldHtml, newHtml));
+  return singleColumnRows(sideBySideRows(oldHtml, newHtml), STACKED_LINES);
+}
+
+/** Rows of the single column of two documents, with merged lines. */
+function compareMerged(oldHtml: string, newHtml: string): SingleColumnRow[] {
+  return singleColumnRows(sideBySideRows(oldHtml, newHtml), MERGED_LINES);
 }
 
 /** Text of a line as a reader sees it, without the hidden copies of the rows of its table. */
@@ -71,6 +78,10 @@ function linesOfVersion(rows: readonly SingleColumnRow[], version: DocumentVersi
 
 function isChanged(row: ViewRow): boolean {
   return row.kind !== LineChangeKind.Unchanged;
+}
+
+function isChangedPairOutsideTables({ kind, oldLine, newLine }: ViewRow): boolean {
+  return kind === LineChangeKind.Changed && oldLine?.table === null && newLine?.table === null;
 }
 
 function isLine(line: ViewLine | null): line is ViewLine {
@@ -114,7 +125,7 @@ describe('singleColumnRows', () => {
       '<p>Reply within 24 hours.</p>',
       '<p>Reply within 48 hours.</p>',
     );
-    const [oldRow, newRow] = singleColumnRows(sourceRows);
+    const [oldRow, newRow] = singleColumnRows(sourceRows, STACKED_LINES);
 
     expect(oldRow.line).toBe(sourceRows[0].oldLine);
     expect(newRow.line).toBe(sourceRows[0].newLine);
@@ -133,8 +144,49 @@ describe('singleColumnRows', () => {
     expect(rows[0].changeDetails).toEqual([]);
   });
 
+  it('shows a changed pair as its merged line under both of its numbers, when asked', () => {
+    const rows = compareMerged(
+      '<p>Intro.</p><p>Reply within 24 hours.</p>',
+      '<p>Reply within 48 hours.</p><p>Outro.</p>',
+    );
+
+    expect(rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Removed, OLD, 1, null, 'Intro.'],
+      [LineChangeKind.Changed, NEW, 2, 1, 'Reply within 2448 hours.'],
+      [LineChangeKind.Added, NEW, null, 2, 'Outro.'],
+    ]);
+    expect(rows.map((row) => row.isMerged)).toEqual([false, true, false]);
+  });
+
+  it('gives a merged line the merged line, the position and the change details of its row', () => {
+    const sourceRows = sideBySideRows(
+      '<p>Intro.</p><p><i>Important:</i> back up your notes.</p>',
+      '<p>Intro.</p><p><b>Important:</b> back up your notes.</p>',
+    );
+    const [, mergedRow] = singleColumnRows(sourceRows, MERGED_LINES);
+
+    expect(mergedRow.line).toBe(sourceRows[1].mergedLine);
+    expect(mergedRow.sourceRow).toBe(1);
+    expect(mergedRow.changeDetails).toBe(sourceRows[1].changeDetails);
+    expect(mergedRow.tablePlace).toBeNull();
+  });
+
+  it('shows a changed pair without a merged line as two lines among merged lines', () => {
+    const rows = compareMerged(
+      '<p>Reply within 24 hours.</p><table><tr><td>Personal</td><td>4 USD</td></tr></table>',
+      '<p>Reply within 48 hours.</p><table><tr><td>Personal</td><td>5 USD</td></tr></table>',
+    );
+
+    expect(rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Changed, NEW, 1, 1, 'Reply within 2448 hours.'],
+      [LineChangeKind.Changed, OLD, 2, null, 'Personal4 USD'],
+      [LineChangeKind.Changed, NEW, null, 2, 'Personal5 USD'],
+    ]);
+    expect(rows.map((row) => row.isMerged)).toEqual([true, false, false]);
+  });
+
   it('gives no rows for no rows', () => {
-    expect(singleColumnRows([])).toEqual([]);
+    expect(singleColumnRows([], MERGED_LINES)).toEqual([]);
   });
 
   it('counts the old and the new version of a table as one table', () => {
@@ -197,7 +249,7 @@ describe('singleColumnRows', () => {
     'shows every line of %s that the side-by-side view shows, in the same order',
     (_, before, after) => {
       const sourceRows = sideBySideRows(before, after);
-      const rows = singleColumnRows(sourceRows);
+      const rows = singleColumnRows(sourceRows, STACKED_LINES);
       const changedOldLines = sourceRows.filter(isChanged).map((row) => row.oldLine);
       const newLines = sourceRows.map((row) => row.newLine);
       const oldNumbers = numbersOf(rows.map((row) => row.oldNumber));
@@ -205,6 +257,27 @@ describe('singleColumnRows', () => {
 
       expect(linesOfVersion(rows, OLD)).toEqual(changedOldLines.filter(isLine));
       expect(linesOfVersion(rows, NEW)).toEqual(newLines.filter(isLine));
+      expect(oldNumbers).toEqual(allOldNumbers);
+    },
+  );
+
+  it.each(LONG_SAMPLES)(
+    'merges every changed pair of %s outside tables into one line under both numbers',
+    (_, before, after) => {
+      const sourceRows = sideBySideRows(before, after);
+      const rows = singleColumnRows(sourceRows, MERGED_LINES);
+      const changedPairsOutsideTables = sourceRows.filter(isChangedPairOutsideTables);
+      const mergedRows = rows.filter((row) => row.isMerged);
+      const oldNumbers = numbersOf(rows.map((row) => row.oldNumber));
+      const allOldNumbers = numbersOf(sourceRows.map((row) => row.oldLine?.number ?? null));
+
+      expect(changedPairsOutsideTables.length).toBeGreaterThan(0);
+      expect(mergedRows.map((row) => row.line)).toEqual(
+        changedPairsOutsideTables.map((row) => row.mergedLine),
+      );
+      expect(mergedRows.every((row) => row.oldNumber !== null && row.newNumber !== null)).toBe(
+        true,
+      );
       expect(oldNumbers).toEqual(allOldNumbers);
     },
   );

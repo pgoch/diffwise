@@ -35,6 +35,20 @@ function changedLineTexts(oldHtml: string, newHtml: string) {
   return changedContent(oldLine, newLine);
 }
 
+/** Each removed text of two texts with the new text before the place where it stood. */
+function removedTextPlaces(oldText: string, newText: string, options = DEFAULT_DIFF_OPTIONS) {
+  const { removed } = diffWords(
+    { text: oldText, images: [] },
+    { text: newText, images: [] },
+    options,
+  );
+
+  return removed.map(({ start, end, newPosition }) => [
+    oldText.slice(start, end),
+    newText.slice(0, newPosition),
+  ]);
+}
+
 /** A paragraph of about 700 characters with one chosen word in the middle. */
 function longParagraph(middleWord: string): string {
   const around = SENTENCE.repeat(SENTENCES_AROUND_CHANGE);
@@ -155,5 +169,54 @@ describe('diffWords', () => {
         '<p>Kliknij <img src="images/icon-share.svg" alt=""> <strong>Udostępnij</strong>.</p>',
       ),
     ).toEqual({ removed: [], added: [IMAGE_CHARACTER] });
+  });
+
+  it('places replaced text where the text that replaces it starts', () => {
+    expect(
+      removedTextPlaces(
+        'The fee is 19 USD and is charged in advance.',
+        'The fee is 29 USD and is charged afterwards.',
+      ),
+    ).toEqual([
+      ['19', 'The fee is '],
+      ['in advance', 'The fee is 29 USD and is charged '],
+    ]);
+  });
+
+  it('places text removed from between words between the same words of the new text', () => {
+    const [[removedText, textBefore]] = removedTextPlaces(
+      'You can create one account today.',
+      'You can create today.',
+    );
+
+    expect(removedText).toBe('one account');
+    expect(textBefore.trimEnd()).toBe('You can create');
+  });
+
+  it('places text removed from the start and from the end at the edges of the new text', () => {
+    expect(removedTextPlaces('Old intro. The rest stays.', 'The rest stays.')).toEqual([
+      ['Old intro.', ''],
+    ]);
+    expect(removedTextPlaces('The rest stays. Old outro', 'The rest stays.')).toEqual([
+      ['Old outro', 'The rest stays.'],
+    ]);
+  });
+
+  it('places removed text that slid forward after the text it slid over', () => {
+    expect(removedTextPlaces('First. Next one.', 'First.')).toEqual([['Next one.', 'First.']]);
+  });
+
+  it('places removed text before the next word when whitespace is ignored', () => {
+    const ignoreWhitespace = { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace: true };
+
+    expect(
+      removedTextPlaces('Keep  the old   name', 'Keep the new name', ignoreWhitespace),
+    ).toEqual([['old', 'Keep the ']]);
+  });
+
+  it('keeps the place of the first of the removed texts joined across whitespace', () => {
+    expect(removedTextPlaces('the old plan name', 'the new product name')).toEqual([
+      ['old plan', 'the '],
+    ]);
   });
 });

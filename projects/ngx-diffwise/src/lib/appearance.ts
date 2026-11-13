@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = new DiffwiseConfig();
  */
 const VALUE_MODIFIERS = {
   highlightStyle: 'diffwise-html-diff--highlight-style-',
+  inlineDiffStyle: 'diffwise-html-diff--inline-diff-style-',
   lineNumberStyle: 'diffwise-html-diff--line-number-style-',
   lineNumberAlignment: 'diffwise-html-diff--line-number-alignment-',
   dividerStyle: 'diffwise-html-diff--divider-style-',

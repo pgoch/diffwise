@@ -72,6 +72,20 @@
   --diffwise-side-line-number: var(--diffwise-added-line-number);
 }
 
+/*
+ * A merged line comes from both versions: it keeps plain numbers, and its bar runs from the color
+ * of removed text to the color of added text.
+ */
+.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__row:has(> .diffwise-html-diff__content--merged) {
+  --diffwise-side-accent: var(--diffwise-line-number-color);
+  --diffwise-side-line-number: var(--diffwise-line-number-background);
+  --diffwise-side-bar: linear-gradient(
+    var(--diffwise-removed-accent),
+    var(--diffwise-added-accent)
+  );
+}
+
 /* A changed line has colored numbers; its bar stands between them instead of at their edge. */
 .diffwise-html-diff--layout-inline
   .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
@@ -106,7 +120,7 @@
   bottom: 6px;
   width: 3px;
   border-radius: 2px;
-  background: var(--diffwise-side-accent);
+  background: var(--diffwise-side-bar, var(--diffwise-side-accent));
   content: '';
 }
 
@@ -181,4 +195,63 @@
   > :is(:first-child, :last-child) {
   border-end-start-radius: 0;
   border-end-end-radius: 0;
+}
+
+/* A merged line shows the changes of both versions, each in the colors of its version. */
+.diffwise-html-diff__content--merged .diffwise-html-diff__highlight--removed {
+  --diffwise-side-highlight: var(--diffwise-removed-highlight);
+  --diffwise-side-accent: var(--diffwise-removed-accent);
+}
+
+.diffwise-html-diff__content--merged .diffwise-html-diff__highlight--added {
+  --diffwise-side-highlight: var(--diffwise-added-highlight);
+  --diffwise-side-accent: var(--diffwise-added-accent);
+}
+
+/*
+ * The arrow between the old and the new image of a changed image, in the reading direction. It
+ * stands at half the height of the images.
+ */
+.diffwise-html-diff__image-change-arrow {
+  margin-inline: 0.5em;
+  color: var(--diffwise-line-number-color);
+}
+
+.diffwise-html-diff__content
+  :is(
+    .diffwise-html-diff__image-change-arrow,
+    .diffwise-html-diff__highlight--image:has(+ .diffwise-html-diff__image-change-arrow),
+    .diffwise-html-diff__image-change-arrow + .diffwise-html-diff__highlight--image
+  ) {
+  vertical-align: middle;
+}
+
+.diffwise-html-diff__image-change-arrow::before {
+  content: '\2192';
+}
+
+.diffwise-html-diff__image-change-arrow:dir(rtl)::before {
+  content: '\2190';
+}
+
+/* The old marker of a list item stands before the new one, so the item leaves more room. */
+.diffwise-html-diff__content--merged
+  li:has(> .diffwise-html-diff__highlight--list-marker > .diffwise-html-diff__highlight) {
+  margin-inline-start: 1.6em;
+}
+
+/* Struck through: removed text in every line of the single column, and whole removed lines. */
+.diffwise-html-diff--layout-inline.diffwise-html-diff--inline-diff-style-strikethrough
+  :is(
+    .diffwise-html-diff__highlight--removed,
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old
+  ) {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: color-mix(in srgb, var(--diffwise-removed-accent) 55%, transparent);
+}
+
+/* A gap between removed text and the added text that replaces it. */
+.diffwise-html-diff__content [data-diffwise-replaced] {
+  margin-inline-end: 0.3em;
 }

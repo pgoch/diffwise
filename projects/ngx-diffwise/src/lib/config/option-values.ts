@@ -94,6 +94,19 @@ export const DiffwiseLayout = {
 
 export type DiffwiseLayout = (typeof DiffwiseLayout)[keyof typeof DiffwiseLayout];
 
+/** Ways the single column shows a changed line. */
+export const DiffwiseInlineDiffStyle = {
+  /** One line: the new line with the removed text in it, before the text that replaces it. */
+  Merged: 'merged',
+  /** One line like `Merged`, with removed text and removed lines struck through. */
+  Strikethrough: 'strikethrough',
+  /** Two lines: the old line above the new one. */
+  Stacked: 'stacked',
+} as const;
+
+export type DiffwiseInlineDiffStyle =
+  (typeof DiffwiseInlineDiffStyle)[keyof typeof DiffwiseInlineDiffStyle];
+
 /** Fonts of the diff; an app can also give the name of a font it loads. */
 export const DiffwiseFontFamily = {
   /** The font of the element around the diff. */

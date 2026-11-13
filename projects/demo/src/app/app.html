@@ -74,6 +74,12 @@
   />
   <p class="demo-hint">The automatic layout shows a single column in a diff under 768 px.</p>
   <demo-choice-buttons
+    label="Changes in a single column"
+    [choices]="inlineDiffStyles"
+    [value]="diffwise.config().inlineDiffStyle"
+    (chosen)="update({ inlineDiffStyle: $event })"
+  />
+  <demo-choice-buttons
     label="Between the versions"
     [choices]="dividerStyles"
     [value]="diffwise.config().dividerStyle"

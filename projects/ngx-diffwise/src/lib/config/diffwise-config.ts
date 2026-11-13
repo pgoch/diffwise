@@ -10,6 +10,7 @@ import {
   DiffwiseFontFamily,
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
+  DiffwiseInlineDiffStyle,
   DiffwiseLanguage,
   DiffwiseLayout,
   type DiffwiseLevel,
@@ -59,6 +60,12 @@ export interface DiffwiseConfigOptions {
    * above zero. Default: `768`.
    */
   readonly layoutBreakpoint?: number;
+  /**
+   * How the single column shows a changed line: merged into one line, merged with removed text
+   * struck through, or as the old line above the new one. Default:
+   * `DiffwiseInlineDiffStyle.Merged`.
+   */
+  readonly inlineDiffStyle?: DiffwiseInlineDiffStyle;
   /** Shows the number of each line. Default: `true`. */
   readonly showLineNumbers?: boolean;
   /**
@@ -170,6 +177,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Width of the diff in pixels under which the automatic layout shows a single column. */
   readonly layoutBreakpoint: number = 768;
+
+  /** How the single column shows a changed line: as one merged line, or as two lines. */
+  readonly inlineDiffStyle: DiffwiseInlineDiffStyle = DiffwiseInlineDiffStyle.Merged;
 
   /** Shows the number of each line. */
   readonly showLineNumbers: boolean = true;

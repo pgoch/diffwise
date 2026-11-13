@@ -1,8 +1,7 @@
-import { ALIGN_ATTRIBUTE_TAGS, BLOCK_TAGS, HEADING_TAGS, STYLE_TAGS } from './html-tags';
+import { ALIGN_ATTRIBUTE_TAGS, BLOCK_TAGS, HEADING_TAGS, LINK_TAG, STYLE_TAGS } from './html-tags';
 import { inlineStyle, styleValue } from './inline-style';
 import { FormattingValue, type FormattingValues, type TextFormat, TextStyle } from '../model';
 
-const LINK_TAG = 'a';
 const FONT_TAG = 'font';
 const CENTER_TAG = 'center';
 const PROBE_TAG = 'span';

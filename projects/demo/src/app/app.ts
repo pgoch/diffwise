@@ -20,6 +20,7 @@ import {
   DiffwiseHighlightStyle,
   DiffwiseHtmlDiff,
   DiffwiseLanguage,
+  DiffwiseInlineDiffStyle,
   DiffwiseLayout,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
@@ -99,6 +100,12 @@ const LAYOUT_CHOICES: readonly Choice<DiffwiseLayout>[] = [
   { value: DiffwiseLayout.Auto, label: 'Auto' },
   { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
   { value: DiffwiseLayout.Inline, label: 'Single column' },
+];
+
+const INLINE_DIFF_STYLE_CHOICES: readonly Choice<DiffwiseInlineDiffStyle>[] = [
+  { value: DiffwiseInlineDiffStyle.Merged, label: 'Merged' },
+  { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
+  { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
 ];
 
 /** Widths of the diff in the demo, as values of `max-width`; the automatic layout follows them. */
@@ -228,6 +235,7 @@ export class App {
   protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
   protected readonly levels = LEVEL_CHOICES;
   protected readonly layouts = LAYOUT_CHOICES;
+  protected readonly inlineDiffStyles = INLINE_DIFF_STYLE_CHOICES;
   protected readonly diffWidths = DIFF_WIDTH_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;

@@ -17,6 +17,7 @@ import {
   markWholeCells,
   markWholeTableLine,
 } from './mark/mark-changes';
+import { type ChangedPair, mergeLines } from './mark/merge-lines';
 import { addTableColumns } from './mark/table-columns';
 import {
   type ChangeDetail,
@@ -46,14 +47,15 @@ const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], d
 
 /**
  * Compares two HTML documents and returns the rows of the side-by-side view with change counts.
- * Table lines get the columns of their tables after marking, since marks widen cells.
+ * Table lines get the columns of their tables after marking, since marks widen cells. When the
+ * settings ask for it, each changed pair gets its merged line too, for the single-column view.
  */
 export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
   const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
   const newLines = versionLines(newHtml, settings.idPrefix, NEW_VERSION_ID_PART);
   const { changes, stats } = diffLines(oldLines, newLines, settings.options);
   const columns = alignTableColumns(changes, settings.options);
-  const rowBuilder = new ViewRowBuilder(settings.options, columns);
+  const rowBuilder = new ViewRowBuilder(settings, columns);
   const markedRows = changes.map((change) => rowBuilder.toRow(change));
   const rows = withTableColumns(markedRows).map(sanitizedRow);
 
@@ -74,10 +76,16 @@ class ViewRowBuilder {
   private oldLineCount = 0;
   private newLineCount = 0;
 
+  private readonly options: DiffOptions;
+  private readonly mergesChangedLines: boolean;
+
   constructor(
-    private readonly options: DiffOptions,
+    settings: HtmlDiffSettings,
     private readonly columns: ColumnMatches,
-  ) {}
+  ) {
+    this.options = settings.options;
+    this.mergesChangedLines = settings.mergesChangedLines;
+  }
 
   toRow(change: LineChange): ViewRow {
     switch (change.kind) {
@@ -98,13 +106,15 @@ class ViewRowBuilder {
       oldLine: this.nextOldLine(oldLine, oldLine.html),
       newLine: this.nextNewLine(newLine, newLine.html),
       changeDetails: NO_CHANGE_DETAILS,
+      mergedLine: null,
     };
   }
 
   /**
    * A row of a changed pair. Removed text and described changes are marked in the old line, added
    * text and described changes in the new one; their markers point to the row's details. Details of
-   * the list item come first. A cell with no place on the other side is marked whole.
+   * the list item come first. A cell with no place on the other side is marked whole. A pair
+   * outside tables also becomes one merged line, when the diff merges lines.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
     const itemDetails = diffListMarkers(oldLine, newLine, this.options);
@@ -123,13 +133,37 @@ class ViewRowBuilder {
     const markedNewText = markChanges(newLine, newRanges, ADDED_TEXT_MARKER, itemMarks);
     const markedOldHtml = markWholeCells(markedOldText, removedCells, REMOVED_TEXT_MARKER);
     const markedNewHtml = markWholeCells(markedNewText, addedCells, ADDED_TEXT_MARKER);
+    const shownNewLine = this.nextNewLine(newLine, markedNewHtml);
+    const mergedHtml = this.mergedHtmlOf({
+      oldLine,
+      newLine,
+      markedNewHtml,
+      wordChanges,
+      describedChanges,
+      itemMarks,
+    });
 
     return {
       kind: LineChangeKind.Changed,
       oldLine: this.nextOldLine(oldLine, markedOldHtml),
-      newLine: this.nextNewLine(newLine, markedNewHtml),
+      newLine: shownNewLine,
       changeDetails: describedChanges.details,
+      mergedLine: mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml },
     };
+  }
+
+  /**
+   * HTML of the merged line of a pair; `null` when the diff does not merge lines, and for table
+   * lines, which stay two lines.
+   */
+  private mergedHtmlOf(pair: ChangedPair): string | null {
+    const isInTable = pair.oldLine.table !== null || pair.newLine.table !== null;
+
+    if (!this.mergesChangedLines || isInTable) {
+      return null;
+    }
+
+    return mergeLines(pair);
   }
 
   /** Changed text of a pair: cell by cell in rows of matched tables, word by word in other lines. */
@@ -150,6 +184,7 @@ class ViewRowBuilder {
       oldLine: this.nextOldLine(oldLine, wholeLineHtml(oldLine, REMOVED_TEXT_MARKER)),
       newLine: null,
       changeDetails: NO_CHANGE_DETAILS,
+      mergedLine: null,
     };
   }
 
@@ -159,6 +194,7 @@ class ViewRowBuilder {
       oldLine: null,
       newLine: this.nextNewLine(newLine, wholeLineHtml(newLine, ADDED_TEXT_MARKER)),
       changeDetails: NO_CHANGE_DETAILS,
+      mergedLine: null,
     };
   }
 
@@ -191,7 +227,12 @@ function withTableColumns(rows: readonly ViewRow[]): ViewRow[] {
 
 /** The row with its HTML sanitized again, because marking changes and adding columns edit it. */
 function sanitizedRow(row: ViewRow): ViewRow {
-  return { ...row, oldLine: sanitizedLine(row.oldLine), newLine: sanitizedLine(row.newLine) };
+  return {
+    ...row,
+    oldLine: sanitizedLine(row.oldLine),
+    newLine: sanitizedLine(row.newLine),
+    mergedLine: sanitizedLine(row.mergedLine),
+  };
 }
 
 function sanitizedLine(line: ViewLine | null): ViewLine | null {

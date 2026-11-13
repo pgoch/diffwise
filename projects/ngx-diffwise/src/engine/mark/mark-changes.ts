@@ -112,13 +112,45 @@ export function markChanges(
     return line.html;
   }
 
-  const markablePieces = pieces.filter((piece) => canHoldMarker(markedNodeOf(piece.node)));
-  const rangesInReadingOrder = [...ranges].sort((first, second) => first.start - second.start);
-
-  wrapSegments(rangeSegments(markablePieces, rangesInReadingOrder), marker);
+  wrapRanges(pieces, ranges, marker);
   markListItem(template.content, line.marker, itemMarks, marker);
 
   return template.innerHTML;
+}
+
+/**
+ * Wraps ranges of the reader text in markers, where the HTML can hold one, and returns the markers
+ * in reading order: one for each text node and image that shows a range.
+ */
+export function wrapRanges(
+  pieces: readonly TextPiece[],
+  ranges: readonly MarkedRange[],
+  marker: ChangeMarker,
+): HTMLElement[] {
+  const markablePieces = pieces.filter((piece) => canHoldMarker(markedNodeOf(piece.node)));
+  const rangesInReadingOrder = [...ranges].sort((first, second) => first.start - second.start);
+
+  return wrapSegments(rangeSegments(markablePieces, rangesInReadingOrder), marker);
+}
+
+/**
+ * Draws the old marker of a changed list item next to the new one, which the content already
+ * shows drawn, for a line that shows both versions. The old marker stands inside the new one, so
+ * it keeps a place before it whatever the width of either.
+ */
+export function drawRemovedListMarker(
+  content: DocumentFragment,
+  oldMarker: ListMarker | null,
+  { listMarkerChanged, listMarkerDetails }: ListItemMarks,
+): void {
+  const newMarker = startedItemIn(content)?.firstElementChild ?? null;
+  const showsNewMarker = newMarker?.hasAttribute(LIST_MARKER_ATTRIBUTE) ?? false;
+
+  if (newMarker === null || !showsNewMarker || oldMarker === null || !listMarkerChanged) {
+    return;
+  }
+
+  drawListMarker(newMarker, oldMarker, listMarkerDetails, REMOVED_TEXT_MARKER);
 }
 
 /**
@@ -211,7 +243,7 @@ function frameCheckbox(
   }
 }
 
-/** Puts a drawn marker first in the item; a style Diffwise does not draw keeps the browser's. */
+/** Puts a drawn marker first in the element; a style Diffwise does not draw keeps the browser's. */
 function drawListMarker(
   item: Element,
   listMarker: ListMarker,
@@ -253,7 +285,7 @@ function markedNodeOf(node: Text | Element): Text | Element {
 }
 
 /** False where a marker would break the HTML: in SVG, in MathML and in elements such as `table`. */
-function canHoldMarker(node: Node): boolean {
+export function canHoldMarker(node: Node): boolean {
   const parent = node.parentElement;
 
   if (parent === null) {
@@ -349,23 +381,27 @@ function withDetailsOfBoth(first: NodeSegment, second: NodeSegment): NodeSegment
   return { ...first, detailIndices: detailIndices.sort((one, other) => one - other) };
 }
 
-/** Wraps from the last segment back, so splitting a text node keeps earlier offsets in it valid. */
-function wrapSegments(segments: readonly NodeSegment[], marker: ChangeMarker): void {
-  for (const segment of [...segments].reverse()) {
-    wrapSegment(segment, marker);
-  }
+/**
+ * Wraps from the last segment back, so splitting a text node keeps earlier offsets in it valid.
+ * Returns the markers in reading order.
+ */
+function wrapSegments(segments: readonly NodeSegment[], marker: ChangeMarker): HTMLElement[] {
+  const markersFromLast = [...segments].reverse().map((segment) => wrapSegment(segment, marker));
+  return markersFromLast.reverse();
 }
 
-/** Puts the segment in a new marker element; the marker of an image frames it. */
-function wrapSegment({ node, start, end, detailIndices }: NodeSegment, marker: ChangeMarker): void {
+/** Puts the segment in a new marker element, which it returns; the marker of an image frames it. */
+function wrapSegment(
+  { node, start, end, detailIndices }: NodeSegment,
+  marker: ChangeMarker,
+): HTMLElement {
   if (node instanceof Text) {
-    wrapNode(textPart(node, start, end), markerElement(marker, detailIndices));
-    return;
+    return wrapNode(textPart(node, start, end), markerElement(marker, detailIndices));
   }
 
   const imageMarker = markerWithClass(marker, IMAGE_HIGHLIGHT_CLASS);
 
-  wrapNode(markedNodeOf(node), markerElement(imageMarker, detailIndices));
+  return wrapNode(markedNodeOf(node), markerElement(imageMarker, detailIndices));
 }
 
 /** Splits `[start, end)` of the text node out into a text node of its own. */
@@ -398,8 +434,10 @@ function markerElement(
   return element;
 }
 
-/** Puts the marker in the node's place and the node inside it. */
-function wrapNode(node: ChildNode, marker: HTMLElement): void {
+/** Puts the marker in the node's place and the node inside it; returns the marker. */
+function wrapNode(node: ChildNode, marker: HTMLElement): HTMLElement {
   node.replaceWith(marker);
   marker.append(node);
+
+  return marker;
 }
