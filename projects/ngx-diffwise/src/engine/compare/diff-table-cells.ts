@@ -1,10 +1,12 @@
 import type { ColumnMatch } from './align-table-columns';
 import { diffWords } from './diff-words';
 import type {
+  ChangedText,
   DiffOptions,
   Line,
   LineContent,
   LineImage,
+  RemovedRange,
   TableCell,
   TextRange,
   WordChanges,
@@ -37,7 +39,7 @@ export function diffTableCells(
   columns: ColumnMatch,
   options: DiffOptions,
 ): CellChanges {
-  const removed: TextRange[] = [];
+  const removed: RemovedRange[] = [];
   const added: TextRange[] = [];
   const removedCells: number[] = [];
   const addedCells: number[] = [];
@@ -61,7 +63,7 @@ export function diffTableCells(
       options,
     );
 
-    removed.push(...shifted(removedWords, oldRange.start));
+    removed.push(...shiftedRemoved(removedWords, oldRange.start, newRange.start));
     added.push(...shifted(addedWords, newRange.start));
   }
 
@@ -76,7 +78,7 @@ export function allChangedText(
   oldLine: Line,
   newLine: Line,
   { wordChanges, removedCells, addedCells }: CellChanges,
-): WordChanges {
+): ChangedText {
   const removedCellTexts = textsOfCells(oldLine.cells, removedCells);
   const addedCellTexts = textsOfCells(newLine.cells, addedCells);
 
@@ -173,6 +175,19 @@ function imageMovedBack(image: LineImage, by: number): LineImage {
 
 function shifted(ranges: readonly TextRange[], by: number): TextRange[] {
   return ranges.map(({ start, end }) => ({ start: start + by, end: end + by }));
+}
+
+/** Removed ranges of a cell counted in the texts of the rows: each side moves by its cell start. */
+function shiftedRemoved(
+  ranges: readonly RemovedRange[],
+  oldStart: number,
+  newStart: number,
+): RemovedRange[] {
+  return ranges.map(({ start, end, newPosition }) => ({
+    start: start + oldStart,
+    end: end + oldStart,
+    newPosition: newPosition + newStart,
+  }));
 }
 
 /** Parts of the line's text in the cells, leaving out empty cells. */

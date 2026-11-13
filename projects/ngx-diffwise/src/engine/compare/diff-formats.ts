@@ -13,7 +13,7 @@ import {
   type MarkedRange,
   type TextFormat,
   type TextRange,
-  type WordChanges,
+  type ChangedText,
 } from '../model';
 
 const WHITESPACE_ONLY = /^\s*$/;
@@ -49,7 +49,7 @@ const NO_FORMAT_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], deta
 export function diffFormats(
   oldLine: Line,
   newLine: Line,
-  wordChanges: WordChanges,
+  wordChanges: ChangedText,
   options: DiffOptions,
 ): DescribedChanges {
   if (options.ignoreFormatting && options.ignoreLinkChanges) {

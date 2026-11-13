@@ -107,6 +107,9 @@ export const BLOCK_TAGS: ReadonlySet<string> = new Set([
   ...TABLE_CELL_TAGS,
 ]);
 
+/** A link. Links do not nest: a parser ends a link where another one starts. */
+export const LINK_TAG = 'a';
+
 /** An image; it is one character of the reader text, so it is compared like a word. */
 export const IMAGE_TAG = 'img';
 

@@ -106,7 +106,7 @@ function compare(
   newHtml: string,
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ): HtmlDiff {
-  return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX });
+  return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX, mergesChangedLines: false });
 }
 
 /**
@@ -740,6 +740,7 @@ describe('diffHtml', () => {
         oldLine: { ...paragraph, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
         newLine: { ...paragraph, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
         changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
+        mergedLine: null,
       },
     ]);
     expect(stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
@@ -814,6 +815,7 @@ describe('diffHtml', () => {
           oldLine: { ...paragraph, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
           newLine: { ...paragraph, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
           changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
+          mergedLine: null,
         },
       ],
       stats: { ...NO_CHANGES, changedLines: 1 },

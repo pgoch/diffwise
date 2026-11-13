@@ -3,6 +3,7 @@ import {
   LineChangeKind,
   LineKind,
   type SingleColumnRow,
+  type SingleColumnSettings,
   type SingleColumnTablePlace,
   type ViewLine,
   type ViewRow,
@@ -24,13 +25,49 @@ const NO_LINES_ABOVE: LinesAbove = { hasLine: false, hasRow: false };
 
 /**
  * Turns the rows of the side-by-side view into the rows of the single column. An unchanged line
- * shows once, under both of its numbers; a changed pair shows as its old line above its new one.
+ * shows once, under both of its numbers. A changed pair shows as its merged line, when the
+ * settings ask for merged lines and the pair has one, or else as its old line above its new one.
  */
-export function singleColumnRows(rows: readonly ViewRow[]): SingleColumnRow[] {
+export function singleColumnRows(
+  rows: readonly ViewRow[],
+  settings: SingleColumnSettings,
+): SingleColumnRow[] {
   const tables = new SingleColumnTables(rows);
-  const placedRows = rows.flatMap((row, sourceRow) => rowsOfSourceRow(row, sourceRow, tables));
+  const placedRows = rows.flatMap((row, sourceRow) =>
+    settings.showsMergedLines
+      ? rowsWithMergedLine(row, sourceRow, tables)
+      : rowsOfLines(row, sourceRow, tables),
+  );
 
   return withTablePlaces(placedRows);
+}
+
+/** Rows of one side-by-side row: the row of its merged line, or else a row for each line. */
+function rowsWithMergedLine(
+  row: ViewRow,
+  sourceRow: number,
+  tables: SingleColumnTables,
+): PlacedRow[] {
+  if (row.mergedLine === null) {
+    return rowsOfLines(row, sourceRow, tables);
+  }
+
+  return [mergedRow(row, row.mergedLine, sourceRow)];
+}
+
+/** The row of a merged line, under the numbers of both lines of its pair. */
+function mergedRow(row: ViewRow, mergedLine: ViewLine, sourceRow: number): PlacedRow {
+  return {
+    kind: row.kind,
+    version: DocumentVersion.New,
+    isMerged: true,
+    line: mergedLine,
+    oldNumber: numberOf(row.oldLine),
+    newNumber: numberOf(row.newLine),
+    sourceRow,
+    changeDetails: row.changeDetails,
+    table: null,
+  };
 }
 
 /**
@@ -94,8 +131,8 @@ class SingleColumnTables {
   }
 }
 
-/** Rows of the single column for one side-by-side row: two for a changed pair, or else one. */
-function rowsOfSourceRow(row: ViewRow, sourceRow: number, tables: SingleColumnTables): PlacedRow[] {
+/** Rows of one side-by-side row with a row for each of its lines: two for a changed pair. */
+function rowsOfLines(row: ViewRow, sourceRow: number, tables: SingleColumnTables): PlacedRow[] {
   const { kind, oldLine, newLine, changeDetails } = row;
   const placedRows: PlacedRow[] = [];
   const isUnchanged = kind === LineChangeKind.Unchanged;
@@ -104,6 +141,7 @@ function rowsOfSourceRow(row: ViewRow, sourceRow: number, tables: SingleColumnTa
     placedRows.push({
       kind,
       version: DocumentVersion.Old,
+      isMerged: false,
       line: oldLine,
       oldNumber: oldLine.number,
       newNumber: null,
@@ -117,6 +155,7 @@ function rowsOfSourceRow(row: ViewRow, sourceRow: number, tables: SingleColumnTa
     placedRows.push({
       kind,
       version: DocumentVersion.New,
+      isMerged: false,
       line: newLine,
       oldNumber: isUnchanged ? numberOf(oldLine) : null,
       newNumber: newLine.number,

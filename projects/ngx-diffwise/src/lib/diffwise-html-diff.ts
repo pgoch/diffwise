@@ -480,7 +480,12 @@ export class DiffwiseHtmlDiff {
 
   /** The versions compared, again whenever either of them or `diffOptions` changes. */
   private readonly diff = computed(() => {
-    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix };
+    const settings = {
+      options: this.diffOptions(),
+      idPrefix: this.idPrefix,
+      mergesChangedLines: false,
+    };
+
     return diffHtml(this.oldHtml(), this.newHtml(), settings);
   });
 
@@ -488,9 +493,10 @@ export class DiffwiseHtmlDiff {
   protected readonly rows = computed(() => this.diff().rows.map((row) => this.shownRow(row)));
 
   /** Rows of the single column; the diff prepares them only for this layout. */
-  protected readonly singleColumnRows = computed(() =>
-    singleColumnRows(this.diff().rows).map((row) => this.shownSingleColumnRow(row)),
-  );
+  protected readonly singleColumnRows = computed(() => {
+    const rows = singleColumnRows(this.diff().rows, { showsMergedLines: false });
+    return rows.map((row) => this.shownSingleColumnRow(row));
+  });
 
   /** Colors of changes the app gives for the theme shown now. */
   private readonly customColors = computed(() => {

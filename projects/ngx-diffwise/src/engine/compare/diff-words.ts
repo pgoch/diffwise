@@ -1,6 +1,13 @@
 import { imageWordKey } from './comparison-image';
 import { comparisonText } from './comparison-text';
-import type { DiffOptions, LineContent, LineImage, TextRange, WordChanges } from '../model';
+import type {
+  DiffOptions,
+  LineContent,
+  LineImage,
+  RemovedRange,
+  TextRange,
+  WordChanges,
+} from '../model';
 import { type Edit, EditKind, myersDiff } from './myers';
 import { type Token, TokenKind, splitWords } from './split-words';
 
@@ -30,6 +37,16 @@ interface ChangedRun extends TokenRun {
 interface ChangedRuns {
   readonly removedRuns: readonly ChangedRun[];
   readonly addedRuns: readonly ChangedRun[];
+  /**
+   * For each old token, and for the end of the old tokens, the number of new tokens up to the last
+   * equal token before it. Text removed there stood after these new tokens.
+   */
+  readonly newTokensBefore: readonly number[];
+}
+
+/** Changed text of one side, and the token whose place the text takes among the equal tokens. */
+interface PlacedRange extends TextRange {
+  readonly placeToken: number;
 }
 
 /** Text removed from and added to a changed line, compared word by word; an image is a word. */
@@ -46,12 +63,28 @@ export function diffWords(
     runsBuilder.add(edit);
   }
 
-  const { removedRuns, addedRuns } = runsBuilder.build();
+  const { removedRuns, addedRuns, newTokensBefore } = runsBuilder.build();
+  const removedRanges = changedRanges(removedRuns, oldSide);
+  const addedRanges = changedRanges(addedRuns, newSide);
 
   return {
-    removed: changedRanges(removedRuns, oldSide),
-    added: changedRanges(addedRuns, newSide),
+    removed: removedRanges.map((range) => removedRange(range, newTokensBefore, newSide)),
+    added: addedRanges.map(textRange),
   };
+}
+
+/** The removed text with the place in the new text where it stood: before the next new token. */
+function removedRange(
+  { start, end, placeToken }: PlacedRange,
+  newTokensBefore: readonly number[],
+  newSide: ComparedText,
+): RemovedRange {
+  const nextNewToken = newSide.tokens.at(newTokensBefore[placeToken]);
+  return { start, end, newPosition: nextNewToken?.start ?? newSide.text.length };
+}
+
+function textRange({ start, end }: TextRange): TextRange {
+  return { start, end };
 }
 
 /**
@@ -101,6 +134,8 @@ function withoutWhitespace(tokens: readonly Token[]): Token[] {
 class ChangedRunsBuilder {
   private readonly removedRuns: ChangedRun[] = [];
   private readonly addedRuns: ChangedRun[] = [];
+  private readonly newTokensBefore: number[] = [];
+  private newTokensUpToLastEqual = 0;
   private removedStart = 0;
   private removedEnd = 0;
   private addedStart = 0;
@@ -109,12 +144,15 @@ class ChangedRunsBuilder {
   add(edit: Edit): void {
     switch (edit.kind) {
       case EditKind.Delete:
+        this.newTokensBefore.push(this.newTokensUpToLastEqual);
         this.removedEnd = edit.oldIndex + 1;
         break;
       case EditKind.Insert:
         this.addedEnd = edit.newIndex + 1;
         break;
       case EditKind.Equal:
+        this.newTokensBefore.push(this.newTokensUpToLastEqual);
+        this.newTokensUpToLastEqual = edit.newIndex + 1;
         this.closeBlock();
         this.startBlock(edit.oldIndex + 1, edit.newIndex + 1);
         break;
@@ -123,7 +161,12 @@ class ChangedRunsBuilder {
 
   build(): ChangedRuns {
     this.closeBlock();
-    return { removedRuns: this.removedRuns, addedRuns: this.addedRuns };
+
+    return {
+      removedRuns: this.removedRuns,
+      addedRuns: this.addedRuns,
+      newTokensBefore: [...this.newTokensBefore, this.newTokensUpToLastEqual],
+    };
   }
 
   private startBlock(oldPosition: number, newPosition: number): void {
@@ -149,19 +192,29 @@ class ChangedRunsBuilder {
 }
 
 /** Ranges of changed text on one side: runs at their best places, joined across whitespace. */
-function changedRanges(runs: readonly ChangedRun[], side: ComparedText): TextRange[] {
-  const ranges: TextRange[] = [];
+function changedRanges(runs: readonly ChangedRun[], side: ComparedText): PlacedRange[] {
+  const ranges: PlacedRange[] = [];
   let previousEnd = 0;
 
   for (const [index, run] of runs.entries()) {
     const nextStart = runs.at(index + 1)?.start ?? side.tokens.length;
     const placedRun = run.canSlide ? bestPlace(run, side, previousEnd, nextStart) : run;
+    const placeToken = placeTokenOf(placedRun, run);
 
-    addRange(ranges, textRangeOf(placedRun, side), side.text);
+    addRange(ranges, { ...textRangeOf(placedRun, side), placeToken }, side.text);
     previousEnd = placedRun.end;
   }
 
   return ranges.map((range) => withoutEdgeWhitespace(range, side.text));
+}
+
+/**
+ * The token whose place among the equal tokens a placed run takes: its first token, or the token
+ * after it when the run slid forward, over tokens that now stand before it.
+ */
+function placeTokenOf(placedRun: TokenRun, run: TokenRun): number {
+  const slidForward = placedRun.start > run.start;
+  return slidForward ? placedRun.end : placedRun.start;
 }
 
 /**
@@ -245,11 +298,11 @@ function textRangeOf(run: TokenRun, side: ComparedText): TextRange {
 }
 
 /** Adds a range, joined with the previous one if only whitespace lies between. */
-function addRange(ranges: TextRange[], range: TextRange, text: string): void {
+function addRange(ranges: PlacedRange[], range: PlacedRange, text: string): void {
   const previous = ranges.at(-1);
 
   if (previous && onlyWhitespaceBetween(text, previous.end, range.start)) {
-    ranges[ranges.length - 1] = { start: previous.start, end: range.end };
+    ranges[ranges.length - 1] = { ...previous, end: range.end };
     return;
   }
 
@@ -264,7 +317,7 @@ function onlyWhitespaceBetween(text: string, start: number, end: number): boolea
  * Drops whitespace at the edges of a range, so a marker hugs its words. A range of whitespace
  * only, such as changed indentation, stays.
  */
-function withoutEdgeWhitespace(range: TextRange, text: string): TextRange {
+function withoutEdgeWhitespace(range: PlacedRange, text: string): PlacedRange {
   const rangeText = text.slice(range.start, range.end);
   const words = rangeText.trim();
 
@@ -274,5 +327,5 @@ function withoutEdgeWhitespace(range: TextRange, text: string): TextRange {
 
   const start = range.start + rangeText.length - rangeText.trimStart().length;
 
-  return { start, end: start + words.length };
+  return { ...range, start, end: start + words.length };
 }

@@ -196,11 +196,22 @@ export interface TextRange {
 }
 
 /** Text that differs inside a changed line pair. */
-export interface WordChanges {
+export interface ChangedText {
   /** Ranges in the old line's text. */
   readonly removed: readonly TextRange[];
   /** Ranges in the new line's text. */
   readonly added: readonly TextRange[];
+}
+
+/** Text removed from the old line, and the place in the new line's text where it stood. */
+export interface RemovedRange extends TextRange {
+  /** Position in the new line's text; added text that replaces the removed text starts there. */
+  readonly newPosition: number;
+}
+
+/** Text that differs inside a changed line pair, compared word by word. */
+export interface WordChanges extends ChangedText {
+  readonly removed: readonly RemovedRange[];
 }
 
 /** On-off formatting. Markup of the same look gives the same style, such as `b` and `strong`. */
@@ -407,6 +418,11 @@ export interface ViewRow {
   readonly newLine: ViewLine | null;
   /** Changes besides changed text, such as formatting; markers point to them by position. */
   readonly changeDetails: readonly ChangeDetail[];
+  /**
+   * The changed pair as one line: the new line with the removed text in it. `null` in other rows,
+   * for a pair that cannot be merged, such as table rows, and when the diff does not merge lines.
+   */
+  readonly mergedLine: ViewLine | null;
 }
 
 /** The two versions of a document. */
@@ -432,16 +448,21 @@ export interface SingleColumnTablePlace {
   readonly aboveTableLine: boolean;
 }
 
-/** A row of the single-column view: one line of one version, with its number in each version. */
+/**
+ * A row of the single-column view: one line of one version with its number in each version, or
+ * the merged line of a changed pair.
+ */
 export interface SingleColumnRow {
-  /** How the line differs; each line of a changed pair has a row, the old line first. */
+  /** How the line differs; a changed pair has a row for each of its lines, or one merged row. */
   readonly kind: LineChangeKind;
-  /** The version the line comes from; an unchanged line comes from the new one. */
+  /** The version the line comes from; an unchanged and a merged line come from the new one. */
   readonly version: DocumentVersion;
+  /** True when the line is the merged line of a changed pair, with the text of both versions. */
+  readonly isMerged: boolean;
   readonly line: ViewLine;
-  /** `null` for an added line, and for the new line of a changed pair. */
+  /** `null` for an added line, and for the new line of a changed pair shown as two rows. */
   readonly oldNumber: number | null;
-  /** `null` for a removed line, and for the old line of a changed pair. */
+  /** `null` for a removed line, and for the old line of a changed pair shown as two rows. */
   readonly newNumber: number | null;
   /** Position of the side-by-side row that the line comes from. */
   readonly sourceRow: number;
@@ -463,4 +484,12 @@ export interface HtmlDiffSettings {
   readonly options: DiffOptions;
   /** Starts every id in the shown HTML; each diff on a page needs its own. */
   readonly idPrefix: string;
+  /** Prepares the merged line of each changed pair, which takes time for every changed line. */
+  readonly mergesChangedLines: boolean;
+}
+
+/** How the single-column view shows the rows of a diff. */
+export interface SingleColumnSettings {
+  /** Shows a changed pair as its merged line, where it has one, instead of old above new. */
+  readonly showsMergedLines: boolean;
 }
