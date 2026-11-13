@@ -17,7 +17,12 @@ import {
   markWholeCells,
   markWholeTableLine,
 } from './mark/mark-changes';
-import { type ChangedPair, mergeLines } from './mark/merge-lines';
+import { mergeLines } from './mark/merge-lines';
+import {
+  type ChangedTableLine,
+  type TableRowSource,
+  withMergedTables,
+} from './mark/merge-table-rows';
 import { addTableColumns } from './mark/table-columns';
 import {
   type ChangeDetail,
@@ -48,7 +53,8 @@ const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], d
 /**
  * Compares two HTML documents and returns the rows of the side-by-side view with change counts.
  * Table lines get the columns of their tables after marking, since marks widen cells. When the
- * settings ask for it, each changed pair gets its merged line too, for the single-column view.
+ * settings ask for it, each changed pair gets its merged line too, for the single-column view, and
+ * so does every line of a table whose two versions show as one table there.
  */
 export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
   const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
@@ -57,7 +63,10 @@ export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSet
   const columns = alignTableColumns(changes, settings.options);
   const rowBuilder = new ViewRowBuilder(settings, columns);
   const markedRows = changes.map((change) => rowBuilder.toRow(change));
-  const rows = withTableColumns(markedRows).map(sanitizedRow);
+  const mergedRows = settings.mergesChangedLines
+    ? withMergedTables(rowBuilder.tableRowSources(markedRows), columns.tablePairs())
+    : markedRows;
+  const rows = withTableColumns(mergedRows).map(sanitizedRow);
 
   return { rows, stats };
 }
@@ -78,6 +87,9 @@ class ViewRowBuilder {
 
   private readonly options: DiffOptions;
   private readonly mergesChangedLines: boolean;
+
+  /** What merging needs for each row of a changed line of a table. */
+  private readonly changedTableLines = new Map<ViewRow, ChangedTableLine>();
 
   constructor(
     settings: HtmlDiffSettings,
@@ -133,37 +145,29 @@ class ViewRowBuilder {
     const markedNewText = markChanges(newLine, newRanges, ADDED_TEXT_MARKER, itemMarks);
     const markedOldHtml = markWholeCells(markedOldText, removedCells, REMOVED_TEXT_MARKER);
     const markedNewHtml = markWholeCells(markedNewText, addedCells, ADDED_TEXT_MARKER);
+    const shownOldLine = this.nextOldLine(oldLine, markedOldHtml);
     const shownNewLine = this.nextNewLine(newLine, markedNewHtml);
-    const mergedHtml = this.mergedHtmlOf({
-      oldLine,
-      newLine,
-      markedNewHtml,
-      wordChanges,
-      describedChanges,
-      itemMarks,
-    });
-
-    return {
+    const pair = { oldLine, newLine, markedNewHtml, wordChanges, describedChanges, itemMarks };
+    const isInTable = oldLine.table !== null || newLine.table !== null;
+    const mergedHtml = this.mergesChangedLines && !isInTable ? mergeLines(pair) : null;
+    const row: ViewRow = {
       kind: LineChangeKind.Changed,
-      oldLine: this.nextOldLine(oldLine, markedOldHtml),
+      oldLine: shownOldLine,
       newLine: shownNewLine,
       changeDetails: describedChanges.details,
       mergedLine: mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml },
     };
-  }
 
-  /**
-   * HTML of the merged line of a pair; `null` when the diff does not merge lines, and for table
-   * lines, which stay two lines.
-   */
-  private mergedHtmlOf(pair: ChangedPair): string | null {
-    const isInTable = pair.oldLine.table !== null || pair.newLine.table !== null;
-
-    if (!this.mergesChangedLines || isInTable) {
-      return null;
+    if (isInTable) {
+      this.changedTableLines.set(row, { pair, removedCells });
     }
 
-    return mergeLines(pair);
+    return row;
+  }
+
+  /** The rows, each with what merging needs when it shows a changed line of a table. */
+  tableRowSources(rows: readonly ViewRow[]): TableRowSource[] {
+    return rows.map((row) => ({ row, changedLine: this.changedTableLines.get(row) ?? null }));
   }
 
   /** Changed text of a pair: cell by cell in rows of matched tables, word by word in other lines. */
@@ -217,12 +221,21 @@ function wholeLineHtml(line: Line, marker: ChangeMarker): string {
   return line.table === null ? line.html : markWholeTableLine(line, marker);
 }
 
-/** Rows whose table lines hold the columns of their tables, each side its own tables. */
+/**
+ * Rows whose table lines hold the columns of their tables: each side its own tables, and the
+ * merged lines of a table its columns of both versions.
+ */
 function withTableColumns(rows: readonly ViewRow[]): ViewRow[] {
   const oldLines = addTableColumns(rows.map((row) => row.oldLine));
   const newLines = addTableColumns(rows.map((row) => row.newLine));
+  const mergedLines = addTableColumns(rows.map((row) => row.mergedLine));
 
-  return rows.map((row, index) => ({ ...row, oldLine: oldLines[index], newLine: newLines[index] }));
+  return rows.map((row, index) => ({
+    ...row,
+    oldLine: oldLines[index],
+    newLine: newLines[index],
+    mergedLine: mergedLines[index],
+  }));
 }
 
 /** The row with its HTML sanitized again, because marking changes and adding columns edit it. */

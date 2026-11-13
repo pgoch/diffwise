@@ -310,18 +310,6 @@ describe('diffHtml with merged lines', () => {
     expect(row.newLine?.number).toBe(2);
   });
 
-  it('leaves the rows of a table as two lines', () => {
-    const rows = compare(
-      '<table><caption>Prices of the old plans</caption><tr><td>Personal</td><td>4 USD</td></tr></table>',
-      '<table><caption>Prices of the new plans</caption><tr><td>Personal</td><td>5 USD</td></tr></table>',
-    );
-
-    expect(rows.map((row) => [row.kind, row.mergedLine])).toEqual([
-      [LineChangeKind.Changed, null],
-      [LineChangeKind.Changed, null],
-    ]);
-  });
-
   it('leaves a pair as two lines when removed text reaches from one block into another', () => {
     const [row] = compare(
       '<figure><img src="a.png" alt="A"><figcaption>Old caption</figcaption></figure>',

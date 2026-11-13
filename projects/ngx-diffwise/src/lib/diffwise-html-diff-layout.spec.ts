@@ -31,6 +31,11 @@ const MERGED_CONTENT_CLASS = 'diffwise-html-diff__content--merged';
 const OLD_CONTENT_SELECTOR = '.diffwise-html-diff__content--old';
 const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
 const MERGED_CONTENT_SELECTOR = '.diffwise-html-diff__content--merged';
+const GAP_CELL_SELECTOR = '.diffwise-html-diff__gap--cell';
+
+/** The shown row of a table line, without its hidden copies of rows. */
+const SHOWN_ROW_SELECTOR = '[data-diffwise-table-copy] > :not([data-diffwise-column-sizers]) > tr';
+const SHOWN_GAP_CELL_SELECTOR = `${SHOWN_ROW_SELECTOR} > ${GAP_CELL_SELECTOR}`;
 const REMOVED_TEXT_SELECTOR = '.diffwise-html-diff__highlight--removed';
 const ADDED_TEXT_SELECTOR = '.diffwise-html-diff__highlight--added';
 const STRIKETHROUGH_CLASS = 'diffwise-html-diff--inline-diff-style-strikethrough';
@@ -74,6 +79,12 @@ const NEW_PLANS_HTML =
 
 /** Text of the merged line of the changed pair of the terms, with the hidden space between 24 and 48. */
 const MERGED_REPLY = 'Reply within 24 48 hours.';
+
+/** A table with an added column, a changed price, a removed row and an added row. */
+const OLD_PRICES_HTML =
+  '<table><tr><th>Plan</th><th>Price</th></tr><tr><td>Pro</td><td>49 USD</td></tr><tr><td>Trial</td><td>0 USD</td></tr></table>';
+const NEW_PRICES_HTML =
+  '<table><tr><th>Plan</th><th>Price</th><th>Users</th></tr><tr><td>Pro</td><td>59 USD</td><td>5</td></tr><tr><td>Company</td><td>149 USD</td><td>25</td></tr></table>';
 
 const CUSTOM_HEADER_TEXTS = { old: 'Version 3', new: 'Version 4' };
 
@@ -602,18 +613,45 @@ describe('DiffwiseHtmlDiff merged lines', () => {
     ).toEqual([IN_TAB_ORDER]);
   });
 
-  it('keeps the changed rows of a table as two lines among merged lines', () => {
-    const element = renderMergedLines({
-      oldHtml: '<p>Plans for 2025</p><table><tr><td>Team of five</td></tr></table>',
-      newHtml: '<p>Plans for 2026</p><table><tr><td>Team of eight</td></tr></table>',
-    });
-
+  it('shows the two versions of a table as one table with the columns of both', () => {
+    const element = renderMergedLines({ oldHtml: OLD_PRICES_HTML, newHtml: NEW_PRICES_HTML });
     const rowsWithoutTexts = singleColumnRowsOf(element).map((row) => row.slice(0, -1));
 
     expect(rowsWithoutTexts).toEqual([
       [LineChangeKind.Changed, MERGED, 1, 1],
-      [LineChangeKind.Changed, OLD, 2, null],
-      [LineChangeKind.Changed, NEW, null, 2],
+      [LineChangeKind.Changed, MERGED, 2, 2],
+      [LineChangeKind.Removed, OLD, 3, null],
+      [LineChangeKind.Added, NEW, null, 3],
     ]);
+    expect(attributesOf(element, CONTENT_SELECTOR, TABLE_ATTRIBUTE)).toEqual(['0', '0', '0', '0']);
+    expect(
+      element.querySelectorAll(`${OLD_CONTENT_SELECTOR} ${SHOWN_GAP_CELL_SELECTOR}`),
+    ).toHaveLength(1);
+    expect(
+      textsOf(element, `${MERGED_CONTENT_SELECTOR} ${SHOWN_ROW_SELECTOR} ${REMOVED_TEXT_SELECTOR}`),
+    ).toEqual(['49']);
+  });
+
+  it('shows the two versions of a table as two tables when changes are stacked', () => {
+    const options = { inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked };
+    const element = renderMergedLines({
+      oldHtml: OLD_PRICES_HTML,
+      newHtml: NEW_PRICES_HTML,
+      options,
+    });
+
+    expect(element.querySelector(MERGED_CONTENT_SELECTOR)).toBeNull();
+    expect(element.querySelector(GAP_CELL_SELECTOR)).toBeNull();
+  });
+
+  it('scrolls the lines of a merged table together', () => {
+    const element = renderMergedLines({ oldHtml: OLD_PRICES_HTML, newHtml: NEW_PRICES_HTML });
+    const lines = Array.from(element.querySelectorAll<HTMLElement>(CONTENT_SELECTOR));
+    const [, mergedRow] = lines;
+
+    mergedRow.scrollLeft = 80;
+    mergedRow.dispatchEvent(new Event(SCROLL_EVENT));
+
+    expect(lines.map((line) => line.scrollLeft)).toEqual([80, 80, 80, 80]);
   });
 });

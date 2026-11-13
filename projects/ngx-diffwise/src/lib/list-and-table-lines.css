@@ -308,3 +308,37 @@
     inset 0 2px 0 var(--diffwise-side-accent),
     inset 0 -2px 0 var(--diffwise-side-accent);
 }
+
+/*
+ * In a table whose two versions show as one, the place of a column that the version of a row does
+ * not have: a gap in the style of the gaps opposite added and removed lines.
+ */
+.diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--diffwise-gap-light) 0 6px,
+    var(--diffwise-gap-dark) 6px 12px
+  );
+}
+
+.diffwise-html-diff--gap-style-gray
+  .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  background: var(--diffwise-gap-gray);
+}
+
+.diffwise-html-diff--gap-style-empty
+  .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  background: none;
+}

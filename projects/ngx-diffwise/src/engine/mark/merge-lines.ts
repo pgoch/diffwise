@@ -14,6 +14,7 @@ import {
   type ListItemMarks,
   REMOVED_TEXT_MARKER,
   canHoldMarker,
+  canHoldMarkerIn,
   drawRemovedListMarker,
   wrapRanges,
 } from './mark-changes';
@@ -62,7 +63,7 @@ export interface ChangedPair {
 }
 
 /** A part of the old line that the merged line shows, and where it goes in the new line's text. */
-interface OldPart {
+export interface OldPart {
   /** Ranges in the old line's text: the part itself, then the changed images inside it. */
   readonly ranges: readonly MarkedRange[];
   readonly newPosition: number;
@@ -71,13 +72,13 @@ interface OldPart {
 }
 
 /** A part of the old line and its copy for the merged line. */
-interface CopiedPart {
+export interface CopiedPart {
   readonly part: OldPart;
   readonly nodes: DocumentFragment;
 }
 
 /** A place between the nodes of a parent: before `nextNode`, or last when it is `null`. */
-interface InsertionPoint {
+export interface InsertionPoint {
   readonly parent: Node;
   readonly nextNode: Node | null;
 }
@@ -89,7 +90,7 @@ interface InsertionPoint {
  * Returns `null` for a pair that does not merge into valid HTML, which then stays two lines.
  */
 export function mergeLines(pair: ChangedPair): string | null {
-  const { oldLine, newLine, markedNewHtml, wordChanges, describedChanges, itemMarks } = pair;
+  const { oldLine, newLine, markedNewHtml, itemMarks } = pair;
   const oldContent = parsedContent(oldLine.html);
   const newContent = parsedContent(markedNewHtml);
   const oldText = mapReaderText(oldContent.childNodes);
@@ -99,20 +100,20 @@ export function mergeLines(pair: ChangedPair): string | null {
     return null;
   }
 
-  const copiedParts = copiedOldParts(oldParts(wordChanges, describedChanges), oldText.pieces);
+  const copiedParts = copyOldParts(pair, oldText.pieces);
 
   if (copiedParts === null) {
     return null;
   }
 
-  for (const { part, nodes } of [...copiedParts].sort(fromLastPlace)) {
-    const point = insertionPoint(newText.pieces, part.newPosition);
+  for (const copiedPart of inInsertionOrder(copiedParts)) {
+    const point = insertionPoint(newText.pieces, copiedPart.part.newPosition, newContent);
 
     if (point === null) {
       return null;
     }
 
-    insertNodes(point, withSeparators(nodes, part, pair));
+    insertCopiedPart(point, copiedPart, pair);
   }
 
   drawRemovedListMarker(newContent, oldLine.marker, itemMarks);
@@ -120,7 +121,36 @@ export function mergeLines(pair: ChangedPair): string | null {
   return serialized(newContent);
 }
 
-function parsedContent(html: string): DocumentFragment {
+/**
+ * Copies of the parts of the old line that a merged line shows, from the old line's content and
+ * its pieces of text; `null` when a part has no copy. Marking them changes the content.
+ */
+export function copyOldParts(
+  { wordChanges, describedChanges }: ChangedPair,
+  oldPieces: readonly TextPiece[],
+): CopiedPart[] | null {
+  return copiedOldParts(oldParts(wordChanges, describedChanges), oldPieces);
+}
+
+/** The copies in the order to put them in, so each keeps the places of the ones after it valid. */
+export function inInsertionOrder(copiedParts: readonly CopiedPart[]): CopiedPart[] {
+  return [...copiedParts].sort(fromLastPlace);
+}
+
+/**
+ * Puts the copy of an old part at the point, with what separates it from the text around. The
+ * text around is the new line's text within `bounds`, such as the part of a cell; by default all.
+ */
+export function insertCopiedPart(
+  point: InsertionPoint,
+  { part, nodes }: CopiedPart,
+  pair: ChangedPair,
+  bounds: TextRange = { start: 0, end: pair.newLine.text.length },
+): void {
+  insertNodes(point, withSeparators(nodes, part, pair, bounds));
+}
+
+export function parsedContent(html: string): DocumentFragment {
   const template = document.createElement(TEMPLATE_TAG);
 
   template.innerHTML = html;
@@ -128,7 +158,7 @@ function parsedContent(html: string): DocumentFragment {
   return template.content;
 }
 
-function serialized(content: DocumentFragment): string {
+export function serialized(content: DocumentFragment): string {
   const template = document.createElement(TEMPLATE_TAG);
 
   template.content.append(content);
@@ -294,16 +324,22 @@ function isInlineElement(node: Node | null): node is Element {
 }
 
 /**
- * The place in the content where the text at `position` of the reader text starts. At the start
- * or the end of an inline element the place is outside it, since an old part brings its own
- * formatting. Returns `null` where the HTML cannot hold more nodes, such as inside SVG.
+ * The place in the content where the text at `position` of its reader text starts; the pieces
+ * are those of the content. At the start or the end of an inline element the place is outside it,
+ * since an old part brings its own formatting. Content without text takes the part at its end.
+ * Returns `null` where the HTML cannot hold more nodes, such as inside SVG.
  */
-function insertionPoint(pieces: readonly TextPiece[], position: number): InsertionPoint | null {
+export function insertionPoint(
+  pieces: readonly TextPiece[],
+  position: number,
+  content: Node,
+): InsertionPoint | null {
   const nextPiece = pieces.find((piece) => piece.end > position);
   const lastPiece = pieces.at(-1);
 
   if (lastPiece === undefined) {
-    return null;
+    const endOfContent = { parent: content, nextNode: null };
+    return canHoldNodes(endOfContent) ? endOfContent : null;
   }
 
   const point =
@@ -364,7 +400,12 @@ function parentOf(node: Node): Node {
 
 function canHoldNodes({ parent, nextNode }: InsertionPoint): boolean {
   const nodeOfParent = nextNode ?? parent.lastChild;
-  return nodeOfParent !== null && canHoldMarker(nodeOfParent);
+
+  if (nodeOfParent === null) {
+    return canHoldMarkerIn(parent instanceof Element ? parent : null);
+  }
+
+  return canHoldMarker(nodeOfParent);
 }
 
 /**
@@ -372,7 +413,12 @@ function canHoldNodes({ parent, nextNode }: InsertionPoint): boolean {
  * changed image, or else a space wherever the old line had one and the new line has none. Before
  * added text that replaces it, the part is marked for a gap, and a hidden space follows it.
  */
-function withSeparators(nodes: DocumentFragment, part: OldPart, pair: ChangedPair): Node[] {
+function withSeparators(
+  nodes: DocumentFragment,
+  part: OldPart,
+  pair: ChangedPair,
+  bounds: TextRange,
+): Node[] {
   if (part.isChangedImage) {
     return [nodes, imageChangeArrow()];
   }
@@ -384,8 +430,8 @@ function withSeparators(nodes: DocumentFragment, part: OldPart, pair: ChangedPai
   const startsAddedText = pair.wordChanges.added.some((range) => range.start === position);
   const hadSpaceBefore = isWhitespaceAt(oldText, start - 1);
   const hadSpaceAfter = isWhitespaceAt(oldText, end);
-  const textBefore = position > 0 && !isWhitespaceAt(newText, position - 1);
-  const textAfter = position < newText.length && !isWhitespaceAt(newText, position);
+  const textBefore = position > bounds.start && !isWhitespaceAt(newText, position - 1);
+  const textAfter = position < bounds.end && !isWhitespaceAt(newText, position);
   const separated: Node[] = [];
 
   if (hadSpaceBefore && textBefore) {

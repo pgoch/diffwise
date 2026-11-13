@@ -200,7 +200,7 @@ export function markWholeCells(
 }
 
 /** Gives a cell the classes of the marker, since no marker element can wrap a cell. */
-function markWholeCell(cell: Element | undefined, marker: ChangeMarker): void {
+export function markWholeCell(cell: Element | undefined, marker: ChangeMarker): void {
   cell?.classList.add(...marker.classNames, CELL_HIGHLIGHT_CLASS);
 }
 
@@ -286,8 +286,11 @@ function markedNodeOf(node: Text | Element): Text | Element {
 
 /** False where a marker would break the HTML: in SVG, in MathML and in elements such as `table`. */
 export function canHoldMarker(node: Node): boolean {
-  const parent = node.parentElement;
+  return canHoldMarkerIn(node.parentElement);
+}
 
+/** False for a parent where a marker would break the HTML; `null` stands for the top level. */
+export function canHoldMarkerIn(parent: Element | null): boolean {
   if (parent === null) {
     return true;
   }
