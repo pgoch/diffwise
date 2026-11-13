@@ -13,6 +13,7 @@ import {
   DiffwiseFontFamily,
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
+  DiffwiseInlineDiffStyle,
   DiffwiseLanguage,
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
@@ -71,6 +72,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   diffColors: isObjectOrNull,
   layout: isLayout,
   layoutBreakpoint: isLayoutBreakpoint,
+  inlineDiffStyle: isInlineDiffStyle,
   showLineNumbers: isBoolean,
   lineNumberStyle: isLineNumberStyle,
   lineNumberAlignment: isVerticalAlignment,
@@ -218,6 +220,10 @@ function isLayout(value: unknown): boolean {
 /** True for a width in pixels: a number above zero. */
 function isLayoutBreakpoint(value: unknown): boolean {
   return isNumber(value) && Number.isFinite(value) && value > 0;
+}
+
+function isInlineDiffStyle(value: unknown): boolean {
+  return isValueOf(DiffwiseInlineDiffStyle, value);
 }
 
 function isLineNumberStyle(value: unknown): boolean {

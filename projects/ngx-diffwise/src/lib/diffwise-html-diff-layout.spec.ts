@@ -4,6 +4,7 @@ import { LineChangeKind } from '../engine';
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   DiffwiseChangeDetails,
+  DiffwiseInlineDiffStyle,
   DiffwiseLanguage,
   DiffwiseLayout,
   DiffwiseVersionHeaders,
@@ -13,6 +14,7 @@ import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
 const LAYOUT_INPUT = 'layout';
+const INLINE_DIFF_STYLE_INPUT = 'inlineDiffStyle';
 const WARN_METHOD = 'warn';
 const RESIZE_OBSERVER = 'ResizeObserver';
 const OFFSET_WIDTH = 'offsetWidth';
@@ -25,8 +27,14 @@ const OLD_LINE_NUMBER_SELECTOR = '.diffwise-html-diff__line-number--old';
 const NEW_LINE_NUMBER_SELECTOR = '.diffwise-html-diff__line-number--new';
 const CONTENT_SELECTOR = '.diffwise-html-diff__content';
 const OLD_CONTENT_CLASS = 'diffwise-html-diff__content--old';
+const MERGED_CONTENT_CLASS = 'diffwise-html-diff__content--merged';
 const OLD_CONTENT_SELECTOR = '.diffwise-html-diff__content--old';
 const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
+const MERGED_CONTENT_SELECTOR = '.diffwise-html-diff__content--merged';
+const REMOVED_TEXT_SELECTOR = '.diffwise-html-diff__highlight--removed';
+const ADDED_TEXT_SELECTOR = '.diffwise-html-diff__highlight--added';
+const STRIKETHROUGH_CLASS = 'diffwise-html-diff--inline-diff-style-strikethrough';
+const STACKED_CLASS = 'diffwise-html-diff--inline-diff-style-stacked';
 const GAP_SELECTOR = '.diffwise-html-diff__gap';
 const DIVIDER_SELECTOR = '.diffwise-html-diff__divider';
 const CHANGE_DETAILS_CELL_SELECTOR = '.diffwise-html-diff__change-details-cell';
@@ -48,6 +56,7 @@ const MOUSEOVER_EVENT = 'mouseover';
 const SCROLL_EVENT = 'scroll';
 const OLD = 'old';
 const NEW = 'new';
+const MERGED = 'merged';
 
 /** One line removed, one unchanged, one changed and one added. */
 const OLD_TERMS_HTML = '<p>Old intro.</p><p>Terms of use.</p><p>Reply within 24 hours.</p>';
@@ -131,10 +140,24 @@ function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtmlDiff> {
   return fixture;
 }
 
-/** Renders a diff in a single column and returns its element. */
+/**
+ * Renders a diff in a single column and returns its element. A changed pair shows as two lines,
+ * unless the options say otherwise.
+ */
 function renderSingleColumn(diff: RenderedDiff = {}): HTMLElement {
-  const options = { ...diff.options, layout: DiffwiseLayout.Inline };
+  const options = {
+    inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked,
+    ...diff.options,
+    layout: DiffwiseLayout.Inline,
+  };
+
   return render({ ...diff, options }).nativeElement;
+}
+
+/** Renders a diff in a single column with merged lines and returns its element. */
+function renderMergedLines(diff: RenderedDiff = {}): HTMLElement {
+  const options = { inlineDiffStyle: DiffwiseInlineDiffStyle.Merged, ...diff.options };
+  return renderSingleColumn({ ...diff, options });
 }
 
 /** Resizes the diff as the browser does: the observer reports it, and the diff shows it. */
@@ -164,12 +187,18 @@ function numberIn(row: Element, cellSelector: string): number | null {
   return text.length > 0 ? Number(text) : null;
 }
 
+/** What the content of a row shows: a line of one version, or a merged line. */
 function versionOf(row: Element) {
-  const content = row.querySelector(CONTENT_SELECTOR);
-  return content?.classList.contains(OLD_CONTENT_CLASS) ? OLD : NEW;
+  const classes = row.querySelector(CONTENT_SELECTOR)?.classList;
+
+  if (classes?.contains(MERGED_CONTENT_CLASS)) {
+    return MERGED;
+  }
+
+  return classes?.contains(OLD_CONTENT_CLASS) ? OLD : NEW;
 }
 
-/** Rows of the single column as `[kind, version, old number, new number, text]`. */
+/** Rows of the single column as `[kind, shown content, old number, new number, text]`. */
 function singleColumnRowsOf(element: HTMLElement) {
   return Array.from(element.querySelectorAll(ROW_SELECTOR), (row) => [
     rowKind(row),
@@ -277,7 +306,11 @@ describe('DiffwiseHtmlDiff layout', () => {
   });
 
   it('shows the same lines after a change of the layout, without comparing them again', () => {
-    const fixture = render({ options: { layout: DiffwiseLayout.SideBySide } });
+    const options = {
+      layout: DiffwiseLayout.SideBySide,
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked,
+    };
+    const fixture = render({ options });
     const element: HTMLElement = fixture.nativeElement;
     const newTexts = textsOf(element, NEW_CONTENT_SELECTOR);
 
@@ -401,7 +434,10 @@ describe('DiffwiseHtmlDiff single column', () => {
   });
 
   it('shows no icons when only marked changes show the details, which take the focus then', async () => {
-    const options = { changeDetails: DiffwiseChangeDetails.Hover };
+    const options = {
+      changeDetails: DiffwiseChangeDetails.Hover,
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked,
+    };
     const fixture = render({ oldHtml: ITALIC_HTML, newHtml: BOLD_HTML, options });
     const element: HTMLElement = fixture.nativeElement;
 
@@ -449,5 +485,132 @@ describe('DiffwiseHtmlDiff single column', () => {
     oldLastRow.dispatchEvent(new Event(SCROLL_EVENT));
 
     expect(lines.map((line) => line.scrollLeft)).toEqual([0, 120, 120, 120, 120, 120]);
+  });
+});
+
+describe('DiffwiseHtmlDiff merged lines', () => {
+  it('shows a changed pair as one merged line under both of its numbers, by default', () => {
+    const element: HTMLElement = render({
+      options: { layout: DiffwiseLayout.Inline },
+    }).nativeElement;
+
+    expect(singleColumnRowsOf(element)).toEqual([
+      [LineChangeKind.Removed, OLD, 1, null, 'Old intro.'],
+      [LineChangeKind.Unchanged, NEW, 2, 1, 'Terms of use.'],
+      [LineChangeKind.Changed, MERGED, 3, 2, 'Reply within 24 48 hours.'],
+      [LineChangeKind.Added, NEW, null, 3, 'New outro.'],
+    ]);
+    expect(element.classList.contains(STRIKETHROUGH_CLASS)).toBe(false);
+    expect(element.classList.contains(STACKED_CLASS)).toBe(false);
+  });
+
+  it('marks the removed and the added text of a merged line', () => {
+    const element = renderMergedLines();
+    const removedText = `${MERGED_CONTENT_SELECTOR} ${REMOVED_TEXT_SELECTOR}`;
+    const addedText = `${MERGED_CONTENT_SELECTOR} ${ADDED_TEXT_SELECTOR}`;
+
+    expect(textsOf(element, removedText)).toEqual(['24']);
+    expect(textsOf(element, addedText)).toEqual(['48']);
+  });
+
+  it('shows merged lines with a class of its own when removed text is struck through', () => {
+    const options = { inlineDiffStyle: DiffwiseInlineDiffStyle.Strikethrough };
+    const element = renderMergedLines({ options });
+
+    expect(element.classList.contains(STRIKETHROUGH_CLASS)).toBe(true);
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+  });
+
+  it('shows a changed pair as two lines, with a class of its own, when changes are stacked', () => {
+    const options = { inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked };
+    const element = renderMergedLines({ options });
+
+    expect(element.classList.contains(STACKED_CLASS)).toBe(true);
+    expect(element.querySelector(MERGED_CONTENT_SELECTOR)).toBeNull();
+    expect(textsOf(element, OLD_CONTENT_SELECTOR)).toContain('Reply within 24 hours.');
+  });
+
+  it('shows merged lines as soon as the way to show changed lines asks for them', () => {
+    const options = {
+      layout: DiffwiseLayout.Inline,
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked,
+    };
+    const fixture = render({ options });
+    const element: HTMLElement = fixture.nativeElement;
+
+    fixture.componentRef.setInput(INLINE_DIFF_STYLE_INPUT, DiffwiseInlineDiffStyle.Merged);
+    fixture.detectChanges();
+
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+
+    fixture.componentRef.setInput(INLINE_DIFF_STYLE_INPUT, DiffwiseInlineDiffStyle.Stacked);
+    fixture.detectChanges();
+
+    expect(element.querySelector(MERGED_CONTENT_SELECTOR)).toBeNull();
+  });
+
+  it('shows merged lines in a diff that turns into a single column', () => {
+    const fixture = render({ width: 1024 });
+    const element: HTMLElement = fixture.nativeElement;
+
+    expect(element.querySelector(MERGED_CONTENT_SELECTOR)).toBeNull();
+
+    resize(fixture, 480);
+
+    expect(textsOf(element, MERGED_CONTENT_SELECTOR)).toEqual(['Reply within 24 48 hours.']);
+
+    resize(fixture, 1024);
+
+    expect(element.querySelector(MERGED_CONTENT_SELECTOR)).toBeNull();
+    expect(textsOf(element, NEW_CONTENT_SELECTOR)).toContain('Reply within 48 hours.');
+  });
+
+  it('shows the icon of a changed pair next to its merged line, with the tooltip of its changes', () => {
+    const element = renderMergedLines({ oldHtml: ITALIC_HTML, newHtml: BOLD_HTML });
+    const icon = element.querySelector(CHANGE_DETAILS_ICON_SELECTOR) as HTMLElement;
+    const marker = element.querySelector(`${MERGED_CONTENT_SELECTOR} ${DESCRIBED_MARKER_SELECTOR}`);
+
+    expect(rowsWithIcons(element)).toEqual([false, true]);
+
+    pointTo(icon);
+
+    expect(tooltipTitleOf(element)).toBe('Formatting change');
+
+    pointTo(marker as Element);
+
+    expect(tooltipTitleOf(element)).toBe('Formatting change');
+  });
+
+  it('lets the marked changes of a merged line take the focus when no icons show their details', async () => {
+    const options = { changeDetails: DiffwiseChangeDetails.Hover };
+    const fixture = render({ oldHtml: ITALIC_HTML, newHtml: BOLD_HTML, options });
+    const element: HTMLElement = fixture.nativeElement;
+
+    fixture.componentRef.setInput(LAYOUT_INPUT, DiffwiseLayout.Inline);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      attributesOf(
+        element,
+        `${MERGED_CONTENT_SELECTOR} ${DESCRIBED_MARKER_SELECTOR}`,
+        TABINDEX_ATTRIBUTE,
+      ),
+    ).toEqual([IN_TAB_ORDER]);
+  });
+
+  it('keeps the changed rows of a table as two lines among merged lines', () => {
+    const element = renderMergedLines({
+      oldHtml: '<p>Plans for 2025</p><table><tr><td>Team of five</td></tr></table>',
+      newHtml: '<p>Plans for 2026</p><table><tr><td>Team of eight</td></tr></table>',
+    });
+
+    const rowsWithoutTexts = singleColumnRowsOf(element).map((row) => row.slice(0, -1));
+
+    expect(rowsWithoutTexts).toEqual([
+      [LineChangeKind.Changed, MERGED, 1, 1],
+      [LineChangeKind.Changed, OLD, 2, null],
+      [LineChangeKind.Changed, NEW, null, 2],
+    ]);
   });
 });
