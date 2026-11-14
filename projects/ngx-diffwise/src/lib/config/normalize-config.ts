@@ -43,6 +43,9 @@ interface NumberRange {
 /** Levels of the scales `diffIntensity` and `uiContrast`. */
 const LEVEL_RANGE: NumberRange = { min: 1, max: 5 };
 
+/** Unchanged lines shown around a change. */
+const CONTEXT_LINES_RANGE: NumberRange = { min: 1, max: 100 };
+
 /** Font sizes in rem. */
 const FONT_SIZE_RANGE: NumberRange = { min: 0.5, max: 10 };
 
@@ -78,6 +81,8 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   lineNumberAlignment: isVerticalAlignment,
   highlightChangedLines: isBoolean,
   highlightWholeLines: isBoolean,
+  hideUnchangedLines: isBoolean,
+  contextLines: isContextLines,
   dividerStyle: isDividerStyle,
   gapStyle: isGapStyle,
   versionHeaders: isVersionHeaders,
@@ -220,6 +225,11 @@ function isLayout(value: unknown): boolean {
 /** True for a width in pixels: a number above zero. */
 function isLayoutBreakpoint(value: unknown): boolean {
   return isNumber(value) && Number.isFinite(value) && value > 0;
+}
+
+/** True for a number of lines around a change: a whole number from 1 to 100. */
+function isContextLines(value: unknown): boolean {
+  return isNumber(value) && Number.isInteger(value) && isInRange(value, CONTEXT_LINES_RANGE);
 }
 
 function isInlineDiffStyle(value: unknown): boolean {

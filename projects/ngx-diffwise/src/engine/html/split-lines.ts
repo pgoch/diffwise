@@ -49,6 +49,12 @@ interface LineSource {
 /** Kind and tag of a line. */
 type LineType = Pick<LineSource, 'kind' | 'tag'>;
 
+/**
+ * A format range while the line is read: its end moves on as long as the next pieces have its
+ * format. A copy for each piece would take long in a large document.
+ */
+type GrowingRange = { -readonly [Key in keyof FormattedRange]: FormattedRange[Key] };
+
 /** What a line shows of the list item it starts: its marker and its checkbox. */
 type ItemStart = Pick<Line, 'marker' | 'checkbox'>;
 
@@ -214,7 +220,7 @@ class LineCollector {
    * image has the format of its place, like a word.
    */
   private formatsOf(pieces: readonly TextPiece[]): FormattedRange[] {
-    const formats: FormattedRange[] = [];
+    const formats: GrowingRange[] = [];
 
     for (const { start, end, node } of pieces) {
       const format = this.formatReader.formatOf(node);
@@ -222,7 +228,7 @@ class LineCollector {
       const extendsPrevious = previous?.format === format && previous.end === start;
 
       if (extendsPrevious) {
-        formats[formats.length - 1] = { ...previous, end };
+        previous.end = end;
         continue;
       }
 

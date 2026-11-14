@@ -1,5 +1,6 @@
 import DOMPurify, { type Config, type DOMPurify as Purifier } from 'dompurify';
 
+import { DIFFWISE_DATA_ATTRIBUTE_START } from '../model';
 import { FORM_CONTROL_TAGS } from './html-tags';
 
 /** Attributes the sanitizer reads or changes. */
@@ -29,6 +30,21 @@ const PURIFY_CONFIG: Config = {
   /** Kept only for links to a new tab (see makeInert). */
   ADD_ATTR: [Attribute.Target],
 };
+
+/** The same settings, with the cleaned tree returned instead of its HTML. */
+const TREE_PURIFY_CONFIG: Config & { RETURN_DOM: true } = { ...PURIFY_CONFIG, RETURN_DOM: true };
+
+/**
+ * Pieces of HTML that the sanitizer cleans together stand in the cells of one table, a piece in each
+ * row. The HTML parser keeps formatting from crossing the edge of a cell, so an unclosed tag of one
+ * piece cannot reach the next one. Each cell holds the position of its piece; the content cannot
+ * pose as a cell of Diffwise, since reading a document removes its `data-diffwise-…` attributes.
+ */
+const PIECES_TABLE_TAG = 'table';
+const PIECES_BODY_TAG = 'tbody';
+const PIECE_ROW_TAG = 'tr';
+const PIECE_CELL_TAG = 'td';
+const PIECE_POSITION_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}sanitized-piece`;
 
 /** Style properties that change only the look: no positioning, no background images. */
 const SAFE_STYLE_PATTERNS = [
@@ -63,12 +79,28 @@ let purifier: Purifier | undefined;
 /** Removes everything that could run code or act outside the diff. */
 export function sanitizeHtml(html: string): string {
   purifier ??= createPurifier();
-  return purifier.sanitize(html);
+  return purifier.sanitize(html, PURIFY_CONFIG);
 }
 
 /**
- * Creates a separate DOMPurify instance, so `makeInert` does not affect the app's DOMPurify.
- * Throws without a browser DOM, where DOMPurify returns HTML unsanitized.
+ * Removes everything that could run code or act outside the diff from each piece of HTML, such as
+ * the lines of a diff. One run of the sanitizer cleans all pieces, each in a cell of one table,
+ * which takes much less time than a run for each piece. When the cleaned cells do not hold the
+ * pieces one to one, as when a piece closes its cell, each piece is cleaned alone.
+ */
+export function sanitizeHtmlPieces(pieces: readonly string[]): string[] {
+  purifier ??= createPurifier();
+
+  const table = tableOfPieces(pieces);
+  const cleanedTree = purifier.sanitize(table, TREE_PURIFY_CONFIG);
+  const cells = cellsOfPieces(cleanedTree, pieces.length);
+
+  return cells?.map((cell) => cell.innerHTML) ?? pieces.map(sanitizeHtml);
+}
+
+/**
+ * Creates a separate DOMPurify instance, so `makeInert` does not affect the app's DOMPurify. Each
+ * call gives its settings. Throws without a browser DOM, where DOMPurify returns HTML unsanitized.
  */
 function createPurifier(): Purifier {
   const instance = DOMPurify();
@@ -77,10 +109,66 @@ function createPurifier(): Purifier {
     throw new Error(NO_DOM_ERROR);
   }
 
-  instance.setConfig(PURIFY_CONFIG);
   instance.addHook(AFTER_SANITIZE_ATTRIBUTES_HOOK, makeInert);
 
   return instance;
+}
+
+/** HTML of a table with a row for each piece, whose cell holds the piece and its position. */
+function tableOfPieces(pieces: readonly string[]): string {
+  const rows = pieces.map(
+    (html, position) =>
+      startTag(PIECE_ROW_TAG)
+      + `<${PIECE_CELL_TAG} ${PIECE_POSITION_ATTRIBUTE}="${position}">`
+      + html
+      + endTag(PIECE_CELL_TAG)
+      + endTag(PIECE_ROW_TAG),
+  );
+
+  return (
+    startTag(PIECES_TABLE_TAG)
+    + startTag(PIECES_BODY_TAG)
+    + rows.join('')
+    + endTag(PIECES_BODY_TAG)
+    + endTag(PIECES_TABLE_TAG)
+  );
+}
+
+function startTag(tag: string): string {
+  return `<${tag}>`;
+}
+
+function endTag(tag: string): string {
+  return `</${tag}>`;
+}
+
+/**
+ * The cells of the cleaned table, one for each piece in its order; `null` when the tree holds
+ * anything else, or the pieces another way.
+ */
+function cellsOfPieces(tree: Node, pieceCount: number): Element[] | null {
+  const table = onlyChild(tree, PIECES_TABLE_TAG);
+  const body = table === null ? null : onlyChild(table, PIECES_BODY_TAG);
+  const rows = pieceCount === 0 ? [] : Array.from(body?.childNodes ?? []);
+
+  if (rows.length !== pieceCount) {
+    return null;
+  }
+
+  const cells = rows.map((row) => onlyChild(row, PIECE_CELL_TAG));
+  const holdsPiecesInOrder = cells.every(
+    (cell, position) => cell?.getAttribute(PIECE_POSITION_ATTRIBUTE) === String(position),
+  );
+
+  return holdsPiecesInOrder ? (cells as Element[]) : null;
+}
+
+/** The only child of a node, when it is an element with the tag; `null` otherwise. */
+function onlyChild(node: Node, tag: string): Element | null {
+  const [child, ...others] = Array.from(node.childNodes);
+  const isOnlyElement = child instanceof Element && child.localName === tag && others.length === 0;
+
+  return isOnlyElement ? child : null;
 }
 
 /** Disables what DOMPurify keeps but could still act on the app. */

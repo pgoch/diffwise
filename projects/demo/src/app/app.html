@@ -143,6 +143,28 @@
       Highlight whole added and removed lines
     </label>
   }
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().hideUnchangedLines"
+      (change)="update({ hideUnchangedLines: isChecked($event) })"
+    />
+    Hide unchanged lines
+  </label>
+  <label class="demo-field">
+    Context lines
+    <input
+      type="number"
+      min="1"
+      max="100"
+      step="1"
+      [value]="diffwise.config().contextLines"
+      (change)="update({ contextLines: numberOf($event) })"
+    />
+  </label>
+  <p class="demo-hint">
+    Unchanged lines shown around each change, from 1 to 100; the diff ignores other numbers.
+  </p>
 
   <h2>Change details</h2>
   <demo-choice-buttons

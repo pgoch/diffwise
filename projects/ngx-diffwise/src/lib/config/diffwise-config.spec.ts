@@ -35,6 +35,8 @@ const DEFAULT_OPTIONS = {
   lineNumberAlignment: DiffwiseVerticalAlignment.Top,
   highlightChangedLines: true,
   highlightWholeLines: false,
+  hideUnchangedLines: false,
+  contextLines: 3,
   dividerStyle: DiffwiseDividerStyle.Column,
   gapStyle: DiffwiseGapStyle.Stripes,
   versionHeaders: DiffwiseVersionHeaders.Default,
