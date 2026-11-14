@@ -94,6 +94,11 @@ export interface DiffwiseConfigOptions {
    */
   readonly contextLines?: number;
   /**
+   * Shows arrows to the previous and the next block of changes in the toolbar above the diff, with
+   * the position of the block among all of them. Default: `true`.
+   */
+  readonly showNavigationToolbar?: boolean;
+  /**
    * Shows the numbers of added, removed and changed lines in the toolbar above the diff.
    * Default: `true`.
    */
@@ -224,6 +229,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
   readonly contextLines: number = 3;
+
+  /** Shows arrows between the blocks of changes in the toolbar above the diff. */
+  readonly showNavigationToolbar: boolean = true;
 
   /** Shows the numbers of changed lines in the toolbar above the diff. */
   readonly showDiffStats: boolean = true;

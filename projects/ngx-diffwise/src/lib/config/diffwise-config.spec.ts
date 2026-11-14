@@ -38,6 +38,7 @@ const DEFAULT_OPTIONS = {
   highlightWholeLines: false,
   hideUnchangedLines: false,
   contextLines: 3,
+  showNavigationToolbar: true,
   showDiffStats: true,
   noChangesView: DiffwiseNoChangesView.Message,
   dividerStyle: DiffwiseDividerStyle.Column,

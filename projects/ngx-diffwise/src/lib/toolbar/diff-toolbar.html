@@ -1,4 +1,52 @@
 @if (stats().hasChanges) {
+  @if (navigation()) {
+    <div class="diffwise-html-diff__navigation">
+      <button
+        type="button"
+        class="diffwise-html-diff__navigation-button diffwise-html-diff__navigation-button--previous"
+        [attr.aria-label]="texts().previousChangeLabel"
+        (click)="previousChange.emit()"
+      >
+        <svg
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 10l4-4 4 4" />
+        </svg>
+      </button>
+      <span
+        class="diffwise-html-diff__change-counter"
+        role="img"
+        tabindex="0"
+        [attr.aria-label]="counterLabel()"
+        >{{ counterText() }}</span
+      >
+      <button
+        type="button"
+        class="diffwise-html-diff__navigation-button diffwise-html-diff__navigation-button--next"
+        [attr.aria-label]="texts().nextChangeLabel"
+        (click)="nextChange.emit()"
+      >
+        <svg
+          viewBox="0 0 16 16"
+          aria-hidden="true"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M4 6l4 4 4-4" />
+        </svg>
+      </button>
+      <span data-diffwise-announcement role="status">{{ announcement() }}</span>
+    </div>
+  }
   @if (showsStats()) {
     <div class="diffwise-html-diff__diff-stats">
       @for (stat of shownStats(); track stat.kind) {

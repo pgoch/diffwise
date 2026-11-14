@@ -1,5 +1,6 @@
 @let lineNumbersShown = effectiveConfig().showLineNumbers;
 @let changeIconsShown = showsChangeIcons();
+@let active = activeRows();
 
 <ng-template #oldVersionIcon let-versionName>
   <span
@@ -50,7 +51,10 @@
   <diffwise-diff-toolbar
     [stats]="diffStats()"
     [showsStats]="effectiveConfig().showDiffStats"
+    [navigation]="toolbarNavigation()"
     [texts]="texts()"
+    (previousChange)="goToPreviousChange()"
+    (nextChange)="goToNextChange()"
   />
 }
 
@@ -108,6 +112,9 @@
 
       <div
         class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+        [class.diffwise-html-diff__row--active]="isActiveRow(row.position, active)"
+        [class.diffwise-html-diff__row--active-first]="row.position === active?.first"
+        [class.diffwise-html-diff__row--active-last]="row.position === active?.last"
         [attr.data-diffwise-row]="row.detailsRow"
       >
         @if (lineNumbersShown) {
@@ -179,6 +186,9 @@
 
       <div
         class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+        [class.diffwise-html-diff__row--active]="isActiveRow(row.position, active)"
+        [class.diffwise-html-diff__row--active-first]="row.position === active?.first"
+        [class.diffwise-html-diff__row--active-last]="row.position === active?.last"
         [attr.data-diffwise-row]="describesChanges ? row.sourceRow : null"
       >
         @if (row.oldLine; as line) {

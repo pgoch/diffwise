@@ -84,6 +84,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   highlightWholeLines: isBoolean,
   hideUnchangedLines: isBoolean,
   contextLines: isContextLines,
+  showNavigationToolbar: isBoolean,
   showDiffStats: isBoolean,
   noChangesView: isNoChangesView,
   dividerStyle: isDividerStyle,

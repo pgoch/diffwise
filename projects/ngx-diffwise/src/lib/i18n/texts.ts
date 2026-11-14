@@ -1,6 +1,10 @@
 /** Stands in a text for a number, such as the number of hidden lines. */
 const COUNT_PLACEHOLDER = '{count}';
 
+/** Stand in a text for the position of an item and the number of all items: "Change 2 of 3". */
+const CURRENT_PLACEHOLDER = '{current}';
+const TOTAL_PLACEHOLDER = '{total}';
+
 /**
  * Texts an app shows instead of texts of the interface, such as `{ oldVersionLabel: 'Draft' }`.
  * All of them together add a language; a text left out stays in the language of the diff.
@@ -32,6 +36,17 @@ export interface DiffwiseCustomTexts {
   readonly changedLinesLabel?: string;
   /** The only text of the toolbar when the versions are the same. */
   readonly noChangesLabel?: string;
+  /** Names the arrow to the previous block of changes and titles its tooltip. */
+  readonly previousChangeLabel?: string;
+  /** Names the arrow to the next block of changes and titles its tooltip. */
+  readonly nextChangeLabel?: string;
+  /**
+   * Names the counter of the blocks of changes after a step, and tells screen readers where the
+   * step led; `{current}` stands for the position of the block, `{total}` for the number of blocks.
+   */
+  readonly currentChangeLabel?: string;
+  /** Names the counter before the first step; `{count}` stands for the number of blocks. */
+  readonly changeCountLabel?: string;
 
   /** Titles a tooltip about changed formatting, such as italic → bold, and names its icon. */
   readonly formattingChangeLabel?: string;
@@ -179,4 +194,14 @@ export type UiTexts = Required<DiffwiseCustomTexts>;
 /** The text with the number in place of `{count}`. */
 export function withCount(text: string, count: number): string {
   return text.replaceAll(COUNT_PLACEHOLDER, String(count));
+}
+
+/**
+ * The text with the position of an item in place of `{current}`, and the number of all items in
+ * place of `{total}`.
+ */
+export function withPosition(text: string, current: number, total: number): string {
+  return text
+    .replaceAll(CURRENT_PLACEHOLDER, String(current))
+    .replaceAll(TOTAL_PLACEHOLDER, String(total));
 }

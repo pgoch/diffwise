@@ -149,6 +149,7 @@ describe('normalizeConfig', () => {
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
       toolbarFontSize: 1.2,
+      showNavigationToolbar: false,
       showDiffStats: false,
     };
 
@@ -168,6 +169,7 @@ describe('normalizeConfig', () => {
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
       toolbarFontSize: 1.2,
+      showNavigationToolbar: false,
       showDiffStats: false,
     });
     expect(console.warn).not.toHaveBeenCalled();
@@ -230,6 +232,7 @@ describe('normalizeConfig', () => {
       { tooltipFontSize: 0 },
       { toolbarFontSize: 10.5 },
       { showDiffStats: 'false' },
+      { showNavigationToolbar: 1 },
     ];
 
     for (const options of invalidOptions) {

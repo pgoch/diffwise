@@ -12,6 +12,10 @@ export const ENGLISH_TEXTS: UiTexts = {
   removedLinesLabel: 'Removed lines: {count}',
   changedLinesLabel: 'Changed lines: {count}',
   noChangesLabel: 'No changes',
+  previousChangeLabel: 'Previous change',
+  nextChangeLabel: 'Next change',
+  currentChangeLabel: 'Change {current} of {total}',
+  changeCountLabel: 'Changes: {count}',
 
   formattingChangeLabel: 'Formatting change',
   linkChangeLabel: 'Link address changed',

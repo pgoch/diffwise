@@ -34,6 +34,8 @@ import {
   type SingleColumnTablePlace,
   type ViewLine,
   type ViewRow,
+  areChangeBlocksEqual,
+  changeBlocks,
   collapseRows,
   diffHtml,
   singleColumnRows,
@@ -72,10 +74,11 @@ import {
 } from './config/option-values';
 import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
-import { DiffToolbar } from './toolbar/diff-toolbar';
+import { DiffToolbar, type ToolbarNavigation } from './toolbar/diff-toolbar';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 import { observedWidth } from './layout/diff-width';
+import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
 import { scrollTablesTogether } from './table-scroll';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
@@ -105,13 +108,23 @@ const ROW_OR_BAR_SELECTOR = `:scope > :is(${ROW_SELECTOR}, ${COLLAPSED_LINES_BAR
 const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
 const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
 const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
+const NAVIGATION_BUTTON_SELECTOR = '.diffwise-html-diff__navigation-button';
+const CHANGE_COUNTER_SELECTOR = '.diffwise-html-diff__change-counter';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+const TOOLBAR_SELECTOR = ':scope > .diffwise-html-diff__toolbar';
+const ACTIVE_FIRST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-first`;
+const ACTIVE_LAST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-last`;
 
 /**
- * Elements whose tooltip shows only their name: icons in place of the version headers, and numbers
- * of the statistics in the toolbar.
+ * Elements whose tooltip shows only their name: icons in place of the version headers, and the
+ * arrows, the counter and the numbers of the statistics in the toolbar.
  */
-const NAMED_TRIGGER_SELECTOR = [VERSION_HEADER_ICON_SELECTOR, DIFF_STAT_SELECTOR].join();
+const NAMED_TRIGGER_SELECTOR = [
+  VERSION_HEADER_ICON_SELECTOR,
+  NAVIGATION_BUTTON_SELECTOR,
+  CHANGE_COUNTER_SELECTOR,
+  DIFF_STAT_SELECTOR,
+].join();
 
 /** Elements with a tooltip outside the content: icons of changes and the named elements. */
 const ICON_TRIGGER_SELECTOR = [CHANGE_DETAILS_ICON_SELECTOR, NAMED_TRIGGER_SELECTOR].join();
@@ -220,6 +233,12 @@ interface ShownSingleColumnHeader {
   readonly iconNames: DiffwiseVersionHeaderTexts;
   /** Text above the content; empty when only the icons head the column. */
   readonly contentText: string;
+}
+
+/** The rows of the active block of changes, by their positions among the rows of the view. */
+interface ActiveRows {
+  readonly first: number;
+  readonly last: number;
 }
 
 /** Headers as the template shows them. */
@@ -337,6 +356,12 @@ export class DiffwiseHtmlDiff {
    * wins over `config` and the global configuration.
    */
   readonly contextLines = input<number>();
+
+  /**
+   * Shows arrows between the blocks of changes in the toolbar above the diff; wins over `config`
+   * and the global configuration.
+   */
+  readonly showNavigationToolbar = input<boolean>();
 
   /**
    * Shows the numbers of changed lines in the toolbar above the diff; wins over `config` and the
@@ -464,6 +489,7 @@ export class DiffwiseHtmlDiff {
     highlightWholeLines: this.highlightWholeLines(),
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
+    showNavigationToolbar: this.showNavigationToolbar(),
     showDiffStats: this.showDiffStats(),
     noChangesView: this.noChangesView(),
     dividerStyle: this.dividerStyle(),
@@ -607,12 +633,37 @@ export class DiffwiseHtmlDiff {
   protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
 
   /**
-   * True when the toolbar has something to show: the numbers of changed lines, or the text that
-   * the versions are the same, which shows without the numbers too.
+   * True when the toolbar has something to show: the navigation or the numbers of changed lines,
+   * or the text that the versions are the same, which shows without them too.
    */
-  protected readonly showsToolbar = computed(
-    () => !this.diffStats().hasChanges || this.effectiveConfig().showDiffStats,
-  );
+  protected readonly showsToolbar = computed(() => {
+    const { showNavigationToolbar, showDiffStats } = this.effectiveConfig();
+    return !this.diffStats().hasChanges || showNavigationToolbar || showDiffStats;
+  });
+
+  /** Blocks of adjacent changed rows, the steps of the navigation. */
+  private readonly blocks = computed(() => changeBlocks(this.diff().rows), {
+    equal: areChangeBlocksEqual,
+  });
+
+  /** The block the user has stepped to; a new comparison starts again before the first step. */
+  private readonly navigation = new ChangeNavigation(this.blocks, () => [
+    this.oldHtml(),
+    this.newHtml(),
+    this.diffOptions(),
+  ]);
+
+  /** Where the navigation stands, for the toolbar; `null` when the toolbar shows no navigation. */
+  protected readonly toolbarNavigation = computed<ToolbarNavigation | null>(() => {
+    if (!this.effectiveConfig().showNavigationToolbar) {
+      return null;
+    }
+
+    const position = this.navigation.position();
+    const current = position === null ? null : position + 1;
+
+    return { current, total: this.blocks().length };
+  });
 
   /** What shows under the toolbar when the versions are the same; `null` when they differ. */
   private readonly sameVersionsView = computed(() =>
@@ -675,6 +726,30 @@ export class DiffwiseHtmlDiff {
     this.withHiddenLines(this.singleColumnRows()),
   );
 
+  /**
+   * The rows of the active block in the layout shown now; `null` before the first step. In the
+   * single column, the lines of a changed pair can be two rows.
+   */
+  protected readonly activeRows = computed<ActiveRows | null>(() => {
+    const block = this.navigation.activeBlock();
+
+    if (block === null) {
+      return null;
+    }
+
+    if (!this.showsSingleColumn()) {
+      return { first: block.firstRow, last: block.lastRow };
+    }
+
+    const blockRows = this.singleColumnRows().filter(
+      ({ sourceRow }) => sourceRow >= block.firstRow && sourceRow <= block.lastRow,
+    );
+    const [first] = blockRows;
+    const last = blockRows.at(-1);
+
+    return first && last ? { first: first.position, last: last.position } : null;
+  });
+
   /** Text of the bars in place of hidden lines, which follow what stands between the versions. */
   protected readonly hiddenLinesText = computed(() => {
     const { hiddenLinesLabel, showHiddenLinesLabel } = this.texts();
@@ -731,6 +806,29 @@ export class DiffwiseHtmlDiff {
     this.scrollTablesTogether();
   }
 
+  /**
+   * Steps to the next block of adjacent changed lines and scrolls it into view: to the first block
+   * at first, and after the last one. The arrow in the toolbar does the same.
+   */
+  goToNextChange(): void {
+    this.navigation.goToNext();
+    this.scrollToActiveChange();
+  }
+
+  /**
+   * Steps to the previous block of adjacent changed lines and scrolls it into view: to the last
+   * block at first, and before the first one. The arrow in the toolbar does the same.
+   */
+  goToPreviousChange(): void {
+    this.navigation.goToPrevious();
+    this.scrollToActiveChange();
+  }
+
+  /** True for a row of the active block, by its position among the rows of the view. */
+  protected isActiveRow(position: number, active: ActiveRows | null): boolean {
+    return active !== null && position >= active.first && position <= active.last;
+  }
+
   /** True for hidden lines, which the template shows as a bar. */
   protected isHiddenLines(item: CollapsibleRow | HiddenLines): item is HiddenLines {
     return item instanceof HiddenLines;
@@ -785,6 +883,22 @@ export class DiffwiseHtmlDiff {
     const settings = { contextLines: this.shownContextLines(), shownGroups: this.shownGroups() };
 
     return collapseRows(rows, settings);
+  }
+
+  /** Scrolls the rows of the active block into view once they have their classes. */
+  private scrollToActiveChange(): void {
+    afterNextRender(
+      () => {
+        const element = this.host.nativeElement;
+        const first = element.querySelector<HTMLElement>(ACTIVE_FIRST_ROW_SELECTOR);
+        const last = element.querySelector<HTMLElement>(ACTIVE_LAST_ROW_SELECTOR);
+
+        if (first !== null && last !== null) {
+          scrollRowsIntoView(first, last, element.querySelector(TOOLBAR_SELECTOR));
+        }
+      },
+      { injector: this.injector },
+    );
   }
 
   /** Focuses the line of the new version in the row at the position among the rows and bars. */

@@ -1,7 +1,7 @@
 /*
- * The toolbar above the diff: the numbers of changed lines, or a text that the versions are the
- * same. It stays at the top of the scrolled area; an app with its own sticky header moves it down
- * by the height of the header.
+ * The toolbar above the diff: arrows between the blocks of changes and the numbers of changed
+ * lines, or a text that the versions are the same. It stays at the top of the scrolled area; an
+ * app with its own sticky header moves it down by the height of the header.
  */
 
 :where(.diffwise-html-diff) {
@@ -64,4 +64,65 @@
   margin-inline: auto;
   color: var(--diffwise-muted);
   font-weight: 600;
+}
+
+/* Arrows between the blocks of changes, with their counter between them, in one rounded frame. */
+.diffwise-html-diff__navigation {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 999px;
+  background: var(--diffwise-background);
+}
+
+.diffwise-html-diff__navigation-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35em;
+  height: 2.2em;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--diffwise-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.diffwise-html-diff__navigation-button svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.diffwise-html-diff__navigation-button:hover {
+  background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
+}
+
+/* The frame cuts what reaches out of it, so the focus ring stands inside. */
+.diffwise-html-diff__navigation-button:focus-visible,
+.diffwise-html-diff__change-counter:focus-visible {
+  outline: 2px solid var(--diffwise-focus);
+  outline-offset: -2px;
+}
+
+.diffwise-html-diff__change-counter {
+  padding: 0.15em 0.3em;
+  border-radius: 3px;
+  color: var(--diffwise-muted);
+  cursor: default;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Tells screen readers where a step led; the counter shows the same on the screen. */
+.diffwise-html-diff__navigation [data-diffwise-announcement] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }

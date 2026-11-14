@@ -266,6 +266,19 @@
   </label>
   <p class="demo-hint">From 0.5 to 10; the diff ignores other sizes.</p>
 
+  <h2>Navigation</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showNavigationToolbar"
+      (change)="update({ showNavigationToolbar: isChecked($event) })"
+    />
+    Arrows in the toolbar
+  </label>
+  <button type="button" class="demo-button" (click)="goToPreviousChange()">Previous change</button>
+  <button type="button" class="demo-button" (click)="goToNextChange()">Next change</button>
+  <p class="demo-hint">The buttons call the methods of the diff, also without the arrows.</p>
+
   <h2>Statistics</h2>
   <label class="demo-check">
     <input

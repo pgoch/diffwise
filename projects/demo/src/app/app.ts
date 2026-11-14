@@ -5,6 +5,7 @@ import {
   inject,
   resource,
   signal,
+  viewChild,
 } from '@angular/core';
 import {
   Diffwise,
@@ -298,6 +299,9 @@ export class App {
   /** The numbers of the last comparison, from the event of the diff. */
   protected readonly lastStats = signal<DiffwiseDiffStats | null>(null);
 
+  /** The diff of the sample, whose methods step between the blocks of changes. */
+  private readonly diff = viewChild(DiffwiseHtmlDiff);
+
   /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
 
@@ -323,6 +327,16 @@ export class App {
   /** Changes options of the global configuration, as an app can do while it runs. */
   protected update(changes: DiffwiseConfigOptions): void {
     this.diffwise.updateConfig(changes);
+  }
+
+  /** Steps to the previous block of changes with the method of the diff, as an app can. */
+  protected goToPreviousChange(): void {
+    this.diff()?.goToPreviousChange();
+  }
+
+  /** Steps to the next block of changes with the method of the diff, as an app can. */
+  protected goToNextChange(): void {
+    this.diff()?.goToNextChange();
   }
 
   /** Switches the theme with the method of the service for each color mode. */
