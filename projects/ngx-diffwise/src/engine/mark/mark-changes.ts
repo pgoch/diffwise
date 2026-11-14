@@ -66,14 +66,15 @@ interface NodeSegment {
   readonly detailIndices: readonly number[];
 }
 
-/** Changes of the list item a line starts, outside its text, and the change details they show. */
+/**
+ * Changes of the list item a line starts, outside its text. Both versions show them, so they are
+ * marked without change details.
+ */
 export interface ListItemMarks {
-  /** True when the marker differs, also only by its number; Diffwise then draws it. */
+  /** True when the marker differs, by its look or only by its number; Diffwise then draws it. */
   readonly listMarkerChanged: boolean;
-  /** Details of a changed marker; empty when only its number differs, which needs no description. */
-  readonly listMarkerDetails: readonly number[];
-  /** Details of a checked or cleared checkbox; empty when the checkbox is the same. */
-  readonly checkboxDetails: readonly number[];
+  /** True when the checkbox was checked or cleared. */
+  readonly checkboxChanged: boolean;
 }
 
 const NO_DETAILS: readonly number[] = [];
@@ -81,8 +82,7 @@ const NO_DETAILS: readonly number[] = [];
 /** Marks of a line whose list item, if any, is the same in both versions. */
 export const NO_LIST_ITEM_MARKS: ListItemMarks = {
   listMarkerChanged: false,
-  listMarkerDetails: NO_DETAILS,
-  checkboxDetails: NO_DETAILS,
+  checkboxChanged: false,
 };
 
 /**
@@ -96,7 +96,7 @@ export function markChanges(
   marker: ChangeMarker,
   itemMarks: ListItemMarks = NO_LIST_ITEM_MARKS,
 ): string {
-  const marksItem = itemMarks.listMarkerChanged || itemMarks.checkboxDetails.length > 0;
+  const marksItem = itemMarks.listMarkerChanged || itemMarks.checkboxChanged;
 
   if (ranges.length === 0 && !marksItem) {
     return line.html;
@@ -141,7 +141,7 @@ export function wrapRanges(
 export function drawRemovedListMarker(
   content: DocumentFragment,
   oldMarker: ListMarker | null,
-  { listMarkerChanged, listMarkerDetails }: ListItemMarks,
+  { listMarkerChanged }: ListItemMarks,
 ): void {
   const newMarker = startedItemIn(content)?.firstElementChild ?? null;
   const showsNewMarker = newMarker?.hasAttribute(LIST_MARKER_ATTRIBUTE) ?? false;
@@ -150,7 +150,7 @@ export function drawRemovedListMarker(
     return;
   }
 
-  drawListMarker(newMarker, oldMarker, listMarkerDetails, REMOVED_TEXT_MARKER);
+  drawListMarker(newMarker, oldMarker, REMOVED_TEXT_MARKER);
 }
 
 /**
@@ -211,7 +211,7 @@ export function markWholeCell(cell: Element | undefined, marker: ChangeMarker): 
 function markListItem(
   content: DocumentFragment,
   listMarker: ListMarker | null,
-  { listMarkerChanged, listMarkerDetails, checkboxDetails }: ListItemMarks,
+  { listMarkerChanged, checkboxChanged }: ListItemMarks,
   marker: ChangeMarker,
 ): void {
   const item = startedItemIn(content);
@@ -220,36 +220,27 @@ function markListItem(
     return;
   }
 
-  if (checkboxDetails.length > 0) {
-    frameCheckbox(item, checkboxDetails, marker);
+  if (checkboxChanged) {
+    frameCheckbox(item, marker);
   }
 
   if (listMarker !== null && listMarkerChanged) {
-    drawListMarker(item, listMarker, listMarkerDetails, marker);
+    drawListMarker(item, listMarker, marker);
   }
 }
 
 /** Wraps the checkbox the item starts with in a marker that frames it. */
-function frameCheckbox(
-  item: Element,
-  detailIndices: readonly number[],
-  marker: ChangeMarker,
-): void {
+function frameCheckbox(item: Element, marker: ChangeMarker): void {
   const checkbox = startCheckbox(item);
   const checkboxMarker = markerWithClass(marker, CHECKBOX_HIGHLIGHT_CLASS);
 
   if (checkbox !== null) {
-    wrapNode(checkbox, markerElement(checkboxMarker, detailIndices));
+    wrapNode(checkbox, markerElement(checkboxMarker, NO_DETAILS));
   }
 }
 
 /** Puts a drawn marker first in the element; a style Diffwise does not draw keeps the browser's. */
-function drawListMarker(
-  item: Element,
-  listMarker: ListMarker,
-  detailIndices: readonly number[],
-  marker: ChangeMarker,
-): void {
+function drawListMarker(item: Element, listMarker: ListMarker, marker: ChangeMarker): void {
   const text = listMarkerText(listMarker);
 
   if (text === null) {
@@ -258,7 +249,7 @@ function drawListMarker(
 
   const drawnMarker = markerElement(
     markerWithClass(marker, LIST_MARKER_HIGHLIGHT_CLASS),
-    detailIndices,
+    NO_DETAILS,
   );
 
   drawnMarker.setAttribute(LIST_MARKER_ATTRIBUTE, text);

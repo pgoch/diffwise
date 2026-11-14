@@ -14,8 +14,6 @@ export const ChangeIconKind = {
   Formatting: 'formatting',
   Link: 'link',
   Image: 'image',
-  ListMarker: 'list-marker',
-  Checkbox: 'checkbox',
   /** Several changes in one line, with their number. */
   Multiple: 'multiple',
 } as const;
@@ -27,8 +25,6 @@ const DETAIL_ICONS: Readonly<Record<ChangeDetailKind, ChangeIconKind>> = {
   [ChangeDetailKind.Formatting]: ChangeIconKind.Formatting,
   [ChangeDetailKind.Link]: ChangeIconKind.Link,
   [ChangeDetailKind.Image]: ChangeIconKind.Image,
-  [ChangeDetailKind.ListMarker]: ChangeIconKind.ListMarker,
-  [ChangeDetailKind.Checkbox]: ChangeIconKind.Checkbox,
 };
 
 /** The button between the versions in a row with changes besides text: their icon and name. */

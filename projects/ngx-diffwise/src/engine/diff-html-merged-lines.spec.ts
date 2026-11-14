@@ -213,7 +213,7 @@ describe('diffHtml with merged lines', () => {
 
   it('draws the old list marker inside the new one, which keeps it before the new one', () => {
     expect(mergedLine('<ul><li>First item</li></ul>', '<ol><li>First item</li></ol>')).toBe(
-      `<ol><li value="1" ${LINE_ITEM}><ins ${ADDED_LIST_MARKER} ${FIRST_DETAIL} data-diffwise-list-marker="1."><del ${REMOVED_LIST_MARKER} ${FIRST_DETAIL} data-diffwise-list-marker="•"></del></ins>First item</li></ol>`,
+      `<ol><li value="1" ${LINE_ITEM}><ins ${ADDED_LIST_MARKER} data-diffwise-list-marker="1."><del ${REMOVED_LIST_MARKER} data-diffwise-list-marker="•"></del></ins>First item</li></ol>`,
     );
   });
 
@@ -235,7 +235,7 @@ describe('diffHtml with merged lines', () => {
         '<ul><li><input type="checkbox" checked> Buy oat milk</li></ul>',
       ),
     ).toBe(
-      `<ul><li value="1" ${LINE_ITEM}><ins ${ADDED_CHECKBOX} ${FIRST_DETAIL}><input type="checkbox" checked="" disabled=""></ins> Buy <ins ${ADDED}>oat</ins> milk</li></ul>`,
+      `<ul><li value="1" ${LINE_ITEM}><ins ${ADDED_CHECKBOX}><input type="checkbox" checked="" disabled=""></ins> Buy <ins ${ADDED}>oat</ins> milk</li></ul>`,
     );
   });
 

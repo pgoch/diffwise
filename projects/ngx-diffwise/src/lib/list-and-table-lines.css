@@ -118,7 +118,7 @@
 
 /*
  * A checked or cleared checkbox: a thin frame with a gap, like a changed image, which follows the
- * highlight style. The checkbox takes no pointer events, so its frame shows the tooltip.
+ * highlight style. The checkbox takes no pointer events, as it is only shown.
  */
 .diffwise-html-diff__content .diffwise-html-diff__highlight--checkbox {
   position: relative;

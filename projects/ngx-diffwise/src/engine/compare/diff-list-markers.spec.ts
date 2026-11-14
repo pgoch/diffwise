@@ -1,15 +1,12 @@
 import { parseHtml } from '../html/parse-html';
 import { splitLines } from '../html/split-lines';
+import { DEFAULT_DIFF_OPTIONS, type DiffOptions, type Line } from '../model';
 import {
-  ChangeDetailKind,
-  CheckboxState,
-  DEFAULT_DIFF_OPTIONS,
-  type DiffOptions,
-  type Line,
-  ListMarkerProperty,
-  ListStyle,
-} from '../model';
-import { diffListMarkers, itemNumberChanged, listItemsDiffer } from './diff-list-markers';
+  checkboxChanged,
+  itemNumberChanged,
+  listItemsDiffer,
+  listMarkerChanged,
+} from './diff-list-markers';
 
 const ID_PREFIX = 'diff-';
 const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
@@ -25,142 +22,102 @@ function lineWithText(html: string, text: string): Line {
   return line;
 }
 
-/** Changes of the list items of the lines with the text in both versions. */
-function itemChanges(
+/** Whether the markers of the lines with the text differ between the versions. */
+function markerChanged(
   oldHtml: string,
   newHtml: string,
   text: string,
   options = DEFAULT_DIFF_OPTIONS,
-) {
-  return diffListMarkers(lineWithText(oldHtml, text), lineWithText(newHtml, text), options);
+): boolean {
+  return listMarkerChanged(lineWithText(oldHtml, text), lineWithText(newHtml, text), options);
 }
 
-/** Changed properties of the marker of the lines with the text; empty without a marker change. */
-function changedProperties(
-  oldHtml: string,
-  newHtml: string,
-  text: string,
-  options = DEFAULT_DIFF_OPTIONS,
-) {
-  return itemChanges(oldHtml, newHtml, text, options).flatMap((detail) =>
-    detail.kind === ChangeDetailKind.ListMarker ? detail.changedProperties : [],
-  );
-}
-
-describe('diffListMarkers', () => {
-  it('describes a bulleted list turned into a numbered one by its list type', () => {
+describe('listMarkerChanged', () => {
+  it('finds a bulleted list turned into a numbered one', () => {
     const oldHtml = '<ul><li>Notes</li><li>Photos</li></ul>';
     const newHtml = '<ol><li>Notes</li><li>Photos</li></ol>';
-    const [detail] = itemChanges(oldHtml, newHtml, 'Photos');
 
-    expect(detail).toEqual({
-      kind: ChangeDetailKind.ListMarker,
-      oldMarker: expect.objectContaining({ style: ListStyle.Disc, number: 2 }),
-      newMarker: expect.objectContaining({ style: ListStyle.Decimal, number: 2 }),
-      changedProperties: [ListMarkerProperty.ListType],
-    });
+    expect(markerChanged(oldHtml, newHtml, 'Photos')).toBe(true);
   });
 
-  it('describes other numbering or other bullets by their style', () => {
+  it('finds other numbering or other bullets', () => {
     const numbers = '<ol><li>Account</li></ol>';
     const letters = '<ol type="a"><li>Account</li></ol>';
     const dots = '<ul><li>Account</li></ul>';
     const squares = '<ul style="list-style-type: square"><li>Account</li></ul>';
 
-    expect(changedProperties(numbers, letters, 'Account')).toEqual([ListMarkerProperty.Style]);
-    expect(changedProperties(dots, squares, 'Account')).toEqual([ListMarkerProperty.Style]);
+    expect(markerChanged(numbers, letters, 'Account')).toBe(true);
+    expect(markerChanged(dots, squares, 'Account')).toBe(true);
   });
 
-  it('describes no other number, from another start or shifted by an added item', () => {
+  it('finds another number, from another start or shifted by an added item', () => {
     const oldHtml = '<ol><li>Account</li><li>Notes</li></ol><ol start="3"><li>Import</li></ol>';
     const newHtml =
       '<ol><li>Account</li><li>Backups</li><li>Notes</li></ol><ol start="4"><li>Import</li></ol>';
 
-    expect(itemChanges(oldHtml, newHtml, 'Notes')).toEqual([]);
-    expect(itemChanges(oldHtml, newHtml, 'Import')).toEqual([]);
+    expect(markerChanged(oldHtml, newHtml, 'Account')).toBe(false);
+    expect(markerChanged(oldHtml, newHtml, 'Notes')).toBe(true);
+    expect(markerChanged(oldHtml, newHtml, 'Import')).toBe(true);
   });
 
-  it('describes a paragraph turned into a list item by the list type, with no old marker', () => {
+  it('finds a paragraph turned into a list item, and the other way round', () => {
     const paragraph = '<p>Backups</p>';
     const item = '<ul><li>Backups</li></ul>';
-    const [toItem] = itemChanges(paragraph, item, 'Backups');
-    const [toParagraph] = itemChanges(item, paragraph, 'Backups');
 
-    expect(toItem).toEqual({
-      kind: ChangeDetailKind.ListMarker,
-      oldMarker: null,
-      newMarker: expect.objectContaining({ style: ListStyle.Disc }),
-      changedProperties: [ListMarkerProperty.ListType],
-    });
-    expect(toParagraph).toEqual(expect.objectContaining({ newMarker: null }));
+    expect(markerChanged(paragraph, item, 'Backups')).toBe(true);
+    expect(markerChanged(item, paragraph, 'Backups')).toBe(true);
   });
 
-  it('describes an item moved one level deeper only by its level', () => {
+  it('finds an item moved one level deeper, also into a list with its own start', () => {
     const oldBullets = '<ul><li>Accounts</li><li>Personal</li></ul>';
     const newBullets = '<ul><li>Accounts<ul><li>Personal</li></ul></li></ul>';
     const oldNumbers = '<ol><li>Accounts</li><li>Personal</li></ol>';
-    const newNumbers = '<ol><li>Accounts<ol><li>Personal</li></ol></li></ol>';
+    const newNumbers = '<ol><li>Accounts<ol start="3"><li>Personal</li></ol></li></ol>';
 
-    expect(changedProperties(oldBullets, newBullets, 'Personal')).toEqual([
-      ListMarkerProperty.Level,
-    ]);
-    expect(changedProperties(oldNumbers, newNumbers, 'Personal')).toEqual([
-      ListMarkerProperty.Level,
-    ]);
+    expect(markerChanged(oldBullets, newBullets, 'Personal')).toBe(true);
+    expect(markerChanged(oldNumbers, newNumbers, 'Personal')).toBe(true);
   });
 
-  it('describes an item moved to a nested list with its own start only by its level', () => {
-    const oldHtml = '<ol><li>Accounts</li><li>Personal</li></ol>';
-    const newHtml = '<ol><li>Accounts<ol start="3"><li>Personal</li></ol></li></ol>';
-
-    expect(changedProperties(oldHtml, newHtml, 'Personal')).toEqual([ListMarkerProperty.Level]);
-  });
-
-  it('describes no marker changes with ignoreFormatting', () => {
+  it('finds only other numbers with ignoreFormatting', () => {
     const bullets = '<ul><li>Account</li><li>Notes</li></ul>';
     const numbers = '<ol><li>Account</li><li>Notes</li></ol>';
     const letters = '<ol type="a"><li>Account</li><li>Notes</li></ol>';
-    const nested = '<ol><li>Account<ol><li>Notes</li></ol></li></ol>';
+    const shifted = '<ol><li>Backups</li><li>Account</li><li>Notes</li></ol>';
 
-    expect(changedProperties(bullets, numbers, 'Notes', IGNORE_FORMATTING)).toEqual([]);
-    expect(changedProperties(numbers, letters, 'Notes', IGNORE_FORMATTING)).toEqual([]);
-    expect(changedProperties('<p>Notes</p>', numbers, 'Notes', IGNORE_FORMATTING)).toEqual([]);
-    expect(changedProperties(numbers, nested, 'Notes', IGNORE_FORMATTING)).toEqual([]);
+    expect(markerChanged(bullets, numbers, 'Notes', IGNORE_FORMATTING)).toBe(false);
+    expect(markerChanged(numbers, letters, 'Notes', IGNORE_FORMATTING)).toBe(false);
+    expect(markerChanged('<p>Notes</p>', numbers, 'Notes', IGNORE_FORMATTING)).toBe(false);
+    expect(markerChanged(numbers, shifted, 'Notes', IGNORE_FORMATTING)).toBe(true);
   });
 
-  it('describes a checked or cleared checkbox', () => {
-    const unchecked = '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>';
-    const checked =
-      '<ul><li><label><input type="checkbox" checked> Invite your family</label></li></ul>';
+  it('finds no change between lines without markers', () => {
+    const html = '<p>Notes</p><dl><dt>Notes</dt></dl>';
 
-    expect(itemChanges(unchecked, checked, 'Invite your family', IGNORE_FORMATTING)).toEqual([
-      {
-        kind: ChangeDetailKind.Checkbox,
-        oldState: CheckboxState.Unchecked,
-        newState: CheckboxState.Checked,
-      },
-    ]);
-    expect(itemChanges(checked, unchecked, 'Invite your family')).toEqual([
-      expect.objectContaining({ newState: CheckboxState.Unchecked }),
-    ]);
+    expect(markerChanged(html, html, 'Notes')).toBe(false);
+  });
+});
+
+describe('checkboxChanged', () => {
+  const unchecked = '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>';
+  const checked =
+    '<ul><li><label><input type="checkbox" checked> Invite your family</label></li></ul>';
+  const changed = (oldHtml: string, newHtml: string) =>
+    checkboxChanged(
+      lineWithText(oldHtml, 'Invite your family'),
+      lineWithText(newHtml, 'Invite your family'),
+    );
+
+  it('finds a checked or cleared checkbox', () => {
+    expect(changed(unchecked, checked)).toBe(true);
+    expect(changed(checked, unchecked)).toBe(true);
+    expect(changed(checked, checked)).toBe(false);
   });
 
-  it('describes the marker before the checkbox, and no checkbox only one line has', () => {
-    const oldHtml = '<ul><li><input type="checkbox"> Backups</li><li>Notes</li></ul>';
-    const newHtml =
-      '<ol><li><input type="checkbox" checked> Backups</li><li><input type="checkbox"> Notes</li></ol>';
-    const kindsOf = (text: string) =>
-      itemChanges(oldHtml, newHtml, text).map((detail) => detail.kind);
+  it('finds no change of a checkbox only one line has', () => {
+    const withoutCheckbox = '<ul><li>Invite your family</li></ul>';
 
-    expect(kindsOf('Backups')).toEqual([ChangeDetailKind.ListMarker, ChangeDetailKind.Checkbox]);
-    expect(kindsOf('Notes')).toEqual([ChangeDetailKind.ListMarker]);
-  });
-
-  it('finds no changes between lines without markers', () => {
-    const oldHtml = '<p>Notes</p><dl><dt>Notes</dt></dl>';
-    const newHtml = '<p>Notes</p><dl><dt>Notes</dt></dl>';
-
-    expect(itemChanges(oldHtml, newHtml, 'Notes')).toEqual([]);
+    expect(changed(withoutCheckbox, checked)).toBe(false);
+    expect(changed(unchecked, withoutCheckbox)).toBe(false);
   });
 });
 
@@ -231,10 +188,12 @@ describe('itemNumberChanged', () => {
 });
 
 describe('listItemsDiffer', () => {
-  it('tells items apart by another number, also with ignoreFormatting, or by a described change', () => {
+  it('tells items apart by their markers or checkboxes; numbers and checkboxes count always', () => {
     const numbers = '<ol><li>Account</li><li>Notes</li></ol>';
     const shifted = '<ol><li>Backups</li><li>Account</li><li>Notes</li></ol>';
     const letters = '<ol type="a"><li>Account</li><li>Notes</li></ol>';
+    const unchecked = '<ul><li><input type="checkbox"> Notes</li></ul>';
+    const checked = '<ul><li><input type="checkbox" checked> Notes</li></ul>';
     const differ = (oldHtml: string, newHtml: string, options = DEFAULT_DIFF_OPTIONS) =>
       listItemsDiffer(lineWithText(oldHtml, 'Notes'), lineWithText(newHtml, 'Notes'), options);
 
@@ -242,6 +201,7 @@ describe('listItemsDiffer', () => {
     expect(differ(numbers, shifted, IGNORE_FORMATTING)).toBe(true);
     expect(differ(numbers, letters)).toBe(true);
     expect(differ(numbers, letters, IGNORE_FORMATTING)).toBe(false);
+    expect(differ(unchecked, checked, IGNORE_FORMATTING)).toBe(true);
     expect(differ(numbers, numbers)).toBe(false);
   });
 });

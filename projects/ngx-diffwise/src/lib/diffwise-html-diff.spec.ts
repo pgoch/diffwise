@@ -678,8 +678,6 @@ describe('DiffwiseHtmlDiff change details', () => {
       [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
       [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
       [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', 'Image changed'],
-      [BULLETED_HTML, NUMBERED_HTML, 'list-marker', 'List marker changed'],
-      [UNCHECKED_HTML, CHECKED_HTML, 'checkbox', 'Checkbox checked'],
     ];
 
     for (const [oldHtml, newHtml, iconKind, name] of versions) {
@@ -772,28 +770,19 @@ describe('DiffwiseHtmlDiff change details', () => {
     expect(description?.textContent).not.toContain('Link address changed');
   });
 
-  it('shows only the title of a checkbox change, which names its icon already', () => {
-    const element = renderElement(UNCHECKED_HTML, CHECKED_HTML);
-    const icon = iconOf(element);
+  it('marks a changed list marker and a checked checkbox with no icon and no tooltip', () => {
+    const changedItems = [
+      [BULLETED_HTML, NUMBERED_HTML],
+      [UNCHECKED_HTML, CHECKED_HTML],
+    ];
 
-    pointTo(icon);
+    for (const [oldHtml, newHtml] of changedItems) {
+      const element = renderElement(oldHtml, newHtml);
 
-    expect(tooltipLinesOf(element)).toEqual(['Checkbox checked']);
-    expect(icon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
-  });
-
-  it('shows the tooltip of a drawn list marker and of a framed checkbox on hover', () => {
-    const markerElement = renderElement(BULLETED_HTML, NUMBERED_HTML);
-    const checkboxElement = renderElement(UNCHECKED_HTML, CHECKED_HTML);
-
-    pointTo(newMarkersOf(markerElement)[0]);
-    pointTo(newMarkersOf(checkboxElement)[0]);
-
-    expect(tooltipLinesOf(markerElement)).toEqual([
-      'List marker changed',
-      'bulleted list → numbered list',
-    ]);
-    expect(tooltipLinesOf(checkboxElement)).toEqual(['Checkbox checked']);
+      expect(element.querySelector(ADDED_SELECTOR)).not.toBeNull();
+      expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+      expect(newMarkersOf(element)).toEqual([]);
+    }
   });
 
   it('keeps the tooltip while the pointer moves onto it, and hides it after both (WCAG 1.4.13)', () => {
