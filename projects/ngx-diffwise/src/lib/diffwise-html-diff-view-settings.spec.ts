@@ -9,6 +9,7 @@ import {
 } from './config/option-values';
 import { Diffwise } from './diffwise';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import type { DiffwiseUserSettings } from './user-settings/user-settings';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -145,6 +146,15 @@ function toggle(fixture: ComponentFixture<DiffwiseHtmlDiff>, newState: string): 
 
   viewSettingsOf(elementOf(fixture))?.dispatchEvent(event);
   fixture.detectChanges();
+}
+
+/** Collects the choices the diff emits after each change the user makes. */
+function emittedBy(fixture: ComponentFixture<DiffwiseHtmlDiff>): DiffwiseUserSettings[] {
+  const emitted: DiffwiseUserSettings[] = [];
+
+  fixture.componentInstance.userSettingsChange.subscribe((settings) => emitted.push(settings));
+
+  return emitted;
 }
 
 function hover(element: Element): void {
@@ -399,5 +409,66 @@ describe('DiffwiseHtmlDiff view settings', () => {
     ]);
     expect(textsOf(element, CHECKBOX_SELECTOR)).toEqual(['Ukryj niezmienione linie']);
     expect(textsOf(element, RESET_SELECTOR)).toEqual(['Przywróć domyślne']);
+  });
+});
+
+describe('DiffwiseHtmlDiff choices of the user', () => {
+  it('emits all choices after each change, with the number of their format', () => {
+    const fixture = render();
+    const emitted = emittedBy(fixture);
+
+    choose(fixture, 'Single column');
+    choose(fixture, 'Dark');
+    toggleHiddenLines(fixture);
+    restoreDefaults(fixture);
+
+    expect(emitted).toEqual([
+      { version: 1, settings: { layout: DiffwiseLayout.Inline } },
+      {
+        version: 1,
+        settings: { layout: DiffwiseLayout.Inline, colorMode: DiffwiseColorMode.Dark },
+      },
+      {
+        version: 1,
+        settings: {
+          layout: DiffwiseLayout.Inline,
+          colorMode: DiffwiseColorMode.Dark,
+          hideUnchangedLines: true,
+        },
+      },
+      { version: 1, settings: {} },
+    ]);
+    expect(emitted.every((settings) => Object.isFrozen(settings))).toBe(true);
+  });
+
+  it('emits nothing before a choice, and after a change of the options of the app', () => {
+    const fixture = render();
+    const emitted = emittedBy(fixture);
+
+    fixture.componentRef.setInput(LAYOUT_INPUT, DiffwiseLayout.Inline);
+    TestBed.inject(Diffwise).updateConfig({ colorMode: DiffwiseColorMode.Dark });
+    fixture.detectChanges();
+
+    expect(emitted).toEqual([]);
+  });
+
+  it('emits from the diff where the user chooses, with the choices made in other diffs', () => {
+    const first = render();
+    const second = render({ allowedUserSettings: [DiffwiseUserSetting.ColorMode] });
+    const emittedByFirst = emittedBy(first);
+    const emittedBySecond = emittedBy(second);
+
+    choose(first, 'Single column');
+    second.detectChanges();
+    choose(second, 'Light');
+
+    expect(emittedByFirst).toEqual([{ version: 1, settings: { layout: DiffwiseLayout.Inline } }]);
+    expect(emittedBySecond).toEqual([
+      {
+        version: 1,
+        settings: { layout: DiffwiseLayout.Inline, colorMode: DiffwiseColorMode.Light },
+      },
+    ]);
+    expect(elementOf(second).classList).not.toContain(INLINE_LAYOUT_CLASS);
   });
 });

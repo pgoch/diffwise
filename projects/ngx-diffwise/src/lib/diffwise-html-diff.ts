@@ -83,7 +83,12 @@ import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 import { observedWidth } from './layout/diff-width';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
 import { scrollTablesTogether } from './table-scroll';
-import { type UserChoices, validUserChoices } from './user-settings/user-settings';
+import {
+  type DiffwiseUserSettings,
+  type UserChoices,
+  userSettingsOf,
+  validUserChoices,
+} from './user-settings/user-settings';
 import { SHARED_USER_SETTINGS_KEY, UserSettingsStore } from './user-settings/user-settings-store';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
@@ -480,6 +485,12 @@ export class DiffwiseHtmlDiff {
    * version or of an option of the comparison. Other options do not compare the versions again.
    */
   readonly diffStatsComputed = output<DiffwiseDiffStats>();
+
+  /**
+   * The choices of the user after each change the user makes in the view settings of this diff,
+   * with the choices made in the other diffs of the app, which share them.
+   */
+  readonly userSettingsChange = output<DiffwiseUserSettings>();
 
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
@@ -884,14 +895,18 @@ export class DiffwiseHtmlDiff {
     this.scrollToActiveChange();
   }
 
-  /** Adds the choice of the user; every diff of the app follows it. */
+  /** Adds the choice of the user, which every diff of the app follows, and tells the app. */
   protected changeUserSettings(changes: UserChoices): void {
     this.userSettings.choose(SHARED_USER_SETTINGS_KEY, changes);
+    this.emitUserSettings();
   }
 
-  /** Takes back the choices of the user, so the options of the app apply again. */
+  /**
+   * Takes back the choices of the user, so the options of the app apply again, and tells the app.
+   */
   protected resetUserSettings(): void {
     this.userSettings.reset(SHARED_USER_SETTINGS_KEY);
+    this.emitUserSettings();
   }
 
   /** Hides the tooltip, such as the one of a button that has just opened something below it. */
@@ -958,6 +973,10 @@ export class DiffwiseHtmlDiff {
     const settings = { contextLines: this.shownContextLines(), shownGroups: this.shownGroups() };
 
     return collapseRows(rows, settings);
+  }
+
+  private emitUserSettings(): void {
+    this.userSettingsChange.emit(userSettingsOf(this.storedChoices()));
   }
 
   /** Scrolls the rows of the active block into view once they have their classes. */

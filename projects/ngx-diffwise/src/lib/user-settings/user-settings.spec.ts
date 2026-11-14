@@ -1,9 +1,18 @@
 import { DiffwiseColorMode, DiffwiseLayout, DiffwiseUserSetting } from '../config/option-values';
-import { validUserChoices } from './user-settings';
+import { userSettingsOf, validUserChoices } from './user-settings';
 
 const WARN_METHOD = 'warn';
 
 const ALL_SETTINGS = Object.values(DiffwiseUserSetting);
+
+describe('userSettingsOf', () => {
+  it('gives the choices with the number of their format, frozen', () => {
+    const settings = userSettingsOf({ colorMode: DiffwiseColorMode.Dark });
+
+    expect(settings).toEqual({ version: 1, settings: { colorMode: DiffwiseColorMode.Dark } });
+    expect(Object.isFrozen(settings)).toBe(true);
+  });
+});
 
 describe('validUserChoices', () => {
   beforeEach(() => {

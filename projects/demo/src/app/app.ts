@@ -30,6 +30,7 @@ import {
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
+  type DiffwiseUserSettings,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -315,6 +316,12 @@ export class App {
 
   /** The numbers of the last comparison, from the event of the diff. */
   protected readonly lastStats = signal<DiffwiseDiffStats | null>(null);
+
+  /** The choices of the user from the last event of the diff, as the app could keep them. */
+  protected readonly lastUserSettings = signal<DiffwiseUserSettings | null>(null);
+
+  /** The last choices of the user as text. */
+  protected readonly lastUserSettingsText = computed(() => JSON.stringify(this.lastUserSettings()));
 
   /** The diff of the sample, whose methods step between the blocks of changes. */
   private readonly diff = viewChild(DiffwiseHtmlDiff);
