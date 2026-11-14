@@ -6,7 +6,7 @@ import { diffListMarkers, itemNumberChanged } from './compare/diff-list-markers'
 import { type CellChanges, allChangedText, diffTableCells } from './compare/diff-table-cells';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
-import { sanitizeHtml } from './html/sanitize-html';
+import { sanitizeHtmlPieces } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import {
   ADDED_TEXT_MARKER,
@@ -66,7 +66,7 @@ export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSet
   const mergedRows = settings.mergesChangedLines
     ? withMergedTables(rowBuilder.tableRowSources(markedRows), columns.tablePairs())
     : markedRows;
-  const rows = withTableColumns(mergedRows).map(sanitizedRow);
+  const rows = sanitizedRows(withTableColumns(mergedRows));
 
   return { rows, stats };
 }
@@ -238,22 +238,37 @@ function withTableColumns(rows: readonly ViewRow[]): ViewRow[] {
   }));
 }
 
-/** The row with its HTML sanitized again, because marking changes and adding columns edit it. */
-function sanitizedRow(row: ViewRow): ViewRow {
-  return {
+/**
+ * The rows with the HTML of their lines sanitized again, because marking changes and adding
+ * columns edit it. The sanitizer cleans the lines of all rows in one run.
+ */
+function sanitizedRows(rows: readonly ViewRow[]): ViewRow[] {
+  const lines = rows.flatMap(({ oldLine, newLine, mergedLine }) =>
+    [oldLine, newLine, mergedLine].filter(isLine),
+  );
+  const sanitizedHtml = sanitizeHtmlPieces(lines.map((line) => line.html));
+  const sanitizedLines = new Map(lines.map((line, position) => [line, sanitizedHtml[position]]));
+  const sanitized = (line: ViewLine | null) => sanitizedLine(line, sanitizedLines);
+
+  return rows.map((row) => ({
     ...row,
-    oldLine: sanitizedLine(row.oldLine),
-    newLine: sanitizedLine(row.newLine),
-    mergedLine: sanitizedLine(row.mergedLine),
-  };
+    oldLine: sanitized(row.oldLine),
+    newLine: sanitized(row.newLine),
+    mergedLine: sanitized(row.mergedLine),
+  }));
 }
 
-function sanitizedLine(line: ViewLine | null): ViewLine | null {
-  if (line === null) {
-    return null;
-  }
+/** The line with its sanitized HTML; `null` for no line. */
+function sanitizedLine(
+  line: ViewLine | null,
+  sanitizedLines: ReadonlyMap<ViewLine, string>,
+): ViewLine | null {
+  const html = line === null ? undefined : sanitizedLines.get(line);
+  return line === null || html === undefined ? null : { ...line, html };
+}
 
-  return { ...line, html: sanitizeHtml(line.html) };
+function isLine(line: ViewLine | null): line is ViewLine {
+  return line !== null;
 }
 
 /** Both changes with one list of details: the first's details, then the second's. */

@@ -1,4 +1,32 @@
-import { sanitizeHtml } from './sanitize-html';
+import enLongAfter from '../../../../../test-data/en/long/after.html?raw';
+import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
+import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
+import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
+import { parseHtml } from './parse-html';
+import { sanitizeHtml, sanitizeHtmlPieces } from './sanitize-html';
+import { splitLines } from './split-lines';
+
+const ID_PREFIX = 'diff';
+
+/** Both versions of the long samples from `test-data/`, as `[name, html]`. */
+const LONG_SAMPLES: [string, string][] = [
+  ['en/long/before', enLongBefore],
+  ['en/long/after', enLongAfter],
+  ['pl/long/before', plLongBefore],
+  ['pl/long/after', plLongAfter],
+];
+
+/** Pieces of HTML with dangerous parts, cleaned together and alone in the tests. */
+const DANGEROUS_PIECES = [
+  '<p>Text <img src="x.png" onerror="alert(1)"><script>alert(1)</script></p>',
+  '<a href="javascript:alert(1)">link</a><a href="https://example.com" target="_blank">new tab</a>',
+  '<p style="color: red; position: fixed; background: url(x.png)">Styled</p>',
+  '<p class="abc">Text <b onclick="alert(1)">not closed',
+  '',
+  '<form action="/send"><input type="checkbox" checked tabindex="0"></form>',
+  '<table><tbody><tr><td>Cell</td></tr></tbody></table>',
+  '<ul><li data-diffwise-line-item="">Item</li></ul>',
+];
 
 function sanitize(html: string): DocumentFragment {
   const template = document.createElement('template');
@@ -50,6 +78,37 @@ describe('sanitizeHtml', () => {
     ).firstElementChild as HTMLElement;
 
     expect(paragraph.hasAttribute('style')).toBe(false);
+  });
+
+  it('cleans pieces of HTML together as it cleans each of them alone', () => {
+    expect(sanitizeHtmlPieces(DANGEROUS_PIECES)).toEqual(DANGEROUS_PIECES.map(sanitizeHtml));
+  });
+
+  it.each(LONG_SAMPLES)('cleans the lines of %s together as it cleans each alone', (_, html) => {
+    const lines = splitLines(parseHtml(html), ID_PREFIX).map((line) => line.html);
+
+    expect(sanitizeHtmlPieces(lines)).toEqual(lines.map(sanitizeHtml));
+  });
+
+  it('keeps an unclosed tag of one piece out of the next piece', () => {
+    expect(sanitizeHtmlPieces(['<p><b>Not closed', '<p>Next</p>'])).toEqual([
+      '<p><b>Not closed</b></p>',
+      '<p>Next</p>',
+    ]);
+  });
+
+  it('cleans each piece alone when a piece closes its cell among the others', () => {
+    const pieces = ['<p>First</p>', '</td><td><p>Out of its cell</p>', '<p>Last</p>'];
+
+    expect(sanitizeHtmlPieces(pieces)).toEqual([
+      '<p>First</p>',
+      '<p>Out of its cell</p>',
+      '<p>Last</p>',
+    ]);
+  });
+
+  it('cleans no pieces into no pieces', () => {
+    expect(sanitizeHtmlPieces([])).toEqual([]);
   });
 
   it('cleans dangerous parts at any depth of a fragment', () => {
