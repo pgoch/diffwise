@@ -1,7 +1,7 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseColorMode, DiffwiseLayout } from './config/option-values';
+import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
 import type { DiffwiseDiffStats } from './diff-stats';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
@@ -10,6 +10,18 @@ const NEW_HTML_INPUT = 'newHtml';
 const IGNORE_CASE_INPUT = 'ignoreCase';
 const COLOR_MODE_INPUT = 'colorMode';
 const LAYOUT_INPUT = 'layout';
+const WARN_METHOD = 'warn';
+const TOOLBAR_SELECTOR = '.diffwise-html-diff__toolbar';
+const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
+const NO_CHANGES_SELECTOR = '.diffwise-html-diff__no-changes';
+const TOOLTIP_SELECTOR = '.diffwise-html-diff__tooltip';
+const TOOLTIP_TITLE_SELECTOR = '.diffwise-html-diff__tooltip-title';
+const NO_CHANGES_CLASS = 'diffwise-html-diff--no-changes';
+const TOOLBAR_FONT_SIZE_VARIABLE = '--diffwise-toolbar-font-size';
+const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+const ROLE_ATTRIBUTE = 'role';
+const TABINDEX_ATTRIBUTE = 'tabindex';
+const MOUSEOVER_EVENT = 'mouseover';
 
 /** One line removed, one unchanged, one changed and one added. */
 const OLD_TERMS_HTML = '<p>Old intro.</p><p>Terms of use.</p><p>Reply within 24 hours.</p>';
@@ -31,6 +43,17 @@ const NO_CHANGES_STATS: DiffwiseDiffStats = {
   removedLines: 0,
   changedLines: 0,
   hasChanges: false,
+};
+
+/** Open popovers; jsdom has no Popover API, so tests define it and record the calls instead. */
+const openPopovers = new Set<Element>();
+
+HTMLElement.prototype.showPopover = function (this: HTMLElement) {
+  openPopovers.add(this);
+};
+
+HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
+  openPopovers.delete(this);
 };
 
 /** A rendered diff and the statistics it has emitted so far. */
@@ -66,6 +89,34 @@ function change(fixture: ComponentFixture<DiffwiseHtmlDiff>, name: string, value
   fixture.componentRef.setInput(name, value);
   fixture.detectChanges();
 }
+
+function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+  return fixture.nativeElement;
+}
+
+function textsOf(element: HTMLElement, selector: string) {
+  return Array.from(element.querySelectorAll(selector), (found) => found.textContent?.trim());
+}
+
+function attributesOf(element: HTMLElement, selector: string, attribute: string) {
+  return Array.from(element.querySelectorAll(selector), (found) => found.getAttribute(attribute));
+}
+
+function tooltipTitleOf(element: HTMLElement) {
+  const tooltip = element.querySelector(TOOLTIP_SELECTOR);
+  const isShown = tooltip !== null && openPopovers.has(tooltip);
+
+  return isShown ? tooltip.querySelector(TOOLTIP_TITLE_SELECTOR)?.textContent : null;
+}
+
+beforeEach(() => {
+  vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+  openPopovers.clear();
+});
 
 describe('DiffwiseHtmlDiff statistics', () => {
   it('emits the numbers of changed lines after the first comparison', () => {
@@ -106,5 +157,97 @@ describe('DiffwiseHtmlDiff statistics', () => {
     change(fixture, LAYOUT_INPUT, DiffwiseLayout.Inline);
 
     expect(emitted).toEqual([TERMS_STATS]);
+  });
+
+  it('emits the numbers when the toolbar does not show them', () => {
+    const { fixture, emitted } = render(OLD_TERMS_HTML, NEW_TERMS_HTML, { showDiffStats: false });
+
+    expect(elementOf(fixture).querySelector(TOOLBAR_SELECTOR)).toBeNull();
+    expect(emitted).toEqual([TERMS_STATS]);
+  });
+});
+
+describe('DiffwiseHtmlDiff toolbar', () => {
+  it('shows the numbers of changed lines in a toolbar above the diff', () => {
+    const element = elementOf(render().fixture);
+
+    expect(element.firstElementChild?.matches(TOOLBAR_SELECTOR)).toBe(true);
+    expect(textsOf(element, DIFF_STAT_SELECTOR)).toEqual(['+1', '\u22121', '~1']);
+    expect(element.querySelector(NO_CHANGES_SELECTOR)).toBeNull();
+  });
+
+  it('names each number for screen readers and lets it take the focus', () => {
+    const element = elementOf(render().fixture);
+
+    expect(attributesOf(element, DIFF_STAT_SELECTOR, ARIA_LABEL_ATTRIBUTE)).toEqual([
+      'Added lines: 1',
+      'Removed lines: 1',
+      'Changed lines: 1',
+    ]);
+    expect(attributesOf(element, DIFF_STAT_SELECTOR, ROLE_ATTRIBUTE)).toEqual([
+      'img',
+      'img',
+      'img',
+    ]);
+    expect(attributesOf(element, DIFF_STAT_SELECTOR, TABINDEX_ATTRIBUTE)).toEqual(['0', '0', '0']);
+  });
+
+  it('shows the name of a number in the tooltip on hover', () => {
+    const element = elementOf(render().fixture);
+    const [, removed] = Array.from(element.querySelectorAll(DIFF_STAT_SELECTOR));
+
+    removed.dispatchEvent(new MouseEvent(MOUSEOVER_EVENT, { bubbles: true }));
+
+    expect(tooltipTitleOf(element)).toBe('Removed lines: 1');
+  });
+
+  it('shows only a text that nothing changed when the versions are the same', () => {
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML).fixture);
+
+    expect(textsOf(element, TOOLBAR_SELECTOR)).toEqual(['No changes']);
+    expect(element.querySelector(DIFF_STAT_SELECTOR)).toBeNull();
+    expect(element.classList).toContain(NO_CHANGES_CLASS);
+  });
+
+  it('shows the text that nothing changed also without the numbers', () => {
+    const options = { showDiffStats: false };
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, options).fixture);
+
+    expect(textsOf(element, TOOLBAR_SELECTOR)).toEqual(['No changes']);
+  });
+
+  it('takes the class of the same versions away when a version changes', () => {
+    const { fixture } = render(OLD_TERMS_HTML, OLD_TERMS_HTML);
+
+    change(fixture, NEW_HTML_INPUT, NEW_TERMS_HTML);
+
+    expect(elementOf(fixture).classList).not.toContain(NO_CHANGES_CLASS);
+    expect(textsOf(elementOf(fixture), DIFF_STAT_SELECTOR)).toEqual(['+1', '\u22121', '~1']);
+  });
+
+  it('shows the texts of the toolbar in Polish', () => {
+    const language = { language: DiffwiseLanguage.PL };
+    const changed = elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML, language).fixture);
+    const same = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, language).fixture);
+
+    expect(attributesOf(changed, DIFF_STAT_SELECTOR, ARIA_LABEL_ATTRIBUTE)).toEqual([
+      'Dodane linie: 1',
+      'Usunięte linie: 1',
+      'Zmienione linie: 1',
+    ]);
+    expect(textsOf(same, TOOLBAR_SELECTOR)).toEqual(['Brak zmian']);
+  });
+
+  it('sets the font size of the toolbar, and ignores a size out of range', () => {
+    const sized = elementOf(
+      render(OLD_TERMS_HTML, NEW_TERMS_HTML, { toolbarFontSize: 1.2 }).fixture,
+    );
+    const tooLarge = elementOf(
+      render(OLD_TERMS_HTML, NEW_TERMS_HTML, { toolbarFontSize: 11 }).fixture,
+    );
+
+    expect(sized.style.getPropertyValue(TOOLBAR_FONT_SIZE_VARIABLE)).toBe('1.2rem');
+    expect(tooLarge.style.getPropertyValue(TOOLBAR_FONT_SIZE_VARIABLE)).toBe('');
+    expect(console.warn).toHaveBeenCalledOnce();
   });
 });

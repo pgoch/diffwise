@@ -147,6 +147,8 @@ describe('normalizeConfig', () => {
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
+      toolbarFontSize: 1.2,
+      showDiffStats: false,
     };
 
     expect(normalizeConfig(options)).toEqual({
@@ -164,6 +166,8 @@ describe('normalizeConfig', () => {
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
+      toolbarFontSize: 1.2,
+      showDiffStats: false,
     });
     expect(console.warn).not.toHaveBeenCalled();
   });
@@ -223,6 +227,8 @@ describe('normalizeConfig', () => {
       { lineNumberFontSize: 11 },
       { lineNumberFontSize: Number.NaN },
       { tooltipFontSize: 0 },
+      { toolbarFontSize: 10.5 },
+      { showDiffStats: 'false' },
     ];
 
     for (const options of invalidOptions) {

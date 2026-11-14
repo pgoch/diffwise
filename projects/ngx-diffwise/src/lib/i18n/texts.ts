@@ -24,6 +24,14 @@ export interface DiffwiseCustomTexts {
    * `{count}` stands for their number.
    */
   readonly hiddenLinesLabel?: string;
+  /** Names the number of added lines in the toolbar and titles its tooltip; `{count}` is the number. */
+  readonly addedLinesLabel?: string;
+  /** Names the number of removed lines in the toolbar and titles its tooltip. */
+  readonly removedLinesLabel?: string;
+  /** Names the number of changed lines in the toolbar and titles its tooltip. */
+  readonly changedLinesLabel?: string;
+  /** The only text of the toolbar when the versions are the same. */
+  readonly noChangesLabel?: string;
 
   /** Titles a tooltip about changed formatting, such as italic → bold, and names its icon. */
   readonly formattingChangeLabel?: string;

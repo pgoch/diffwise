@@ -92,6 +92,11 @@ export interface DiffwiseConfigOptions {
    * whole number from 1 to 100. Default: `3`.
    */
   readonly contextLines?: number;
+  /**
+   * Shows the numbers of added, removed and changed lines in the toolbar above the diff.
+   * Default: `true`.
+   */
+  readonly showDiffStats?: boolean;
   /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
@@ -111,6 +116,8 @@ export interface DiffwiseConfigOptions {
   readonly lineNumberFontSize?: number;
   /** Font size of the tooltips in rem, from 0.5 to 10. Default: `0.8`. */
   readonly tooltipFontSize?: number;
+  /** Font size of the toolbar above the diff in rem, from 0.5 to 10. Default: `0.8`. */
+  readonly toolbarFontSize?: number;
   /**
    * Where details of changes besides text show, such as link addresses: on hover of the change,
    * from an icon between the versions, or both. Default: `DiffwiseChangeDetails.Both`.
@@ -212,6 +219,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
   readonly contextLines: number = 3;
 
+  /** Shows the numbers of changed lines in the toolbar above the diff. */
+  readonly showDiffStats: boolean = true;
+
   /** What stands between the two versions. */
   readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;
 
@@ -236,6 +246,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Font size of the tooltips in rem. */
   readonly tooltipFontSize: number = 0.8;
+
+  /** Font size of the toolbar above the diff in rem. */
+  readonly toolbarFontSize: number = 0.8;
 
   /** Where the details of a change besides its text show. */
   readonly changeDetails: DiffwiseChangeDetails = DiffwiseChangeDetails.Both;

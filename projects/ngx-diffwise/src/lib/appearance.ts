@@ -45,6 +45,7 @@ const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const LINE_NUMBER_FONT_SIZE_VARIABLE = '--diffwise-line-number-font-size';
 const VERSION_HEADER_FONT_SIZE_VARIABLE = '--diffwise-version-header-font-size';
 const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
+const TOOLBAR_FONT_SIZE_VARIABLE = '--diffwise-toolbar-font-size';
 const FONT_FAMILY_PROPERTY = 'font-family';
 const REM_UNIT = 'rem';
 
@@ -100,6 +101,10 @@ export function appearanceStyles(
 
   if (config.tooltipFontSize !== DEFAULT_CONFIG.tooltipFontSize) {
     styles[TOOLTIP_FONT_SIZE_VARIABLE] = config.tooltipFontSize + REM_UNIT;
+  }
+
+  if (config.toolbarFontSize !== DEFAULT_CONFIG.toolbarFontSize) {
+    styles[TOOLBAR_FONT_SIZE_VARIABLE] = config.toolbarFontSize + REM_UNIT;
   }
 
   if (config.fontFamily !== DiffwiseFontFamily.Inherit) {

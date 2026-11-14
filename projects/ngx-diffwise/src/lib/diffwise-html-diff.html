@@ -46,6 +46,14 @@
   </span>
 </ng-template>
 
+@if (showsToolbar()) {
+  <diffwise-diff-toolbar
+    [stats]="diffStats()"
+    [showsStats]="effectiveConfig().showDiffStats"
+    [texts]="texts()"
+  />
+}
+
 @if (showsSingleColumn()) {
   @if (singleColumnHeader(); as header) {
     <div class="diffwise-html-diff__version-headers">

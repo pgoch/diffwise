@@ -8,6 +8,10 @@ export const ENGLISH_TEXTS: UiTexts = {
   diffLabel: 'Comparison of document versions',
   showHiddenLinesLabel: 'Show hidden lines: {count}',
   hiddenLinesLabel: 'Hidden lines: {count}',
+  addedLinesLabel: 'Added lines: {count}',
+  removedLinesLabel: 'Removed lines: {count}',
+  changedLinesLabel: 'Changed lines: {count}',
+  noChangesLabel: 'No changes',
 
   formattingChangeLabel: 'Formatting change',
   linkChangeLabel: 'Link address changed',

@@ -71,6 +71,7 @@ import {
 } from './config/option-values';
 import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
+import { DiffToolbar } from './toolbar/diff-toolbar';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 import { observedWidth } from './layout/diff-width';
@@ -102,10 +103,17 @@ const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
 const ROW_OR_BAR_SELECTOR = `:scope > :is(${ROW_SELECTOR}, ${COLLAPSED_LINES_BAR_TAG})`;
 const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
 const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
+const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 
-/** Icons with a tooltip: icons of changes, and icons in place of the version headers. */
-const ICON_TRIGGER_SELECTOR = [CHANGE_DETAILS_ICON_SELECTOR, VERSION_HEADER_ICON_SELECTOR].join();
+/**
+ * Elements whose tooltip shows only their name: icons in place of the version headers, and numbers
+ * of the statistics in the toolbar.
+ */
+const NAMED_TRIGGER_SELECTOR = [VERSION_HEADER_ICON_SELECTOR, DIFF_STAT_SELECTOR].join();
+
+/** Elements with a tooltip outside the content: icons of changes and the named elements. */
+const ICON_TRIGGER_SELECTOR = [CHANGE_DETAILS_ICON_SELECTOR, NAMED_TRIGGER_SELECTOR].join();
 const FOCUS_VISIBLE_SELECTOR = ':focus-visible';
 const MOUSEOVER_EVENT = 'mouseover';
 const MOUSEOUT_EVENT = 'mouseout';
@@ -226,7 +234,7 @@ interface ShownVersionHeaders {
  */
 @Component({
   selector: 'diffwise-html-diff',
-  imports: [ChangeDetailsButton, ChangeTooltip, CollapsedLinesBar, NgTemplateOutlet],
+  imports: [ChangeDetailsButton, ChangeTooltip, CollapsedLinesBar, DiffToolbar, NgTemplateOutlet],
   templateUrl: './diffwise-html-diff.html',
   styleUrls: [
     './diffwise-html-diff.css',
@@ -234,6 +242,7 @@ interface ShownVersionHeaders {
     './change-details/change-details.css',
     './single-column.css',
     './collapsed-lines/collapsed-lines.css',
+    './toolbar/toolbar.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -243,6 +252,7 @@ interface ShownVersionHeaders {
     '[attr.aria-label]': 'texts().diffLabel',
     '[class]': 'modifierClasses()',
     '[class.diffwise-html-diff--dark-theme]': 'isDark()',
+    '[class.diffwise-html-diff--no-changes]': '!diffStats().hasChanges',
     '[style]': 'inlineStyles()',
     '(click)': 'followInPageLink($event)',
   },
@@ -326,6 +336,12 @@ export class DiffwiseHtmlDiff {
    */
   readonly contextLines = input<number>();
 
+  /**
+   * Shows the numbers of changed lines in the toolbar above the diff; wins over `config` and the
+   * global configuration.
+   */
+  readonly showDiffStats = input<boolean>();
+
   /** What stands between the versions; wins over `config` and the global configuration. */
   readonly dividerStyle = input<DiffwiseDividerStyle>();
 
@@ -349,6 +365,9 @@ export class DiffwiseHtmlDiff {
 
   /** Font size of the tooltips in rem; wins over `config` and the global configuration. */
   readonly tooltipFontSize = input<number>();
+
+  /** Font size of the toolbar in rem; wins over `config` and the global configuration. */
+  readonly toolbarFontSize = input<number>();
 
   /** Where details of changes besides text show; wins over `config` and the global configuration. */
   readonly changeDetails = input<DiffwiseChangeDetails>();
@@ -437,6 +456,7 @@ export class DiffwiseHtmlDiff {
     highlightWholeLines: this.highlightWholeLines(),
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
+    showDiffStats: this.showDiffStats(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
@@ -445,6 +465,7 @@ export class DiffwiseHtmlDiff {
     versionHeaderFontSize: this.versionHeaderFontSize(),
     lineNumberFontSize: this.lineNumberFontSize(),
     tooltipFontSize: this.tooltipFontSize(),
+    toolbarFontSize: this.toolbarFontSize(),
     changeDetails: this.changeDetails(),
     changeDetailsIconStyle: this.changeDetailsIconStyle(),
     tooltipColorMode: this.tooltipColorMode(),
@@ -575,6 +596,14 @@ export class DiffwiseHtmlDiff {
 
   /** Numbers of the changed lines of the comparison. */
   protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
+
+  /**
+   * True when the toolbar has something to show: the numbers of changed lines, or the text that
+   * the versions are the same, which shows without the numbers too.
+   */
+  protected readonly showsToolbar = computed(
+    () => !this.diffStats().hasChanges || this.effectiveConfig().showDiffStats,
+  );
 
   /** Rows of the versions side by side; the diff prepares them only for this layout. */
   private readonly rows = computed(() =>
@@ -868,8 +897,8 @@ export class DiffwiseHtmlDiff {
 
   /** What the tooltip of a trigger shows; `null` when there is nothing to show. */
   private tooltipRequest(trigger: HTMLElement, byFocus: boolean): TooltipRequest | null {
-    if (trigger.matches(VERSION_HEADER_ICON_SELECTOR)) {
-      return versionNameRequest(trigger, byFocus);
+    if (trigger.matches(NAMED_TRIGGER_SELECTOR)) {
+      return nameTooltipRequest(trigger, byFocus);
     }
 
     const details = this.detailsOf(trigger);
@@ -989,19 +1018,19 @@ function highestLineNumber(rows: readonly ViewRow[]): number {
 }
 
 /**
- * The tooltip of a version icon: the name of the version. The name also names the icon for screen
- * readers, so the tooltip does not describe the icon again.
+ * The tooltip of a named element, such as a version icon or a number of the statistics: its name.
+ * The name also names the element for screen readers, so the tooltip does not describe it again.
  */
-function versionNameRequest(icon: HTMLElement, byFocus: boolean): TooltipRequest | null {
-  const versionName = icon.getAttribute(ARIA_LABEL_ATTRIBUTE);
+function nameTooltipRequest(trigger: HTMLElement, byFocus: boolean): TooltipRequest | null {
+  const name = trigger.getAttribute(ARIA_LABEL_ATTRIBUTE);
 
-  if (versionName === null) {
+  if (name === null) {
     return null;
   }
 
-  const content = titleOnlyTooltip(versionName);
+  const content = titleOnlyTooltip(name);
 
-  return { trigger: icon, content, description: TriggerDescription.None, byFocus };
+  return { trigger, content, description: TriggerDescription.None, byFocus };
 }
 
 /**
