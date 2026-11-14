@@ -390,13 +390,15 @@
 /*
  * A row far from the screen skips layout and painting until it comes near, so a long document
  * opens faster. Until then it takes the height of one line of text; once shown, its own height.
- * Such a row clips what reaches out of it, which is only the pixel over the edge of the next row;
- * rows still meet without a gap. Rows of tables always have their layout: a skipped line forgets
- * how far it is scrolled, and the lines of a table scroll together.
+ * Such a row clips what reaches out of it, past the margin: the pixel over the edge of the next
+ * row must stay, or the background shows through where rows meet at a fraction of a pixel. Rows of
+ * tables always have their layout: a skipped line forgets how far it is scrolled, and the lines of
+ * a table scroll together.
  */
 .diffwise-html-diff__row:not(:has(> [data-diffwise-table])) {
   content-visibility: auto;
   contain-intrinsic-block-size: auto calc(1.6em + 11px);
+  overflow-clip-margin: 1px;
 }
 
 .diffwise-html-diff__content--old {
