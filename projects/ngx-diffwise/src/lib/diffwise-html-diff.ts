@@ -69,7 +69,7 @@ import {
   type DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   type DiffwiseTooltipColorMode,
-  type DiffwiseUserSetting,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
@@ -80,6 +80,7 @@ import { DiffToolbar, type ToolbarNavigation } from './toolbar/diff-toolbar';
 import { ViewSettings } from './toolbar/view-settings';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
+import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
 import { scrollTablesTogether } from './table-scroll';
@@ -668,27 +669,27 @@ export class DiffwiseHtmlDiff {
   });
 
   /**
-   * True from the first time the diff shows merged lines. The versions are compared again then,
-   * with merged lines, and stay so, so that going back and forth compares them only once.
+   * True from the first time the diff shows merged lines. The diff then shows the comparison with
+   * merged lines, and stays so, so that going back and forth changes no comparison.
    */
   private readonly mergesChangedLines = linkedSignal<boolean, boolean>({
     source: this.showsMergedLines,
     computation: (showsMergedLines, previous) => showsMergedLines || (previous?.value ?? false),
   });
 
-  /**
-   * The versions compared, again whenever either of them or `diffOptions` changes, and when the
-   * diff first needs merged lines.
-   */
-  private readonly diff = computed(() => {
-    const settings = {
-      options: this.diffOptions(),
-      idPrefix: this.idPrefix,
-      mergesChangedLines: this.mergesChangedLines(),
-    };
+  /** The versions compared without merged lines, again whenever either of them changes. */
+  private readonly comparison = computed(() => this.compare(false));
 
-    return diffHtml(this.oldHtml(), this.newHtml(), settings);
-  });
+  /**
+   * The versions compared with merged lines. Before the diff shows them, it prepares this
+   * comparison while the browser is idle, so the first single column does not wait for it.
+   */
+  private readonly mergedComparison = computed(() => this.compare(true));
+
+  /** The comparison the diff shows: with merged lines from the first time it needs them. */
+  private readonly diff = computed(() =>
+    this.mergesChangedLines() ? this.mergedComparison() : this.comparison(),
+  );
 
   /** Numbers of the changed lines of the comparison. */
   protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
@@ -875,6 +876,7 @@ export class DiffwiseHtmlDiff {
     this.emitStatsOfEachComparison();
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
+    this.prepareMergedLinesWhenIdle();
   }
 
   /**
@@ -977,6 +979,46 @@ export class DiffwiseHtmlDiff {
 
   private emitUserSettings(): void {
     this.userSettingsChange.emit(userSettingsOf(this.storedChoices()));
+  }
+
+  /** Compares the versions with the options of the comparison, with merged lines or without. */
+  private compare(mergesChangedLines: boolean) {
+    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix, mergesChangedLines };
+    return diffHtml(this.oldHtml(), this.newHtml(), settings);
+  }
+
+  /**
+   * While the diff shows no merged lines, compares the versions with merged lines once the browser
+   * is idle, after each new comparison. A diff that cannot show merged lines prepares nothing.
+   */
+  private prepareMergedLinesWhenIdle(): void {
+    afterRenderEffect((onCleanup) => {
+      this.oldHtml();
+      this.newHtml();
+      this.diffOptions();
+
+      if (this.mergesChangedLines() || !this.mayShowMergedLines()) {
+        return;
+      }
+
+      onCleanup(runWhenIdle(() => this.mergedComparison()));
+    });
+  }
+
+  /**
+   * True when the diff may show merged lines later: when the versions differ, and the single
+   * column with merged lines is in effect or the user can choose it in the view settings.
+   */
+  private mayShowMergedLines(): boolean {
+    const { layout, inlineDiffStyle } = this.effectiveConfig();
+    const allowed = this.allowedSettings();
+    const mayShowSingleColumn =
+      layout !== DiffwiseLayout.SideBySide || allowed.includes(DiffwiseUserSetting.Layout);
+    const mayMergeLines =
+      inlineDiffStyle !== DiffwiseInlineDiffStyle.Stacked
+      || allowed.includes(DiffwiseUserSetting.InlineDiffStyle);
+
+    return this.diffStats().hasChanges && mayShowSingleColumn && mayMergeLines;
   }
 
   /** Scrolls the rows of the active block into view once they have their classes. */
