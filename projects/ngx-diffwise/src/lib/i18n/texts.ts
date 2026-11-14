@@ -24,6 +24,14 @@ export interface DiffwiseCustomTexts {
    * `{count}` stands for their number.
    */
   readonly hiddenLinesLabel?: string;
+  /** Names the number of added lines in the toolbar and titles its tooltip; `{count}` is the number. */
+  readonly addedLinesLabel?: string;
+  /** Names the number of removed lines in the toolbar and titles its tooltip. */
+  readonly removedLinesLabel?: string;
+  /** Names the number of changed lines in the toolbar and titles its tooltip. */
+  readonly changedLinesLabel?: string;
+  /** The only text of the toolbar when the versions are the same. */
+  readonly noChangesLabel?: string;
 
   /** Titles a tooltip about changed formatting, such as italic → bold, and names its icon. */
   readonly formattingChangeLabel?: string;
@@ -35,12 +43,6 @@ export interface DiffwiseCustomTexts {
   readonly removedLinkLabel?: string;
   /** Titles a tooltip about an image with another file, size or alternative text. */
   readonly imageChangeLabel?: string;
-  /** Titles a tooltip about another marker of a list item, such as a bullet that became a number. */
-  readonly listMarkerChangeLabel?: string;
-  /** Titles a tooltip about a checkbox of a list item that was checked. */
-  readonly checkedCheckboxLabel?: string;
-  /** Titles a tooltip about a checkbox of a list item that was cleared. */
-  readonly uncheckedCheckboxLabel?: string;
   /** Titles a tooltip about several changes in one line; `{count}` stands for their number. */
   readonly multipleChangesLabel?: string;
 
@@ -169,29 +171,6 @@ export interface DiffwiseCustomTexts {
   readonly alignRightLabel?: string;
   /** Text aligned to both edges. */
   readonly alignJustifyLabel?: string;
-
-  /** A list with bullets, as in "bulleted list → numbered list". */
-  readonly bulletedListLabel?: string;
-  /** A list with numbers or letters. */
-  readonly numberedListLabel?: string;
-  /** How deep a list item is nested; `{level}` stands for it, as in "level 1 → level 2". */
-  readonly listLevelLabel?: string;
-  /** Numbering with digits: 1, 2, 3. */
-  readonly decimalNumberingLabel?: string;
-  /** Numbering with lowercase letters: a, b, c. */
-  readonly lowerAlphaNumberingLabel?: string;
-  /** Numbering with uppercase letters: A, B, C. */
-  readonly upperAlphaNumberingLabel?: string;
-  /** Numbering with lowercase Roman numerals: i, ii, iii. */
-  readonly lowerRomanNumberingLabel?: string;
-  /** Numbering with uppercase Roman numerals: I, II, III. */
-  readonly upperRomanNumberingLabel?: string;
-  /** Bullets that are filled circles. */
-  readonly discBulletsLabel?: string;
-  /** Bullets that are hollow circles. */
-  readonly circleBulletsLabel?: string;
-  /** Bullets that are filled squares. */
-  readonly squareBulletsLabel?: string;
 }
 
 /** Every text of the interface in one language. */

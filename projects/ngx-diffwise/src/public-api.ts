@@ -5,6 +5,7 @@
 export type { DiffwiseDiffColors } from './lib/config/diff-colors';
 export * from './lib/config/diffwise-config';
 export * from './lib/config/option-values';
+export type { DiffwiseDiffStats } from './lib/diff-stats';
 export { provideDiffwise } from './lib/config/provide-diffwise';
 export * from './lib/diffwise';
 export * from './lib/diffwise-html-diff';

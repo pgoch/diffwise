@@ -11,6 +11,7 @@ import {
   DiffwiseColorMode,
   DiffwiseGapStyle,
   DiffwiseLanguage,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
 } from './config/option-values';
@@ -156,14 +157,19 @@ function clickNewFootnoteLink(element: HTMLElement, options: MouseEventInit = {}
   return click;
 }
 
-/** Renders the component with two versions of a document and, if given, its options. */
+/**
+ * Renders the component with two versions of a document and, if given, its options. Many tests
+ * compare a document with itself to see how the diff shows it, so the same versions show both
+ * versions here, unless the options say otherwise.
+ */
 function render(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
   const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+  const allInputs = { noChangesView: DiffwiseNoChangesView.Diff, ...inputs };
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
 
-  for (const [name, value] of Object.entries(inputs)) {
+  for (const [name, value] of Object.entries(allInputs)) {
     fixture.componentRef.setInput(name, value);
   }
 
@@ -281,8 +287,8 @@ function newMarkersOf(element: HTMLElement) {
 @Component({
   imports: [DiffwiseHtmlDiff],
   template: `
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" />
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" />
+    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
+    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
   `,
 })
 class TwoDiffs {
@@ -672,8 +678,6 @@ describe('DiffwiseHtmlDiff change details', () => {
       [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
       [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
       [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', 'Image changed'],
-      [BULLETED_HTML, NUMBERED_HTML, 'list-marker', 'List marker changed'],
-      [UNCHECKED_HTML, CHECKED_HTML, 'checkbox', 'Checkbox checked'],
     ];
 
     for (const [oldHtml, newHtml, iconKind, name] of versions) {
@@ -766,28 +770,19 @@ describe('DiffwiseHtmlDiff change details', () => {
     expect(description?.textContent).not.toContain('Link address changed');
   });
 
-  it('shows only the title of a checkbox change, which names its icon already', () => {
-    const element = renderElement(UNCHECKED_HTML, CHECKED_HTML);
-    const icon = iconOf(element);
+  it('marks a changed list marker and a checked checkbox with no icon and no tooltip', () => {
+    const changedItems = [
+      [BULLETED_HTML, NUMBERED_HTML],
+      [UNCHECKED_HTML, CHECKED_HTML],
+    ];
 
-    pointTo(icon);
+    for (const [oldHtml, newHtml] of changedItems) {
+      const element = renderElement(oldHtml, newHtml);
 
-    expect(tooltipLinesOf(element)).toEqual(['Checkbox checked']);
-    expect(icon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
-  });
-
-  it('shows the tooltip of a drawn list marker and of a framed checkbox on hover', () => {
-    const markerElement = renderElement(BULLETED_HTML, NUMBERED_HTML);
-    const checkboxElement = renderElement(UNCHECKED_HTML, CHECKED_HTML);
-
-    pointTo(newMarkersOf(markerElement)[0]);
-    pointTo(newMarkersOf(checkboxElement)[0]);
-
-    expect(tooltipLinesOf(markerElement)).toEqual([
-      'List marker changed',
-      'bulleted list → numbered list',
-    ]);
-    expect(tooltipLinesOf(checkboxElement)).toEqual(['Checkbox checked']);
+      expect(element.querySelector(ADDED_SELECTOR)).not.toBeNull();
+      expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
+      expect(newMarkersOf(element)).toEqual([]);
+    }
   });
 
   it('keeps the tooltip while the pointer moves onto it, and hides it after both (WCAG 1.4.13)', () => {

@@ -17,7 +17,6 @@ import { splitLines } from './html/split-lines';
 import {
   type ChangeDetail,
   ChangeDetailKind,
-  CheckboxState,
   DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   FormattingValue,
@@ -27,7 +26,6 @@ import {
   ImageProperty,
   LineChangeKind,
   LineKind,
-  ListMarkerProperty,
   TextStyle,
   type ViewLine,
   type ViewRow,
@@ -58,6 +56,7 @@ const LIST_MARKER_ATTRIBUTE = 'data-diffwise-list-marker';
 const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
 const DRAWN_MARKER_SELECTOR = '.diffwise-html-diff__highlight--list-marker';
 const CHECKBOX_MARKER_CLASS = 'diffwise-html-diff__highlight--checkbox';
+const LIST_ITEM_MARKER_SELECTOR = `${DRAWN_MARKER_SELECTOR}, .${CHECKBOX_MARKER_CLASS}`;
 const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
 const COPIED_ROWS_SELECTOR = `${COLUMN_SIZERS_SELECTOR} > tr`;
 const CELL_MARKER_SELECTOR = '.diffwise-html-diff__highlight--cell';
@@ -186,28 +185,11 @@ function markerText(marker: Element): string | null {
   return marker.getAttribute(LIST_MARKER_ATTRIBUTE) ?? marker.textContent;
 }
 
-/** A row as `[old number, new number, what changed]`: marker properties, or checkbox states. */
-function itemChangeSummary(row: ViewRow) {
-  const changes = row.changeDetails.map((detail) => {
-    switch (detail.kind) {
-      case ChangeDetailKind.ListMarker:
-        return detail.changedProperties;
-      case ChangeDetailKind.Checkbox:
-        return [detail.oldState, detail.newState];
-      default:
-        return detail.kind;
-    }
-  });
-
-  return [row.oldLine?.number, row.newLine?.number, changes];
-}
-
-function hasListItemDetails(row: ViewRow): boolean {
-  return row.changeDetails.some(isListItemDetail);
-}
-
-function isListItemDetail({ kind }: ChangeDetail): boolean {
-  return kind === ChangeDetailKind.ListMarker || kind === ChangeDetailKind.Checkbox;
+/** Markers of the list item of a line: a drawn list marker, and a framed checkbox. */
+function listItemMarkersOf(line: ViewLine | null): Element[] {
+  return line === null
+    ? []
+    : Array.from(fragmentOf(line.html).querySelectorAll(LIST_ITEM_MARKER_SELECTOR));
 }
 
 /** Detail positions of the markers of a line, such as `['0', '1']`. */
@@ -518,19 +500,23 @@ describe('diffHtml', () => {
     expect(changedNestedItem?.newLine?.html).toMatch(NESTED_ITEM_START);
   });
 
-  it('describes the changes of list markers and checkboxes in the long sample', () => {
-    const itemChanges = sampleDiff(EN_LONG).rows.filter(hasListItemDetails).map(itemChangeSummary);
-    const toNumbers = [[ListMarkerProperty.ListType]];
-    const toParagraph = [[ListMarkerProperty.ListType]];
+  it('marks the changes of list markers and checkboxes in the long sample without details', () => {
+    const { rows } = sampleDiff(EN_LONG);
+    const itemRows = [41, 44, 45, 46, 47, 50].map((number) => rowWithNewLine(rows, number));
+    const itemMarkers = itemRows
+      .flatMap(({ oldLine, newLine }) => [oldLine, newLine])
+      .flatMap(listItemMarkersOf);
 
-    expect(itemChanges).toEqual([
-      [38, 41, toParagraph],
-      [41, 44, toNumbers],
-      [42, 45, toNumbers],
-      [43, 46, toNumbers],
-      [44, 47, toNumbers],
-      [47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]],
+    expect(itemRows.map(detailShape)).toEqual([
+      [38, 41, []],
+      [41, 44, []],
+      [42, 45, []],
+      [43, 46, []],
+      [44, 47, []],
+      [47, 50, []],
     ]);
+    expect(itemMarkers).toHaveLength(11);
+    expect(itemMarkers.filter((marker) => marker.hasAttribute(DETAILS_ATTRIBUTE))).toEqual([]);
   });
 
   it('marks numbers shifted by an added item like numbers from another start, with no details', () => {
@@ -565,35 +551,33 @@ describe('diffHtml', () => {
     expect(detailShape(row)).toEqual([1, 1, []]);
   });
 
-  it('puts the details of a list item before those of formatting, with markers pointing to them', () => {
+  it('describes only the formatting of a list item whose marker changed too', () => {
     const oldHtml = '<ul><li><i>Important:</i> make backups.</li></ul>';
     const newHtml = '<ol><li><b>Important:</b> make backups.</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
 
-    expect(detailShape(row)).toEqual([
-      1,
-      1,
-      [ChangeDetailKind.ListMarker, ChangeDetailKind.Formatting],
-    ]);
-    expect(detailPositions(row.oldLine)).toEqual(['0', '1']);
-    expect(detailPositions(row.newLine)).toEqual(['0', '1']);
+    expect(detailShape(row)).toEqual([1, 1, [ChangeDetailKind.Formatting]]);
+    expect(detailPositions(row.oldLine)).toEqual(['0']);
+    expect(detailPositions(row.newLine)).toEqual(['0']);
+    expect(markedTexts(row.oldLine, DRAWN_MARKER_SELECTOR)).toEqual(['•']);
+    expect(markedTexts(row.newLine, DRAWN_MARKER_SELECTOR)).toEqual(['1.']);
   });
 
-  it('describes a list marker of a style it does not draw only by its details', () => {
+  it('shows a changed list marker of a style it does not draw only as a changed line', () => {
     const oldHtml = '<ol><li>Notes</li></ol>';
     const newHtml = '<ol style="list-style-type: armenian"><li>Notes</li></ol>';
     const [row] = compare(oldHtml, newHtml).rows;
 
-    expect(itemChangeSummary(row)).toEqual([1, 1, [[ListMarkerProperty.Style]]]);
+    expect(rowShape(row)).toEqual([LineChangeKind.Changed, 1, 1]);
+    expect(detailShape(row)).toEqual([1, 1, []]);
     expect(fragmentOf(row.newLine?.html ?? '').querySelector(DRAWN_MARKER_SELECTOR)).toBeNull();
   });
 
   it('keeps only numbers and checkboxes of list items with ignoreFormatting', () => {
     const { rows } = compare(enLongBefore, enLongAfter, IGNORE_FORMATTING);
-    const itemChanges = rows.filter(hasListItemDetails).map(itemChangeSummary);
     const changedItems = rows.filter(isChangedListItem).map(rowShape);
 
-    expect(itemChanges).toEqual([[47, 50, [[CheckboxState.Unchecked, CheckboxState.Checked]]]]);
+    expect(changedItems).toContainEqual([LineChangeKind.Changed, 47, 50]);
     expect(changedItems).toContainEqual([LineChangeKind.Changed, 32, 35]);
     expect(changedItems).toContainEqual([LineChangeKind.Changed, 37, 40]);
     expect(changedItems).not.toContainEqual([LineChangeKind.Changed, 41, 44]);

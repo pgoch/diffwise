@@ -1,15 +1,10 @@
 import {
   type ChangeDetail,
   ChangeDetailKind,
-  CheckboxState,
   FormattingValue,
   type FormattingValueChange,
   type ImageProperties,
   ImageProperty,
-  type ListMarker,
-  ListMarkerProperty,
-  ListStyle,
-  ListType,
   TextStyle,
 } from '../../engine';
 import { ENGLISH_TEXTS } from '../i18n/en';
@@ -27,10 +22,6 @@ import {
 const ENGLISH = 'en';
 const POLISH = 'pl';
 const NO_TEXT = '';
-const GREEK_STYLE = 'lower-greek';
-const ARMENIAN_STYLE = 'armenian';
-const TOP_LEVEL = 1;
-const FIRST_NUMBER = 1;
 
 /** Marks of the text form of a tooltip, as `tooltipText` writes it. */
 const SUBTITLE_START = '# ';
@@ -83,39 +74,6 @@ function image(
   const changedProperties = IMAGE_PROPERTIES.filter((name) => oldImage[name] !== newImage[name]);
 
   return { kind: ChangeDetailKind.Image, oldImage, newImage, changedProperties };
-}
-
-function listMarker(
-  listType: ListType,
-  style: string,
-  number = FIRST_NUMBER,
-  level = TOP_LEVEL,
-): ListMarker {
-  return { listType, style, number, level };
-}
-
-function bullets(style: string = ListStyle.Disc, level = TOP_LEVEL): ListMarker {
-  return listMarker(ListType.Bulleted, style, FIRST_NUMBER, level);
-}
-
-function numbers(style: string = ListStyle.Decimal, number = FIRST_NUMBER): ListMarker {
-  return listMarker(ListType.Numbered, style, number);
-}
-
-function markerChange(
-  oldMarker: ListMarker | null,
-  newMarker: ListMarker | null,
-  changedProperties: ListMarkerProperty[],
-): ChangeDetail {
-  return { kind: ChangeDetailKind.ListMarker, oldMarker, newMarker, changedProperties };
-}
-
-/** A checkbox that changed into the state. */
-function checkboxChange(newState: CheckboxState): ChangeDetail {
-  const oldState =
-    newState === CheckboxState.Checked ? CheckboxState.Unchecked : CheckboxState.Checked;
-
-  return { kind: ChangeDetailKind.Checkbox, oldState, newState };
 }
 
 /**
@@ -418,87 +376,5 @@ describe('ChangeDescriber', () => {
 
     expect(describer.title(details)).toBe('2 changes in this line');
     expect(linesOf(describer, details[0])).toEqual(['H3 → H2']);
-  });
-
-  it('describes list marker changes by names, in the language of the interface', () => {
-    const changes = [
-      markerChange(bullets(), numbers(), [ListMarkerProperty.ListType]),
-      markerChange(numbers(), numbers(ListStyle.LowerAlpha), [ListMarkerProperty.Style]),
-      markerChange(bullets(), bullets(ListStyle.Square), [ListMarkerProperty.Style]),
-      markerChange(null, bullets(), [ListMarkerProperty.ListType]),
-      markerChange(bullets(), bullets(ListStyle.Circle, 2), [ListMarkerProperty.Level]),
-    ];
-
-    expect(changes.map((change) => tooltipText(polish.tooltip([change])))).toEqual([
-      ['Zmiana punktora', 'lista punktowana → lista numerowana'],
-      ['Zmiana punktora', 'cyfry → małe litery'],
-      ['Zmiana punktora', 'kropki → kwadraty'],
-      ['Zmiana punktora', 'akapit → lista punktowana'],
-      ['Zmiana punktora', 'poziom 1 → poziom 2'],
-    ]);
-    expect(changes.map((change) => linesOf(english, change))).toEqual([
-      ['bulleted list → numbered list'],
-      ['numbers → lowercase letters'],
-      ['dots → squares'],
-      ['paragraph → bulleted list'],
-      ['level 1 → level 2'],
-    ]);
-  });
-
-  it('names the other list styles as CSS does, and each changed property in a line', () => {
-    const greekToArmenian = markerChange(numbers(GREEK_STYLE), numbers(ARMENIAN_STYLE), [
-      ListMarkerProperty.Style,
-    ]);
-    const romanToCircles = markerChange(
-      listMarker(ListType.Numbered, ListStyle.UpperRoman, 3, TOP_LEVEL),
-      listMarker(ListType.Bulleted, ListStyle.Circle, 1, 2),
-      [ListMarkerProperty.ListType, ListMarkerProperty.Level],
-    );
-
-    expect(linesOf(english, greekToArmenian)).toEqual(['lower-greek → armenian']);
-    expect(linesOf(english, romanToCircles)).toEqual([
-      'numbered list → bulleted list',
-      'level 1 → level 2',
-    ]);
-    expect(
-      linesOf(
-        english,
-        markerChange(numbers(ListStyle.UpperRoman), numbers(), [ListMarkerProperty.Style]),
-      ),
-    ).toEqual(['uppercase Roman numerals → numbers']);
-  });
-
-  it('titles a checked or a cleared checkbox, with no lines under the title', () => {
-    expect(english.tooltip([checkboxChange(CheckboxState.Checked)])).toEqual({
-      title: 'Checkbox checked',
-      sections: [],
-    });
-    expect(english.title([checkboxChange(CheckboxState.Unchecked)])).toBe('Checkbox cleared');
-  });
-
-  it('lists a changed marker and a checkbox of one item under their titles', () => {
-    const details = [
-      markerChange(numbers(), numbers(ListStyle.LowerAlpha), [ListMarkerProperty.Style]),
-      checkboxChange(CheckboxState.Checked),
-    ];
-
-    expect(tooltipText(english.tooltip(details))).toEqual([
-      'Formatting changes: 2',
-      '# List marker changed',
-      'numbers → lowercase letters',
-      '# Checkbox checked',
-    ]);
-  });
-
-  it('puts the level in a custom text in place of its placeholder', () => {
-    const customTexts = { ...ENGLISH_TEXTS, listLevelLabel: 'L{level}' };
-    const describer = new ChangeDescriber(customTexts, ENGLISH);
-    const change = markerChange(
-      numbers(ListStyle.Decimal, 2),
-      listMarker(ListType.Numbered, ListStyle.Decimal, 1, 2),
-      [ListMarkerProperty.Level],
-    );
-
-    expect(linesOf(describer, change)).toEqual(['L1 → L2']);
   });
 });

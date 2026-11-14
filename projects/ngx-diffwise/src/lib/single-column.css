@@ -36,7 +36,8 @@
 
 /*
  * The column next to the content holds the icon of a row, at the first line of the text, like the
- * line numbers. It stands above the content, which the number on an icon reaches into.
+ * line numbers. It stands above the content, which the number on an icon reaches into. It looks
+ * like the column between the versions side by side.
  */
 .diffwise-html-diff__change-details-cell {
   position: relative;
@@ -48,6 +49,18 @@
   margin-bottom: -1px;
   padding-block: calc(5px + 0.8em - 0.915 * var(--diffwise-line-number-font-size))
     calc(6px + 0.8em - 0.915 * var(--diffwise-line-number-font-size));
+  border-inline: 1px solid var(--diffwise-border);
+  background: var(--diffwise-divider-background);
+}
+
+/* Without line numbers, the column stands at the edge of the diff, which has its own border. */
+.diffwise-html-diff--no-line-numbers .diffwise-html-diff__change-details-cell {
+  border-inline-start: 0;
+}
+
+/* With a line between the versions, the content runs up to the icons, as side by side. */
+.diffwise-html-diff--divider-style-line .diffwise-html-diff__change-details-cell {
+  border-inline: 0;
   background: var(--diffwise-background);
 }
 

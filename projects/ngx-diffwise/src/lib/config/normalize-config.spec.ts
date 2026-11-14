@@ -13,6 +13,7 @@ import {
   DiffwiseLanguage,
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
@@ -147,6 +148,8 @@ describe('normalizeConfig', () => {
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
+      toolbarFontSize: 1.2,
+      showDiffStats: false,
     };
 
     expect(normalizeConfig(options)).toEqual({
@@ -164,6 +167,8 @@ describe('normalizeConfig', () => {
       versionHeaderFontSize: 1,
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
+      toolbarFontSize: 1.2,
+      showDiffStats: false,
     });
     expect(console.warn).not.toHaveBeenCalled();
   });
@@ -223,6 +228,8 @@ describe('normalizeConfig', () => {
       { lineNumberFontSize: 11 },
       { lineNumberFontSize: Number.NaN },
       { tooltipFontSize: 0 },
+      { toolbarFontSize: 10.5 },
+      { showDiffStats: 'false' },
     ];
 
     for (const options of invalidOptions) {
@@ -307,6 +314,17 @@ describe('normalizeConfig', () => {
     }
 
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps what the same versions show, and ignores another value with a warning', () => {
+    expect(normalizeConfig({ noChangesView: 'document' })).toEqual({
+      noChangesView: DiffwiseNoChangesView.Document,
+    });
+    expect(normalizeConfig({ noChangesView: DiffwiseNoChangesView.Diff })).toEqual({
+      noChangesView: 'diff',
+    });
+    expect(normalizeConfig({ noChangesView: 'none' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledOnce();
   });
 
   it('keeps the name of a font of the app, and ignores a name it cannot put in quotes', () => {

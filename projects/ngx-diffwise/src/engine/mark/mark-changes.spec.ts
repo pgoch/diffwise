@@ -31,18 +31,11 @@ const ID_PREFIX = 'diff-';
 /** Marks the list item that a line belongs to. */
 const LINE_ITEM = 'data-diffwise-line-item=""';
 
-/** Marks of a line whose list marker changed, described by the first detail of its row. */
-const CHANGED_LIST_MARKER: ListItemMarks = {
-  ...NO_LIST_ITEM_MARKS,
-  listMarkerChanged: true,
-  listMarkerDetails: [0],
-};
+/** Marks of a line whose list marker changed, by its look or only by its number. */
+const CHANGED_LIST_MARKER: ListItemMarks = { ...NO_LIST_ITEM_MARKS, listMarkerChanged: true };
 
-/** Marks of a line whose list marker differs only by its number, which has no description. */
-const CHANGED_ITEM_NUMBER: ListItemMarks = { ...NO_LIST_ITEM_MARKS, listMarkerChanged: true };
-
-/** Marks of a line whose checkbox changed, described by the second detail of its row. */
-const CHANGED_CHECKBOX: ListItemMarks = { ...NO_LIST_ITEM_MARKS, checkboxDetails: [1] };
+/** Marks of a line whose checkbox was checked or cleared. */
+const CHANGED_CHECKBOX: ListItemMarks = { ...NO_LIST_ITEM_MARKS, checkboxChanged: true };
 
 /** Expected HTML of a removed part. */
 function removed(html: string): string {
@@ -279,32 +272,16 @@ describe('markChanges', () => {
     );
   });
 
-  it('draws a changed list marker first in its item, with its text in an attribute', () => {
-    const drawnMarker =
-      `<ins class="${ADDED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-change-details="0" `
-      + 'data-diffwise-list-marker="6."></ins>';
+  it('draws a changed list marker first in its item, with its text in an attribute and no details', () => {
+    const drawnMarker = `<ins class="${ADDED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-list-marker="6."></ins>`;
 
     expect(markItem('<ol start="6"><li>Import notes</li></ol>', CHANGED_LIST_MARKER)).toBe(
       `<ol start="6"><li value="6" ${LINE_ITEM}>${drawnMarker}Import notes</li></ol>`,
     );
   });
 
-  it('draws a marker changed only by its number with no details', () => {
-    const drawnMarker = `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-list-marker="5."></del>`;
-
-    expect(
-      markItem(
-        '<ol start="5"><li>Import notes</li></ol>',
-        CHANGED_ITEM_NUMBER,
-        REMOVED_TEXT_MARKER,
-      ),
-    ).toBe(`<ol start="5"><li value="5" ${LINE_ITEM}>${drawnMarker}Import notes</li></ol>`);
-  });
-
   it('draws a bullet before the paragraph of an item', () => {
-    const drawnMarker =
-      `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-change-details="0" `
-      + 'data-diffwise-list-marker="•"></del>';
+    const drawnMarker = `<del class="${REMOVED_CLASSES} ${LIST_MARKER_CLASS}" data-diffwise-list-marker="•"></del>`;
     const html = '<ul><li><p>Notes</p></li></ul>';
 
     expect(markItem(html, CHANGED_LIST_MARKER, REMOVED_TEXT_MARKER)).toBe(
@@ -322,25 +299,25 @@ describe('markChanges', () => {
     }
   });
 
-  it('frames a changed checkbox inside its label', () => {
+  it('frames a changed checkbox inside its label, with no details', () => {
     const html =
       '<ul><li><label><input type="checkbox" checked> Invite your family</label></li></ul>';
     const marked = fragmentOf(markItem(html, CHANGED_CHECKBOX));
     const checkboxMarker = marked.querySelector(CHECKBOX_MARKER_SELECTOR);
 
     expect(checkboxMarker?.className).toBe(`${ADDED_CLASSES} ${CHECKBOX_CLASS}`);
-    expect(checkboxMarker?.getAttribute(DETAILS_ATTRIBUTE)).toBe('1');
+    expect(checkboxMarker?.hasAttribute(DETAILS_ATTRIBUTE)).toBe(false);
     expect(checkboxMarker?.parentElement?.localName).toBe('label');
     expect(checkboxMarker?.firstElementChild?.matches(CHECKBOX_SELECTOR)).toBe(true);
   });
 
   it('marks text, the list marker and the checkbox of a line together, keeping its text', () => {
     const line = lineOf('<ol start="2"><li><input type="checkbox"> Invite your family</li></ol>');
-    const itemMarks = { listMarkerChanged: true, listMarkerDetails: [0], checkboxDetails: [1] };
+    const itemMarks = { listMarkerChanged: true, checkboxChanged: true };
     const marked = markChanges(line, rangesOf(line.text, ['family']), ADDED_TEXT_MARKER, itemMarks);
     const fragment = fragmentOf(marked);
 
-    expect(fragment.querySelectorAll(`[${DETAILS_ATTRIBUTE}]`).length).toBe(2);
+    expect(fragment.querySelectorAll(`.${LIST_MARKER_CLASS}, .${CHECKBOX_CLASS}`).length).toBe(2);
     expect(readerText(fragment.childNodes)).toBe(line.text);
     expect(marked).toContain(added('family'));
   });

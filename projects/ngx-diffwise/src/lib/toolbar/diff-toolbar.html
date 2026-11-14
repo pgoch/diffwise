@@ -1,0 +1,17 @@
+@if (stats().hasChanges) {
+  @if (showsStats()) {
+    <div class="diffwise-html-diff__diff-stats">
+      @for (stat of shownStats(); track stat.kind) {
+        <span
+          class="diffwise-html-diff__diff-stat diffwise-html-diff__diff-stat--{{ stat.kind }}"
+          role="img"
+          tabindex="0"
+          [attr.aria-label]="stat.label"
+          >{{ stat.text }}</span
+        >
+      }
+    </div>
+  }
+} @else {
+  <span class="diffwise-html-diff__no-changes">{{ texts().noChangesLabel }}</span>
+}

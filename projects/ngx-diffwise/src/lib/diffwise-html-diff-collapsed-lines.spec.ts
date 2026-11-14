@@ -1,7 +1,12 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseDividerStyle, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
+import {
+  DiffwiseDividerStyle,
+  DiffwiseLanguage,
+  DiffwiseLayout,
+  DiffwiseNoChangesView,
+} from './config/option-values';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -231,8 +236,9 @@ describe('DiffwiseHtmlDiff hidden lines', () => {
     ]);
   });
 
-  it('hides every line of identical versions behind one bar', () => {
-    const element = elementOf(render({}, OLD_HTML, OLD_HTML));
+  it('hides every line of identical versions behind one bar when they show as a diff', () => {
+    const options = { noChangesView: DiffwiseNoChangesView.Diff };
+    const element = elementOf(render(options, OLD_HTML, OLD_HTML));
 
     expect(barTexts(element)).toEqual(['Show hidden lines: 60']);
     expect(shownNumbers(element)).toEqual([]);

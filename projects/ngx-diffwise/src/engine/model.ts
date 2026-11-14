@@ -304,10 +304,6 @@ export const ChangeDetailKind = {
   Link: 'link',
   /** An image with another file, size or alternative text in the same place. */
   Image: 'image',
-  /** The marker of a list item, such as a bullet that became a number, or its level. */
-  ListMarker: 'listMarker',
-  /** A checkbox at the start of a list item, checked or cleared. */
-  Checkbox: 'checkbox',
 } as const;
 
 export type ChangeDetailKind = (typeof ChangeDetailKind)[keyof typeof ChangeDetailKind];
@@ -351,43 +347,11 @@ export interface ImageChangeDetail {
 }
 
 /**
- * What can differ in the marker of a list item and gets a description. Another number of an item
- * reads as changed text, so it is marked without one.
+ * A change besides changed text, described in the view. Changes of list items, such as bullets
+ * that became numbers or a checked checkbox, are marked without a description, as both versions
+ * show them.
  */
-export const ListMarkerProperty = {
-  /** Bullets or numbers; a paragraph turned into a list item, or the other way round. */
-  ListType: 'listType',
-  /** Look of the bullets or numbers within the same type, such as numbers → letters. */
-  Style: 'style',
-  Level: 'level',
-} as const;
-
-export type ListMarkerProperty = (typeof ListMarkerProperty)[keyof typeof ListMarkerProperty];
-
-/** The marker of a list item that differs between the versions. */
-export interface ListMarkerChangeDetail {
-  readonly kind: typeof ChangeDetailKind.ListMarker;
-  /** `null` when the old line shows no marker, such as a paragraph. */
-  readonly oldMarker: ListMarker | null;
-  /** `null` when the new line shows no marker. */
-  readonly newMarker: ListMarker | null;
-  /** Properties that differ, in the order of `ListMarkerProperty`. */
-  readonly changedProperties: readonly ListMarkerProperty[];
-}
-
-/** A checkbox at the start of a list item that was checked or cleared. */
-export interface CheckboxChangeDetail {
-  readonly kind: typeof ChangeDetailKind.Checkbox;
-  readonly oldState: CheckboxState;
-  readonly newState: CheckboxState;
-}
-
-/** A change of a list item besides its text: its marker, or its checkbox. */
-export type ListItemChangeDetail = ListMarkerChangeDetail | CheckboxChangeDetail;
-
-/** A change besides changed text, described in the view. */
-export type ChangeDetail =
-  FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail | ListItemChangeDetail;
+export type ChangeDetail = FormattingChangeDetail | LinkChangeDetail | ImageChangeDetail;
 
 /** Changes described in the view: their ranges in each line and their details. */
 export interface DescribedChanges {

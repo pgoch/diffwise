@@ -2,7 +2,7 @@ import { type ColumnMatches, alignTableColumns } from './compare/align-table-col
 import { diffFormats } from './compare/diff-formats';
 import { diffImages } from './compare/diff-images';
 import { diffLines } from './compare/diff-lines';
-import { diffListMarkers, itemNumberChanged } from './compare/diff-list-markers';
+import { checkboxChanged, listMarkerChanged } from './compare/diff-list-markers';
 import { type CellChanges, allChangedText, diffTableCells } from './compare/diff-table-cells';
 import { diffWords } from './compare/diff-words';
 import { parseHtml } from './html/parse-html';
@@ -26,7 +26,6 @@ import {
 import { addTableColumns } from './mark/table-columns';
 import {
   type ChangeDetail,
-  ChangeDetailKind,
   type DescribedChanges,
   type DiffOptions,
   type HtmlDiff,
@@ -34,7 +33,6 @@ import {
   type Line,
   type LineChange,
   LineChangeKind,
-  type ListItemChangeDetail,
   type MarkedRange,
   type ViewLine,
   type ViewRow,
@@ -48,7 +46,6 @@ const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 
 /** Whole cells of a pair that is not a pair of table rows. */
 const NO_CELLS: readonly number[] = [];
-const NO_DESCRIBED_CHANGES: DescribedChanges = { oldRanges: [], newRanges: [], details: [] };
 
 /**
  * Compares two HTML documents and returns the rows of the side-by-side view with change counts.
@@ -124,20 +121,20 @@ class ViewRowBuilder {
 
   /**
    * A row of a changed pair. Removed text and described changes are marked in the old line, added
-   * text and described changes in the new one; their markers point to the row's details. Details of
-   * the list item come first. A cell with no place on the other side is marked whole. A pair
-   * outside tables also becomes one merged line, when the diff merges lines.
+   * text and described changes in the new one; their markers point to the row's details. A changed
+   * list marker and checkbox are marked without details. A cell with no place on the other side is
+   * marked whole. A pair outside tables also becomes one merged line, when the diff merges lines.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
-    const itemDetails = diffListMarkers(oldLine, newLine, this.options);
     const cellChanges = this.cellChangesOf(oldLine, newLine);
     const changedText = allChangedText(oldLine, newLine, cellChanges);
     const formatChanges = diffFormats(oldLine, newLine, changedText, this.options);
     const imageChanges = diffImages(oldLine, newLine, changedText, this.options);
-    const itemChanges = { ...NO_DESCRIBED_CHANGES, details: itemDetails };
-    const textChanges = joinDescribedChanges(formatChanges, imageChanges);
-    const describedChanges = joinDescribedChanges(itemChanges, textChanges);
-    const itemMarks = listItemMarks(itemDetails, itemNumberChanged(oldLine, newLine));
+    const describedChanges = joinDescribedChanges(formatChanges, imageChanges);
+    const itemMarks: ListItemMarks = {
+      listMarkerChanged: listMarkerChanged(oldLine, newLine, this.options),
+      checkboxChanged: checkboxChanged(oldLine, newLine),
+    };
     const { wordChanges, removedCells, addedCells } = cellChanges;
     const oldRanges = [...wordChanges.removed, ...describedChanges.oldRanges];
     const newRanges = [...wordChanges.added, ...describedChanges.newRanges];
@@ -288,25 +285,4 @@ function joinDescribedChanges(first: DescribedChanges, second: DescribedChanges)
 function withShiftedDetails(range: MarkedRange, shift: number): MarkedRange {
   const detailIndices = range.detailIndices?.map((detailIndex) => detailIndex + shift);
   return { ...range, detailIndices };
-}
-
-/**
- * Marks of a changed list item: positions of the details of its marker and checkbox, among the
- * first details. Another number alone marks the marker without details.
- */
-function listItemMarks(
-  itemDetails: readonly ListItemChangeDetail[],
-  numberChanged: boolean,
-): ListItemMarks {
-  const listMarkerDetails = positionsOfKind(itemDetails, ChangeDetailKind.ListMarker);
-
-  return {
-    listMarkerChanged: numberChanged || listMarkerDetails.length > 0,
-    listMarkerDetails,
-    checkboxDetails: positionsOfKind(itemDetails, ChangeDetailKind.Checkbox),
-  };
-}
-
-function positionsOfKind(details: readonly ChangeDetail[], kind: ChangeDetailKind): number[] {
-  return details.flatMap((detail, position) => (detail.kind === kind ? [position] : []));
 }
