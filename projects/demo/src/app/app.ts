@@ -5,9 +5,11 @@ import {
   inject,
   resource,
   signal,
+  viewChild,
 } from '@angular/core';
 import {
   Diffwise,
+  DiffwiseActiveChangeStyle,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
@@ -144,6 +146,11 @@ const DIFF_WIDTH_CHOICES: readonly Choice<DiffWidth>[] = [
   { value: DiffWidth.Narrow, label: '480 px' },
 ];
 
+const ACTIVE_CHANGE_STYLE_CHOICES: readonly Choice<DiffwiseActiveChangeStyle>[] = [
+  { value: DiffwiseActiveChangeStyle.Outline, label: 'Outline' },
+  { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
+];
+
 const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
   { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
   { value: DiffwiseDividerStyle.Line, label: 'Line' },
@@ -261,6 +268,7 @@ export class App {
   protected readonly noChangesViews = NO_CHANGES_VIEW_CHOICES;
   protected readonly diffWidths = DIFF_WIDTH_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
+  protected readonly activeChangeStyles = ACTIVE_CHANGE_STYLE_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
   protected readonly alignments = ALIGNMENT_CHOICES;
@@ -298,6 +306,9 @@ export class App {
   /** The numbers of the last comparison, from the event of the diff. */
   protected readonly lastStats = signal<DiffwiseDiffStats | null>(null);
 
+  /** The diff of the sample, whose methods step between the blocks of changes. */
+  private readonly diff = viewChild(DiffwiseHtmlDiff);
+
   /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
 
@@ -323,6 +334,16 @@ export class App {
   /** Changes options of the global configuration, as an app can do while it runs. */
   protected update(changes: DiffwiseConfigOptions): void {
     this.diffwise.updateConfig(changes);
+  }
+
+  /** Steps to the previous block of changes with the method of the diff, as an app can. */
+  protected goToPreviousChange(): void {
+    this.diff()?.goToPreviousChange();
+  }
+
+  /** Steps to the next block of changes with the method of the diff, as an app can. */
+  protected goToNextChange(): void {
+    this.diff()?.goToNextChange();
   }
 
   /** Switches the theme with the method of the service for each color mode. */

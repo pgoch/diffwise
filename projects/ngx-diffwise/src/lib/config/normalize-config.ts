@@ -5,6 +5,7 @@ import type { DiffwiseCustomTexts } from '../i18n/texts';
 import { DIFF_COLOR_VARIABLES, type DiffwiseDiffColors, type ThemeDiffColors } from './diff-colors';
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import {
+  DiffwiseActiveChangeStyle,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
@@ -84,6 +85,8 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   highlightWholeLines: isBoolean,
   hideUnchangedLines: isBoolean,
   contextLines: isContextLines,
+  showNavigationToolbar: isBoolean,
+  activeChangeStyle: isActiveChangeStyle,
   showDiffStats: isBoolean,
   noChangesView: isNoChangesView,
   dividerStyle: isDividerStyle,
@@ -242,6 +245,10 @@ function isInlineDiffStyle(value: unknown): boolean {
 
 function isNoChangesView(value: unknown): boolean {
   return isValueOf(DiffwiseNoChangesView, value);
+}
+
+function isActiveChangeStyle(value: unknown): boolean {
+  return isValueOf(DiffwiseActiveChangeStyle, value);
 }
 
 function isLineNumberStyle(value: unknown): boolean {

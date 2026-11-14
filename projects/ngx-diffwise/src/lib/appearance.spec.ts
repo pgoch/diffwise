@@ -37,6 +37,18 @@ describe('appearanceClasses', () => {
     );
   });
 
+  it('adds a class for the arrow at the active change, but none for the default frame', () => {
+    const indicator = new DiffwiseConfig({ activeChangeStyle: 'indicator' });
+    const outline = new DiffwiseConfig({ activeChangeStyle: 'outline' });
+
+    expect(appearanceClasses(indicator, {}, DiffwiseLayout.SideBySide)).toContain(
+      'diffwise-html-diff--active-change-style-indicator',
+    );
+    expect(appearanceClasses(outline, {}, DiffwiseLayout.SideBySide)).toEqual(
+      DEFAULT_LEVEL_CLASSES,
+    );
+  });
+
   it('adds no class for the layout an option asks for, only for the one shown', () => {
     const config = new DiffwiseConfig({ layout: DiffwiseLayout.Inline });
 

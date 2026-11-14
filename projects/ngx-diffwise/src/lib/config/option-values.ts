@@ -120,6 +120,17 @@ export const DiffwiseNoChangesView = {
 export type DiffwiseNoChangesView =
   (typeof DiffwiseNoChangesView)[keyof typeof DiffwiseNoChangesView];
 
+/** How the diff shows the block of changes that the navigation has stepped to. */
+export const DiffwiseActiveChangeStyle = {
+  /** A frame around the whole block. */
+  Outline: 'outline',
+  /** An arrow at the number of the first line of the block. */
+  Indicator: 'indicator',
+} as const;
+
+export type DiffwiseActiveChangeStyle =
+  (typeof DiffwiseActiveChangeStyle)[keyof typeof DiffwiseActiveChangeStyle];
+
 /** Fonts of the diff; an app can also give the name of a font it loads. */
 export const DiffwiseFontFamily = {
   /** The font of the element around the diff. */

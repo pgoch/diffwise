@@ -1,0 +1,87 @@
+/*
+ * The block of changes the navigation has stepped to: a frame around its rows, or an arrow at the
+ * number of its first line. Both take the color of the focus.
+ */
+
+.diffwise-html-diff__row--active {
+  position: relative;
+}
+
+/*
+ * The frame: each row of the block draws its sides, the first row the top and the last row the
+ * bottom, above the cells. Without line numbers, the arrow has no place, so the frame shows.
+ */
+.diffwise-html-diff:is(
+    :not(.diffwise-html-diff--active-change-style-indicator),
+    .diffwise-html-diff--no-line-numbers
+  )
+  .diffwise-html-diff__row--active::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  border-inline: 2px solid var(--diffwise-focus);
+  content: '';
+  pointer-events: none;
+}
+
+.diffwise-html-diff:is(
+    :not(.diffwise-html-diff--active-change-style-indicator),
+    .diffwise-html-diff--no-line-numbers
+  )
+  .diffwise-html-diff__row--active-first::after {
+  border-top: 2px solid var(--diffwise-focus);
+}
+
+.diffwise-html-diff:is(
+    :not(.diffwise-html-diff--active-change-style-indicator),
+    .diffwise-html-diff--no-line-numbers
+  )
+  .diffwise-html-diff__row--active-last::after {
+  border-bottom: 2px solid var(--diffwise-focus);
+}
+
+/* The arrow: the columns of numbers grow by its width, at the side away from the digits. */
+.diffwise-html-diff--active-change-style-indicator:not(.diffwise-html-diff--no-line-numbers) {
+  --diffwise-line-number-width: calc(
+    var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.75rem
+  );
+}
+
+/*
+ * It stands at the old number of the first line, or at the new number of an added line, which has
+ * no old one; the number takes the color of the arrow.
+ */
+.diffwise-html-diff--active-change-style-indicator
+  .diffwise-html-diff__row--active-first
+  > .diffwise-html-diff__line-number--old
+  > .diffwise-html-diff__line-number-value,
+.diffwise-html-diff--active-change-style-indicator
+  .diffwise-html-diff__row--active-first:not(
+    :has(> .diffwise-html-diff__line-number--old > .diffwise-html-diff__line-number-value)
+  )
+  > .diffwise-html-diff__line-number--new
+  > .diffwise-html-diff__line-number-value {
+  position: relative;
+  color: var(--diffwise-focus);
+  font-weight: 700;
+}
+
+.diffwise-html-diff--active-change-style-indicator
+  .diffwise-html-diff__row--active-first
+  > .diffwise-html-diff__line-number--old
+  > .diffwise-html-diff__line-number-value::before,
+.diffwise-html-diff--active-change-style-indicator
+  .diffwise-html-diff__row--active-first:not(
+    :has(> .diffwise-html-diff__line-number--old > .diffwise-html-diff__line-number-value)
+  )
+  > .diffwise-html-diff__line-number--new
+  > .diffwise-html-diff__line-number-value::before {
+  position: absolute;
+  top: 50%;
+  left: calc(4px - 0.75rem);
+  border-width: 0.4em 0 0.4em 0.55em;
+  border-style: solid;
+  border-color: transparent transparent transparent var(--diffwise-focus);
+  content: '';
+  transform: translateY(-50%);
+}

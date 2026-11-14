@@ -12,6 +12,10 @@ export const POLISH_TEXTS: UiTexts = {
   removedLinesLabel: 'Usunięte linie: {count}',
   changedLinesLabel: 'Zmienione linie: {count}',
   noChangesLabel: 'Brak zmian',
+  previousChangeLabel: 'Poprzednia zmiana',
+  nextChangeLabel: 'Następna zmiana',
+  currentChangeLabel: 'Zmiana {current} z {total}',
+  changeCountLabel: 'Zmiany: {count}',
 
   formattingChangeLabel: 'Zmiana formatowania',
   linkChangeLabel: 'Zmieniony adres linku',

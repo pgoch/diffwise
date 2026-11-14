@@ -76,6 +76,13 @@
   white-space: nowrap;
 }
 
+/* In a line of the single column, the old marker stands right before the new one, 1px apart. */
+.diffwise-html-diff__content
+  .diffwise-html-diff__highlight--list-marker
+  > .diffwise-html-diff__highlight--list-marker {
+  margin-inline-end: 1px;
+}
+
 .diffwise-html-diff__highlight--list-marker::before {
   content: attr(data-diffwise-list-marker);
 }
@@ -133,11 +140,11 @@
   pointer-events: none;
 }
 
-/* A line of the single column shows the old checkbox before the new one, apart from it. */
+/* A line of the single column shows the old checkbox right before the new one, 1px apart. */
 .diffwise-html-diff__content
   .diffwise-html-diff__highlight--checkbox
   + .diffwise-html-diff__highlight--checkbox {
-  margin-inline-start: 0.3em;
+  margin-inline-start: 1px;
 }
 
 .diffwise-html-diff__highlight--checkbox::after {

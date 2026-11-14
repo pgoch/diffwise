@@ -13,6 +13,7 @@ const VALUE_MODIFIERS = {
   highlightStyle: 'diffwise-html-diff--highlight-style-',
   inlineDiffStyle: 'diffwise-html-diff--inline-diff-style-',
   noChangesView: 'diffwise-html-diff--no-changes-view-',
+  activeChangeStyle: 'diffwise-html-diff--active-change-style-',
   lineNumberStyle: 'diffwise-html-diff--line-number-style-',
   lineNumberAlignment: 'diffwise-html-diff--line-number-alignment-',
   dividerStyle: 'diffwise-html-diff--divider-style-',

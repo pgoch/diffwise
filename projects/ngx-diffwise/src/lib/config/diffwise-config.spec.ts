@@ -1,5 +1,6 @@
 import { DiffwiseConfig, type DiffwiseConfigOptions } from './diffwise-config';
 import {
+  DiffwiseActiveChangeStyle,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
@@ -38,6 +39,8 @@ const DEFAULT_OPTIONS = {
   highlightWholeLines: false,
   hideUnchangedLines: false,
   contextLines: 3,
+  showNavigationToolbar: true,
+  activeChangeStyle: DiffwiseActiveChangeStyle.Outline,
   showDiffStats: true,
   noChangesView: DiffwiseNoChangesView.Message,
   dividerStyle: DiffwiseDividerStyle.Column,

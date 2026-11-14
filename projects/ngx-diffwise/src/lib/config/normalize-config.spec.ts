@@ -1,6 +1,7 @@
 import type { DiffwiseConfigOptions } from './diffwise-config';
 import { normalizeConfig } from './normalize-config';
 import {
+  DiffwiseActiveChangeStyle,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
@@ -149,6 +150,7 @@ describe('normalizeConfig', () => {
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
       toolbarFontSize: 1.2,
+      showNavigationToolbar: false,
       showDiffStats: false,
     };
 
@@ -168,6 +170,7 @@ describe('normalizeConfig', () => {
       lineNumberFontSize: 0.5,
       tooltipFontSize: 10,
       toolbarFontSize: 1.2,
+      showNavigationToolbar: false,
       showDiffStats: false,
     });
     expect(console.warn).not.toHaveBeenCalled();
@@ -230,6 +233,7 @@ describe('normalizeConfig', () => {
       { tooltipFontSize: 0 },
       { toolbarFontSize: 10.5 },
       { showDiffStats: 'false' },
+      { showNavigationToolbar: 1 },
     ];
 
     for (const options of invalidOptions) {
@@ -314,6 +318,14 @@ describe('normalizeConfig', () => {
     }
 
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
+  it('keeps how the active change shows, and ignores another look with a warning', () => {
+    expect(normalizeConfig({ activeChangeStyle: 'indicator' })).toEqual({
+      activeChangeStyle: DiffwiseActiveChangeStyle.Indicator,
+    });
+    expect(normalizeConfig({ activeChangeStyle: 'arrow' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledOnce();
   });
 
   it('keeps what the same versions show, and ignores another value with a warning', () => {

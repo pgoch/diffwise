@@ -2,6 +2,7 @@ import type { DiffwiseCustomTexts } from '../i18n/texts';
 import type { DiffwiseDiffColors } from './diff-colors';
 import { normalizeConfig } from './normalize-config';
 import {
+  DiffwiseActiveChangeStyle,
   DiffwiseAlignment,
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
@@ -93,6 +94,16 @@ export interface DiffwiseConfigOptions {
    * whole number from 1 to 100. Default: `3`.
    */
   readonly contextLines?: number;
+  /**
+   * Shows arrows to the previous and the next block of changes in the toolbar above the diff, with
+   * the position of the block among all of them. Default: `true`.
+   */
+  readonly showNavigationToolbar?: boolean;
+  /**
+   * How the block of changes that the navigation has stepped to shows: a frame around it, or an
+   * arrow at the number of its first line. Default: `DiffwiseActiveChangeStyle.Outline`.
+   */
+  readonly activeChangeStyle?: DiffwiseActiveChangeStyle;
   /**
    * Shows the numbers of added, removed and changed lines in the toolbar above the diff.
    * Default: `true`.
@@ -224,6 +235,12 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
   readonly contextLines: number = 3;
+
+  /** Shows arrows between the blocks of changes in the toolbar above the diff. */
+  readonly showNavigationToolbar: boolean = true;
+
+  /** How the block of changes that the navigation has stepped to shows. */
+  readonly activeChangeStyle: DiffwiseActiveChangeStyle = DiffwiseActiveChangeStyle.Outline;
 
   /** Shows the numbers of changed lines in the toolbar above the diff. */
   readonly showDiffStats: boolean = true;

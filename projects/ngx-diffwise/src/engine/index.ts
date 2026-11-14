@@ -25,6 +25,7 @@ export {
   type ViewLine,
   type ViewRow,
 } from './model';
+export { type ChangeBlock, areChangeBlocksEqual, changeBlocks } from './view/change-blocks';
 export {
   type CollapseSettings,
   type CollapsibleRow,
