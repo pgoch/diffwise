@@ -15,8 +15,12 @@ const REMOVED_LIST_MARKER =
   'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--list-marker"';
 const ADDED_LIST_MARKER =
   'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added diffwise-html-diff__highlight--list-marker"';
+const REMOVED_CHECKBOX =
+  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--checkbox"';
 const ADDED_CHECKBOX =
   'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added diffwise-html-diff__highlight--checkbox"';
+const CHECKBOX_FRAMES_SELECTOR = 'label > .diffwise-html-diff__highlight--checkbox';
+const CHECKED_ATTRIBUTE = 'checked';
 const FIRST_DETAIL = 'data-diffwise-change-details="0"';
 const ARROW = '<span class="diffwise-html-diff__image-change-arrow" aria-hidden="true"></span>';
 const LINE_ITEM = 'data-diffwise-line-item=""';
@@ -228,15 +232,32 @@ describe('diffHtml with merged lines', () => {
     );
   });
 
-  it('frames a checked checkbox as in the new line', () => {
+  it('draws the old state of a checked checkbox before the new one, each framed', () => {
     expect(
       mergedLine(
         '<ul><li><input type="checkbox"> Buy milk</li></ul>',
         '<ul><li><input type="checkbox" checked> Buy oat milk</li></ul>',
       ),
     ).toBe(
-      `<ul><li value="1" ${LINE_ITEM}><ins ${ADDED_CHECKBOX}><input type="checkbox" checked="" disabled=""></ins> Buy <ins ${ADDED}>oat</ins> milk</li></ul>`,
+      `<ul><li value="1" ${LINE_ITEM}><del ${REMOVED_CHECKBOX}><input type="checkbox" disabled=""></del><ins ${ADDED_CHECKBOX}><input type="checkbox" checked="" disabled=""></ins> Buy <ins ${ADDED}>oat</ins> milk</li></ul>`,
     );
+  });
+
+  it('draws the old state of a cleared checkbox in its label, without the id of the new one', () => {
+    const line = mergedLine(
+      '<ul><li><label><input type="checkbox" id="milk" checked> Buy milk</label></li></ul>',
+      '<ul><li><label><input type="checkbox" id="milk"> Buy milk</label></li></ul>',
+    );
+    const frames = Array.from(parsed(line).querySelectorAll(CHECKBOX_FRAMES_SELECTOR));
+    const checkboxes = frames.map((frame) => frame.firstElementChild);
+
+    expect(frames.map((frame) => frame.localName)).toEqual(['del', 'ins']);
+    expect(checkboxes.map((checkbox) => checkbox?.hasAttribute(CHECKED_ATTRIBUTE))).toEqual([
+      true,
+      false,
+    ]);
+    expect(parsed(line).querySelectorAll(ID_SELECTOR)).toHaveLength(1);
+    expect(checkboxes[1]?.matches(ID_SELECTOR)).toBe(true);
   });
 
   it('merges a line inside a quote and inside a nested list', () => {

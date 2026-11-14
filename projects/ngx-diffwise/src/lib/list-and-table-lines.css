@@ -133,6 +133,13 @@
   pointer-events: none;
 }
 
+/* A line of the single column shows the old checkbox before the new one, apart from it. */
+.diffwise-html-diff__content
+  .diffwise-html-diff__highlight--checkbox
+  + .diffwise-html-diff__highlight--checkbox {
+  margin-inline-start: 0.3em;
+}
+
 .diffwise-html-diff__highlight--checkbox::after {
   position: absolute;
   inset: 0;

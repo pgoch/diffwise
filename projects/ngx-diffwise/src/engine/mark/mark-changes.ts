@@ -5,6 +5,7 @@ import {
   CHANGE_DETAILS_ATTRIBUTE,
   CONTINUED_CELL_ATTRIBUTE,
   CONTINUED_ITEM_ATTRIBUTE,
+  CheckboxState,
   DETAIL_INDEX_SEPARATOR,
   LINE_ITEM_ATTRIBUTE,
   LIST_MARKER_ATTRIBUTE,
@@ -38,6 +39,9 @@ const LIST_MARKER_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--list-marker`;
 
 /** Added to the classes of a marker around a checkbox, which frames the checkbox. */
 const CHECKBOX_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--checkbox`;
+const CHECKBOX_FRAME_SELECTOR = `.${CHECKBOX_HIGHLIGHT_CLASS}`;
+const ID_ATTRIBUTE = 'id';
+const CHECKED_ATTRIBUTE = 'checked';
 
 /** The element that wraps changed text, with its classes. */
 export interface ChangeMarker {
@@ -151,6 +155,35 @@ export function drawRemovedListMarker(
   }
 
   drawListMarker(newMarker, oldMarker, REMOVED_TEXT_MARKER);
+}
+
+/**
+ * Draws the old state of a checked or cleared checkbox before the new checkbox, which the content
+ * already shows framed, for a line that shows both versions. The old checkbox is a copy of the new
+ * one in the old state, without the `id`, which stays unique.
+ */
+export function drawRemovedCheckbox(
+  content: DocumentFragment,
+  oldState: CheckboxState | null,
+  { checkboxChanged }: ListItemMarks,
+): void {
+  const newFrame = startedItemIn(content)?.querySelector(CHECKBOX_FRAME_SELECTOR) ?? null;
+  const newCheckbox = newFrame?.firstElementChild ?? null;
+
+  if (newFrame === null || newCheckbox === null || oldState === null || !checkboxChanged) {
+    return;
+  }
+
+  const oldCheckbox = newCheckbox.cloneNode(false) as Element;
+  const oldFrame = markerElement(
+    markerWithClass(REMOVED_TEXT_MARKER, CHECKBOX_HIGHLIGHT_CLASS),
+    NO_DETAILS,
+  );
+
+  oldCheckbox.removeAttribute(ID_ATTRIBUTE);
+  oldCheckbox.toggleAttribute(CHECKED_ATTRIBUTE, oldState === CheckboxState.Checked);
+  oldFrame.append(oldCheckbox);
+  newFrame.before(oldFrame);
 }
 
 /**

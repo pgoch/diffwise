@@ -15,6 +15,7 @@ import {
   REMOVED_TEXT_MARKER,
   canHoldMarker,
   canHoldMarkerIn,
+  drawRemovedCheckbox,
   drawRemovedListMarker,
   wrapRanges,
 } from './mark-changes';
@@ -86,8 +87,9 @@ export interface InsertionPoint {
 /**
  * Merges a changed line pair into one line: the HTML of the new line with its changes marked, and
  * in it the text removed from the old line, in its own formatting, where it stood. A changed image
- * shows as the old and the new image, a changed list marker as the old and the new marker.
- * Returns `null` for a pair that does not merge into valid HTML, which then stays two lines.
+ * shows as the old and the new image, a changed list marker as the old and the new marker, and a
+ * checked or cleared checkbox as the old and the new checkbox. Returns `null` for a pair that does
+ * not merge into valid HTML, which then stays two lines.
  */
 export function mergeLines(pair: ChangedPair): string | null {
   const { oldLine, newLine, markedNewHtml, itemMarks } = pair;
@@ -117,6 +119,7 @@ export function mergeLines(pair: ChangedPair): string | null {
   }
 
   drawRemovedListMarker(newContent, oldLine.marker, itemMarks);
+  drawRemovedCheckbox(newContent, oldLine.checkbox, itemMarks);
 
   return serialized(newContent);
 }

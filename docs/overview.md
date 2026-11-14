@@ -21,7 +21,7 @@ Version 0.3 shows changes of the text, the formatting, the links and the images 
 | Image | The old image is framed in red, the new one in green, with an icon between the two sides and a tooltip that shows the changed file, size or alternative text; the frame follows the marking style |
 | List markers, e.g. bullets → numbers | The line is tinted; the markers are marked like changed words, with no icon or tooltip, as both sides show them |
 | Item number, e.g. 3. → 4. | The line is tinted; the numbers are marked like changed words, with no icon or tooltip, also when an added or removed item shifts them |
-| Checkbox in a task list | Framed like an image when checked or cleared, with no icon or tooltip |
+| Checkbox in a task list | Framed like an image when checked or cleared, with no icon or tooltip; the single column shows the old checkbox before the new one |
 | Table | Each row is a line, and the rows look like one table. New rows and columns are marked whole; otherwise only the changed words in cells. Unchanged cells keep their colors |
 | Added or removed paragraph, list item or table row | Shown on one side, with an empty space on the other |
 

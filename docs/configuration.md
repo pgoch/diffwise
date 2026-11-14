@@ -296,7 +296,7 @@ The component element shows the options in its classes:
 | `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
 | `diffwise-html-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
 | `diffwise-html-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
-| `diffwise-html-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background |
+| `diffwise-html-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background. A merged line of the single column has two: the old checkbox, then the new one |
 | `diffwise-html-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-html-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
 | `diffwise-html-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
 | `diffwise-html-diff__change-details-count` | The number of changes on the icon of several changes |
