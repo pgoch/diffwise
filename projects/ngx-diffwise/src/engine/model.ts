@@ -419,8 +419,10 @@ export interface ViewRow {
   /** Changes besides changed text, such as formatting; markers point to them by position. */
   readonly changeDetails: readonly ChangeDetail[];
   /**
-   * The changed pair as one line: the new line with the removed text in it. `null` in other rows,
-   * for a pair that cannot be merged, such as table rows, and when the diff does not merge lines.
+   * The row as one line of the merged single column: a changed pair as the new line with the
+   * removed text in it, and any line of a table whose two versions show as one table, in the
+   * columns of both versions. `null` in other rows, for a pair that does not merge, and when the
+   * diff does not merge lines.
    */
   readonly mergedLine: ViewLine | null;
 }
@@ -490,6 +492,9 @@ export interface HtmlDiffSettings {
 
 /** How the single-column view shows the rows of a diff. */
 export interface SingleColumnSettings {
-  /** Shows a changed pair as its merged line, where it has one, instead of old above new. */
+  /**
+   * Shows each row that has a merged line as that line: a changed pair instead of its old line
+   * above its new one, and a line of a merged table in the columns of both versions.
+   */
   readonly showsMergedLines: boolean;
 }

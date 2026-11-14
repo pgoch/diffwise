@@ -15,10 +15,22 @@ export interface ColumnMatch {
   readonly oldToNew: ReadonlyMap<number, number>;
 }
 
+/** An old table and a new table whose rows are paired, and their matched columns. */
+export interface TablePair {
+  /** Position of the old table among the tables of the old version. */
+  readonly oldTable: number;
+  /** Position of the new table among the tables of the new version. */
+  readonly newTable: number;
+  readonly columns: ColumnMatch;
+}
+
+/** A row of a table. */
+type TableRowLine = Line & { readonly table: number };
+
 /** An old and a new row paired as unchanged or changed. */
 interface RowPair {
-  readonly oldRow: Line;
-  readonly newRow: Line;
+  readonly oldRow: TableRowLine;
+  readonly newRow: TableRowLine;
 }
 
 /** Text of a cell that spans one column, and its column. */
@@ -29,14 +41,19 @@ interface ColumnText {
 
 /** Matched columns of each pair of tables whose rows are paired. */
 export class ColumnMatches {
-  constructor(private readonly matches: ReadonlyMap<string, ColumnMatch>) {}
+  constructor(private readonly matches: ReadonlyMap<string, TablePair>) {}
 
   /** Columns of the tables of two paired lines; `null` unless both are rows of matched tables. */
   of(oldLine: Line, newLine: Line): ColumnMatch | null {
     const match = this.matches.get(tablePairKey(oldLine, newLine));
     const isMatched = isTableRow(oldLine) && isTableRow(newLine) && match !== undefined;
 
-    return isMatched ? match : null;
+    return isMatched ? match.columns : null;
+  }
+
+  /** Each pair of tables whose rows are paired, with their matched columns. */
+  tablePairs(): TablePair[] {
+    return [...this.matches.values()];
   }
 }
 
@@ -68,10 +85,13 @@ export function alignTableColumns(
     }
   }
 
-  const matches = new Map<string, ColumnMatch>();
+  const matches = new Map<string, TablePair>();
 
   for (const [key, rowPairs] of rowPairsOfTables) {
-    matches.set(key, matchColumns(rowPairs, options));
+    const [{ oldRow, newRow }] = rowPairs;
+    const columns = matchColumns(rowPairs, options);
+
+    matches.set(key, { oldTable: oldRow.table, newTable: newRow.table, columns });
   }
 
   return new ColumnMatches(matches);
@@ -173,6 +193,6 @@ function tablePairKey(oldLine: Line, newLine: Line): string {
   return JSON.stringify([oldLine.table, newLine.table]);
 }
 
-function isTableRow(line: Line): boolean {
+function isTableRow(line: Line): line is TableRowLine {
   return line.kind === LineKind.TableRow && line.table !== null;
 }

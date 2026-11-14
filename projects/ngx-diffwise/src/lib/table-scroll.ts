@@ -8,12 +8,15 @@ const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 
 const OLD_CONTENT_SELECTOR = '.diffwise-html-diff__content--old';
 const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
-const TABLE_LINE_SELECTOR = `:is(${OLD_CONTENT_SELECTOR}, ${NEW_CONTENT_SELECTOR})[${TABLE_ATTRIBUTE}]`;
+
+/** The content of a merged line, such as a changed row of a table whose versions show as one. */
+const MERGED_CONTENT_SELECTOR = '.diffwise-html-diff__content--merged';
+const TABLE_LINE_SELECTOR = `:is(${OLD_CONTENT_SELECTOR}, ${NEW_CONTENT_SELECTOR}, ${MERGED_CONTENT_SELECTOR})[${TABLE_ATTRIBUTE}]`;
 
 /**
  * Scrolls the lines of a table together, so a table wider than its column scrolls as one, by the
  * scrollbar under its last row or by any of its rows. Each version scrolls its own tables; in the
- * single column, the lines of both versions of a table scroll together.
+ * single column, the lines of both versions of a table scroll together, its merged lines too.
  */
 export function scrollTablesTogether(host: HTMLElement, signal: AbortSignal): void {
   const options = { capture: true, passive: true, signal };

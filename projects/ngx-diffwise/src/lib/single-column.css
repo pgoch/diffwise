@@ -251,7 +251,14 @@
   text-decoration-color: color-mix(in srgb, var(--diffwise-removed-accent) 55%, transparent);
 }
 
-/* A gap between removed text and the added text that replaces it. */
+/*
+ * A gap between removed text and the added text that replaces it. The space between them is for
+ * screen readers and copied text only.
+ */
 .diffwise-html-diff__content [data-diffwise-replaced] {
   margin-inline-end: 0.3em;
+}
+
+.diffwise-html-diff__content [data-diffwise-hidden-space] {
+  font-size: 0;
 }

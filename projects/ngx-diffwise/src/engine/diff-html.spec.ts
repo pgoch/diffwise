@@ -342,8 +342,10 @@ function hasMarkers({ oldLine, newLine }: ViewRow): boolean {
 }
 
 /** True for a row of list items that differ. */
+/** A changed row with a list item in either version, such as an item that became a paragraph. */
 function isChangedListItem(row: ViewRow): boolean {
-  return row.kind !== LineChangeKind.Unchanged && isListItemLine(row.newLine ?? row.oldLine);
+  const hasListItem = isListItemLine(row.oldLine) || isListItemLine(row.newLine);
+  return row.kind !== LineChangeKind.Unchanged && hasListItem;
 }
 
 function isListItemLine(line: ViewLine | null): boolean {
@@ -492,7 +494,7 @@ describe('diffHtml', () => {
       [LineChangeKind.Changed, 33, 36, ['macOS'], [', macOS', 'Linux']],
       [LineChangeKind.Changed, 35, 38, ['4.'], ['5.']],
       [LineChangeKind.Changed, 37, 40, ['5.'], ['6.']],
-      [LineChangeKind.Changed, 38, 41, ['6.'], ['7.']],
+      [LineChangeKind.Changed, 38, 41, ['6.'], []],
       [LineChangeKind.Changed, 41, 44, ['•'], ['1.']],
       [LineChangeKind.Changed, 42, 45, ['•'], ['2.']],
       [LineChangeKind.Changed, 43, 46, ['•'], ['3.']],
@@ -519,8 +521,10 @@ describe('diffHtml', () => {
   it('describes the changes of list markers and checkboxes in the long sample', () => {
     const itemChanges = sampleDiff(EN_LONG).rows.filter(hasListItemDetails).map(itemChangeSummary);
     const toNumbers = [[ListMarkerProperty.ListType]];
+    const toParagraph = [[ListMarkerProperty.ListType]];
 
     expect(itemChanges).toEqual([
+      [38, 41, toParagraph],
       [41, 44, toNumbers],
       [42, 45, toNumbers],
       [43, 46, toNumbers],

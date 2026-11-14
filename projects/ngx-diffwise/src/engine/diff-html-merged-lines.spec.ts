@@ -5,6 +5,7 @@ const ID_PREFIX = 'diff';
 const TEMPLATE_TAG = 'template';
 const REMOVED = 'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed"';
 const REPLACED = `${REMOVED} data-diffwise-replaced=""`;
+const HIDDEN_SPACE = '<span data-diffwise-hidden-space=""> </span>';
 const ADDED = 'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added"';
 const REMOVED_IMAGE =
   'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--image"';
@@ -61,7 +62,7 @@ describe('diffHtml with merged lines', () => {
         '<p>You can create up to three accounts today.</p>',
       ),
     ).toBe(
-      `<p>You can create <del ${REPLACED}>one account</del><wbr><ins ${ADDED}>up to three accounts</ins> today.</p>`,
+      `<p>You can create <del ${REPLACED}>one account</del>${HIDDEN_SPACE}<ins ${ADDED}>up to three accounts</ins> today.</p>`,
     );
   });
 
@@ -94,7 +95,7 @@ describe('diffHtml with merged lines', () => {
 
   it('separates a removed character from the one that replaces it', () => {
     expect(mergedLine('<p>Hello, world</p>', '<p>Hello. world</p>')).toBe(
-      `<p>Hello<del ${REPLACED}>,</del><wbr><ins ${ADDED}>.</ins> world</p>`,
+      `<p>Hello<del ${REPLACED}>,</del>${HIDDEN_SPACE}<ins ${ADDED}>.</ins> world</p>`,
     );
   });
 
@@ -111,7 +112,7 @@ describe('diffHtml with merged lines', () => {
         '<p>The fee is 29 USD and is charged afterwards.</p>',
       ),
     ).toBe(
-      `<p>The fee is <del ${REPLACED}>19</del><wbr><ins ${ADDED}>29</ins> USD and is charged <del ${REPLACED}>in advance</del><wbr><ins ${ADDED}>afterwards</ins>.</p>`,
+      `<p>The fee is <del ${REPLACED}>19</del>${HIDDEN_SPACE}<ins ${ADDED}>29</ins> USD and is charged <del ${REPLACED}>in advance</del>${HIDDEN_SPACE}<ins ${ADDED}>afterwards</ins>.</p>`,
     );
   });
 
@@ -119,7 +120,7 @@ describe('diffHtml with merged lines', () => {
     expect(
       mergedLine('<p>Pay <b>19 USD</b> a month now.</p>', '<p>Pay <i>29 EUR</i> a month now.</p>'),
     ).toBe(
-      `<p>Pay <b><del ${REPLACED}>19 USD</del></b><wbr><i><ins ${ADDED}>29 EUR</ins></i> a month now.</p>`,
+      `<p>Pay <b><del ${REPLACED}>19 USD</del></b>${HIDDEN_SPACE}<i><ins ${ADDED}>29 EUR</ins></i> a month now.</p>`,
     );
   });
 
@@ -223,7 +224,7 @@ describe('diffHtml with merged lines', () => {
     );
 
     expect(lines.at(-1)).toBe(
-      `<ol><li value="2" ${LINE_ITEM}><ins ${ADDED_LIST_MARKER} data-diffwise-list-marker="2."><del ${REMOVED_LIST_MARKER} data-diffwise-list-marker="3."></del></ins>Three <del ${REPLACED}>here</del><wbr><ins ${ADDED}>there</ins></li></ol>`,
+      `<ol><li value="2" ${LINE_ITEM}><ins ${ADDED_LIST_MARKER} data-diffwise-list-marker="2."><del ${REMOVED_LIST_MARKER} data-diffwise-list-marker="3."></del></ins>Three <del ${REPLACED}>here</del>${HIDDEN_SPACE}<ins ${ADDED}>there</ins></li></ol>`,
     );
   });
 
@@ -245,7 +246,7 @@ describe('diffHtml with merged lines', () => {
         '<blockquote><p>Quoted new text.</p></blockquote>',
       ),
     ).toBe(
-      `<blockquote><p>Quoted <del ${REPLACED}>old</del><wbr><ins ${ADDED}>new</ins> text.</p></blockquote>`,
+      `<blockquote><p>Quoted <del ${REPLACED}>old</del>${HIDDEN_SPACE}<ins ${ADDED}>new</ins> text.</p></blockquote>`,
     );
     expect(
       mergedLines(
@@ -253,13 +254,13 @@ describe('diffHtml with merged lines', () => {
         '<ul><li>Outer<ul><li>Inner new text</li></ul></li></ul>',
       ).at(-1),
     ).toBe(
-      `<ul><li value="1" ${CONTINUED_ITEM}><ul><li value="1" ${LINE_ITEM}>Inner <del ${REPLACED}>old</del><wbr><ins ${ADDED}>new</ins> text</li></ul></li></ul>`,
+      `<ul><li value="1" ${CONTINUED_ITEM}><ul><li value="1" ${LINE_ITEM}>Inner <del ${REPLACED}>old</del>${HIDDEN_SPACE}<ins ${ADDED}>new</ins> text</li></ul></li></ul>`,
     );
   });
 
   it('merges a paragraph that became a heading as a heading', () => {
     expect(mergedLine('<p>Old title here</p>', '<h2>New title here</h2>')).toBe(
-      `<h2><del ${REPLACED}>Old</del><wbr><ins ${ADDED}>New</ins> <ins ${ADDED} ${FIRST_DETAIL}>title here</ins></h2>`,
+      `<h2><del ${REPLACED}>Old</del>${HIDDEN_SPACE}<ins ${ADDED}>New</ins> <ins ${ADDED} ${FIRST_DETAIL}>title here</ins></h2>`,
     );
   });
 
@@ -271,7 +272,7 @@ describe('diffHtml with merged lines', () => {
         IGNORE_WHITESPACE_AND_CASE,
       ),
     ).toBe(
-      `<p>Keep the spaces and case <del ${REPLACED}>then</del><wbr><ins ${ADDED}>now</ins></p>`,
+      `<p>Keep the spaces and case <del ${REPLACED}>then</del>${HIDDEN_SPACE}<ins ${ADDED}>now</ins></p>`,
     );
   });
 
@@ -307,18 +308,6 @@ describe('diffHtml with merged lines', () => {
 
     expect(row.mergedLine).toEqual({ ...row.newLine, html: row.mergedLine?.html });
     expect(row.newLine?.number).toBe(2);
-  });
-
-  it('leaves the rows of a table as two lines', () => {
-    const rows = compare(
-      '<table><caption>Prices of the old plans</caption><tr><td>Personal</td><td>4 USD</td></tr></table>',
-      '<table><caption>Prices of the new plans</caption><tr><td>Personal</td><td>5 USD</td></tr></table>',
-    );
-
-    expect(rows.map((row) => [row.kind, row.mergedLine])).toEqual([
-      [LineChangeKind.Changed, null],
-      [LineChangeKind.Changed, null],
-    ]);
   });
 
   it('leaves a pair as two lines when removed text reaches from one block into another', () => {

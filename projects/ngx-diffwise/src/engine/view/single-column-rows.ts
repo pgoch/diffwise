@@ -52,21 +52,29 @@ function rowsWithMergedLine(
     return rowsOfLines(row, sourceRow, tables);
   }
 
-  return [mergedRow(row, row.mergedLine, sourceRow)];
+  return [mergedRow(row, row.mergedLine, sourceRow, tables)];
 }
 
 /** The row of a merged line, under the numbers of both lines of its pair. */
-function mergedRow(row: ViewRow, mergedLine: ViewLine, sourceRow: number): PlacedRow {
+function mergedRow(
+  { kind, oldLine, newLine, changeDetails }: ViewRow,
+  mergedLine: ViewLine,
+  sourceRow: number,
+  tables: SingleColumnTables,
+): PlacedRow {
+  const version = newLine === null ? DocumentVersion.Old : DocumentVersion.New;
+  const versionLine = newLine ?? oldLine;
+
   return {
-    kind: row.kind,
-    version: DocumentVersion.New,
-    isMerged: true,
+    kind,
+    version,
+    isMerged: kind === LineChangeKind.Changed,
     line: mergedLine,
-    oldNumber: numberOf(row.oldLine),
-    newNumber: numberOf(row.newLine),
+    oldNumber: numberOf(oldLine),
+    newNumber: numberOf(newLine),
     sourceRow,
-    changeDetails: row.changeDetails,
-    table: null,
+    changeDetails,
+    table: versionLine === null ? null : tables.positionOf(versionLine, version),
   };
 }
 

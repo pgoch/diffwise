@@ -80,8 +80,8 @@ function isChanged(row: ViewRow): boolean {
   return row.kind !== LineChangeKind.Unchanged;
 }
 
-function isChangedPairOutsideTables({ kind, oldLine, newLine }: ViewRow): boolean {
-  return kind === LineChangeKind.Changed && oldLine?.table === null && newLine?.table === null;
+function isChangedPair({ kind }: ViewRow): boolean {
+  return kind === LineChangeKind.Changed;
 }
 
 function isLine(line: ViewLine | null): line is ViewLine {
@@ -152,7 +152,7 @@ describe('singleColumnRows', () => {
 
     expect(rows.map(rowSummary)).toEqual([
       [LineChangeKind.Removed, OLD, 1, null, 'Intro.'],
-      [LineChangeKind.Changed, NEW, 2, 1, 'Reply within 2448 hours.'],
+      [LineChangeKind.Changed, NEW, 2, 1, 'Reply within 24 48 hours.'],
       [LineChangeKind.Added, NEW, null, 2, 'Outro.'],
     ]);
     expect(rows.map((row) => row.isMerged)).toEqual([false, true, false]);
@@ -173,16 +173,37 @@ describe('singleColumnRows', () => {
 
   it('shows a changed pair without a merged line as two lines among merged lines', () => {
     const rows = compareMerged(
-      '<p>Reply within 24 hours.</p><table><tr><td>Personal</td><td>4 USD</td></tr></table>',
-      '<p>Reply within 48 hours.</p><table><tr><td>Personal</td><td>5 USD</td></tr></table>',
+      '<p>Reply within 24 hours.</p><figure><img src="a.png" alt="A"><figcaption>Old caption</figcaption></figure>',
+      '<p>Reply within 48 hours.</p><figure><img src="b.png" alt="A"><figcaption>New caption</figcaption></figure>',
     );
 
     expect(rows.map(rowSummary)).toEqual([
-      [LineChangeKind.Changed, NEW, 1, 1, 'Reply within 2448 hours.'],
-      [LineChangeKind.Changed, OLD, 2, null, 'Personal4 USD'],
-      [LineChangeKind.Changed, NEW, null, 2, 'Personal5 USD'],
+      [LineChangeKind.Changed, NEW, 1, 1, 'Reply within 24 48 hours.'],
+      [LineChangeKind.Changed, OLD, 2, null, 'Old caption'],
+      [LineChangeKind.Changed, NEW, null, 2, 'New caption'],
     ]);
     expect(rows.map((row) => row.isMerged)).toEqual([true, false, false]);
+  });
+
+  it('shows each line of a merged table once, the changed ones merged, as lines of one table', () => {
+    const rows = compareMerged(
+      '<table><tr><th>Plan</th><th>Price</th></tr><tr><td>Pro</td><td>49 USD</td></tr><tr><td>Trial</td><td>0 USD</td></tr></table>',
+      '<table><tr><th>Plan</th><th>Price</th><th>Users</th></tr><tr><td>Pro</td><td>59 USD</td><td>5</td></tr><tr><td>Company</td><td>149 USD</td><td>25</td></tr></table>',
+    );
+
+    expect(rows.map(rowSummary)).toEqual([
+      [LineChangeKind.Changed, NEW, 1, 1, 'PlanPriceUsers'],
+      [LineChangeKind.Changed, NEW, 2, 2, 'Pro49 59 USD5'],
+      [LineChangeKind.Removed, OLD, 3, null, 'Trial0 USD'],
+      [LineChangeKind.Added, NEW, null, 3, 'Company149 USD25'],
+    ]);
+    expect(rows.map((row) => row.isMerged)).toEqual([true, true, false, false]);
+    expect(rows.map(tablePlaceSummary)).toEqual([
+      ['PlanPriceUsers', 0, false, false, true],
+      ['Pro49 59 USD5', 0, true, true, true],
+      ['Trial0 USD', 0, true, true, true],
+      ['Company149 USD25', 0, true, true, false],
+    ]);
   });
 
   it('gives no rows for no rows', () => {
@@ -262,19 +283,17 @@ describe('singleColumnRows', () => {
   );
 
   it.each(LONG_SAMPLES)(
-    'merges every changed pair of %s outside tables into one line under both numbers',
+    'merges every changed pair of %s into one line under both numbers, also in tables',
     (_, before, after) => {
       const sourceRows = sideBySideRows(before, after);
       const rows = singleColumnRows(sourceRows, MERGED_LINES);
-      const changedPairsOutsideTables = sourceRows.filter(isChangedPairOutsideTables);
+      const changedPairs = sourceRows.filter(isChangedPair);
       const mergedRows = rows.filter((row) => row.isMerged);
       const oldNumbers = numbersOf(rows.map((row) => row.oldNumber));
       const allOldNumbers = numbersOf(sourceRows.map((row) => row.oldLine?.number ?? null));
 
-      expect(changedPairsOutsideTables.length).toBeGreaterThan(0);
-      expect(mergedRows.map((row) => row.line)).toEqual(
-        changedPairsOutsideTables.map((row) => row.mergedLine),
-      );
+      expect(changedPairs.some((row) => row.newLine?.table !== null)).toBe(true);
+      expect(mergedRows.map((row) => row.line)).toEqual(changedPairs.map((row) => row.mergedLine));
       expect(mergedRows.every((row) => row.oldNumber !== null && row.newNumber !== null)).toBe(
         true,
       );

@@ -55,7 +55,7 @@ Getting started:
 
 - A step added to a numbered list; text changed in another step.
 - An item changed in a nested list.
-- The `start` number of a continued list changed (5 → 6).
+- The `start` number of a continued list changed (5 → 6), and its last item became a paragraph after the list.
 - An emoji added.
 - A bulleted list changed to a numbered list.
 - A checkbox in a checklist checked.
