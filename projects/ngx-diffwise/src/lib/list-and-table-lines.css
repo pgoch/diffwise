@@ -342,3 +342,80 @@
   > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
   background: none;
 }
+
+/*
+ * A table that bars of hidden lines cut into parts: each part looks like a whole table, with
+ * rounded corners and its own scrollbar under its last row. The part above a bar ends there...
+ */
+.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-html-diff__content[data-diffwise-table]:not(:has(caption)) {
+  scrollbar-width: auto;
+}
+
+.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-html-diff__content
+  table[data-diffwise-table-copy]:not(:has(> caption)) {
+  margin-bottom: 4px;
+  border-bottom-width: 1px;
+  border-end-start-radius: 6px;
+  border-end-end-radius: 6px;
+}
+
+.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > :first-child {
+  border-end-start-radius: 5px;
+}
+
+.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > :last-child {
+  border-end-end-radius: 5px;
+}
+
+/* ...and the part below a bar starts there, with the top edge of a table instead of a row. */
+diffwise-collapsed-lines-bar
+  + .diffwise-html-diff__row
+  > .diffwise-html-diff__content
+  table[data-diffwise-table-copy]:not(:has(> caption)) {
+  margin-top: 4px;
+  border-top-width: 1px;
+  border-start-start-radius: 6px;
+  border-start-end-radius: 6px;
+}
+
+diffwise-collapsed-lines-bar
+  + .diffwise-html-diff__row
+  > .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > :not([data-diffwise-continued-cell]) {
+  border-top: 0;
+}
+
+diffwise-collapsed-lines-bar
+  + .diffwise-html-diff__row
+  > .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > :first-child {
+  border-start-start-radius: 5px;
+}
+
+diffwise-collapsed-lines-bar
+  + .diffwise-html-diff__row
+  > .diffwise-html-diff__content
+  [data-diffwise-table-copy]
+  > *
+  > tr
+  > :last-child {
+  border-start-end-radius: 5px;
+}

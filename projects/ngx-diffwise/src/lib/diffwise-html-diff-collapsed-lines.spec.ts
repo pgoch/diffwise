@@ -21,6 +21,10 @@ const BUTTON_TYPE = 'button';
 const TYPE_ATTRIBUTE = 'type';
 const ARIA_HIDDEN_ATTRIBUTE = 'aria-hidden';
 const PARAGRAPH_COUNT = 60;
+const TABLE_ROW_COUNT = 12;
+const CONTENT_SELECTOR = '.diffwise-html-diff__content';
+const TABLE_ATTRIBUTE = 'data-diffwise-table';
+const SCROLL_EVENT = 'scroll';
 
 /** Sixty paragraphs, numbered from 1, with another word in the paragraphs of the given numbers. */
 function paragraphs(changedNumbers: readonly number[] = []): string {
@@ -36,6 +40,18 @@ const OLD_HTML = paragraphs();
 
 /** Changes in lines 5 and 6, 30 and 55, far from each other. */
 const NEW_HTML = paragraphs([5, 6, 30, 55]);
+
+/** A table of twelve plans, with another price in the plans of the given numbers. */
+function plansTable(changedNumbers: readonly number[] = []): string {
+  const rows = Array.from({ length: TABLE_ROW_COUNT }, (_, index) => {
+    const number = index + 1;
+    const price = changedNumbers.includes(number) ? number * 10 + 5 : number * 10;
+
+    return `<tr><td>Plan ${number}</td><td>${price} USD</td></tr>`;
+  });
+
+  return `<table>${rows.join('')}</table>`;
+}
 
 /** The bars of the diff with the default 3 lines of context. */
 const DEFAULT_BAR_TEXTS = [
@@ -234,6 +250,24 @@ describe('DiffwiseHtmlDiff hidden lines', () => {
 
     expect(barTexts(polish)[0]).toBe('Pokaż ukryte linie: 17');
     expect(barTexts(custom)[0]).toBe('Expand 17');
+  });
+
+  it('keeps the lines of a table around a bar in one table, which scrolls together', () => {
+    const element = elementOf(render({ contextLines: 1 }, plansTable(), plansTable([2, 11])));
+    const newLines = Array.from(element.querySelectorAll<HTMLElement>(NEW_CONTENT_SELECTOR));
+    const [, , , firstBelowBar] = newLines;
+
+    firstBelowBar.scrollLeft = 60;
+    firstBelowBar.dispatchEvent(new Event(SCROLL_EVENT));
+
+    expect(barTexts(element)).toEqual(['Show hidden lines: 6']);
+    expect(shownNumbers(element)).toEqual([1, 2, 3, 10, 11, 12]);
+    expect(
+      Array.from(element.querySelectorAll(CONTENT_SELECTOR), (line) =>
+        line.getAttribute(TABLE_ATTRIBUTE),
+      ),
+    ).toEqual(Array.from({ length: 12 }, () => '0'));
+    expect(newLines.map((line) => line.scrollLeft)).toEqual([60, 60, 60, 60, 60, 60]);
   });
 
   it('makes each bar a button that its text names, with an icon that screen readers skip', () => {
