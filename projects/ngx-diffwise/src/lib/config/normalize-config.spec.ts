@@ -283,6 +283,32 @@ describe('normalizeConfig', () => {
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
   });
 
+  it('keeps hidden unchanged lines and a whole number of context lines from 1 to 100', () => {
+    expect(normalizeConfig({ hideUnchangedLines: true, contextLines: 1 })).toEqual({
+      hideUnchangedLines: true,
+      contextLines: 1,
+    });
+    expect(normalizeConfig({ contextLines: 100 })).toEqual({ contextLines: 100 });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('ignores context lines out of their range or not whole, with a warning for each', () => {
+    const invalidOptions = [
+      { hideUnchangedLines: 'true' },
+      { contextLines: 0 },
+      { contextLines: 101 },
+      { contextLines: 2.5 },
+      { contextLines: '3' },
+      { contextLines: Number.NaN },
+    ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
   it('keeps the name of a font of the app, and ignores a name it cannot put in quotes', () => {
     expect(normalizeConfig({ fontFamily: 'Source Sans 3' })).toEqual({
       fontFamily: 'Source Sans 3',

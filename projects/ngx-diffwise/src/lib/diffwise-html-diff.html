@@ -69,39 +69,49 @@
     </div>
   }
 
-  @for (row of singleColumnRows(); track $index) {
-    <div
-      class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
-      [attr.data-diffwise-row]="row.detailsRow"
-    >
-      @if (lineNumbersShown) {
-        <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
-          @if (row.oldNumber !== null) {
-            <span class="diffwise-html-diff__line-number-value">{{ row.oldNumber }}</span>
-          }
-        </div>
-        <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
-          @if (row.newNumber !== null) {
-            <span class="diffwise-html-diff__line-number-value">{{ row.newNumber }}</span>
-          }
-        </div>
-      }
-
-      @if (changeIconsShown && row.iconDetails.length > 0) {
-        <div class="diffwise-html-diff__change-details-cell">
-          <diffwise-change-details-button [details]="row.iconDetails" [describer]="describer()" />
-        </div>
-      } @else {
-        <div class="diffwise-html-diff__change-details-cell" aria-hidden="true"></div>
-      }
+  @for (item of visibleSingleColumnRows(); track item.position; let position = $index) {
+    @if (isHiddenLines(item)) {
+      <diffwise-collapsed-lines-bar
+        [count]="item.count"
+        [text]="hiddenLinesText()"
+        (showLines)="showHiddenLines(item, position)"
+      />
+    } @else {
+      @let row = item;
 
       <div
-        class="diffwise-html-diff__content diffwise-html-diff__content--{{ row.content }}"
-        [attr.data-diffwise-table]="row.table"
-        [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
-        [innerHTML]="row.html"
-      ></div>
-    </div>
+        class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+        [attr.data-diffwise-row]="row.detailsRow"
+      >
+        @if (lineNumbersShown) {
+          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
+            @if (row.oldNumber !== null) {
+              <span class="diffwise-html-diff__line-number-value">{{ row.oldNumber }}</span>
+            }
+          </div>
+          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+            @if (row.newNumber !== null) {
+              <span class="diffwise-html-diff__line-number-value">{{ row.newNumber }}</span>
+            }
+          </div>
+        }
+
+        @if (changeIconsShown && row.iconDetails.length > 0) {
+          <div class="diffwise-html-diff__change-details-cell">
+            <diffwise-change-details-button [details]="row.iconDetails" [describer]="describer()" />
+          </div>
+        } @else {
+          <div class="diffwise-html-diff__change-details-cell" aria-hidden="true"></div>
+        }
+
+        <div
+          class="diffwise-html-diff__content diffwise-html-diff__content--{{ row.content }}"
+          [attr.data-diffwise-table]="row.table"
+          [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
+          [innerHTML]="row.html"
+        ></div>
+      </div>
+    }
   }
 } @else {
   @if (shownVersionHeaders(); as headers) {
@@ -129,51 +139,63 @@
     </div>
   }
 
-  @for (row of rows(); track $index) {
-    @let describesChanges = row.changeDetails.length > 0;
+  @for (item of visibleRows(); track item.position; let position = $index) {
+    @if (isHiddenLines(item)) {
+      <diffwise-collapsed-lines-bar
+        [count]="item.count"
+        [text]="hiddenLinesText()"
+        (showLines)="showHiddenLines(item, position)"
+      />
+    } @else {
+      @let row = item;
+      @let describesChanges = row.changeDetails.length > 0;
 
-    <div
-      class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
-      [attr.data-diffwise-row]="describesChanges ? $index : null"
-    >
-      @if (row.oldLine; as line) {
-        @if (lineNumbersShown) {
-          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
-            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
-          </div>
+      <div
+        class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
+        [attr.data-diffwise-row]="describesChanges ? row.sourceRow : null"
+      >
+        @if (row.oldLine; as line) {
+          @if (lineNumbersShown) {
+            <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
+              <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+            </div>
+          }
+          <div
+            class="diffwise-html-diff__content diffwise-html-diff__content--old"
+            [attr.data-diffwise-table]="line.table"
+            [innerHTML]="line.html"
+          ></div>
+        } @else {
+          <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
         }
-        <div
-          class="diffwise-html-diff__content diffwise-html-diff__content--old"
-          [attr.data-diffwise-table]="line.table"
-          [innerHTML]="line.html"
-        ></div>
-      } @else {
-        <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
-      }
 
-      @if (changeIconsShown && describesChanges) {
-        <div class="diffwise-html-diff__divider">
-          <diffwise-change-details-button [details]="row.changeDetails" [describer]="describer()" />
-        </div>
-      } @else {
-        <div class="diffwise-html-diff__divider" aria-hidden="true"></div>
-      }
-
-      @if (row.newLine; as line) {
-        @if (lineNumbersShown) {
-          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
-            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+        @if (changeIconsShown && describesChanges) {
+          <div class="diffwise-html-diff__divider">
+            <diffwise-change-details-button
+              [details]="row.changeDetails"
+              [describer]="describer()"
+            />
           </div>
+        } @else {
+          <div class="diffwise-html-diff__divider" aria-hidden="true"></div>
         }
-        <div
-          class="diffwise-html-diff__content diffwise-html-diff__content--new"
-          [attr.data-diffwise-table]="line.table"
-          [innerHTML]="line.html"
-        ></div>
-      } @else {
-        <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
-      }
-    </div>
+
+        @if (row.newLine; as line) {
+          @if (lineNumbersShown) {
+            <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+              <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+            </div>
+          }
+          <div
+            class="diffwise-html-diff__content diffwise-html-diff__content--new"
+            [attr.data-diffwise-table]="line.table"
+            [innerHTML]="line.html"
+          ></div>
+        } @else {
+          <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
+        }
+      </div>
+    }
   }
 }
 

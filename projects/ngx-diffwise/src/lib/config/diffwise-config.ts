@@ -82,6 +82,16 @@ export interface DiffwiseConfigOptions {
    * changed words; otherwise its number shows the change. Default: `false`.
    */
   readonly highlightWholeLines?: boolean;
+  /**
+   * Hides unchanged lines far from changes behind a bar, which shows them on a click.
+   * Default: `false`.
+   */
+  readonly hideUnchangedLines?: boolean;
+  /**
+   * Unchanged lines that stay shown above and below each change when unchanged lines are hidden; a
+   * whole number from 1 to 100. Default: `3`.
+   */
+  readonly contextLines?: number;
   /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
@@ -195,6 +205,12 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Without backgrounds of changed lines, highlights an added or a removed line as a whole. */
   readonly highlightWholeLines: boolean = false;
+
+  /** Hides unchanged lines far from changes behind a bar. */
+  readonly hideUnchangedLines: boolean = false;
+
+  /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
+  readonly contextLines: number = 3;
 
   /** What stands between the two versions. */
   readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;

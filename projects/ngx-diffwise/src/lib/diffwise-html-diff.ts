@@ -3,8 +3,10 @@ import {
   Component,
   DestroyRef,
   ElementRef,
+  Injector,
   LOCALE_ID,
   ViewEncapsulation,
+  afterNextRender,
   afterRenderEffect,
   computed,
   inject,
@@ -20,14 +22,17 @@ import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import {
   CHANGE_DETAILS_ATTRIBUTE,
   type ChangeDetail,
+  type CollapsibleRow,
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   DocumentVersion,
+  HiddenLines,
   type LineChangeKind,
   type SingleColumnRow,
   type SingleColumnTablePlace,
   type ViewLine,
   type ViewRow,
+  collapseRows,
   diffHtml,
   singleColumnRows,
 } from '../engine';
@@ -40,6 +45,7 @@ import {
   TriggerDescription,
 } from './change-details/change-tooltip';
 import { type TooltipContent, titleOnlyTooltip } from './change-details/tooltip-content';
+import { COLLAPSED_LINES_BAR_TAG, CollapsedLinesBar } from './collapsed-lines/collapsed-lines-bar';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
@@ -48,7 +54,7 @@ import {
   DiffwiseChangeDetails,
   type DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
-  type DiffwiseDividerStyle,
+  DiffwiseDividerStyle,
   type DiffwiseGapStyle,
   type DiffwiseHighlightStyle,
   DiffwiseInlineDiffStyle,
@@ -87,6 +93,10 @@ const FOCUSABLE_IN_ORDER = '0';
 const TOOLTIP_ID_END = '-tooltip';
 const ROW_SELECTOR = '.diffwise-html-diff__row';
 const CONTENT_SELECTOR = '.diffwise-html-diff__content';
+const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
+
+/** Rows of the diff and bars in place of hidden lines, in the order of the view. */
+const ROW_OR_BAR_SELECTOR = `:scope > :is(${ROW_SELECTOR}, ${COLLAPSED_LINES_BAR_TAG})`;
 const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
 const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
@@ -124,6 +134,9 @@ const NO_COLORS: ThemeDiffColors = Object.freeze({});
 
 const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 
+/** Groups of hidden lines that the user has shown, before the first one. */
+const NO_SHOWN_GROUPS: ReadonlySet<number> = new Set();
+
 /** Stands between the header texts of an app above the single column: "Version 3 → Version 4". */
 const VERSION_ARROW = ' → ';
 
@@ -156,6 +169,10 @@ interface ShownLine {
 /** A row as the template shows it. */
 interface ShownRow {
   readonly kind: LineChangeKind;
+  /** Position of the compared row, which is also the position of the row in the view. */
+  readonly sourceRow: number;
+  /** Position of the row in the view; it tracks the row in the template, as bars do. */
+  readonly position: number;
   readonly oldLine: ShownLine | null;
   readonly newLine: ShownLine | null;
   /** Changes besides changed text, such as formatting; markers point to them by position. */
@@ -171,6 +188,10 @@ interface ShownSingleColumnRow {
   readonly html: SafeHtml;
   readonly oldNumber: number | null;
   readonly newNumber: number | null;
+  /** Position of the compared row that the line comes from. */
+  readonly sourceRow: number;
+  /** Position of the row in the view; it tracks the row in the template, as bars do. */
+  readonly position: number;
   /** Position of the compared row with the change details of the line; `null` without details. */
   readonly detailsRow: number | null;
   /** Changes an icon next to the line shows: those of a changed pair, next to its new line. */
@@ -202,13 +223,14 @@ interface ShownVersionHeaders {
  */
 @Component({
   selector: 'diffwise-html-diff',
-  imports: [ChangeDetailsButton, ChangeTooltip, NgTemplateOutlet],
+  imports: [ChangeDetailsButton, ChangeTooltip, CollapsedLinesBar, NgTemplateOutlet],
   templateUrl: './diffwise-html-diff.html',
   styleUrls: [
     './diffwise-html-diff.css',
     './list-and-table-lines.css',
     './change-details/change-details.css',
     './single-column.css',
+    './collapsed-lines/collapsed-lines.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -289,6 +311,18 @@ export class DiffwiseHtmlDiff {
    */
   readonly highlightWholeLines = input<boolean>();
 
+  /**
+   * Hides unchanged lines far from changes behind a bar, which shows them on a click; wins over
+   * `config` and the global configuration.
+   */
+  readonly hideUnchangedLines = input<boolean>();
+
+  /**
+   * Unchanged lines that stay shown above and below each change when unchanged lines are hidden;
+   * wins over `config` and the global configuration.
+   */
+  readonly contextLines = input<number>();
+
   /** What stands between the versions; wins over `config` and the global configuration. */
   readonly dividerStyle = input<DiffwiseDividerStyle>();
 
@@ -361,6 +395,7 @@ export class DiffwiseHtmlDiff {
   private readonly colorScheme = inject(ColorScheme);
   private readonly localeId = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly injector = inject(Injector);
   private readonly idPrefix = nextIdPrefix();
 
   /** Width of the diff in pixels; `null` until it is known. */
@@ -391,6 +426,8 @@ export class DiffwiseHtmlDiff {
     lineNumberAlignment: this.lineNumberAlignment(),
     highlightChangedLines: this.highlightChangedLines(),
     highlightWholeLines: this.highlightWholeLines(),
+    hideUnchangedLines: this.hideUnchangedLines(),
+    contextLines: this.contextLines(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
@@ -528,14 +565,53 @@ export class DiffwiseHtmlDiff {
   });
 
   /** Rows of the versions side by side; the diff prepares them only for this layout. */
-  protected readonly rows = computed(() => this.diff().rows.map((row) => this.shownRow(row)));
+  private readonly rows = computed(() =>
+    this.diff().rows.map((row, sourceRow) => this.shownRow(row, sourceRow)),
+  );
 
   /** Rows of the single column; the diff prepares them only for this layout. */
-  protected readonly singleColumnRows = computed(() => {
+  private readonly singleColumnRows = computed(() => {
     const settings = { showsMergedLines: this.showsMergedLines() };
     const rows = singleColumnRows(this.diff().rows, settings);
 
-    return rows.map((row) => this.shownSingleColumnRow(row));
+    return rows.map((row, position) => this.shownSingleColumnRow(row, position));
+  });
+
+  /** True when the diff hides unchanged lines far from changes. */
+  private readonly hidesUnchangedLines = computed(() => this.effectiveConfig().hideUnchangedLines);
+
+  /** Unchanged lines that stay shown around each change. */
+  private readonly shownContextLines = computed(() => this.effectiveConfig().contextLines);
+
+  /**
+   * Groups of hidden lines that the user has shown, by the compared row of their first line. They
+   * hide again after a new comparison, and when `hideUnchangedLines` or `contextLines` change.
+   */
+  private readonly shownGroups = linkedSignal<unknown, ReadonlySet<number>>({
+    source: () => [
+      this.oldHtml(),
+      this.newHtml(),
+      this.diffOptions(),
+      this.hidesUnchangedLines(),
+      this.shownContextLines(),
+    ],
+    computation: () => NO_SHOWN_GROUPS,
+  });
+
+  /** Rows of the versions side by side, with bars in place of hidden lines. */
+  protected readonly visibleRows = computed(() => this.withHiddenLines(this.rows()));
+
+  /** Rows of the single column, with bars in place of hidden lines. */
+  protected readonly visibleSingleColumnRows = computed(() =>
+    this.withHiddenLines(this.singleColumnRows()),
+  );
+
+  /** Text of the bars in place of hidden lines, which follow what stands between the versions. */
+  protected readonly hiddenLinesText = computed(() => {
+    const { hiddenLinesLabel, showHiddenLinesLabel } = this.texts();
+    const isLine = this.effectiveConfig().dividerStyle === DiffwiseDividerStyle.Line;
+
+    return isLine ? hiddenLinesLabel : showHiddenLinesLabel;
   });
 
   /** Colors of changes the app gives for the theme shown now. */
@@ -585,6 +661,20 @@ export class DiffwiseHtmlDiff {
     this.scrollTablesTogether();
   }
 
+  /** True for hidden lines, which the template shows as a bar. */
+  protected isHiddenLines(item: CollapsibleRow | HiddenLines): item is HiddenLines {
+    return item instanceof HiddenLines;
+  }
+
+  /**
+   * Shows the hidden lines of a bar. The bar goes, so the focus moves to the first of its lines, at
+   * the position of the bar among the rows and bars.
+   */
+  protected showHiddenLines(lines: HiddenLines, position: number): void {
+    this.shownGroups.update((groups) => new Set(groups).add(lines.firstRow));
+    afterNextRender(() => this.focusLineAt(position), { injector: this.injector });
+  }
+
   /**
    * Follows a `#…` link of the content within this diff. The browser would resolve the link
    * against the app's `<base href>` and could leave the page.
@@ -614,10 +704,33 @@ export class DiffwiseHtmlDiff {
       : this.insideDarkMarker();
   }
 
+  /** The rows with bars in place of unchanged lines far from changes, when the diff hides them. */
+  private withHiddenLines<Row extends CollapsibleRow>(
+    rows: readonly Row[],
+  ): readonly (Row | HiddenLines)[] {
+    if (!this.hidesUnchangedLines()) {
+      return rows;
+    }
+
+    const settings = { contextLines: this.shownContextLines(), shownGroups: this.shownGroups() };
+
+    return collapseRows(rows, settings);
+  }
+
+  /** Focuses the line of the new version in the row at the position among the rows and bars. */
+  private focusLineAt(position: number): void {
+    const rowsAndBars = this.host.nativeElement.querySelectorAll(ROW_OR_BAR_SELECTOR);
+    const line = rowsAndBars.item(position)?.querySelector<HTMLElement>(NEW_CONTENT_SELECTOR);
+
+    if (line) {
+      focusWithoutScrolling(line);
+    }
+  }
+
   /**
-   * After new rows, in another layout, with changed lines shown another way, or with details in
-   * another place: hides the tooltip, whose trigger may be gone, and lets marked changes take the
-   * focus when no icons show their details.
+   * After new rows, in another layout, with changed lines shown another way, with other lines
+   * hidden, or with details in another place: hides the tooltip, whose trigger may be gone, and lets
+   * marked changes take the focus when no icons show their details.
    */
   private prepareMarkers(): void {
     const { rows } = this.diff();
@@ -625,6 +738,9 @@ export class DiffwiseHtmlDiff {
 
     this.shownLayout();
     this.showsMergedLines();
+    this.hidesUnchangedLines();
+    this.shownContextLines();
+    this.shownGroups();
 
     untracked(() => this.tooltip().hide());
 
@@ -763,9 +879,14 @@ export class DiffwiseHtmlDiff {
     return this.diff().rows.at(Number(position)) ?? null;
   }
 
-  private shownRow({ kind, oldLine, newLine, changeDetails }: ViewRow): ShownRow {
+  private shownRow(
+    { kind, oldLine, newLine, changeDetails }: ViewRow,
+    sourceRow: number,
+  ): ShownRow {
     return {
       kind,
+      sourceRow,
+      position: sourceRow,
       oldLine: this.shownLine(oldLine),
       newLine: this.shownLine(newLine),
       changeDetails,
@@ -784,7 +905,7 @@ export class DiffwiseHtmlDiff {
    * A row of the single column. The lines of a changed pair point to the change details of their
    * pair, and the icon of these changes stands next to its merged line, or else its new line.
    */
-  private shownSingleColumnRow(row: SingleColumnRow): ShownSingleColumnRow {
+  private shownSingleColumnRow(row: SingleColumnRow, position: number): ShownSingleColumnRow {
     const { kind, version, isMerged, line, oldNumber, newNumber, sourceRow } = row;
     const { changeDetails, tablePlace } = row;
     const describesChanges = changeDetails.length > 0;
@@ -796,6 +917,8 @@ export class DiffwiseHtmlDiff {
       html: this.safeHtml(line),
       oldNumber,
       newNumber,
+      sourceRow,
+      position,
       detailsRow: describesChanges ? sourceRow : null,
       iconDetails: showsIcon ? changeDetails : NO_CHANGE_DETAILS,
       table: tablePlace?.table ?? null,

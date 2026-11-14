@@ -1,0 +1,72 @@
+/*
+ * The bar in place of hidden unchanged lines: a button across the diff. With a gray column between
+ * the versions it is a gray bar; with a line between them, a thin line with the text in the middle.
+ */
+
+/*
+ * The button is a grid item, as the parts of a row are, so it covers the last pixel of the row
+ * above it, which reaches into the next row.
+ */
+.diffwise-html-diff diffwise-collapsed-lines-bar {
+  display: grid;
+}
+
+.diffwise-html-diff__collapsed-lines {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 6px 10px;
+  border: 0;
+  border-block: 1px dashed var(--diffwise-border);
+  background: var(--diffwise-divider-background);
+  color: var(--diffwise-muted);
+  cursor: pointer;
+  font: inherit;
+  font-size: var(--diffwise-line-number-font-size);
+  line-height: 1.6;
+}
+
+.diffwise-html-diff__collapsed-lines > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.diffwise-html-diff__collapsed-lines svg {
+  flex: none;
+  width: 1.2em;
+  height: 1.2em;
+}
+
+.diffwise-html-diff__collapsed-lines:hover {
+  color: var(--diffwise-text);
+}
+
+.diffwise-html-diff__collapsed-lines:focus-visible {
+  outline: 2px solid var(--diffwise-focus);
+  outline-offset: -2px;
+}
+
+/* With a line between the versions: a thin dashed line with the text in a pill in its middle. */
+.diffwise-html-diff--divider-style-line .diffwise-html-diff__collapsed-lines {
+  position: relative;
+  border-block: 0;
+  background: var(--diffwise-background);
+}
+
+.diffwise-html-diff--divider-style-line .diffwise-html-diff__collapsed-lines::before {
+  position: absolute;
+  top: 50%;
+  inset-inline: 0;
+  border-top: 1px dashed var(--diffwise-border);
+  content: '';
+}
+
+.diffwise-html-diff--divider-style-line .diffwise-html-diff__collapsed-lines > span {
+  position: relative;
+  padding: 0.1em 0.9em;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 999px;
+  background: var(--diffwise-background);
+}

@@ -32,4 +32,10 @@ export {
   type ViewLine,
   type ViewRow,
 } from './model';
+export {
+  type CollapseSettings,
+  type CollapsibleRow,
+  HiddenLines,
+  collapseRows,
+} from './view/collapse-rows';
 export { singleColumnRows } from './view/single-column-rows';

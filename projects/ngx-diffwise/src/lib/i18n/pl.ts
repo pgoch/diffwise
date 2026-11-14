@@ -6,6 +6,8 @@ export const POLISH_TEXTS: UiTexts = {
   newVersionLabel: 'Nowa wersja',
   inlineContentLabel: 'Treść po zmianach',
   diffLabel: 'Porównanie wersji dokumentu',
+  showHiddenLinesLabel: 'Pokaż ukryte linie: {count}',
+  hiddenLinesLabel: 'Ukryte linie: {count}',
 
   formattingChangeLabel: 'Zmiana formatowania',
   linkChangeLabel: 'Zmieniony adres linku',

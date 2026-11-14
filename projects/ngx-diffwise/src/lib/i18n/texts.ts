@@ -1,3 +1,6 @@
+/** Stands in a text for a number, such as the number of hidden lines. */
+const COUNT_PLACEHOLDER = '{count}';
+
 /**
  * Texts an app shows instead of texts of the interface, such as `{ oldVersionLabel: 'Draft' }`.
  * All of them together add a language; a text left out stays in the language of the diff.
@@ -11,6 +14,16 @@ export interface DiffwiseCustomTexts {
   readonly inlineContentLabel?: string;
   /** Names the whole diff for screen readers. */
   readonly diffLabel?: string;
+  /**
+   * Text of the bar in place of hidden unchanged lines, with a gray column between the versions;
+   * `{count}` stands for their number.
+   */
+  readonly showHiddenLinesLabel?: string;
+  /**
+   * Text of the bar in place of hidden unchanged lines, with a line between the versions;
+   * `{count}` stands for their number.
+   */
+  readonly hiddenLinesLabel?: string;
 
   /** Titles a tooltip about changed formatting, such as italic → bold, and names its icon. */
   readonly formattingChangeLabel?: string;
@@ -183,3 +196,8 @@ export interface DiffwiseCustomTexts {
 
 /** Every text of the interface in one language. */
 export type UiTexts = Required<DiffwiseCustomTexts>;
+
+/** The text with the number in place of `{count}`. */
+export function withCount(text: string, count: number): string {
+  return text.replaceAll(COUNT_PLACEHOLDER, String(count));
+}

@@ -17,7 +17,7 @@ import {
   ListType,
   TextStyle,
 } from '../../engine';
-import type { UiTexts } from '../i18n/texts';
+import { type UiTexts, withCount } from '../i18n/texts';
 import { type ChangedParts, splitChangedParts } from './changed-part';
 import {
   type TooltipContent,
@@ -176,7 +176,6 @@ const CHECKBOX_TEXT_NAMES: Readonly<Record<CheckboxState, TextName>> = {
 };
 
 const LIST_FORMAT_OPTIONS: Intl.ListFormatOptions = { type: 'conjunction' };
-const COUNT_PLACEHOLDER = '{count}';
 const LEVEL_PLACEHOLDER = '{level}';
 const ARROW = ' → ';
 const LABEL_SEPARATOR = ': ';
@@ -257,7 +256,7 @@ export class ChangeDescriber {
 
   /** "Formatting changes: 2". */
   private multipleChangesTitle(count: number): string {
-    return this.texts.multipleChangesLabel.replaceAll(COUNT_PLACEHOLDER, String(count));
+    return withCount(this.texts.multipleChangesLabel, count);
   }
 
   private changeTitle(detail: ChangeDetail): string {
