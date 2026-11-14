@@ -275,6 +275,12 @@
     />
     Arrows in the toolbar
   </label>
+  <demo-choice-buttons
+    label="Active change"
+    [choices]="activeChangeStyles"
+    [value]="diffwise.config().activeChangeStyle"
+    (chosen)="update({ activeChangeStyle: $event })"
+  />
   <button type="button" class="demo-button" (click)="goToPreviousChange()">Previous change</button>
   <button type="button" class="demo-button" (click)="goToNextChange()">Next change</button>
   <p class="demo-hint">The buttons call the methods of the diff, also without the arrows.</p>

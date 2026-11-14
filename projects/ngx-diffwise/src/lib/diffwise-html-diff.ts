@@ -54,6 +54,7 @@ import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
 import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
 import {
+  type DiffwiseActiveChangeStyle,
   type DiffwiseAlignment,
   DiffwiseChangeDetails,
   type DiffwiseChangeDetailsIconStyle,
@@ -263,6 +264,7 @@ interface ShownVersionHeaders {
     './single-column.css',
     './collapsed-lines/collapsed-lines.css',
     './toolbar/toolbar.css',
+    './navigation/active-change.css',
     './no-changes.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -362,6 +364,12 @@ export class DiffwiseHtmlDiff {
    * and the global configuration.
    */
   readonly showNavigationToolbar = input<boolean>();
+
+  /**
+   * How the block of changes that the navigation has stepped to shows: a frame around it, or an
+   * arrow at the number of its first line; wins over `config` and the global configuration.
+   */
+  readonly activeChangeStyle = input<DiffwiseActiveChangeStyle>();
 
   /**
    * Shows the numbers of changed lines in the toolbar above the diff; wins over `config` and the
@@ -490,6 +498,7 @@ export class DiffwiseHtmlDiff {
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
     showNavigationToolbar: this.showNavigationToolbar(),
+    activeChangeStyle: this.activeChangeStyle(),
     showDiffStats: this.showDiffStats(),
     noChangesView: this.noChangesView(),
     dividerStyle: this.dividerStyle(),

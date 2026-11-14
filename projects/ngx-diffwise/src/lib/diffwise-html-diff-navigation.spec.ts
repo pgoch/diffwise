@@ -1,7 +1,12 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseInlineDiffStyle, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
+import {
+  DiffwiseActiveChangeStyle,
+  DiffwiseInlineDiffStyle,
+  DiffwiseLanguage,
+  DiffwiseLayout,
+} from './config/option-values';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -31,6 +36,7 @@ const SMOOTH_SCROLL = 'smooth';
 const INSTANT_SCROLL = 'auto';
 const TO_MIDDLE = 'center';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const INDICATOR_CLASS = 'diffwise-html-diff--active-change-style-indicator';
 
 /** Twelve paragraphs with three blocks of changes: in paragraphs 2–3, 6 and 10. */
 const OLD_HTML = paragraphs([]);
@@ -204,6 +210,16 @@ describe('DiffwiseHtmlDiff navigation', () => {
     fixture.componentInstance.goToPreviousChange();
     await fixture.whenStable();
 
+    expect(activeRowsOf(element)).toHaveLength(2);
+  });
+
+  it('marks the active rows the same way for the arrow at the number, with its class', async () => {
+    const fixture = render({ activeChangeStyle: DiffwiseActiveChangeStyle.Indicator });
+    const element = elementOf(fixture);
+
+    await click(fixture, NEXT_BUTTON_SELECTOR);
+
+    expect(element.classList).toContain(INDICATOR_CLASS);
     expect(activeRowsOf(element)).toHaveLength(2);
   });
 
