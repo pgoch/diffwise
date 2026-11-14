@@ -107,6 +107,19 @@ export const DiffwiseInlineDiffStyle = {
 export type DiffwiseInlineDiffStyle =
   (typeof DiffwiseInlineDiffStyle)[keyof typeof DiffwiseInlineDiffStyle];
 
+/** What the diff shows under the text that the versions are the same. */
+export const DiffwiseNoChangesView = {
+  /** Nothing: the toolbar with the text alone. */
+  Message: 'message',
+  /** The document once: one column of line numbers and the content across the whole width. */
+  Document: 'document',
+  /** Both versions, as a diff shows them when they differ. */
+  Diff: 'diff',
+} as const;
+
+export type DiffwiseNoChangesView =
+  (typeof DiffwiseNoChangesView)[keyof typeof DiffwiseNoChangesView];
+
 /** Fonts of the diff; an app can also give the name of a font it loads. */
 export const DiffwiseFontFamily = {
   /** The font of the element around the diff. */

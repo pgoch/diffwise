@@ -25,6 +25,7 @@ import {
   DiffwiseLayout,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
@@ -107,6 +108,25 @@ const INLINE_DIFF_STYLE_CHOICES: readonly Choice<DiffwiseInlineDiffStyle>[] = [
   { value: DiffwiseInlineDiffStyle.Merged, label: 'Merged' },
   { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
   { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
+];
+
+/** Versions the demo compares: the two versions of the sample, or its old version with itself. */
+const ComparedVersions = {
+  Different: 'different',
+  Same: 'same',
+} as const;
+
+type ComparedVersions = (typeof ComparedVersions)[keyof typeof ComparedVersions];
+
+const COMPARED_VERSIONS_CHOICES: readonly Choice<ComparedVersions>[] = [
+  { value: ComparedVersions.Different, label: 'Before and after' },
+  { value: ComparedVersions.Same, label: 'Before twice' },
+];
+
+const NO_CHANGES_VIEW_CHOICES: readonly Choice<DiffwiseNoChangesView>[] = [
+  { value: DiffwiseNoChangesView.Message, label: 'Message' },
+  { value: DiffwiseNoChangesView.Document, label: 'Document once' },
+  { value: DiffwiseNoChangesView.Diff, label: 'Diff' },
 ];
 
 /** Widths of the diff in the demo, as values of `max-width`; the automatic layout follows them. */
@@ -237,6 +257,8 @@ export class App {
   protected readonly levels = LEVEL_CHOICES;
   protected readonly layouts = LAYOUT_CHOICES;
   protected readonly inlineDiffStyles = INLINE_DIFF_STYLE_CHOICES;
+  protected readonly comparedVersionsChoices = COMPARED_VERSIONS_CHOICES;
+  protected readonly noChangesViews = NO_CHANGES_VIEW_CHOICES;
   protected readonly diffWidths = DIFF_WIDTH_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;
@@ -255,6 +277,14 @@ export class App {
 
   protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
+
+  /** The versions the diff compares; the same ones show what a diff of identical versions shows. */
+  protected readonly comparedVersions = signal<ComparedVersions>(ComparedVersions.Different);
+
+  /** True when the diff compares the old version of the sample with itself. */
+  protected readonly comparesSameVersions = computed(
+    () => this.comparedVersions() === ComparedVersions.Same,
+  );
 
   /** Width of the diff, which the page narrows to show the automatic layout. */
   protected readonly diffWidth = signal<DiffWidth>(DiffWidth.Full);

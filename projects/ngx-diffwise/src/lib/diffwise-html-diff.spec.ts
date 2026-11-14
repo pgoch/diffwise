@@ -11,6 +11,7 @@ import {
   DiffwiseColorMode,
   DiffwiseGapStyle,
   DiffwiseLanguage,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
 } from './config/option-values';
@@ -156,14 +157,19 @@ function clickNewFootnoteLink(element: HTMLElement, options: MouseEventInit = {}
   return click;
 }
 
-/** Renders the component with two versions of a document and, if given, its options. */
+/**
+ * Renders the component with two versions of a document and, if given, its options. Many tests
+ * compare a document with itself to see how the diff shows it, so the same versions show both
+ * versions here, unless the options say otherwise.
+ */
 function render(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
   const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+  const allInputs = { noChangesView: DiffwiseNoChangesView.Diff, ...inputs };
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
 
-  for (const [name, value] of Object.entries(inputs)) {
+  for (const [name, value] of Object.entries(allInputs)) {
     fixture.componentRef.setInput(name, value);
   }
 
@@ -281,8 +287,8 @@ function newMarkersOf(element: HTMLElement) {
 @Component({
   imports: [DiffwiseHtmlDiff],
   template: `
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" />
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" />
+    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
+    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
   `,
 })
 class TwoDiffs {

@@ -1,7 +1,12 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
-import { DiffwiseColorMode, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseLanguage,
+  DiffwiseLayout,
+  DiffwiseNoChangesView,
+} from './config/option-values';
 import type { DiffwiseDiffStats } from './diff-stats';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 
@@ -22,6 +27,16 @@ const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const ROLE_ATTRIBUTE = 'role';
 const TABINDEX_ATTRIBUTE = 'tabindex';
 const MOUSEOVER_EVENT = 'mouseover';
+const ROW_SELECTOR = '.diffwise-html-diff__row';
+const LINE_NUMBER_SELECTOR = '.diffwise-html-diff__line-number';
+const CONTENT_SELECTOR = '.diffwise-html-diff__content';
+const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
+const VERSION_HEADERS_SELECTOR = '.diffwise-html-diff__version-headers';
+const COLLAPSED_LINES_SELECTOR = '.diffwise-html-diff__collapsed-lines';
+const DOCUMENT_VIEW_CLASS = 'diffwise-html-diff--no-changes-view-document';
+const DIFF_VIEW_CLASS = 'diffwise-html-diff--no-changes-view-diff';
+const TERMS_LINES = ['Old intro.', 'Terms of use.', 'Reply within 24 hours.'];
+const DOCUMENT_VIEW = { noChangesView: DiffwiseNoChangesView.Document };
 
 /** One line removed, one unchanged, one changed and one added. */
 const OLD_TERMS_HTML = '<p>Old intro.</p><p>Terms of use.</p><p>Reply within 24 hours.</p>';
@@ -100,6 +115,14 @@ function textsOf(element: HTMLElement, selector: string) {
 
 function attributesOf(element: HTMLElement, selector: string, attribute: string) {
   return Array.from(element.querySelectorAll(selector), (found) => found.getAttribute(attribute));
+}
+
+/** Rows as `[line numbers, texts of the content]`. */
+function rowsOf(element: HTMLElement) {
+  return Array.from(element.querySelectorAll(ROW_SELECTOR), (row) => [
+    textsOf(row as HTMLElement, LINE_NUMBER_SELECTOR),
+    textsOf(row as HTMLElement, CONTENT_SELECTOR),
+  ]);
 }
 
 function tooltipTitleOf(element: HTMLElement) {
@@ -249,5 +272,78 @@ describe('DiffwiseHtmlDiff toolbar', () => {
     expect(sized.style.getPropertyValue(TOOLBAR_FONT_SIZE_VARIABLE)).toBe('1.2rem');
     expect(tooLarge.style.getPropertyValue(TOOLBAR_FONT_SIZE_VARIABLE)).toBe('');
     expect(console.warn).toHaveBeenCalledOnce();
+  });
+});
+
+describe('DiffwiseHtmlDiff identical versions', () => {
+  it('shows nothing under the toolbar, by default', () => {
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML).fixture);
+
+    expect(element.querySelector(ROW_SELECTOR)).toBeNull();
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+    expect(textsOf(element, TOOLBAR_SELECTOR)).toEqual(['No changes']);
+  });
+
+  it('shows the document once on request, with one number and the new line in each row', () => {
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, DOCUMENT_VIEW).fixture);
+
+    expect(rowsOf(element)).toEqual(
+      TERMS_LINES.map((line, index) => [[String(index + 1)], [line]]),
+    );
+    expect(element.querySelectorAll(CONTENT_SELECTOR)).toHaveLength(TERMS_LINES.length);
+    expect(element.querySelectorAll(NEW_CONTENT_SELECTOR)).toHaveLength(TERMS_LINES.length);
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
+    expect(element.classList).toContain(NO_CHANGES_CLASS);
+    expect(element.classList).toContain(DOCUMENT_VIEW_CLASS);
+  });
+
+  it('shows the document once in the single column too', () => {
+    const options = { ...DOCUMENT_VIEW, layout: DiffwiseLayout.Inline };
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, options).fixture);
+
+    expect(rowsOf(element)).toEqual(
+      TERMS_LINES.map((line, index) => [[String(index + 1)], [line]]),
+    );
+  });
+
+  it('shows every line of the document once, without hiding unchanged lines', () => {
+    const options = { ...DOCUMENT_VIEW, hideUnchangedLines: true };
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, options).fixture);
+
+    expect(element.querySelectorAll(ROW_SELECTOR)).toHaveLength(TERMS_LINES.length);
+    expect(element.querySelector(COLLAPSED_LINES_SELECTOR)).toBeNull();
+  });
+
+  it('shows both versions as usual on request', () => {
+    const options = { noChangesView: DiffwiseNoChangesView.Diff };
+    const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, options).fixture);
+
+    expect(rowsOf(element)).toEqual(
+      TERMS_LINES.map((line, index) => [
+        [String(index + 1), String(index + 1)],
+        [line, line],
+      ]),
+    );
+    expect(element.querySelector(VERSION_HEADERS_SELECTOR)).not.toBeNull();
+    expect(element.classList).toContain(DIFF_VIEW_CLASS);
+  });
+
+  it('changes nothing for versions that differ, but keeps the class of the option', () => {
+    const element = elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML, DOCUMENT_VIEW).fixture);
+    const usual = elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML).fixture);
+
+    expect(rowsOf(element)).toEqual(rowsOf(usual));
+    expect(element.classList).toContain(DOCUMENT_VIEW_CLASS);
+    expect(element.classList).not.toContain(NO_CHANGES_CLASS);
+  });
+
+  it('shows the changes again when a version changes', () => {
+    const { fixture } = render(OLD_TERMS_HTML, OLD_TERMS_HTML, DOCUMENT_VIEW);
+
+    change(fixture, NEW_HTML_INPUT, NEW_TERMS_HTML);
+
+    expect(rowsOf(elementOf(fixture))).toEqual(
+      rowsOf(elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML).fixture)),
+    );
   });
 });

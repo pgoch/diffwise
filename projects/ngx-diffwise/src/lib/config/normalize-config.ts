@@ -17,6 +17,7 @@ import {
   DiffwiseLanguage,
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
@@ -84,6 +85,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   hideUnchangedLines: isBoolean,
   contextLines: isContextLines,
   showDiffStats: isBoolean,
+  noChangesView: isNoChangesView,
   dividerStyle: isDividerStyle,
   gapStyle: isGapStyle,
   versionHeaders: isVersionHeaders,
@@ -236,6 +238,10 @@ function isContextLines(value: unknown): boolean {
 
 function isInlineDiffStyle(value: unknown): boolean {
   return isValueOf(DiffwiseInlineDiffStyle, value);
+}
+
+function isNoChangesView(value: unknown): boolean {
+  return isValueOf(DiffwiseNoChangesView, value);
 }
 
 function isLineNumberStyle(value: unknown): boolean {

@@ -64,6 +64,7 @@ import {
   DiffwiseLayout,
   type DiffwiseLevel,
   type DiffwiseLineNumberStyle,
+  DiffwiseNoChangesView,
   type DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
@@ -243,6 +244,7 @@ interface ShownVersionHeaders {
     './single-column.css',
     './collapsed-lines/collapsed-lines.css',
     './toolbar/toolbar.css',
+    './no-changes.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
@@ -341,6 +343,12 @@ export class DiffwiseHtmlDiff {
    * global configuration.
    */
   readonly showDiffStats = input<boolean>();
+
+  /**
+   * What shows under the text that the versions are the same: nothing, the document once, or both
+   * versions as usual; wins over `config` and the global configuration.
+   */
+  readonly noChangesView = input<DiffwiseNoChangesView>();
 
   /** What stands between the versions; wins over `config` and the global configuration. */
   readonly dividerStyle = input<DiffwiseDividerStyle>();
@@ -457,6 +465,7 @@ export class DiffwiseHtmlDiff {
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
     showDiffStats: this.showDiffStats(),
+    noChangesView: this.noChangesView(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
@@ -605,8 +614,27 @@ export class DiffwiseHtmlDiff {
     () => !this.diffStats().hasChanges || this.effectiveConfig().showDiffStats,
   );
 
-  /** Rows of the versions side by side; the diff prepares them only for this layout. */
-  private readonly rows = computed(() =>
+  /** What shows under the toolbar when the versions are the same; `null` when they differ. */
+  private readonly sameVersionsView = computed(() =>
+    this.diffStats().hasChanges ? null : this.effectiveConfig().noChangesView,
+  );
+
+  /** True when the diff shows both versions: when they differ, or when the app asks for it. */
+  protected readonly showsBothVersions = computed(() => {
+    const view = this.sameVersionsView();
+    return view === null || view === DiffwiseNoChangesView.Diff;
+  });
+
+  /** True when the versions are the same and the diff shows the document once. */
+  protected readonly showsDocumentOnce = computed(
+    () => this.sameVersionsView() === DiffwiseNoChangesView.Document,
+  );
+
+  /**
+   * Rows of the versions side by side, which also show the document once; the diff prepares them
+   * only for these views.
+   */
+  protected readonly rows = computed(() =>
     this.diff().rows.map((row, sourceRow) => this.shownRow(row, sourceRow)),
   );
 

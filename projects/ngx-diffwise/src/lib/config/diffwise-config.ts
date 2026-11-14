@@ -15,6 +15,7 @@ import {
   DiffwiseLayout,
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
+  DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
@@ -97,6 +98,11 @@ export interface DiffwiseConfigOptions {
    * Default: `true`.
    */
   readonly showDiffStats?: boolean;
+  /**
+   * What shows under the text that the versions are the same: nothing, the document once, or both
+   * versions as usual. Default: `DiffwiseNoChangesView.Message`.
+   */
+  readonly noChangesView?: DiffwiseNoChangesView;
   /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
@@ -221,6 +227,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Shows the numbers of changed lines in the toolbar above the diff. */
   readonly showDiffStats: boolean = true;
+
+  /** What shows under the text that the versions are the same. */
+  readonly noChangesView: DiffwiseNoChangesView = DiffwiseNoChangesView.Message;
 
   /** What stands between the two versions. */
   readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;

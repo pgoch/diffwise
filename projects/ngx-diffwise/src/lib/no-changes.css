@@ -1,0 +1,32 @@
+/*
+ * A diff of versions that are the same. The toolbar says so; under it stands nothing, the document
+ * once, or both versions, as the app chooses.
+ */
+
+/* With nothing under it, the toolbar is the whole diff and needs no line of its own below. */
+.diffwise-html-diff--no-changes:not(
+    .diffwise-html-diff--no-changes-view-document,
+    .diffwise-html-diff--no-changes-view-diff
+  )
+  .diffwise-html-diff__toolbar {
+  border-bottom: 0;
+}
+
+/*
+ * The document once: one column of line numbers, since the number is the same in both versions,
+ * and the content across the whole width, in either layout.
+ */
+.diffwise-html-diff--no-changes.diffwise-html-diff--no-changes-view-document
+  .diffwise-html-diff__row {
+  grid-template-columns: var(--diffwise-line-number-width) minmax(0, 1fr);
+}
+
+.diffwise-html-diff--no-changes.diffwise-html-diff--no-changes-view-document
+  .diffwise-html-diff__line-number--new {
+  grid-column: 1;
+}
+
+.diffwise-html-diff--no-changes.diffwise-html-diff--no-changes-view-document
+  .diffwise-html-diff__content--new {
+  grid-column: 2;
+}

@@ -54,7 +54,26 @@
   />
 }
 
-@if (showsSingleColumn()) {
+@if (showsDocumentOnce()) {
+  @for (row of rows(); track row.position) {
+    @if (row.newLine; as line) {
+      <div class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}">
+        @if (lineNumbersShown) {
+          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+          </div>
+        }
+        <div
+          class="diffwise-html-diff__content diffwise-html-diff__content--new"
+          [attr.data-diffwise-table]="line.table"
+          [innerHTML]="line.html"
+        ></div>
+      </div>
+    }
+  }
+} @else if (!showsBothVersions()) {
+  <!-- The versions are the same, and the toolbar says so; nothing else shows. -->
+} @else if (showsSingleColumn()) {
   @if (singleColumnHeader(); as header) {
     <div class="diffwise-html-diff__version-headers">
       @if (lineNumbersShown) {

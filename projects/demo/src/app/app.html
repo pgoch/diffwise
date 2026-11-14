@@ -18,6 +18,12 @@
     [value]="size()"
     (chosen)="size.set($event)"
   />
+  <demo-choice-buttons
+    label="Versions"
+    [choices]="comparedVersionsChoices"
+    [value]="comparedVersions()"
+    (chosen)="comparedVersions.set($event)"
+  />
 
   <h2>Colors</h2>
   <demo-choice-buttons
@@ -269,6 +275,13 @@
     />
     Numbers in the toolbar
   </label>
+  <demo-choice-buttons
+    label="Identical versions"
+    [choices]="noChangesViews"
+    [value]="diffwise.config().noChangesView"
+    (chosen)="update({ noChangesView: $event })"
+  />
+  <p class="demo-hint">What shows under “No changes”; choose “Before twice” to see it.</p>
   @if (lastStats(); as stats) {
     <p class="demo-hint" aria-live="polite">
       From the last comparison: +{{ stats.addedLines }} −{{ stats.removedLines }} ~{{
@@ -319,7 +332,7 @@
     <div class="demo-diff" [style.max-width]="diffWidth()">
       <diffwise-html-diff
         [oldHtml]="pair.oldHtml"
-        [newHtml]="pair.newHtml"
+        [newHtml]="comparesSameVersions() ? pair.oldHtml : pair.newHtml"
         [language]="interfaceLanguage()"
         (diffStatsComputed)="lastStats.set($event)"
       />
