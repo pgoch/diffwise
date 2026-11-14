@@ -9,9 +9,11 @@ import {
   afterNextRender,
   afterRenderEffect,
   computed,
+  effect,
   inject,
   input,
   linkedSignal,
+  output,
   signal,
   untracked,
   viewChild,
@@ -67,6 +69,7 @@ import {
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
 } from './config/option-values';
+import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
@@ -389,6 +392,12 @@ export class DiffwiseHtmlDiff {
    */
   readonly customTexts = input<DiffwiseCustomTexts | null>();
 
+  /**
+   * Numbers of the changed lines after each comparison: the first one, and after a change of a
+   * version or of an option of the comparison. Other options do not compare the versions again.
+   */
+  readonly diffStatsComputed = output<DiffwiseDiffStats>();
+
   private readonly host: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly diffwise = inject(Diffwise);
@@ -564,6 +573,9 @@ export class DiffwiseHtmlDiff {
     return diffHtml(this.oldHtml(), this.newHtml(), settings);
   });
 
+  /** Numbers of the changed lines of the comparison. */
+  protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
+
   /** Rows of the versions side by side; the diff prepares them only for this layout. */
   private readonly rows = computed(() =>
     this.diff().rows.map((row, sourceRow) => this.shownRow(row, sourceRow)),
@@ -657,6 +669,7 @@ export class DiffwiseHtmlDiff {
     });
 
     afterRenderEffect(() => this.prepareMarkers());
+    this.emitStatsOfEachComparison();
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
   }
@@ -751,6 +764,23 @@ export class DiffwiseHtmlDiff {
     for (const marker of this.host.nativeElement.querySelectorAll(FOCUSABLE_MARKER_SELECTOR)) {
       setFocusable(marker, markersTakeFocus);
     }
+  }
+
+  /**
+   * Emits the numbers of changed lines whenever a version or an option of the comparison changes.
+   * The effect reads only what starts a comparison, so comparing the versions again for the merged
+   * lines of the single column emits nothing.
+   */
+  private emitStatsOfEachComparison(): void {
+    effect(() => {
+      this.oldHtml();
+      this.newHtml();
+      this.diffOptions();
+
+      const stats = untracked(() => this.diffStats());
+
+      this.diffStatsComputed.emit(stats);
+    });
   }
 
   /**

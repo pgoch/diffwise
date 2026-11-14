@@ -249,6 +249,15 @@
   </label>
   <p class="demo-hint">From 0.5 to 10; the diff ignores other sizes.</p>
 
+  <h2>Statistics</h2>
+  @if (lastStats(); as stats) {
+    <p class="demo-hint" aria-live="polite">
+      From the last comparison: +{{ stats.addedLines }} −{{ stats.removedLines }} ~{{
+        stats.changedLines
+      }}, {{ stats.hasChanges ? 'with changes' : 'no changes' }}.
+    </p>
+  }
+
   <h2>Comparison</h2>
   <label class="demo-check">
     <input
@@ -293,6 +302,7 @@
         [oldHtml]="pair.oldHtml"
         [newHtml]="pair.newHtml"
         [language]="interfaceLanguage()"
+        (diffStatsComputed)="lastStats.set($event)"
       />
     </div>
   }

@@ -14,6 +14,7 @@ import {
   DiffwiseColorMode,
   type DiffwiseConfigOptions,
   type DiffwiseDiffColors,
+  type DiffwiseDiffStats,
   DiffwiseDividerStyle,
   DiffwiseFontFamily,
   DiffwiseGapStyle,
@@ -263,6 +264,9 @@ export class App {
 
   /** The chosen headers; the first choice is set in `app.config.ts`. */
   protected readonly versionHeaders = signal<VersionHeaders>(DiffwiseVersionHeaders.Default);
+
+  /** The numbers of the last comparison, from the event of the diff. */
+  protected readonly lastStats = signal<DiffwiseDiffStats | null>(null);
 
   /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
