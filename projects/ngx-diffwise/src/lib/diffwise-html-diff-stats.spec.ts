@@ -183,7 +183,7 @@ describe('DiffwiseHtmlDiff statistics', () => {
   });
 
   it('emits the numbers when the toolbar does not show them', () => {
-    const options = { showDiffStats: false, showNavigationToolbar: false };
+    const options = { showDiffStats: false, showNavigationToolbar: false, allowedUserSettings: [] };
     const { fixture, emitted } = render(OLD_TERMS_HTML, NEW_TERMS_HTML, options);
 
     expect(elementOf(fixture).querySelector(TOOLBAR_SELECTOR)).toBeNull();

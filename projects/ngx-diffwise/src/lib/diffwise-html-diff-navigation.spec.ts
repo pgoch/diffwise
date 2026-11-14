@@ -223,8 +223,9 @@ describe('DiffwiseHtmlDiff navigation', () => {
     expect(activeRowsOf(element)).toHaveLength(2);
   });
 
-  it('shows no toolbar without the arrows and the numbers', () => {
-    const element = elementOf(render({ showNavigationToolbar: false, showDiffStats: false }));
+  it('shows no toolbar without the arrows, the numbers and the view settings', () => {
+    const options = { showNavigationToolbar: false, showDiffStats: false, allowedUserSettings: [] };
+    const element = elementOf(render(options));
 
     expect(element.querySelector(TOOLBAR_SELECTOR)).toBeNull();
   });

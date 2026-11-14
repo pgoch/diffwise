@@ -309,6 +309,22 @@
     </p>
   }
 
+  <h2>View settings</h2>
+  <p class="demo-hint">What the user can change with the button at the end of the toolbar.</p>
+  @for (setting of userSettings; track setting.value) {
+    <label class="demo-check">
+      <input
+        type="checkbox"
+        [checked]="isAllowed(setting.value)"
+        (change)="allowUserSetting(setting.value, isChecked($event))"
+      />
+      {{ setting.label }}
+    </label>
+  }
+  <p class="demo-hint">
+    A choice in the view settings wins over this panel; “Restore defaults” brings the panel back.
+  </p>
+
   <h2>Comparison</h2>
   <label class="demo-check">
     <input

@@ -16,6 +16,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from './option-values';
@@ -337,6 +338,33 @@ describe('normalizeConfig', () => {
     });
     expect(normalizeConfig({ noChangesView: 'none' })).toEqual({});
     expect(console.warn).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the options the user can change as a frozen copy, given as constants or as plain text', () => {
+    const allowedUserSettings = [DiffwiseUserSetting.ColorMode, 'layout'];
+    const normalized = normalizeConfig({ allowedUserSettings });
+
+    allowedUserSettings.push(DiffwiseUserSetting.HideUnchangedLines);
+
+    expect(normalized).toEqual({ allowedUserSettings: ['colorMode', DiffwiseUserSetting.Layout] });
+    expect(Object.isFrozen(normalized.allowedUserSettings)).toBe(true);
+    expect(normalizeConfig({ allowedUserSettings: [] })).toEqual({ allowedUserSettings: [] });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('leaves out of the allowed options other values and repeats, with a warning for each other value', () => {
+    const allowedUserSettings = ['layout', 'zoom', DiffwiseUserSetting.Layout, null, 'colorMode'];
+
+    expect(normalizeConfig({ allowedUserSettings })).toEqual({
+      allowedUserSettings: [DiffwiseUserSetting.Layout, DiffwiseUserSetting.ColorMode],
+    });
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores allowed options that are not a list, with a warning', () => {
+    expect(normalizeConfig({ allowedUserSettings: 'layout' })).toEqual({});
+    expect(normalizeConfig({ allowedUserSettings: { layout: true } })).toEqual({});
+    expect(console.warn).toHaveBeenCalledTimes(2);
   });
 
   it('keeps the name of a font of the app, and ignores a name it cannot put in quotes', () => {

@@ -29,6 +29,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -151,6 +152,14 @@ const ACTIVE_CHANGE_STYLE_CHOICES: readonly Choice<DiffwiseActiveChangeStyle>[] 
   { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
 ];
 
+/** Options the user can change in the view settings of the diff, in the order they show there. */
+const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
+  { value: DiffwiseUserSetting.Layout, label: 'Layout' },
+  { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
+  { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
+  { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
+];
+
 const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
   { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
   { value: DiffwiseDividerStyle.Line, label: 'Line' },
@@ -269,6 +278,7 @@ export class App {
   protected readonly diffWidths = DIFF_WIDTH_CHOICES;
   protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
   protected readonly activeChangeStyles = ACTIVE_CHANGE_STYLE_CHOICES;
+  protected readonly userSettings = USER_SETTING_CHOICES;
   protected readonly gapStyles = GAP_STYLE_CHOICES;
   protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
   protected readonly alignments = ALIGNMENT_CHOICES;
@@ -344,6 +354,20 @@ export class App {
   /** Steps to the next block of changes with the method of the diff, as an app can. */
   protected goToNextChange(): void {
     this.diff()?.goToNextChange();
+  }
+
+  /** True when the user can change the option in the view settings of the diff. */
+  protected isAllowed(setting: DiffwiseUserSetting): boolean {
+    return this.diffwise.config().allowedUserSettings.includes(setting);
+  }
+
+  /** Lets the user change the option in the view settings of the diff, or takes it away. */
+  protected allowUserSetting(setting: DiffwiseUserSetting, allowed: boolean): void {
+    const allowedUserSettings = USER_SETTING_CHOICES.map(({ value }) => value).filter((option) =>
+      option === setting ? allowed : this.isAllowed(option),
+    );
+
+    this.update({ allowedUserSettings });
   }
 
   /** Switches the theme with the method of the service for each color mode. */

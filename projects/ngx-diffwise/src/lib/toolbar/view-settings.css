@@ -1,0 +1,155 @@
+/*
+ * The button of the view settings at the end of the toolbar, and the settings it opens: groups of
+ * buttons, one for each value of an option, a checkbox, and a button that takes the choices back.
+ */
+
+.diffwise-html-diff__toolbar > diffwise-view-settings {
+  margin-inline-start: auto;
+}
+
+/* As high as the arrows between the blocks of changes, with a frame of the same color. */
+.diffwise-html-diff__view-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35em;
+  height: 2.2em;
+  padding: 0;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 0.55em;
+  background: var(--diffwise-background);
+  color: var(--diffwise-text);
+  font: inherit;
+  cursor: pointer;
+  box-sizing: content-box;
+}
+
+.diffwise-html-diff__view-button svg {
+  width: 1.25em;
+  height: 1.25em;
+}
+
+.diffwise-html-diff__view-button:hover,
+.diffwise-html-diff__view-button[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
+}
+
+.diffwise-html-diff__view-button[aria-expanded='true'] {
+  border-color: var(--diffwise-muted);
+}
+
+.diffwise-html-diff__view-button:focus-visible,
+.diffwise-html-diff__view-settings :is(button, input):focus-visible {
+  outline: 2px solid var(--diffwise-focus);
+  outline-offset: 2px;
+}
+
+/*
+ * The settings, in the colors of the diff. They stand where the diff puts them, under their
+ * button, instead of where popovers stand by default.
+ */
+.diffwise-html-diff__view-settings {
+  position: fixed;
+  inset: auto;
+  box-sizing: border-box;
+  width: max-content;
+  min-width: 20em;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 16px);
+  margin: 0;
+  overflow: auto;
+  padding: 12px;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 10px;
+  background: var(--diffwise-background);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 18%);
+  color: var(--diffwise-text);
+  font-size: var(--diffwise-toolbar-font-size);
+  line-height: 1.5;
+  text-align: start;
+}
+
+/* The settings take the focus when they open, as a dialog; their buttons show it. */
+.diffwise-html-diff__view-settings:focus {
+  outline: none;
+}
+
+/* The name of an option above its buttons, which share the width. */
+.diffwise-html-diff__view-settings-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.diffwise-html-diff__view-settings-label {
+  flex-basis: 100%;
+  color: var(--diffwise-muted);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.diffwise-html-diff__view-settings-choice {
+  flex: 1;
+  padding: 4px 6px;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--diffwise-ink) 5%, var(--diffwise-background));
+  color: var(--diffwise-text);
+  font: inherit;
+  font-size: 0.92em;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.diffwise-html-diff__view-settings-choice:hover {
+  background: color-mix(in srgb, var(--diffwise-ink) 10%, var(--diffwise-background));
+}
+
+/* The chosen value: the colors of the text and the background change places. */
+.diffwise-html-diff__view-settings-choice[aria-pressed='true'] {
+  border-color: var(--diffwise-text);
+  background: var(--diffwise-text);
+  color: var(--diffwise-background);
+}
+
+/* An option that does nothing now, such as the style of the single column beside two columns. */
+.diffwise-html-diff__view-settings-group:has(:disabled) {
+  opacity: 0.45;
+}
+
+.diffwise-html-diff__view-settings-choice:disabled {
+  cursor: default;
+}
+
+.diffwise-html-diff__view-settings-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 2px;
+  cursor: pointer;
+}
+
+.diffwise-html-diff__view-settings-checkbox input {
+  margin: 0;
+}
+
+.diffwise-html-diff__view-settings-reset {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 5px 8px;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 6px;
+  background: var(--diffwise-background);
+  color: var(--diffwise-text);
+  font: inherit;
+  font-size: 0.92em;
+  cursor: pointer;
+}
+
+.diffwise-html-diff__view-settings-reset:hover {
+  background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
+}

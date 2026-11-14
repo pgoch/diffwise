@@ -69,6 +69,7 @@ import {
   type DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   type DiffwiseTooltipColorMode,
+  type DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
@@ -76,11 +77,14 @@ import {
 import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import { DiffToolbar, type ToolbarNavigation } from './toolbar/diff-toolbar';
+import { ViewSettings } from './toolbar/view-settings';
 import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 import { observedWidth } from './layout/diff-width';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
 import { scrollTablesTogether } from './table-scroll';
+import { type UserChoices, validUserChoices } from './user-settings/user-settings';
+import { SHARED_USER_SETTINGS_KEY, UserSettingsStore } from './user-settings/user-settings-store';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
 const ID_PREFIX_START = 'diffwise-';
@@ -111,20 +115,25 @@ const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
 const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
 const NAVIGATION_BUTTON_SELECTOR = '.diffwise-html-diff__navigation-button';
 const CHANGE_COUNTER_SELECTOR = '.diffwise-html-diff__change-counter';
+const VIEW_BUTTON_SELECTOR = '.diffwise-html-diff__view-button';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+const ARIA_EXPANDED_ATTRIBUTE = 'aria-expanded';
+const EXPANDED = 'true';
 const TOOLBAR_SELECTOR = ':scope > .diffwise-html-diff__toolbar';
 const ACTIVE_FIRST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-first`;
 const ACTIVE_LAST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-last`;
 
 /**
  * Elements whose tooltip shows only their name: icons in place of the version headers, and the
- * arrows, the counter and the numbers of the statistics in the toolbar.
+ * arrows, the counter, the numbers of the statistics and the button of the view settings in the
+ * toolbar.
  */
 const NAMED_TRIGGER_SELECTOR = [
   VERSION_HEADER_ICON_SELECTOR,
   NAVIGATION_BUTTON_SELECTOR,
   CHANGE_COUNTER_SELECTOR,
   DIFF_STAT_SELECTOR,
+  VIEW_BUTTON_SELECTOR,
 ].join();
 
 /** Elements with a tooltip outside the content: icons of changes and the named elements. */
@@ -255,7 +264,14 @@ interface ShownVersionHeaders {
  */
 @Component({
   selector: 'diffwise-html-diff',
-  imports: [ChangeDetailsButton, ChangeTooltip, CollapsedLinesBar, DiffToolbar, NgTemplateOutlet],
+  imports: [
+    ChangeDetailsButton,
+    ChangeTooltip,
+    CollapsedLinesBar,
+    DiffToolbar,
+    NgTemplateOutlet,
+    ViewSettings,
+  ],
   templateUrl: './diffwise-html-diff.html',
   styleUrls: [
     './diffwise-html-diff.css',
@@ -264,6 +280,7 @@ interface ShownVersionHeaders {
     './single-column.css',
     './collapsed-lines/collapsed-lines.css',
     './toolbar/toolbar.css',
+    './toolbar/view-settings.css',
     './navigation/active-change.css',
     './no-changes.css',
   ],
@@ -383,6 +400,12 @@ export class DiffwiseHtmlDiff {
    */
   readonly noChangesView = input<DiffwiseNoChangesView>();
 
+  /**
+   * Options the user can change in the view settings of the toolbar; an empty list hides their
+   * button. Wins over `config` and the global configuration.
+   */
+  readonly allowedUserSettings = input<readonly DiffwiseUserSetting[]>();
+
   /** What stands between the versions; wins over `config` and the global configuration. */
   readonly dividerStyle = input<DiffwiseDividerStyle>();
 
@@ -465,7 +488,10 @@ export class DiffwiseHtmlDiff {
   private readonly localeId = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
-  private readonly idPrefix = nextIdPrefix();
+  private readonly userSettings = inject(UserSettingsStore);
+
+  /** Starts the ids of this diff, so that each diff on the page has its own. */
+  protected readonly idPrefix = nextIdPrefix();
 
   /** Width of the diff in pixels; `null` until it is known. */
   private readonly width = observedWidth(this.host.nativeElement, this.destroyRef);
@@ -501,6 +527,7 @@ export class DiffwiseHtmlDiff {
     activeChangeStyle: this.activeChangeStyle(),
     showDiffStats: this.showDiffStats(),
     noChangesView: this.noChangesView(),
+    allowedUserSettings: this.allowedUserSettings(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
@@ -523,10 +550,24 @@ export class DiffwiseHtmlDiff {
     customTexts: this.customTexts(),
   }));
 
-  /** The options in effect: single inputs over `config`, over the global configuration. */
-  protected readonly effectiveConfig = computed(() =>
+  /** The options of the app: single inputs over `config`, over the global configuration. */
+  private readonly appConfig = computed(() =>
     this.diffwise.config().with(this.config()).with(this.inputOptions()),
   );
+
+  /** Options the user can change in the view settings. */
+  protected readonly allowedSettings = computed(() => this.appConfig().allowedUserSettings);
+
+  /** Choices the user has made in the view settings of any diff of the app. */
+  private readonly storedChoices = this.userSettings.choicesOf(SHARED_USER_SETTINGS_KEY);
+
+  /** The choices of the user that apply here: those of the options the app allows. */
+  private readonly userChoices = computed(() =>
+    validUserChoices(this.storedChoices(), this.allowedSettings()),
+  );
+
+  /** The options in effect: the choices of the user over the options of the app. */
+  protected readonly effectiveConfig = computed(() => this.appConfig().with(this.userChoices()));
 
   /** What counts as a difference; other options change without comparing the versions again. */
   private readonly diffOptions = computed<DiffOptions>(
@@ -642,12 +683,22 @@ export class DiffwiseHtmlDiff {
   protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
 
   /**
-   * True when the toolbar has something to show: the navigation or the numbers of changed lines,
-   * or the text that the versions are the same, which shows without them too.
+   * True when the toolbar shows the button of the view settings: when the user can change an
+   * option, and the versions differ. With the same versions, the toolbar shows only that text.
+   */
+  protected readonly showsViewSettings = computed(
+    () => this.diffStats().hasChanges && this.allowedSettings().length > 0,
+  );
+
+  /**
+   * True when the toolbar has something to show: the navigation, the numbers of changed lines or
+   * the view settings, or the text that the versions are the same, which shows without them too.
    */
   protected readonly showsToolbar = computed(() => {
     const { showNavigationToolbar, showDiffStats } = this.effectiveConfig();
-    return !this.diffStats().hasChanges || showNavigationToolbar || showDiffStats;
+    const showsParts = showNavigationToolbar || showDiffStats || this.showsViewSettings();
+
+    return !this.diffStats().hasChanges || showsParts;
   });
 
   /** Blocks of adjacent changed rows, the steps of the navigation. */
@@ -831,6 +882,21 @@ export class DiffwiseHtmlDiff {
   goToPreviousChange(): void {
     this.navigation.goToPrevious();
     this.scrollToActiveChange();
+  }
+
+  /** Adds the choice of the user; every diff of the app follows it. */
+  protected changeUserSettings(changes: UserChoices): void {
+    this.userSettings.choose(SHARED_USER_SETTINGS_KEY, changes);
+  }
+
+  /** Takes back the choices of the user, so the options of the app apply again. */
+  protected resetUserSettings(): void {
+    this.userSettings.reset(SHARED_USER_SETTINGS_KEY);
+  }
+
+  /** Hides the tooltip, such as the one of a button that has just opened something below it. */
+  protected hideTooltip(): void {
+    this.tooltip().hide();
   }
 
   /** True for a row of the active block, by its position among the rows of the view. */
@@ -1171,11 +1237,13 @@ function highestLineNumber(rows: readonly ViewRow[]): number {
 /**
  * The tooltip of a named element, such as a version icon or a number of the statistics: its name.
  * The name also names the element for screen readers, so the tooltip does not describe it again.
+ * A button whose settings are open shows none, since they stand where the tooltip would.
  */
 function nameTooltipRequest(trigger: HTMLElement, byFocus: boolean): TooltipRequest | null {
   const name = trigger.getAttribute(ARIA_LABEL_ATTRIBUTE);
+  const isExpanded = trigger.getAttribute(ARIA_EXPANDED_ATTRIBUTE) === EXPANDED;
 
-  if (name === null) {
+  if (name === null || isExpanded) {
     return null;
   }
 

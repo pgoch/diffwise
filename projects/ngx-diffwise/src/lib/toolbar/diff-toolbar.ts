@@ -50,8 +50,9 @@ const NO_NAVIGATION: ToolbarNavigation = { current: null, total: 0 };
 
 /**
  * The toolbar above the diff, which stays at the top while the page scrolls: arrows between the
- * blocks of changes with their counter, and the numbers of changed lines; when the versions are the
- * same, only a text that says so.
+ * blocks of changes with their counter, the numbers of changed lines, and at the end what the diff
+ * puts in it, the button of the view settings; when the versions are the same, only a text that
+ * says so.
  */
 @Component({
   selector: 'diffwise-diff-toolbar',
