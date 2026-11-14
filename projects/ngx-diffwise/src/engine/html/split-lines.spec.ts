@@ -560,6 +560,17 @@ describe('splitLines', () => {
     ]);
   });
 
+  it('gives neighboring pieces of text with the same format one range', () => {
+    const [line] = splitDocument('<p>Read  the <i>whole  guide</i> now.</p>');
+    const italic = { ...PLAIN_FORMAT, styles: [TextStyle.Italic] };
+
+    expect(line.formats).toEqual([
+      { start: 0, end: 9, format: PLAIN_FORMAT },
+      { start: 9, end: 20, format: italic },
+      { start: 20, end: 25, format: PLAIN_FORMAT },
+    ]);
+  });
+
   it('prefixes ids in the HTML of a line, but reads links as they are written', () => {
     const [line] = splitDocument('<p>See note<a href="#note">1</a>.</p><p id="note">Note.</p>');
     const linkFormat = line.formats.find((range) => range.format.link !== null)?.format;
