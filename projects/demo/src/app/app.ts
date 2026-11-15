@@ -160,6 +160,18 @@ const ACTIVE_CHANGE_STYLE_CHOICES: readonly Choice<DiffwiseActiveChangeStyle>[] 
   { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
 ];
 
+/** Name of the localStorage entry where the demo keeps its "Remember choices" box. */
+const REMEMBER_CHOICES_ENTRY = 'diffwise-demo:remember-choices';
+
+/** Value of the entry while the box is ticked. */
+const TICKED = 'true';
+
+/** Error under the field of the choices when its text is not JSON. */
+const NOT_JSON_ERROR = 'The text is not JSON.';
+
+/** Spaces before each level of the exported choices. */
+const JSON_INDENT = 2;
+
 /** Options the user can change in the view settings of the diff, in the order they show there. */
 const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
@@ -330,6 +342,12 @@ export class App {
   /** The last choices of the user as text. */
   protected readonly lastUserSettingsText = computed(() => JSON.stringify(this.lastUserSettings()));
 
+  /** The choices of the user as JSON: from "Export", or written for "Import". */
+  protected readonly choicesText = signal('');
+
+  /** Why the last import failed; `null` after an import that worked. */
+  protected readonly choicesError = signal<string | null>(null);
+
   /** The diff of the sample, whose methods step between the blocks of changes. */
   private readonly diff = viewChild(DiffwiseHtmlDiff);
 
@@ -364,6 +382,10 @@ export class App {
     computation: (pair, previous) => pair ?? previous?.value,
   });
 
+  constructor() {
+    this.update({ rememberUserSettings: demoRemembersChoices() });
+  }
+
   /** Changes options of the global configuration, as an app can do while it runs. */
   protected update(changes: DiffwiseConfigOptions): void {
     this.diffwise.updateConfig(changes);
@@ -391,6 +413,43 @@ export class App {
     );
 
     this.update({ allowedUserSettings });
+  }
+
+  /**
+   * Lets the diff remember the choices of the user in localStorage. The demo keeps the box too,
+   * so the diff reads the choices back after a reload.
+   */
+  protected rememberChoices(remembers: boolean): void {
+    this.update({ rememberUserSettings: remembers });
+    keepDemoRemembersChoices(remembers);
+  }
+
+  /** Puts the choices of the user in the field, as an app could keep them in the account of the user. */
+  protected exportChoices(): void {
+    const settings = this.diffwise.exportUserSettings();
+
+    this.choicesText.set(JSON.stringify(settings, null, JSON_INDENT));
+    this.choicesError.set(null);
+  }
+
+  /** Gives the user the choices from the field, as an app could after the user signs in. */
+  protected importChoices(): void {
+    let settings: DiffwiseUserSettings;
+
+    try {
+      settings = JSON.parse(this.choicesText());
+    } catch {
+      this.choicesError.set(NOT_JSON_ERROR);
+      return;
+    }
+
+    this.choicesError.set(null);
+    this.diffwise.importUserSettings(settings);
+  }
+
+  /** Takes back every choice of the user, also from localStorage. */
+  protected resetChoices(): void {
+    this.diffwise.resetUserSettings();
   }
 
   /** Switches the theme with the method of the service for each color mode. */
@@ -431,6 +490,10 @@ export class App {
     this.update({ fontFamily: name });
   }
 
+  protected textOf(event: Event): string {
+    return (event.target as HTMLTextAreaElement).value;
+  }
+
   protected isChecked(event: Event): boolean {
     return (event.target as HTMLInputElement).checked;
   }
@@ -462,6 +525,28 @@ function fontFamilyOf(choice: FontChoice, customFontName: string): string {
       return DiffwiseFontFamily.Builtin;
     case FontChoice.Custom:
       return customFontName;
+  }
+}
+
+/** True when the "Remember choices" box was ticked before the reload. */
+function demoRemembersChoices(): boolean {
+  try {
+    return localStorage.getItem(REMEMBER_CHOICES_ENTRY) === TICKED;
+  } catch {
+    return false;
+  }
+}
+
+/** Keeps the "Remember choices" box for the next reload. */
+function keepDemoRemembersChoices(remembers: boolean): void {
+  try {
+    if (remembers) {
+      localStorage.setItem(REMEMBER_CHOICES_ENTRY, TICKED);
+    } else {
+      localStorage.removeItem(REMEMBER_CHOICES_ENTRY);
+    }
+  } catch {
+    // Without localStorage the box stays only until the reload.
   }
 }
 

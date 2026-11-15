@@ -52,6 +52,25 @@
   cursor: pointer;
 }
 
+.demo-text {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 0 0 4px;
+  padding: 6px 8px;
+  border: 1px solid #dfe3e8;
+  border-radius: 6px;
+  font:
+    12px/1.45 ui-monospace,
+    SFMono-Regular,
+    Consolas,
+    monospace;
+  resize: vertical;
+}
+
+.demo-error {
+  color: #b42318;
+}
+
 .demo-check {
   display: flex;
   align-items: center;

@@ -93,6 +93,8 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   showDiffStats: isBoolean,
   noChangesView: isNoChangesView,
   allowedUserSettings: isList,
+  rememberUserSettings: isBoolean,
+  userSettingsKey: isUserSettingsKey,
   dividerStyle: isDividerStyle,
   gapStyle: isGapStyle,
   versionHeaders: isVersionHeaders,
@@ -185,7 +187,8 @@ function isList(value: unknown): value is readonly unknown[] {
   return Array.isArray(value);
 }
 
-function isObject(value: unknown): value is object {
+/** True for an object other than `null`, such as a list. */
+export function isObject(value: unknown): value is object {
   return typeof value === OBJECT_TYPE && value !== null;
 }
 
@@ -223,6 +226,11 @@ function isSelector(text: string): boolean {
   } catch {
     return false;
   }
+}
+
+/** True for `null`, which takes the base path of the app, or for a name that is not blank. */
+function isUserSettingsKey(value: unknown): boolean {
+  return value === null || (isText(value) && !isBlank(value));
 }
 
 function isHighlightStyle(value: unknown): boolean {
@@ -437,7 +445,8 @@ function frozenCopy(value: unknown): unknown {
   return isObject(value) ? Object.freeze({ ...value }) : value;
 }
 
-function warn(message: string, ...values: unknown[]): void {
+/** Warns in development mode; the console puts a name at `%s` and a value at `%o`. */
+export function warn(message: string, ...values: unknown[]): void {
   if (isDevMode()) {
     console.warn(message, ...values);
   }
