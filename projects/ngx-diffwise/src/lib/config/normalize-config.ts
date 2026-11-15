@@ -19,6 +19,7 @@ import {
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -74,6 +75,7 @@ const Warning = {
 const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknown) => boolean>> = {
   colorMode: isColorMode,
   darkModeSelector: isDarkModeSelector,
+  diffPalette: isDiffPalette,
   highlightStyle: isHighlightStyle,
   diffIntensity: isLevel,
   uiContrast: isLevel,
@@ -231,6 +233,10 @@ function isSelector(text: string): boolean {
 /** True for `null`, which takes the base path of the app, or for a name that is not blank. */
 function isUserSettingsKey(value: unknown): boolean {
   return value === null || (isText(value) && !isBlank(value));
+}
+
+function isDiffPalette(value: unknown): boolean {
+  return isValueOf(DiffwisePalette, value);
 }
 
 function isHighlightStyle(value: unknown): boolean {

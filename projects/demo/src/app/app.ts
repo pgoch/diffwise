@@ -29,6 +29,7 @@ import {
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   type DiffwiseUserSettings,
@@ -85,6 +86,11 @@ const COLOR_MODE_CHOICES: readonly Choice<DiffwiseColorMode>[] = [
   { value: DiffwiseColorMode.Light, label: 'Light' },
   { value: DiffwiseColorMode.Dark, label: 'Dark' },
   { value: DiffwiseColorMode.Auto, label: 'Auto' },
+];
+
+const PALETTE_CHOICES: readonly Choice<DiffwisePalette>[] = [
+  { value: DiffwisePalette.Default, label: 'Red and green' },
+  { value: DiffwisePalette.Colorblind, label: 'Colorblind' },
 ];
 
 const HIGHLIGHT_STYLE_CHOICES: readonly Choice<DiffwiseHighlightStyle>[] = [
@@ -289,6 +295,7 @@ export class App {
   protected readonly languages = LANGUAGE_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
   protected readonly colorModes = COLOR_MODE_CHOICES;
+  protected readonly palettes = PALETTE_CHOICES;
   protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
   protected readonly levels = LEVEL_CHOICES;
   protected readonly layouts = LAYOUT_CHOICES;

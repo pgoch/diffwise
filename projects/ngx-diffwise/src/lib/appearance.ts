@@ -10,6 +10,7 @@ const DEFAULT_CONFIG = new DiffwiseConfig();
  * class ends with the value, such as `gray`.
  */
 const VALUE_MODIFIERS = {
+  diffPalette: 'diffwise-html-diff--diff-palette-',
   highlightStyle: 'diffwise-html-diff--highlight-style-',
   inlineDiffStyle: 'diffwise-html-diff--inline-diff-style-',
   noChangesView: 'diffwise-html-diff--no-changes-view-',

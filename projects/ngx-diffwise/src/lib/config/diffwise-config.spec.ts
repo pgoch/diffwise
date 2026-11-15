@@ -14,6 +14,7 @@ import {
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -26,6 +27,7 @@ const WARN_METHOD = 'warn';
 const DEFAULT_OPTIONS = {
   colorMode: DiffwiseColorMode.Auto,
   darkModeSelector: null,
+  diffPalette: DiffwisePalette.Default,
   highlightStyle: DiffwiseHighlightStyle.Outline,
   diffIntensity: 3,
   uiContrast: 3,

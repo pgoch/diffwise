@@ -10,6 +10,16 @@ export const DiffwiseColorMode = {
 
 export type DiffwiseColorMode = (typeof DiffwiseColorMode)[keyof typeof DiffwiseColorMode];
 
+/** Colors of changes. */
+export const DiffwisePalette = {
+  /** Red for removed and green for added. */
+  Default: 'default',
+  /** Orange for removed and blue for added, which colorblind readers tell apart. */
+  Colorblind: 'colorblind',
+} as const;
+
+export type DiffwisePalette = (typeof DiffwisePalette)[keyof typeof DiffwisePalette];
+
 /** Styles of changed words: the same background, and for some styles lines in the accent color. */
 export const DiffwiseHighlightStyle = {
   /** An outline around the changed words. */
