@@ -63,8 +63,11 @@
         [allowed]="allowedSettings()"
         [config]="effectiveConfig()"
         [showsSingleColumn]="showsSingleColumn()"
+        [hasCustomColors]="hasCustomColors()"
+        [showsCustomColors]="showsCustomColors()"
         [texts]="texts()"
         (settingsChange)="changeUserSettings($event)"
+        (settingWithdraw)="withdrawUserSetting($event)"
         (settingsReset)="resetUserSettings()"
         (opened)="hideTooltip()"
       />

@@ -32,3 +32,8 @@ export const DIFF_COLOR_VARIABLES: Readonly<Record<keyof ThemeDiffColors, string
   addedHighlight: '--diffwise-added-highlight',
   addedAccent: '--diffwise-added-accent',
 };
+
+/** True when the colors of a theme set at least one color. */
+export function hasThemeColors(colors: ThemeDiffColors): boolean {
+  return Object.keys(colors).length > 0;
+}

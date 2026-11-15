@@ -51,7 +51,11 @@ import {
 import { type TooltipContent, titleOnlyTooltip } from './change-details/tooltip-content';
 import { COLLAPSED_LINES_BAR_TAG, CollapsedLinesBar } from './collapsed-lines/collapsed-lines-bar';
 import { ColorScheme, isDarkColorMode, watchDarkMarker } from './color-scheme';
-import type { DiffwiseDiffColors, ThemeDiffColors } from './config/diff-colors';
+import {
+  type DiffwiseDiffColors,
+  type ThemeDiffColors,
+  hasThemeColors,
+} from './config/diff-colors';
 import type { DiffwiseConfig, DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   type DiffwiseActiveChangeStyle,
@@ -295,6 +299,7 @@ interface ShownVersionHeaders {
     './toolbar/view-settings.css',
     './navigation/active-change.css',
     './no-changes.css',
+    './high-contrast.css',
     './forced-colors.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -869,12 +874,25 @@ export class DiffwiseHtmlDiff {
   });
 
   /** Colors of changes the app gives for the theme shown now. */
-  private readonly customColors = computed(() => {
+  private readonly appColors = computed(() => {
     const { diffColors } = this.effectiveConfig();
     const themeColors = this.isDark() ? diffColors.dark : diffColors.light;
 
     return themeColors ?? NO_COLORS;
   });
+
+  /** True when the app gives colors of changes for the theme shown now. */
+  protected readonly hasCustomColors = computed(() => hasThemeColors(this.appColors()));
+
+  /** True while the colors of the app are in effect: until the user chooses a palette. */
+  protected readonly showsCustomColors = computed(
+    () => this.hasCustomColors() && this.userChoices().diffPalette === undefined,
+  );
+
+  /** Colors of the app in effect; a palette the user has chosen takes their place. */
+  private readonly customColors = computed(() =>
+    this.showsCustomColors() ? this.appColors() : NO_COLORS,
+  );
 
   /** Digits of the highest line number, which set the width of the line numbers. */
   private readonly lineNumberDigits = computed(
@@ -942,6 +960,15 @@ export class DiffwiseHtmlDiff {
    */
   protected changeUserSettings(changes: UserChoices): void {
     this.userSettings.choose(this.settingsKey(), changes, this.remembersChoices());
+    this.emitUserSettings();
+  }
+
+  /**
+   * Takes back the choice of one option, so the option of the app applies again, and tells the
+   * app; for the palette, the colors of the app apply again.
+   */
+  protected withdrawUserSetting(setting: DiffwiseUserSetting): void {
+    this.userSettings.withdraw(this.settingsKey(), setting, this.remembersChoices());
     this.emitUserSettings();
   }
 

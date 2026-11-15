@@ -1,8 +1,12 @@
 import { APP_BASE_HREF, PlatformLocation } from '@angular/common';
 import { Injectable, type WritableSignal, inject, signal, untracked } from '@angular/core';
 
+import type { DiffwiseUserSetting } from '../config/option-values';
 import { NO_USER_CHOICES, type UserChoices } from './user-settings';
 import { UserSettingsStorage } from './user-settings-storage';
+
+/** Choices while they are put together, before they are frozen. */
+type ChangingChoices = { -readonly [Setting in keyof UserChoices]: UserChoices[Setting] };
 
 /** Base path of an app without one. */
 const ROOT_PATH = '/';
@@ -50,6 +54,17 @@ export class UserSettingsStore {
   choose(key: string, changes: UserChoices, remembers: boolean): void {
     const choices = untracked(() => this.choicesOf(key, remembers));
     this.replace(key, Object.freeze({ ...choices, ...changes }), remembers);
+  }
+
+  /**
+   * Takes back the choice of one option under the key, so the option of the app applies again, and
+   * saves the other choices when they are remembered.
+   */
+  withdraw(key: string, setting: DiffwiseUserSetting, remembers: boolean): void {
+    const choices: ChangingChoices = { ...untracked(() => this.choicesOf(key, remembers)) };
+
+    delete choices[setting];
+    this.replace(key, Object.freeze(choices), remembers);
   }
 
   /** Puts the choices in place of those under the key, and saves them when they are remembered. */

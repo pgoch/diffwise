@@ -3,7 +3,12 @@ import { MOCK_PLATFORM_LOCATION_CONFIG } from '@angular/common/testing';
 import { computed } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
-import { DiffwiseColorMode, DiffwiseLayout } from '../config/option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseLayout,
+  DiffwisePalette,
+  DiffwiseUserSetting,
+} from '../config/option-values';
 import { UserSettingsStore } from './user-settings-store';
 
 const FIRST_KEY = 'first';
@@ -46,6 +51,25 @@ describe('UserSettingsStore', () => {
     });
     expect(Object.isFrozen(choices())).toBe(true);
     expect(localStorage.length).toBe(0);
+  });
+
+  it('takes back the choice of one option, also from the saved choices', () => {
+    const store = TestBed.inject(UserSettingsStore);
+    const choices = computed(() => store.choicesOf(FIRST_KEY, REMEMBERS));
+
+    store.choose(
+      FIRST_KEY,
+      { diffPalette: DiffwisePalette.HighContrast, layout: DiffwiseLayout.Inline },
+      REMEMBERS,
+    );
+    store.withdraw(FIRST_KEY, DiffwiseUserSetting.DiffPalette, REMEMBERS);
+
+    expect(choices()).toEqual({ layout: DiffwiseLayout.Inline });
+    expect(Object.isFrozen(choices())).toBe(true);
+    expect(savedUnderFirstKey()).toEqual({
+      version: 1,
+      settings: { layout: DiffwiseLayout.Inline },
+    });
   });
 
   it('keeps the choices of each key apart, and resets only those of one key', () => {

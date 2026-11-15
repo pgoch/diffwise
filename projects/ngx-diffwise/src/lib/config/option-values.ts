@@ -16,6 +16,11 @@ export const DiffwisePalette = {
   Default: 'default',
   /** Orange for removed and blue for added, which colorblind readers tell apart. */
   Colorblind: 'colorblind',
+  /**
+   * No colored backgrounds: changes in frames, solid and blue when added, dashed, orange and struck
+   * through when removed.
+   */
+  HighContrast: 'high-contrast',
 } as const;
 
 export type DiffwisePalette = (typeof DiffwisePalette)[keyof typeof DiffwisePalette];
@@ -148,7 +153,10 @@ export type DiffwiseActiveChangeStyle =
 export const DiffwiseUserSetting = {
   /** Light, dark, or automatic. */
   ColorMode: 'colorMode',
-  /** The default colors of changes, or colorblind-friendly ones. */
+  /**
+   * The standard colors of changes, colorblind-friendly or high contrast ones, or the colors of
+   * the app, when it gives them.
+   */
   DiffPalette: 'diffPalette',
   /** The versions side by side, a single column, or automatic. */
   Layout: 'layout',

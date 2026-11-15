@@ -39,6 +39,8 @@ export const POLISH_TEXTS: UiTexts = {
   diffPaletteLabel: 'Kolory zmian',
   defaultDiffPaletteLabel: 'Standardowe',
   colorblindDiffPaletteLabel: 'Dla daltonistów',
+  highContrastDiffPaletteLabel: 'Wysoki kontrast',
+  customDiffPaletteLabel: 'Własne',
   hideUnchangedLinesLabel: 'Ukryj niezmienione linie',
   resetUserSettingsLabel: 'Przywróć domyślne',
 

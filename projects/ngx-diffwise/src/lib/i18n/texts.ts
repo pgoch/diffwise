@@ -96,6 +96,10 @@ export interface DiffwiseCustomTexts {
   readonly defaultDiffPaletteLabel?: string;
   /** Colors of changes that colorblind readers tell apart: orange and blue. */
   readonly colorblindDiffPaletteLabel?: string;
+  /** Changes in frames, without colored backgrounds. */
+  readonly highContrastDiffPaletteLabel?: string;
+  /** The colors of changes the app gives. */
+  readonly customDiffPaletteLabel?: string;
   /** Names the checkbox that hides unchanged lines far from changes. */
   readonly hideUnchangedLinesLabel?: string;
   /** Names the button that takes back the choices of the user. */

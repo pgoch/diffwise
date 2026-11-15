@@ -39,6 +39,8 @@ export const ENGLISH_TEXTS: UiTexts = {
   diffPaletteLabel: 'Colors of changes',
   defaultDiffPaletteLabel: 'Standard',
   colorblindDiffPaletteLabel: 'Colorblind-friendly',
+  highContrastDiffPaletteLabel: 'High contrast',
+  customDiffPaletteLabel: 'Custom',
   hideUnchangedLinesLabel: 'Hide unchanged lines',
   resetUserSettingsLabel: 'Restore defaults',
 

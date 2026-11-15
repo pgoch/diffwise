@@ -39,6 +39,7 @@
     <div
       class="diffwise-html-diff__view-settings-group"
       role="group"
+      [class.diffwise-html-diff__view-settings-group--pairs]="group.isInPairs"
       [attr.aria-labelledby]="group.labelId"
     >
       <div class="diffwise-html-diff__view-settings-label" [id]="group.labelId">
@@ -50,7 +51,7 @@
           type="button"
           class="diffwise-html-diff__view-settings-choice"
           [attr.aria-pressed]="choice.isChosen"
-          [disabled]="group.isDisabled"
+          [disabled]="choice.isDisabled"
           (click)="choose(group.setting, choice.value)"
         >
           {{ choice.label }}
