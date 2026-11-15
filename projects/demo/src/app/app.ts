@@ -89,8 +89,8 @@ const COLOR_MODE_CHOICES: readonly Choice<DiffwiseColorMode>[] = [
 ];
 
 const PALETTE_CHOICES: readonly Choice<DiffwisePalette>[] = [
-  { value: DiffwisePalette.Default, label: 'Red and green' },
-  { value: DiffwisePalette.Colorblind, label: 'Colorblind' },
+  { value: DiffwisePalette.Default, label: 'Standard' },
+  { value: DiffwisePalette.Colorblind, label: 'Colorblind-friendly' },
 ];
 
 const HIGHLIGHT_STYLE_CHOICES: readonly Choice<DiffwiseHighlightStyle>[] = [
