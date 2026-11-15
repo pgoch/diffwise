@@ -5,6 +5,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import { DiffwiseColorMode, DiffwiseLayout, DiffwiseUserSetting } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
+import { Diffwise } from './diffwise';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
 import type { DiffwiseUserSettings } from './user-settings/user-settings';
 
@@ -30,6 +31,7 @@ const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
 const SINGLE_COLUMN_TEXT = 'Single column';
 const LIGHT_TEXT = 'Light';
+const DARK_TEXT = 'Dark';
 
 /** Choices of the single column, as the diff saves them. */
 const SINGLE_COLUMN_SETTINGS: DiffwiseUserSettings = {
@@ -224,5 +226,133 @@ describe('DiffwiseHtmlDiff remembered choices', () => {
     choose(render(), SINGLE_COLUMN_TEXT);
 
     expect(savedEntry(ROOT_ENTRY)).toEqual(SINGLE_COLUMN_SETTINGS);
+  });
+});
+
+describe('Diffwise choices of the user', () => {
+  it('exports the same object as the last event of the diff', () => {
+    const fixture = render();
+    const emitted: DiffwiseUserSettings[] = [];
+
+    fixture.componentInstance.userSettingsChange.subscribe((settings) => emitted.push(settings));
+    choose(fixture, SINGLE_COLUMN_TEXT);
+    choose(fixture, DARK_TEXT);
+
+    expect(TestBed.inject(Diffwise).exportUserSettings()).toEqual(emitted.at(-1));
+  });
+
+  it('exports no choices before the first one, and the saved ones when the app remembers them', () => {
+    expect(TestBed.inject(Diffwise).exportUserSettings()).toEqual({ version: 1, settings: {} });
+
+    reload();
+    saveEntry(ROOT_ENTRY, SINGLE_COLUMN_SETTINGS);
+    TestBed.configureTestingModule({
+      providers: [provideDiffwise({ rememberUserSettings: true })],
+    });
+
+    expect(TestBed.inject(Diffwise).exportUserSettings()).toEqual(SINGLE_COLUMN_SETTINGS);
+  });
+
+  it('imports choices that the diffs follow at once, without an event', () => {
+    const fixture = render();
+    const emitted: DiffwiseUserSettings[] = [];
+
+    fixture.componentInstance.userSettingsChange.subscribe((settings) => emitted.push(settings));
+    TestBed.inject(Diffwise).importUserSettings(SINGLE_COLUMN_SETTINGS);
+    fixture.detectChanges();
+
+    expect(showsSingleColumn(fixture)).toBe(true);
+    expect(emitted).toEqual([]);
+    expect(localStorage.length).toBe(0);
+  });
+
+  it('imports choices in place of the current ones, and saves them when the app remembers them', () => {
+    TestBed.configureTestingModule({
+      providers: [provideDiffwise({ rememberUserSettings: true })],
+    });
+    const diffwise = TestBed.inject(Diffwise);
+    const darkSettings = { version: 1, settings: { colorMode: DiffwiseColorMode.Dark } };
+
+    diffwise.importUserSettings(SINGLE_COLUMN_SETTINGS);
+    diffwise.importUserSettings(darkSettings);
+
+    expect(diffwise.exportUserSettings()).toEqual(darkSettings);
+    expect(savedEntry(ROOT_ENTRY)).toEqual(darkSettings);
+  });
+
+  it('leaves out of an import invalid values and options the app does not allow', () => {
+    TestBed.configureTestingModule({
+      providers: [provideDiffwise({ allowedUserSettings: [DiffwiseUserSetting.Layout] })],
+    });
+    const diffwise = TestBed.inject(Diffwise);
+    const settings = {
+      version: 1,
+      settings: { layout: DiffwiseLayout.Inline, colorMode: DiffwiseColorMode.Dark },
+    };
+
+    diffwise.importUserSettings(settings);
+
+    expect(diffwise.exportUserSettings()).toEqual(SINGLE_COLUMN_SETTINGS);
+
+    diffwise.importUserSettings({ version: 1, settings: { layout: 'columns' } as object });
+
+    expect(diffwise.exportUserSettings()).toEqual({ version: 1, settings: {} });
+    expect(console.warn).toHaveBeenCalledOnce();
+  });
+
+  it('ignores an import in a format of an unknown version, with a warning', () => {
+    const diffwise = TestBed.inject(Diffwise);
+
+    diffwise.importUserSettings(SINGLE_COLUMN_SETTINGS);
+    diffwise.importUserSettings({ version: 2, settings: { colorMode: DiffwiseColorMode.Dark } });
+
+    expect(diffwise.exportUserSettings()).toEqual(SINGLE_COLUMN_SETTINGS);
+    expect(console.warn).toHaveBeenCalledOnce();
+  });
+
+  it('resets the choices, also in localStorage, and the diffs follow at once', () => {
+    saveEntry(ROOT_ENTRY, SINGLE_COLUMN_SETTINGS);
+    const fixture = render({ rememberUserSettings: true });
+
+    TestBed.inject(Diffwise).resetUserSettings();
+    fixture.detectChanges();
+
+    expect(showsSingleColumn(fixture)).toBe(false);
+    expect(localStorage.getItem(ROOT_ENTRY)).toBeNull();
+  });
+
+  it('exports, imports and resets the choices under the given key only', () => {
+    const diffwise = TestBed.inject(Diffwise);
+    const reports = render({ userSettingsKey: REPORTS_KEY });
+    const other = render();
+
+    diffwise.importUserSettings(SINGLE_COLUMN_SETTINGS, REPORTS_KEY);
+    reports.detectChanges();
+    other.detectChanges();
+
+    expect(showsSingleColumn(reports)).toBe(true);
+    expect(showsSingleColumn(other)).toBe(false);
+    expect(diffwise.exportUserSettings()).toEqual({ version: 1, settings: {} });
+
+    diffwise.resetUserSettings();
+
+    expect(diffwise.exportUserSettings(REPORTS_KEY)).toEqual(SINGLE_COLUMN_SETTINGS);
+
+    diffwise.resetUserSettings(REPORTS_KEY);
+
+    expect(diffwise.exportUserSettings(REPORTS_KEY)).toEqual({ version: 1, settings: {} });
+  });
+
+  it('takes the key of the global configuration without a given key', () => {
+    TestBed.configureTestingModule({
+      providers: [provideDiffwise({ userSettingsKey: REPORTS_KEY })],
+    });
+    const fixture = render();
+
+    TestBed.inject(Diffwise).importUserSettings(SINGLE_COLUMN_SETTINGS, REPORTS_KEY);
+    fixture.detectChanges();
+
+    expect(showsSingleColumn(fixture)).toBe(true);
+    expect(TestBed.inject(Diffwise).exportUserSettings()).toEqual(SINGLE_COLUMN_SETTINGS);
   });
 });

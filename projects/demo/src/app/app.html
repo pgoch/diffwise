@@ -333,6 +333,23 @@
     Remember choices
   </label>
   <p class="demo-hint">Keeps the choices in localStorage, so they stay after a reload.</p>
+  <button type="button" class="demo-button" (click)="exportChoices()">Export choices</button>
+  <button type="button" class="demo-button" (click)="importChoices()">Import choices</button>
+  <button type="button" class="demo-button" (click)="resetChoices()">Reset choices</button>
+  <textarea
+    class="demo-text"
+    rows="5"
+    aria-label="Choices of the user as JSON"
+    [value]="choicesText()"
+    (input)="choicesText.set(textOf($event))"
+  ></textarea>
+  @if (choicesError(); as error) {
+    <p class="demo-hint demo-error" role="alert">{{ error }}</p>
+  }
+  <p class="demo-hint">
+    “Export” writes the choices here, as an app could keep them in the account of the user. “Import”
+    gives this text back to the user. “Reset” takes all choices back, also from localStorage.
+  </p>
   @if (lastUserSettings()) {
     <p class="demo-hint" aria-live="polite">
       From the last choice: <code>{{ lastUserSettingsText() }}</code>

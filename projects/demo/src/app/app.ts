@@ -166,6 +166,12 @@ const REMEMBER_CHOICES_ENTRY = 'diffwise-demo:remember-choices';
 /** Value of the entry while the box is ticked. */
 const TICKED = 'true';
 
+/** Error under the field of the choices when its text is not JSON. */
+const NOT_JSON_ERROR = 'The text is not JSON.';
+
+/** Spaces before each level of the exported choices. */
+const JSON_INDENT = 2;
+
 /** Options the user can change in the view settings of the diff, in the order they show there. */
 const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
@@ -336,6 +342,12 @@ export class App {
   /** The last choices of the user as text. */
   protected readonly lastUserSettingsText = computed(() => JSON.stringify(this.lastUserSettings()));
 
+  /** The choices of the user as JSON: from "Export", or written for "Import". */
+  protected readonly choicesText = signal('');
+
+  /** Why the last import failed; `null` after an import that worked. */
+  protected readonly choicesError = signal<string | null>(null);
+
   /** The diff of the sample, whose methods step between the blocks of changes. */
   private readonly diff = viewChild(DiffwiseHtmlDiff);
 
@@ -412,6 +424,34 @@ export class App {
     keepDemoRemembersChoices(remembers);
   }
 
+  /** Puts the choices of the user in the field, as an app could keep them in the account of the user. */
+  protected exportChoices(): void {
+    const settings = this.diffwise.exportUserSettings();
+
+    this.choicesText.set(JSON.stringify(settings, null, JSON_INDENT));
+    this.choicesError.set(null);
+  }
+
+  /** Gives the user the choices from the field, as an app could after the user signs in. */
+  protected importChoices(): void {
+    let settings: DiffwiseUserSettings;
+
+    try {
+      settings = JSON.parse(this.choicesText());
+    } catch {
+      this.choicesError.set(NOT_JSON_ERROR);
+      return;
+    }
+
+    this.choicesError.set(null);
+    this.diffwise.importUserSettings(settings);
+  }
+
+  /** Takes back every choice of the user, also from localStorage. */
+  protected resetChoices(): void {
+    this.diffwise.resetUserSettings();
+  }
+
   /** Switches the theme with the method of the service for each color mode. */
   protected chooseColorMode(colorMode: DiffwiseColorMode): void {
     switch (colorMode) {
@@ -448,6 +488,10 @@ export class App {
 
     this.customFontName.set(name);
     this.update({ fontFamily: name });
+  }
+
+  protected textOf(event: Event): string {
+    return (event.target as HTMLTextAreaElement).value;
   }
 
   protected isChecked(event: Event): boolean {
