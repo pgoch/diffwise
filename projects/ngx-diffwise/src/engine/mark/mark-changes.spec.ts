@@ -349,7 +349,7 @@ describe('markWholeTableLine', () => {
     const caption = lineOf('<table><caption>Plans and <b>prices</b></caption></table>');
 
     expect(markWholeTableLine(caption, ADDED_TEXT_MARKER)).toBe(
-      `<table data-diffwise-table-copy="" data-diffwise-first-table-line=""><caption>${added('Plans and ')}<b>${added('prices')}</b></caption></table>`,
+      `<table data-diffwise-table-copy="" role="presentation" data-diffwise-first-table-line=""><caption>${added('Plans and ')}<b>${added('prices')}</b></caption></table>`,
     );
   });
 });

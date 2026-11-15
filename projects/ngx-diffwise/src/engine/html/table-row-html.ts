@@ -27,6 +27,13 @@ const LAST_TABLE_ROW_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}last-table-row
 /** Finds the copy of the row in a table copy, inside the copy of its row group. */
 const ROW_COPY_SELECTOR = `:scope > * > ${TABLE_ROW_TAG}`;
 
+/**
+ * Screen readers read a table copy as a line of text, cell by cell. As a table it would be a table
+ * of one row in every line.
+ */
+const ROLE_ATTRIBUTE = 'role';
+const PRESENTATION_ROLE = 'presentation';
+
 /** Where a table line stands in its table. */
 export interface TableLinePlace {
   /** The first line of the table: its caption, or else its first row. */
@@ -56,6 +63,7 @@ export function completeTableCopy(copy: Element, part: TablePart, keepsIds: bool
   const rowCopy = copy.querySelector(ROW_COPY_SELECTOR);
 
   copy.toggleAttribute(TABLE_COPY_ATTRIBUTE, true);
+  copy.setAttribute(ROLE_ATTRIBUTE, PRESENTATION_ROLE);
   copy.toggleAttribute(FIRST_TABLE_LINE_ATTRIBUTE, place.isFirstLine);
   copy.toggleAttribute(FIRST_TABLE_ROW_ATTRIBUTE, place.isFirstRow);
   copy.toggleAttribute(LAST_TABLE_ROW_ATTRIBUTE, place.isLastRow);

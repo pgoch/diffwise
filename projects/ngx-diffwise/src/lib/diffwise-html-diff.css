@@ -258,6 +258,16 @@
   white-space: nowrap;
 }
 
+/* A description of a changed line, such as "Added line 6", which only screen readers read. */
+.diffwise-html-diff [data-diffwise-line-description] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .diffwise-html-diff--version-header-alignment-start .diffwise-html-diff__version-header {
   text-align: start;
 }

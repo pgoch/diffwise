@@ -29,7 +29,7 @@ import {
   type DiffOptions,
   DocumentVersion,
   HiddenLines,
-  type LineChangeKind,
+  LineChangeKind,
   type SingleColumnRow,
   type SingleColumnTablePlace,
   type ViewLine,
@@ -79,12 +79,13 @@ import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import { DiffToolbar, type ToolbarNavigation } from './toolbar/diff-toolbar';
 import { ViewSettings } from './toolbar/view-settings';
-import { LANGUAGE_TEXTS, resolveLanguage } from './i18n/resolve-language';
+import { LANGUAGE_TEXTS, languageTag, resolveLanguage } from './i18n/resolve-language';
 import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
 import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
+import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
-import { scrollTablesTogether } from './table-scroll';
+import { markWideTables, scrollTablesTogether } from './table-scroll';
 import {
   type DiffwiseUserSettings,
   type UserChoices,
@@ -198,6 +199,10 @@ const TABLE_NEIGHBOR_SEPARATOR = ' ';
 
 /** Ends the class of the content of a merged line, which shows the text of both versions. */
 const MERGED_CONTENT = 'merged';
+
+/** The old copy of an unchanged line beside the new one, which screen readers skip. */
+const HIDDEN_COPY_SELECTOR =
+  '.diffwise-html-diff__row--unchanged > .diffwise-html-diff__content--old[aria-hidden]';
 
 /** A line as the template shows it. */
 interface ShownLine {
@@ -637,6 +642,9 @@ export class DiffwiseHtmlDiff {
     resolveLanguage(this.effectiveConfig().language, this.localeId),
   );
 
+  /** Tag of the interface language, so that screen readers pronounce its texts in that language. */
+  protected readonly uiLanguageTag = computed(() => languageTag(this.uiLanguage()));
+
   /** Texts of the interface in its language, with the custom texts of the app. */
   protected readonly texts = computed<UiTexts>(() => {
     const languageTexts = LANGUAGE_TEXTS[this.uiLanguage()];
@@ -902,6 +910,7 @@ export class DiffwiseHtmlDiff {
     });
 
     afterRenderEffect(() => this.prepareMarkers());
+    afterRenderEffect(() => this.prepareForKeyboardAndScreenReaders());
     this.emitStatsOfEachComparison();
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
@@ -946,6 +955,37 @@ export class DiffwiseHtmlDiff {
   /** Hides the tooltip, such as the one of a button that has just opened something below it. */
   protected hideTooltip(): void {
     this.tooltip().hide();
+  }
+
+  /** What a screen reader says before the old line of a row beside the new one, if anything. */
+  protected oldLineDescription(row: ShownRow): string | null {
+    return this.sideBySideDescription(row.kind, DocumentVersion.Old, row.oldLine);
+  }
+
+  /** What a screen reader says before the new line of a row beside the old one, if anything. */
+  protected newLineDescription(row: ShownRow): string | null {
+    return this.sideBySideDescription(row.kind, DocumentVersion.New, row.newLine);
+  }
+
+  /** What a screen reader says before a line of the single column, if anything. */
+  protected singleColumnDescription(row: ShownSingleColumnRow): string | null {
+    const version = row.content === MERGED_CONTENT ? null : row.content;
+    const lineNumber =
+      version === DocumentVersion.Old ? row.oldNumber : (row.newNumber ?? row.oldNumber);
+
+    if (lineNumber === null) {
+      return null;
+    }
+
+    return lineDescription({ kind: row.kind, version, lineNumber }, this.texts());
+  }
+
+  /**
+   * True for the old copy of an unchanged line beside the new one. Screen readers skip it, so they
+   * read each unchanged line once, with its headings and links.
+   */
+  protected isHiddenCopy(row: ShownRow): boolean {
+    return row.kind === LineChangeKind.Unchanged;
   }
 
   /** True for a row of the active block, by its position among the rows of the view. */
@@ -1166,6 +1206,38 @@ export class DiffwiseHtmlDiff {
 
     scrollTablesTogether(this.host.nativeElement, listeners.signal);
     this.destroyRef.onDestroy(() => listeners.abort());
+  }
+
+  private sideBySideDescription(
+    kind: LineChangeKind,
+    version: DocumentVersion,
+    line: ShownLine | null,
+  ): string | null {
+    if (line === null) {
+      return null;
+    }
+
+    return lineDescription({ kind, version, lineNumber: line.number }, this.texts());
+  }
+
+  /**
+   * After each drawing of the rows: keeps the copies that screen readers skip out of the order of
+   * `Tab`, and gives each table wider than its column one named stop of `Tab`.
+   */
+  private prepareForKeyboardAndScreenReaders(): void {
+    const host = this.host.nativeElement;
+    const { wideTableLabel } = this.texts();
+
+    this.width();
+    this.visibleRows();
+    this.visibleSingleColumnRows();
+    this.shownLayout();
+
+    for (const copy of host.querySelectorAll(HIDDEN_COPY_SELECTOR)) {
+      keepOutOfTabOrder(copy);
+    }
+
+    markWideTables(host, wideTableLabel);
   }
 
   private showTooltipOnHover({ target }: MouseEvent): void {

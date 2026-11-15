@@ -49,6 +49,7 @@
 
 @if (showsToolbar()) {
   <diffwise-diff-toolbar
+    [attr.lang]="uiLanguageTag()"
     [stats]="diffStats()"
     [showsStats]="effectiveConfig().showDiffStats"
     [navigation]="toolbarNavigation()"
@@ -76,7 +77,10 @@
     @if (row.newLine; as line) {
       <div class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}">
         @if (lineNumbersShown) {
-          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+          <div
+            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+            aria-hidden="true"
+          >
             <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
           </div>
         }
@@ -92,7 +96,7 @@
   <!-- The versions are the same, and the toolbar says so; nothing else shows. -->
 } @else if (showsSingleColumn()) {
   @if (singleColumnHeader(); as header) {
-    <div class="diffwise-html-diff__version-headers">
+    <div class="diffwise-html-diff__version-headers" [attr.lang]="uiLanguageTag()">
       @if (lineNumbersShown) {
         <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
           <ng-container
@@ -116,6 +120,7 @@
   @for (item of visibleSingleColumnRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
+        [attr.lang]="uiLanguageTag()"
         [count]="item.count"
         [text]="hiddenLinesText()"
         (showLines)="showHiddenLines(item, position)"
@@ -131,12 +136,18 @@
         [attr.data-diffwise-row]="row.detailsRow"
       >
         @if (lineNumbersShown) {
-          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
+          <div
+            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old"
+            aria-hidden="true"
+          >
             @if (row.oldNumber !== null) {
               <span class="diffwise-html-diff__line-number-value">{{ row.oldNumber }}</span>
             }
           </div>
-          <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+          <div
+            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+            aria-hidden="true"
+          >
             @if (row.newNumber !== null) {
               <span class="diffwise-html-diff__line-number-value">{{ row.newNumber }}</span>
             }
@@ -145,12 +156,21 @@
 
         @if (changeIconsShown && row.iconDetails.length > 0) {
           <div class="diffwise-html-diff__change-details-cell">
-            <diffwise-change-details-button [details]="row.iconDetails" [describer]="describer()" />
+            <diffwise-change-details-button
+              [attr.lang]="uiLanguageTag()"
+              [details]="row.iconDetails"
+              [describer]="describer()"
+            />
           </div>
         } @else {
           <div class="diffwise-html-diff__change-details-cell" aria-hidden="true"></div>
         }
 
+        @if (singleColumnDescription(row); as description) {
+          <span data-diffwise-line-description [attr.lang]="uiLanguageTag()">{{
+            description
+          }}</span>
+        }
         <div
           class="diffwise-html-diff__content diffwise-html-diff__content--{{ row.content }}"
           [attr.data-diffwise-table]="row.table"
@@ -162,7 +182,7 @@
   }
 } @else {
   @if (shownVersionHeaders(); as headers) {
-    <div class="diffwise-html-diff__version-headers">
+    <div class="diffwise-html-diff__version-headers" [attr.lang]="uiLanguageTag()">
       <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
         @if (headers.asIcons) {
           <ng-container
@@ -189,6 +209,7 @@
   @for (item of visibleRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
+        [attr.lang]="uiLanguageTag()"
         [count]="item.count"
         [text]="hiddenLinesText()"
         (showLines)="showHiddenLines(item, position)"
@@ -206,12 +227,21 @@
       >
         @if (row.oldLine; as line) {
           @if (lineNumbersShown) {
-            <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old">
+            <div
+              class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old"
+              aria-hidden="true"
+            >
               <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
             </div>
           }
+          @if (oldLineDescription(row); as description) {
+            <span data-diffwise-line-description [attr.lang]="uiLanguageTag()">{{
+              description
+            }}</span>
+          }
           <div
             class="diffwise-html-diff__content diffwise-html-diff__content--old"
+            [attr.aria-hidden]="isHiddenCopy(row) || null"
             [attr.data-diffwise-table]="line.table"
             [innerHTML]="line.html"
           ></div>
@@ -222,6 +252,7 @@
         @if (changeIconsShown && describesChanges) {
           <div class="diffwise-html-diff__divider">
             <diffwise-change-details-button
+              [attr.lang]="uiLanguageTag()"
               [details]="row.changeDetails"
               [describer]="describer()"
             />
@@ -232,9 +263,17 @@
 
         @if (row.newLine; as line) {
           @if (lineNumbersShown) {
-            <div class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new">
+            <div
+              class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+              aria-hidden="true"
+            >
               <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
             </div>
+          }
+          @if (newLineDescription(row); as description) {
+            <span data-diffwise-line-description [attr.lang]="uiLanguageTag()">{{
+              description
+            }}</span>
           }
           <div
             class="diffwise-html-diff__content diffwise-html-diff__content--new"
@@ -249,4 +288,4 @@
   }
 }
 
-<diffwise-change-tooltip [tooltipId]="tooltipId" />
+<diffwise-change-tooltip [attr.lang]="uiLanguageTag()" [tooltipId]="tooltipId" />
