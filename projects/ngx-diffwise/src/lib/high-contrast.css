@@ -1,0 +1,180 @@
+/*
+ * The high contrast palette: no colored backgrounds. A changed part stands in a frame, solid and
+ * blue when added, dashed, orange and struck through when removed, in every highlight style, and
+ * a changed line has a bar at its number. The colors are dark in the light theme and light in the
+ * dark one. Apart from the other styles of the component, which have a size budget in the demo
+ * build.
+ */
+:where(.diffwise-html-diff--diff-palette-high-contrast) {
+  --diffwise-removed-accent: #b34700;
+  --diffwise-added-accent: #0a5fd1;
+  --diffwise-removed-line: var(--diffwise-background);
+  --diffwise-added-line: var(--diffwise-background);
+  --diffwise-removed-highlight: var(--diffwise-background);
+  --diffwise-added-highlight: var(--diffwise-background);
+  --diffwise-removed-line-number: var(--diffwise-line-number-background);
+  --diffwise-added-line-number: var(--diffwise-line-number-background);
+
+  /* The focus in teal stands apart from the blue of added changes. */
+  --diffwise-focus: #0f766e;
+
+  /* Changes in the tooltip have frames in these colors. */
+  --diffwise-tooltip-removed-highlight: #b34700;
+  --diffwise-tooltip-added-highlight: #0a5fd1;
+}
+
+:where(.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--dark-theme) {
+  --diffwise-removed-accent: #ffa94d;
+  --diffwise-added-accent: #7cc8ff;
+  --diffwise-focus: #5eead4;
+  --diffwise-tooltip-removed-highlight: #ffa94d;
+  --diffwise-tooltip-added-highlight: #7cc8ff;
+}
+
+/* Tooltips in the colors of the opposite theme have the frames of that theme. */
+:where(
+  .diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--tooltip-color-mode-reversed
+) {
+  --diffwise-tooltip-removed-highlight: #ffa94d;
+  --diffwise-tooltip-added-highlight: #7cc8ff;
+}
+
+:where(
+  .diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--tooltip-color-mode-reversed.diffwise-html-diff--dark-theme
+) {
+  --diffwise-tooltip-removed-highlight: #b34700;
+  --diffwise-tooltip-added-highlight: #0a5fd1;
+}
+
+/* A changed part has a frame: solid when added, dashed and struck through when removed. */
+.diffwise-html-diff--diff-palette-high-contrast
+  .diffwise-html-diff__highlight:not(
+    .diffwise-html-diff__highlight--image,
+    .diffwise-html-diff__highlight--checkbox
+  ) {
+  outline: 2px solid var(--diffwise-added-accent);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.diffwise-html-diff--diff-palette-high-contrast
+  .diffwise-html-diff__highlight--removed:not(
+    .diffwise-html-diff__highlight--image,
+    .diffwise-html-diff__highlight--checkbox
+  ) {
+  outline: 2px dashed var(--diffwise-removed-accent);
+  text-decoration: line-through;
+}
+
+/* A changed image or checkbox keeps its frame with a gap, in the same colors and lines. */
+.diffwise-html-diff--diff-palette-high-contrast
+  .diffwise-html-diff__content
+  :is(.diffwise-html-diff__highlight--image, .diffwise-html-diff__highlight--checkbox)::after {
+  border-color: var(--diffwise-added-accent);
+}
+
+.diffwise-html-diff--diff-palette-high-contrast
+  .diffwise-html-diff__content
+  :is(
+    .diffwise-html-diff__highlight--image,
+    .diffwise-html-diff__highlight--checkbox
+  ).diffwise-html-diff__highlight--removed::after {
+  border-color: var(--diffwise-removed-accent);
+  border-style: dashed;
+}
+
+/* An added or a removed line highlighted as a whole has a frame too, also as a list item. */
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--highlight-whole-lines
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  ):not([data-diffwise-table])
+  > :not(:has([data-diffwise-line-item])),
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--highlight-whole-lines
+  :is(
+    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
+    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+  ):not([data-diffwise-table])
+  [data-diffwise-line-item] {
+  outline: 2px solid var(--diffwise-added-accent);
+  outline-offset: -2px;
+  box-shadow: none;
+}
+
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--highlight-whole-lines
+  .diffwise-html-diff__row--removed
+  .diffwise-html-diff__content--old:not([data-diffwise-table])
+  > :not(:has([data-diffwise-line-item])),
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--highlight-whole-lines
+  .diffwise-html-diff__row--removed
+  .diffwise-html-diff__content--old:not([data-diffwise-table])
+  [data-diffwise-line-item] {
+  outline: 2px dashed var(--diffwise-removed-accent);
+  text-decoration: line-through;
+}
+
+/*
+ * Beside each other, a changed line has a bar at its number, also with colored backgrounds. The
+ * high contrast mode of Windows draws its own bar.
+ */
+@media (forced-colors: none) {
+  .diffwise-html-diff.diffwise-html-diff--diff-palette-high-contrast:not(
+      .diffwise-html-diff--layout-inline
+    )
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number--old {
+    box-shadow: inset 3px 0 0 var(--diffwise-removed-accent);
+    color: var(--diffwise-removed-accent);
+  }
+
+  .diffwise-html-diff.diffwise-html-diff--diff-palette-high-contrast:not(
+      .diffwise-html-diff--layout-inline
+    )
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number--new {
+    box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
+    color: var(--diffwise-added-accent);
+  }
+}
+
+/* Without line numbers, the bar stands at the start of the changed line. */
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--no-line-numbers:not(
+    .diffwise-html-diff--layout-inline
+  )
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__content--old {
+  box-shadow: inset 3px 0 0 var(--diffwise-removed-accent);
+}
+
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--no-line-numbers:not(
+    .diffwise-html-diff--layout-inline
+  )
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__content--new {
+  box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
+}
+
+/* In the single column the bar stands between the numbers of every changed line. */
+.diffwise-html-diff--diff-palette-high-contrast.diffwise-html-diff--layout-inline
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number--new::before {
+  position: absolute;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--diffwise-side-bar, var(--diffwise-side-accent));
+  content: '';
+}
+
+/* Changed parts of values in the tooltip. */
+.diffwise-html-diff--diff-palette-high-contrast .diffwise-html-diff__tooltip-highlight--added {
+  outline: 1.5px solid var(--diffwise-tooltip-added-highlight);
+  background: none;
+}
+
+.diffwise-html-diff--diff-palette-high-contrast .diffwise-html-diff__tooltip-highlight--removed {
+  outline: 1.5px dashed var(--diffwise-tooltip-removed-highlight);
+  background: none;
+  text-decoration: line-through;
+}

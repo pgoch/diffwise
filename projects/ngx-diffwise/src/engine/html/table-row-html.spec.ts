@@ -7,7 +7,7 @@ const CAPTION_SELECTOR = 'caption';
 const NO_TABLE_ERROR = 'The HTML has no table.';
 const NO_CAPTION_ERROR = 'The table has no caption.';
 
-const TABLE_COPY = 'data-diffwise-table-copy=""';
+const TABLE_COPY = 'data-diffwise-table-copy="" role="presentation"';
 const FIRST_LINE = 'data-diffwise-first-table-line=""';
 const FIRST_ROW = 'data-diffwise-first-table-row=""';
 const LAST_ROW = 'data-diffwise-last-table-row=""';

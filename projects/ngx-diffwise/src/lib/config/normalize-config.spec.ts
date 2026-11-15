@@ -360,6 +360,9 @@ describe('normalizeConfig', () => {
     expect(normalizeConfig({ diffPalette: DiffwisePalette.Default })).toEqual({
       diffPalette: 'default',
     });
+    expect(normalizeConfig({ diffPalette: 'high-contrast' })).toEqual({
+      diffPalette: DiffwisePalette.HighContrast,
+    });
     expect(normalizeConfig({ diffPalette: 'grayscale' })).toEqual({});
     expect(console.warn).toHaveBeenCalledOnce();
   });

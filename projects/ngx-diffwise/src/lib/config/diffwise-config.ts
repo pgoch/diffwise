@@ -35,8 +35,8 @@ export interface DiffwiseConfigOptions {
    */
   readonly darkModeSelector?: string | null;
   /**
-   * Colors of changes: red and green, or orange and blue, which colorblind readers tell apart.
-   * Default: `DiffwisePalette.Default`.
+   * Colors of changes: red and green, orange and blue, which colorblind readers tell apart, or
+   * high contrast frames without colored backgrounds. Default: `DiffwisePalette.Default`.
    */
   readonly diffPalette?: DiffwisePalette;
   /**
@@ -56,7 +56,9 @@ export interface DiffwiseConfigOptions {
   readonly uiContrast?: DiffwiseLevel;
   /**
    * Colors of changes for the light and the dark theme. Each level of the configuration changes
-   * only the colors it sets, and `null` takes away the colors of the levels below. Default: none.
+   * only the colors it sets, and `null` takes away the colors of the levels below. A palette the
+   * user chooses in the view settings takes their place, until the user chooses them again.
+   * Default: none.
    */
   readonly diffColors?: DiffwiseDiffColors | null;
   /**
@@ -223,7 +225,7 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** In automatic mode, the dark mode marker of the app, such as `.dark`; `null` follows the system. */
   readonly darkModeSelector: string | null = null;
 
-  /** Colors of changes: red and green, or colorblind-friendly orange and blue. */
+  /** Colors of changes: red and green, colorblind-friendly orange and blue, or high contrast. */
   readonly diffPalette: DiffwisePalette = DiffwisePalette.Default;
 
   /** Style of changed words. */

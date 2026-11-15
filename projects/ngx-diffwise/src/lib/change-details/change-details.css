@@ -42,13 +42,18 @@
   --diffwise-tooltip-added-highlight: #ade6bb;
 }
 
-/* Changes in the tooltip in the colorblind-friendly palette, for each theme and tooltip colors. */
+/*
+ * The colorblind-friendly palette: changes in the tooltip, for each theme and tooltip colors, and a
+ * focus in teal, which stands apart from the blue of added changes also for colorblind readers.
+ */
 :where(.diffwise-html-diff--diff-palette-colorblind) {
+  --diffwise-focus: #0f766e;
   --diffwise-tooltip-removed-highlight: #ffc98f;
   --diffwise-tooltip-added-highlight: #a9caff;
 }
 
 :where(.diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme) {
+  --diffwise-focus: #5eead4;
   --diffwise-tooltip-removed-highlight: #7a4a12;
   --diffwise-tooltip-added-highlight: #1e4fa3;
 }

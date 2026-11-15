@@ -115,8 +115,22 @@
   color: var(--diffwise-background);
 }
 
-/* An option that does nothing now, such as the style of the single column beside two columns. */
-.diffwise-html-diff__view-settings-group:has(:disabled) {
+/* Buttons two in a row, of the same width, such as the colors of changes. */
+.diffwise-html-diff__view-settings-group--pairs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.diffwise-html-diff__view-settings-group--pairs > .diffwise-html-diff__view-settings-label {
+  grid-column: 1 / -1;
+}
+
+/*
+ * An option that does nothing now, such as the style of the single column beside two columns, or
+ * a single button, such as the colors of an app that gives none.
+ */
+.diffwise-html-diff__view-settings-group:not(:has(:enabled)),
+.diffwise-html-diff__view-settings-group:has(:enabled) > :disabled {
   opacity: 0.45;
 }
 

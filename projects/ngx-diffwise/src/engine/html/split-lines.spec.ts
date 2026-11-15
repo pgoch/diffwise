@@ -20,7 +20,7 @@ const LINE_ITEM = 'data-diffwise-line-item=""';
 const CONTINUED_ITEM = 'data-diffwise-continued-item=""';
 
 /** Marks the copy of a table in a table line, and the place of the line in its table. */
-const TABLE_COPY = 'data-diffwise-table-copy=""';
+const TABLE_COPY = 'data-diffwise-table-copy="" role="presentation"';
 const FIRST_TABLE_LINE = 'data-diffwise-first-table-line=""';
 const FIRST_TABLE_ROW = 'data-diffwise-first-table-row=""';
 const LAST_TABLE_ROW = 'data-diffwise-last-table-row=""';

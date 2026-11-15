@@ -1,4 +1,4 @@
-import { DIFF_COLOR_VARIABLES, type ThemeDiffColors } from './config/diff-colors';
+import { DIFF_COLOR_VARIABLES, type ThemeDiffColors, hasThemeColors } from './config/diff-colors';
 import { DiffwiseConfig } from './config/diffwise-config';
 import { DiffwiseFontFamily, DiffwiseLayout } from './config/option-values';
 
@@ -130,10 +130,6 @@ function layoutClasses(shownLayout: ShownLayout): string[] {
   return shownLayout === DiffwiseLayout.Inline ? [INLINE_LAYOUT_CLASS] : [];
 }
 
-function hasColors(colors: ThemeDiffColors): boolean {
-  return Object.keys(colors).length > 0;
-}
-
 /**
  * Classes of the intensity and the contrast, also at the default level 3. Colors of the app
  * replace the intensity, so with them it has no class.
@@ -141,7 +137,7 @@ function hasColors(colors: ThemeDiffColors): boolean {
 function levelClasses(config: DiffwiseConfig, customColors: ThemeDiffColors): string[] {
   const contrastClass = UI_CONTRAST_MODIFIER + config.uiContrast;
 
-  if (hasColors(customColors)) {
+  if (hasThemeColors(customColors)) {
     return [contrastClass];
   }
 

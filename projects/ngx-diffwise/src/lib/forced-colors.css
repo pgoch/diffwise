@@ -1,0 +1,113 @@
+/*
+ * The high contrast mode of Windows (forced colors). The browser replaces the colors of the page
+ * with a few colors of the system and drops backgrounds and shadows. Changes keep two colors of
+ * their own, orange for removed and blue for added, and show by shapes too; their text keeps the
+ * colors of the system. Apart from the other styles of the component, which have a size budget in
+ * the demo build.
+ */
+@media (forced-colors: active) {
+  /* Darker colors for the light themes of contrast. */
+  :where(.diffwise-html-diff) {
+    --diffwise-removed-accent: #b34700;
+    --diffwise-added-accent: #0a5fd1;
+  }
+
+  /* A changed part has a frame: solid when added, dashed and struck through when removed. */
+  .diffwise-html-diff__highlight:not(.diffwise-html-diff__highlight--image) {
+    outline: 2px solid var(--diffwise-added-accent);
+    outline-offset: -2px;
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .diffwise-html-diff__highlight--removed:not(.diffwise-html-diff__highlight--image) {
+    outline: 2px dashed var(--diffwise-removed-accent);
+    text-decoration: line-through;
+  }
+
+  /* What stands in a changed part takes the colors of the system again, such as a link. */
+  .diffwise-html-diff__highlight * {
+    forced-color-adjust: auto;
+  }
+
+  .diffwise-html-diff__content a .diffwise-html-diff__highlight {
+    color: LinkText;
+  }
+
+  .diffwise-html-diff__highlight--image::after {
+    border-color: var(--diffwise-added-accent);
+    forced-color-adjust: none;
+  }
+
+  .diffwise-html-diff__highlight--removed.diffwise-html-diff__highlight--image::after {
+    border-color: var(--diffwise-removed-accent);
+    border-style: dashed;
+  }
+
+  /* A changed line has a bar at its number, also with colored backgrounds of the numbers. */
+  .diffwise-html-diff:not(.diffwise-html-diff--layout-inline)
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number {
+    border-inline-start: 3px solid var(--diffwise-added-accent);
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .diffwise-html-diff:not(.diffwise-html-diff--layout-inline)
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number--old {
+    border-inline-start-color: var(--diffwise-removed-accent);
+  }
+
+  .diffwise-html-diff__line-number * {
+    forced-color-adjust: auto;
+  }
+
+  /* In the single column the bar stands between the numbers, from orange to blue in a merged line. */
+  .diffwise-html-diff--layout-inline
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number--new::before,
+  .diffwise-html-diff--layout-inline.diffwise-html-diff--no-line-numbers
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__change-details-cell:not(
+      :has(.diffwise-html-diff__change-details-icon)
+    )::before {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    width: 3px;
+    background: var(--diffwise-side-bar, var(--diffwise-side-accent));
+    content: '';
+    forced-color-adjust: none;
+  }
+
+  /* Stripes opposite an added or a removed line, in the colors of the system. */
+  .diffwise-html-diff:not(.diffwise-html-diff--gap-style-empty) .diffwise-html-diff__gap {
+    background: repeating-linear-gradient(135deg, CanvasText 0 1px, Canvas 1px 9px);
+    forced-color-adjust: none;
+  }
+
+  /* Changed parts of values in the tooltip. */
+  .diffwise-html-diff__tooltip-highlight--added,
+  .diffwise-html-diff__tooltip-highlight--removed {
+    outline: 1px solid var(--diffwise-added-accent);
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .diffwise-html-diff__tooltip-highlight--removed {
+    outline: 1px dashed var(--diffwise-removed-accent);
+    text-decoration: line-through;
+  }
+}
+
+/* Light colors for the dark themes of contrast. */
+@media (forced-colors: active) and (prefers-color-scheme: dark) {
+  :where(.diffwise-html-diff) {
+    --diffwise-removed-accent: #ffa94d;
+    --diffwise-added-accent: #7cc8ff;
+  }
+}

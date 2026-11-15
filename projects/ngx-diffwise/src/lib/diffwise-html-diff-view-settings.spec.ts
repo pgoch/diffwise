@@ -34,6 +34,10 @@ const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 const STACKED_CLASS = 'diffwise-html-diff--inline-diff-style-stacked';
 const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
 const COLORBLIND_PALETTE_CLASS = 'diffwise-html-diff--diff-palette-colorblind';
+const HIGH_CONTRAST_PALETTE_CLASS = 'diffwise-html-diff--diff-palette-high-contrast';
+const PAIRS_CLASS = 'diffwise-html-diff__view-settings-group--pairs';
+const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
+const APP_ACCENT = '#0f766e';
 const PRESSED_SELECTOR = '[aria-pressed="true"]';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const ARIA_LABELLEDBY_ATTRIBUTE = 'aria-labelledby';
@@ -205,6 +209,8 @@ describe('DiffwiseHtmlDiff view settings', () => {
       'Dark',
       'Standard',
       'Colorblind-friendly',
+      'High contrast',
+      'Custom',
       'Auto',
       'Side by side',
       'Single column',
@@ -254,6 +260,82 @@ describe('DiffwiseHtmlDiff view settings', () => {
 
     expect(element.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
     expect(chosenOf(element)).toContain('Standard');
+  });
+
+  it('shows the colors of changes two in a row, and the high contrast palette', () => {
+    const fixture = render();
+    const element = elementOf(fixture);
+    const pairGroups = element.querySelectorAll(`.${PAIRS_CLASS}`);
+
+    expect(pairGroups).toHaveLength(1);
+    expect(pairGroups[0]?.querySelector(GROUP_LABEL_SELECTOR)?.textContent?.trim()).toBe(
+      'Colors of changes',
+    );
+
+    choose(fixture, 'High contrast');
+
+    expect(element.classList).toContain(HIGH_CONTRAST_PALETTE_CLASS);
+    expect(chosenOf(element)).toContain('High contrast');
+  });
+
+  it('disables the custom colors when the app gives none for the theme shown', () => {
+    const fixture = render({
+      colorMode: DiffwiseColorMode.Light,
+      diffColors: { dark: { addedAccent: APP_ACCENT } },
+    });
+    const element = elementOf(fixture);
+
+    expect(choiceOf(element, 'Custom').disabled).toBe(true);
+    expect(choiceOf(element, 'Standard').disabled).toBe(false);
+    expect(chosenOf(element)).toContain('Standard');
+
+    choose(fixture, 'Dark');
+
+    expect(choiceOf(element, 'Custom').disabled).toBe(false);
+    expect(chosenOf(element)).toEqual(['Dark', 'Custom', 'Auto', 'Merged']);
+  });
+
+  it('chooses the colors of the app, until the user chooses a palette, and back', () => {
+    const fixture = render({
+      diffPalette: DiffwisePalette.Colorblind,
+      diffColors: { light: { addedAccent: APP_ACCENT }, dark: { addedAccent: APP_ACCENT } },
+    });
+    const element = elementOf(fixture);
+    const emitted = emittedBy(fixture);
+    const accent = () => element.style.getPropertyValue(ADDED_ACCENT_VARIABLE);
+
+    expect(chosenOf(element)).toContain('Custom');
+    expect(chosenOf(element)).not.toContain('Colorblind-friendly');
+    expect(accent()).toBe(APP_ACCENT);
+
+    choose(fixture, 'High contrast');
+
+    expect(element.classList).toContain(HIGH_CONTRAST_PALETTE_CLASS);
+    expect(chosenOf(element)).not.toContain('Custom');
+    expect(accent()).toBe('');
+
+    choose(fixture, 'Custom');
+
+    expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
+    expect(chosenOf(element)).toContain('Custom');
+    expect(accent()).toBe(APP_ACCENT);
+    expect(emitted.map(({ settings }) => settings)).toEqual([
+      { diffPalette: DiffwisePalette.HighContrast },
+      {},
+    ]);
+  });
+
+  it('keeps the colors of the app when the user cannot choose the colors of changes', () => {
+    choose(render(), 'Standard');
+
+    const element = elementOf(
+      render({
+        allowedUserSettings: [DiffwiseUserSetting.Layout],
+        diffColors: { light: { addedAccent: APP_ACCENT }, dark: { addedAccent: APP_ACCENT } },
+      }),
+    );
+
+    expect(element.style.getPropertyValue(ADDED_ACCENT_VARIABLE)).toBe(APP_ACCENT);
   });
 
   it('lets a choice win over an input of the diff and the global configuration', () => {
@@ -426,6 +508,8 @@ describe('DiffwiseHtmlDiff view settings', () => {
       'Ciemny',
       'Standardowe',
       'Dla daltonistów',
+      'Wysoki kontrast',
+      'Własne',
       'Auto',
       'Obok siebie',
       'Jedna kolumna',

@@ -5,6 +5,9 @@ const COUNT_PLACEHOLDER = '{count}';
 const CURRENT_PLACEHOLDER = '{current}';
 const TOTAL_PLACEHOLDER = '{total}';
 
+/** Stands in a text for the number of a line: "Added line 6". */
+const NUMBER_PLACEHOLDER = '{number}';
+
 /**
  * Texts an app shows instead of texts of the interface, such as `{ oldVersionLabel: 'Draft' }`.
  * All of them together add a language; a text left out stays in the language of the diff.
@@ -18,6 +21,18 @@ export interface DiffwiseCustomTexts {
   readonly inlineContentLabel?: string;
   /** Names the whole diff for screen readers. */
   readonly diffLabel?: string;
+  /** Tells screen readers that a line was removed; `{number}` stands for its number. */
+  readonly removedLineLabel?: string;
+  /** Tells screen readers that a line was added; `{number}` stands for its number. */
+  readonly addedLineLabel?: string;
+  /** Tells screen readers that the line is the old version of a changed line, with its number. */
+  readonly changedLineBeforeLabel?: string;
+  /** Tells screen readers that the line is the new version of a changed line, with its number. */
+  readonly changedLineAfterLabel?: string;
+  /** Tells screen readers that a merged line shows a changed line, with its number. */
+  readonly changedLineLabel?: string;
+  /** Names for screen readers a table wider than its column, which scrolls sideways. */
+  readonly wideTableLabel?: string;
   /**
    * Text of the bar in place of hidden unchanged lines, with a gray column between the versions;
    * `{count}` stands for their number.
@@ -81,6 +96,10 @@ export interface DiffwiseCustomTexts {
   readonly defaultDiffPaletteLabel?: string;
   /** Colors of changes that colorblind readers tell apart: orange and blue. */
   readonly colorblindDiffPaletteLabel?: string;
+  /** Changes in frames, without colored backgrounds. */
+  readonly highContrastDiffPaletteLabel?: string;
+  /** The colors of changes the app gives. */
+  readonly customDiffPaletteLabel?: string;
   /** Names the checkbox that hides unchanged lines far from changes. */
   readonly hideUnchangedLinesLabel?: string;
   /** Names the button that takes back the choices of the user. */
@@ -232,6 +251,11 @@ export type UiTexts = Required<DiffwiseCustomTexts>;
 /** The text with the number in place of `{count}`. */
 export function withCount(text: string, count: number): string {
   return text.replaceAll(COUNT_PLACEHOLDER, String(count));
+}
+
+/** The text with the number of a line in place of `{number}`. */
+export function withLineNumber(text: string, lineNumber: number): string {
+  return text.replaceAll(NUMBER_PLACEHOLDER, String(lineNumber));
 }
 
 /**

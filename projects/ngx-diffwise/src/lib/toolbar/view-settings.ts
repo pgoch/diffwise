@@ -41,7 +41,15 @@ interface ChoiceGroupDefinition {
   readonly setting: ChoiceSetting;
   readonly label: keyof UiTexts;
   readonly choices: readonly ChoiceDefinition[];
+  /** True for buttons two in a row. */
+  readonly isInPairs?: boolean;
 }
+
+/**
+ * The value of the button of the colors of the app, which is not a palette: it takes back the
+ * palette the user has chosen.
+ */
+const CUSTOM_COLORS_CHOICE = 'custom';
 
 /** The groups of buttons, in the order the view settings show them. */
 const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
@@ -60,7 +68,10 @@ const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
     choices: [
       { value: DiffwisePalette.Default, label: 'defaultDiffPaletteLabel' },
       { value: DiffwisePalette.Colorblind, label: 'colorblindDiffPaletteLabel' },
+      { value: DiffwisePalette.HighContrast, label: 'highContrastDiffPaletteLabel' },
+      { value: CUSTOM_COLORS_CHOICE, label: 'customDiffPaletteLabel' },
     ],
+    isInPairs: true,
   },
   {
     setting: DiffwiseUserSetting.Layout,
@@ -87,6 +98,8 @@ interface ShownChoice {
   readonly value: string;
   readonly label: string;
   readonly isChosen: boolean;
+  /** True while the button does nothing, such as the colors of an app that gives none. */
+  readonly isDisabled: boolean;
 }
 
 /** A group of buttons as the template shows it. */
@@ -96,8 +109,7 @@ interface ShownChoiceGroup {
   /** Id of the name of the group, which names the group for screen readers. */
   readonly labelId: string;
   readonly choices: readonly ShownChoice[];
-  /** True while the option does nothing: the style of the single column beside two columns. */
-  readonly isDisabled: boolean;
+  readonly isInPairs: boolean;
 }
 
 const VIEW_SETTINGS_ID_END = '-view-settings';
@@ -139,11 +151,20 @@ export class ViewSettings {
   /** True when the diff shows a single column, where the style of its changed lines shows. */
   readonly showsSingleColumn = input.required<boolean>();
 
+  /** True when the app gives colors of changes for the theme shown, which the user can choose. */
+  readonly hasCustomColors = input.required<boolean>();
+
+  /** True while the colors of the app are in effect: the user has chosen no palette. */
+  readonly showsCustomColors = input.required<boolean>();
+
   /** Texts of the interface in its language. */
   readonly texts = input.required<UiTexts>();
 
   /** The user chooses a value of an option. */
   readonly settingsChange = output<UserChoices>();
+
+  /** The user takes back the choice of an option: the palette, to see the colors of the app. */
+  readonly settingWithdraw = output<DiffwiseUserSetting>();
 
   /** The user takes back all choices. */
   readonly settingsReset = output<void>();
@@ -180,9 +201,16 @@ export class ViewSettings {
     inject(DestroyRef).onDestroy(() => this.stopFollowingButton());
   }
 
-  /** Chooses a value of an option; the values of the buttons are values of their options. */
+  /**
+   * Chooses a value of an option; the values of the buttons are values of their options, except
+   * the colors of the app, which take back the chosen palette.
+   */
   protected choose(setting: ChoiceSetting, value: string): void {
-    this.settingsChange.emit({ [setting]: value } as UserChoices);
+    if (value === CUSTOM_COLORS_CHOICE) {
+      this.settingWithdraw.emit(setting);
+    } else {
+      this.settingsChange.emit({ [setting]: value } as UserChoices);
+    }
   }
 
   protected chooseHideUnchangedLines(event: Event): void {
@@ -209,10 +237,12 @@ export class ViewSettings {
     }
   }
 
-  private shownGroup({ setting, label, choices }: ChoiceGroupDefinition): ShownChoiceGroup {
+  private shownGroup(group: ChoiceGroupDefinition): ShownChoiceGroup {
+    const { setting, label, choices, isInPairs = false } = group;
     const texts = this.texts();
-    const chosenValue = this.config()[setting];
-    const isDisabled = setting === DiffwiseUserSetting.InlineDiffStyle && !this.showsSingleColumn();
+    const chosenValue = this.chosenValue(setting);
+    const isGroupDisabled =
+      setting === DiffwiseUserSetting.InlineDiffStyle && !this.showsSingleColumn();
 
     return {
       setting,
@@ -222,9 +252,16 @@ export class ViewSettings {
         value,
         label: texts[choiceLabel],
         isChosen: value === chosenValue,
+        isDisabled: isGroupDisabled || (value === CUSTOM_COLORS_CHOICE && !this.hasCustomColors()),
       })),
-      isDisabled,
+      isInPairs,
     };
+  }
+
+  /** The value in effect: of the option, or the colors of the app in place of a palette. */
+  private chosenValue(setting: ChoiceSetting): string {
+    const isPalette = setting === DiffwiseUserSetting.DiffPalette;
+    return isPalette && this.showsCustomColors() ? CUSTOM_COLORS_CHOICE : this.config()[setting];
   }
 
   /** Places the view settings again when the page scrolls or the window changes its size. */

@@ -12,6 +12,17 @@ export const LANGUAGE_TEXTS: Readonly<Record<UiLanguage, UiTexts>> = {
   [DiffwiseLanguage.PL]: POLISH_TEXTS,
 };
 
+/** Language tags of the interface languages, for the `lang` attribute of the interface texts. */
+const LANGUAGE_TAGS: Readonly<Record<UiLanguage, string>> = {
+  [DiffwiseLanguage.EN]: 'en',
+  [DiffwiseLanguage.PL]: 'pl',
+};
+
+/** The language tag of an interface language, which screen readers pronounce its texts by. */
+export function languageTag(language: UiLanguage): string {
+  return LANGUAGE_TAGS[language];
+}
+
 /** Separates the language of a locale from its region, as in `pl-PL` or `pt_BR`. */
 const LOCALE_SEPARATOR = /[-_]/;
 
