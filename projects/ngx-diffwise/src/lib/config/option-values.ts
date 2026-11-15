@@ -238,12 +238,36 @@ export interface DiffwiseVersionHeaderTexts {
 
 /** Languages of the interface. */
 export const DiffwiseLanguage = {
-  /** The language of the app (`LOCALE_ID`) when the interface has it, or else English. */
+  /**
+   * The language of the app (`LOCALE_ID`) when the interface has it, or else English. Every
+   * Chinese locale gets Chinese in simplified characters, and only Portuguese without a region or
+   * of Portugal gets Portuguese.
+   */
   Auto: 'auto',
   /** English. */
   EN: 'en',
   /** Polish. */
   PL: 'pl',
+  /** Chinese, in simplified characters. */
+  ZH: 'zh',
+  /** Spanish. */
+  ES: 'es',
+  /** Hindi. */
+  HI: 'hi',
+  /** French. */
+  FR: 'fr',
+  /** Russian. */
+  RU: 'ru',
+  /** Portuguese, in the words and spelling of Portugal. */
+  PT: 'pt',
+  /** Italian. */
+  IT: 'it',
+  /** Japanese. */
+  JA: 'ja',
+  /** German. */
+  DE: 'de',
+  /** Korean. */
+  KO: 'ko',
 } as const;
 
 export type DiffwiseLanguage = (typeof DiffwiseLanguage)[keyof typeof DiffwiseLanguage];

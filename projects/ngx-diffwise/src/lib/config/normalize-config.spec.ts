@@ -124,7 +124,7 @@ describe('normalizeConfig', () => {
 
   it('keeps a language of the interface, and ignores one it has no texts in', () => {
     expect(normalizeConfig({ language: 'pl' })).toEqual({ language: DiffwiseLanguage.PL });
-    expect(normalizeConfig({ language: 'de' })).toEqual({});
+    expect(normalizeConfig({ language: 'nl' })).toEqual({});
     expect(normalizeConfig({ language: 'pl-PL' })).toEqual({});
     expect(console.warn).toHaveBeenCalledTimes(2);
   });

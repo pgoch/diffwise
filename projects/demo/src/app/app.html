@@ -10,8 +10,19 @@
     label="Language"
     [choices]="languages"
     [value]="language()"
-    (chosen)="language.set($event)"
+    (chosen)="chooseSampleLanguage($event)"
   />
+  <label class="demo-field">
+    Interface language
+    <select (change)="chooseInterfaceLanguage($event)">
+      @for (choice of interfaceLanguages; track choice.value) {
+        <option [value]="choice.value" [selected]="choice.value === interfaceLanguage()">
+          {{ choice.label }}
+        </option>
+      }
+    </select>
+  </label>
+  <p class="demo-hint">The language of the sample sets it too.</p>
   <demo-choice-buttons
     label="Size"
     [choices]="sizes"
