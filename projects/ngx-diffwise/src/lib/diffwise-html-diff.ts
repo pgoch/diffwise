@@ -90,7 +90,7 @@ import {
   userSettingsOf,
   validUserChoices,
 } from './user-settings/user-settings';
-import { SHARED_USER_SETTINGS_KEY, UserSettingsStore } from './user-settings/user-settings-store';
+import { UserSettingsStore } from './user-settings/user-settings-store';
 
 /** Starts the id prefix of each diff on the page: `diffwise-1`, `diffwise-2` and so on. */
 const ID_PREFIX_START = 'diffwise-';
@@ -412,6 +412,18 @@ export class DiffwiseHtmlDiff {
    */
   readonly allowedUserSettings = input<readonly DiffwiseUserSetting[]>();
 
+  /**
+   * Keeps the choices of the user in localStorage, so they stay after a reload; wins over `config`
+   * and the global configuration.
+   */
+  readonly rememberUserSettings = input<boolean>();
+
+  /**
+   * Name under which this diff keeps the choices of the user, which diffs with the same name share;
+   * `null` takes the base path of the app. Wins over `config` and the global configuration.
+   */
+  readonly userSettingsKey = input<string | null>();
+
   /** What stands between the versions; wins over `config` and the global configuration. */
   readonly dividerStyle = input<DiffwiseDividerStyle>();
 
@@ -489,7 +501,7 @@ export class DiffwiseHtmlDiff {
 
   /**
    * The choices of the user after each change the user makes in the view settings of this diff,
-   * with the choices made in the other diffs of the app, which share them.
+   * with the choices made in the other diffs with the same key, which share them.
    */
   readonly userSettingsChange = output<DiffwiseUserSettings>();
 
@@ -540,6 +552,8 @@ export class DiffwiseHtmlDiff {
     showDiffStats: this.showDiffStats(),
     noChangesView: this.noChangesView(),
     allowedUserSettings: this.allowedUserSettings(),
+    rememberUserSettings: this.rememberUserSettings(),
+    userSettingsKey: this.userSettingsKey(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
     versionHeaders: this.versionHeaders(),
@@ -570,8 +584,18 @@ export class DiffwiseHtmlDiff {
   /** Options the user can change in the view settings. */
   protected readonly allowedSettings = computed(() => this.appConfig().allowedUserSettings);
 
-  /** Choices the user has made in the view settings of any diff of the app. */
-  private readonly storedChoices = this.userSettings.choicesOf(SHARED_USER_SETTINGS_KEY);
+  /** Name under which the choices of the user are kept: the one of the app, or its base path. */
+  private readonly settingsKey = computed(() =>
+    this.userSettings.keyOf(this.appConfig().userSettingsKey),
+  );
+
+  /** True when the choices of the user stay in localStorage. */
+  private readonly remembersChoices = computed(() => this.appConfig().rememberUserSettings);
+
+  /** Choices the user has made in the view settings of any diff with the same key. */
+  private readonly storedChoices = computed(() =>
+    this.userSettings.choicesOf(this.settingsKey(), this.remembersChoices()),
+  );
 
   /** The choices of the user that apply here: those of the options the app allows. */
   private readonly userChoices = computed(() =>
@@ -877,6 +901,7 @@ export class DiffwiseHtmlDiff {
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
     this.prepareMergedLinesWhenIdle();
+    this.saveChoicesWhenRemembered();
   }
 
   /**
@@ -897,9 +922,11 @@ export class DiffwiseHtmlDiff {
     this.scrollToActiveChange();
   }
 
-  /** Adds the choice of the user, which every diff of the app follows, and tells the app. */
+  /**
+   * Adds the choice of the user, which every diff with the same key follows, and tells the app.
+   */
   protected changeUserSettings(changes: UserChoices): void {
-    this.userSettings.choose(SHARED_USER_SETTINGS_KEY, changes);
+    this.userSettings.choose(this.settingsKey(), changes, this.remembersChoices());
     this.emitUserSettings();
   }
 
@@ -907,7 +934,7 @@ export class DiffwiseHtmlDiff {
    * Takes back the choices of the user, so the options of the app apply again, and tells the app.
    */
   protected resetUserSettings(): void {
-    this.userSettings.reset(SHARED_USER_SETTINGS_KEY);
+    this.userSettings.reset(this.settingsKey());
     this.emitUserSettings();
   }
 
@@ -1019,6 +1046,20 @@ export class DiffwiseHtmlDiff {
       || allowed.includes(DiffwiseUserSetting.InlineDiffStyle);
 
     return this.diffStats().hasChanges && mayShowSingleColumn && mayMergeLines;
+  }
+
+  /**
+   * Saves the choices of the user once this diff remembers them, also those made before, so they
+   * stay after a reload.
+   */
+  private saveChoicesWhenRemembered(): void {
+    effect(() => {
+      const key = this.settingsKey();
+
+      if (this.remembersChoices()) {
+        this.userSettings.saveChanged(key);
+      }
+    });
   }
 
   /** Scrolls the rows of the active block into view once they have their classes. */

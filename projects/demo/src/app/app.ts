@@ -160,6 +160,12 @@ const ACTIVE_CHANGE_STYLE_CHOICES: readonly Choice<DiffwiseActiveChangeStyle>[] 
   { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
 ];
 
+/** Name of the localStorage entry where the demo keeps its "Remember choices" box. */
+const REMEMBER_CHOICES_ENTRY = 'diffwise-demo:remember-choices';
+
+/** Value of the entry while the box is ticked. */
+const TICKED = 'true';
+
 /** Options the user can change in the view settings of the diff, in the order they show there. */
 const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
@@ -364,6 +370,10 @@ export class App {
     computation: (pair, previous) => pair ?? previous?.value,
   });
 
+  constructor() {
+    this.update({ rememberUserSettings: demoRemembersChoices() });
+  }
+
   /** Changes options of the global configuration, as an app can do while it runs. */
   protected update(changes: DiffwiseConfigOptions): void {
     this.diffwise.updateConfig(changes);
@@ -391,6 +401,15 @@ export class App {
     );
 
     this.update({ allowedUserSettings });
+  }
+
+  /**
+   * Lets the diff remember the choices of the user in localStorage. The demo keeps the box too,
+   * so the diff reads the choices back after a reload.
+   */
+  protected rememberChoices(remembers: boolean): void {
+    this.update({ rememberUserSettings: remembers });
+    keepDemoRemembersChoices(remembers);
   }
 
   /** Switches the theme with the method of the service for each color mode. */
@@ -462,6 +481,28 @@ function fontFamilyOf(choice: FontChoice, customFontName: string): string {
       return DiffwiseFontFamily.Builtin;
     case FontChoice.Custom:
       return customFontName;
+  }
+}
+
+/** True when the "Remember choices" box was ticked before the reload. */
+function demoRemembersChoices(): boolean {
+  try {
+    return localStorage.getItem(REMEMBER_CHOICES_ENTRY) === TICKED;
+  } catch {
+    return false;
+  }
+}
+
+/** Keeps the "Remember choices" box for the next reload. */
+function keepDemoRemembersChoices(remembers: boolean): void {
+  try {
+    if (remembers) {
+      localStorage.setItem(REMEMBER_CHOICES_ENTRY, TICKED);
+    } else {
+      localStorage.removeItem(REMEMBER_CHOICES_ENTRY);
+    }
+  } catch {
+    // Without localStorage the box stays only until the reload.
   }
 }
 

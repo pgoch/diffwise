@@ -50,6 +50,8 @@ const DEFAULT_OPTIONS = {
     DiffwiseUserSetting.ColorMode,
     DiffwiseUserSetting.HideUnchangedLines,
   ],
+  rememberUserSettings: false,
+  userSettingsKey: null,
   dividerStyle: DiffwiseDividerStyle.Column,
   gapStyle: DiffwiseGapStyle.Stripes,
   versionHeaders: DiffwiseVersionHeaders.Default,

@@ -98,6 +98,29 @@ describe('normalizeConfig', () => {
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
   });
 
+  it('keeps remembering the choices of the user, and their key or null for the base path', () => {
+    const options = { rememberUserSettings: true, userSettingsKey: 'reports' };
+
+    expect(normalizeConfig(options)).toEqual(options);
+    expect(normalizeConfig({ userSettingsKey: null })).toEqual({ userSettingsKey: null });
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('ignores remembering the choices that is not true or false, and a blank or other key', () => {
+    const invalidOptions = [
+      { rememberUserSettings: 'yes' },
+      { userSettingsKey: '' },
+      { userSettingsKey: ' ' },
+      { userSettingsKey: 7 },
+    ];
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
   it('keeps a language of the interface, and ignores one it has no texts in', () => {
     expect(normalizeConfig({ language: 'pl' })).toEqual({ language: DiffwiseLanguage.PL });
     expect(normalizeConfig({ language: 'de' })).toEqual({});

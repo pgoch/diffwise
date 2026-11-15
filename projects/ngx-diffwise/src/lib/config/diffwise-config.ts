@@ -121,6 +121,17 @@ export interface DiffwiseConfigOptions {
    * `DiffwiseUserSetting`.
    */
   readonly allowedUserSettings?: readonly DiffwiseUserSetting[];
+  /**
+   * Keeps the choices of the user in localStorage of the browser, so they stay after a reload.
+   * Only the choices go there, never the documents. Default: `false`.
+   */
+  readonly rememberUserSettings?: boolean;
+  /**
+   * Name under which diffs keep the choices of the user: diffs with the same name share them, and
+   * in localStorage the name keeps apart the choices of apps on one domain. `null` takes the base
+   * path of the app, such as `/` or `/admin/`. Default: `null`.
+   */
+  readonly userSettingsKey?: string | null;
   /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
@@ -262,6 +273,12 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Options the user can change in the view settings of the toolbar. */
   readonly allowedUserSettings: readonly DiffwiseUserSetting[] = ALL_USER_SETTINGS;
+
+  /** Keeps the choices of the user in localStorage of the browser. */
+  readonly rememberUserSettings: boolean = false;
+
+  /** Name under which diffs keep the choices of the user; `null` takes the base path of the app. */
+  readonly userSettingsKey: string | null = null;
 
   /** What stands between the two versions. */
   readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;

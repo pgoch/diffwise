@@ -324,6 +324,15 @@
   <p class="demo-hint">
     A choice in the view settings wins over this panel; “Restore defaults” brings the panel back.
   </p>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().rememberUserSettings"
+      (change)="rememberChoices(isChecked($event))"
+    />
+    Remember choices
+  </label>
+  <p class="demo-hint">Keeps the choices in localStorage, so they stay after a reload.</p>
   @if (lastUserSettings()) {
     <p class="demo-hint" aria-live="polite">
       From the last choice: <code>{{ lastUserSettingsText() }}</code>
