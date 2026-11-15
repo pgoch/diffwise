@@ -17,6 +17,7 @@ import {
   DiffwiseColorMode,
   DiffwiseInlineDiffStyle,
   DiffwiseLayout,
+  DiffwisePalette,
   DiffwiseUserSetting,
 } from '../config/option-values';
 import type { UiTexts } from '../i18n/texts';
@@ -24,9 +25,10 @@ import type { UserChoices } from '../user-settings/user-settings';
 
 /** Options the view settings show as a group of buttons, one for each value. */
 type ChoiceSetting =
+  | typeof DiffwiseUserSetting.ColorMode
+  | typeof DiffwiseUserSetting.DiffPalette
   | typeof DiffwiseUserSetting.Layout
-  | typeof DiffwiseUserSetting.InlineDiffStyle
-  | typeof DiffwiseUserSetting.ColorMode;
+  | typeof DiffwiseUserSetting.InlineDiffStyle;
 
 /** A value of an option with the text of its button. */
 interface ChoiceDefinition {
@@ -44,6 +46,23 @@ interface ChoiceGroupDefinition {
 /** The groups of buttons, in the order the view settings show them. */
 const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
   {
+    setting: DiffwiseUserSetting.ColorMode,
+    label: 'colorModeLabel',
+    choices: [
+      { value: DiffwiseColorMode.Auto, label: 'autoColorModeLabel' },
+      { value: DiffwiseColorMode.Light, label: 'lightColorModeLabel' },
+      { value: DiffwiseColorMode.Dark, label: 'darkColorModeLabel' },
+    ],
+  },
+  {
+    setting: DiffwiseUserSetting.DiffPalette,
+    label: 'diffPaletteLabel',
+    choices: [
+      { value: DiffwisePalette.Default, label: 'defaultDiffPaletteLabel' },
+      { value: DiffwisePalette.Colorblind, label: 'colorblindDiffPaletteLabel' },
+    ],
+  },
+  {
     setting: DiffwiseUserSetting.Layout,
     label: 'layoutLabel',
     choices: [
@@ -59,15 +78,6 @@ const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
       { value: DiffwiseInlineDiffStyle.Merged, label: 'mergedInlineDiffLabel' },
       { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'strikethroughInlineDiffLabel' },
       { value: DiffwiseInlineDiffStyle.Stacked, label: 'stackedInlineDiffLabel' },
-    ],
-  },
-  {
-    setting: DiffwiseUserSetting.ColorMode,
-    label: 'colorModeLabel',
-    choices: [
-      { value: DiffwiseColorMode.Auto, label: 'autoColorModeLabel' },
-      { value: DiffwiseColorMode.Light, label: 'lightColorModeLabel' },
-      { value: DiffwiseColorMode.Dark, label: 'darkColorModeLabel' },
     ],
   },
 ];

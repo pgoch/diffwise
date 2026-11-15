@@ -75,6 +75,12 @@ export interface DiffwiseCustomTexts {
   readonly lightColorModeLabel?: string;
   /** The dark theme. */
   readonly darkColorModeLabel?: string;
+  /** Names the choice of the colors of changes. */
+  readonly diffPaletteLabel?: string;
+  /** The default colors of changes: red and green. */
+  readonly defaultDiffPaletteLabel?: string;
+  /** Colors of changes that colorblind readers tell apart: orange and blue. */
+  readonly colorblindDiffPaletteLabel?: string;
   /** Names the checkbox that hides unchanged lines far from changes. */
   readonly hideUnchangedLinesLabel?: string;
   /** Names the button that takes back the choices of the user. */

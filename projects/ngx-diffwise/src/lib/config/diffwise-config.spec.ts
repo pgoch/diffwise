@@ -47,9 +47,10 @@ const DEFAULT_OPTIONS = {
   showDiffStats: true,
   noChangesView: DiffwiseNoChangesView.Message,
   allowedUserSettings: [
+    DiffwiseUserSetting.ColorMode,
+    DiffwiseUserSetting.DiffPalette,
     DiffwiseUserSetting.Layout,
     DiffwiseUserSetting.InlineDiffStyle,
-    DiffwiseUserSetting.ColorMode,
     DiffwiseUserSetting.HideUnchangedLines,
   ],
   rememberUserSettings: false,

@@ -30,6 +30,9 @@ export const ENGLISH_TEXTS: UiTexts = {
   autoColorModeLabel: 'Auto',
   lightColorModeLabel: 'Light',
   darkColorModeLabel: 'Dark',
+  diffPaletteLabel: 'Colors of changes',
+  defaultDiffPaletteLabel: 'Standard',
+  colorblindDiffPaletteLabel: 'Colorblind-friendly',
   hideUnchangedLinesLabel: 'Hide unchanged lines',
   resetUserSettingsLabel: 'Restore defaults',
 

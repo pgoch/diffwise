@@ -180,9 +180,10 @@ const JSON_INDENT = 2;
 
 /** Options the user can change in the view settings of the diff, in the order they show there. */
 const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
+  { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
+  { value: DiffwiseUserSetting.DiffPalette, label: 'Colors of changes' },
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
   { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
-  { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
   { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
 ];
 

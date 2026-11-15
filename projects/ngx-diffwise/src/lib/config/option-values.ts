@@ -142,16 +142,18 @@ export type DiffwiseActiveChangeStyle =
   (typeof DiffwiseActiveChangeStyle)[keyof typeof DiffwiseActiveChangeStyle];
 
 /**
- * Options the user can change in the view settings of the toolbar. Each value is the name of its
- * option, so `['layout', 'colorMode']` works without the constant.
+ * Options the user can change in the view settings of the toolbar, in the order they show there.
+ * Each value is the name of its option, so `['layout', 'colorMode']` works without the constant.
  */
 export const DiffwiseUserSetting = {
+  /** Light, dark, or automatic. */
+  ColorMode: 'colorMode',
+  /** The default colors of changes, or colorblind-friendly ones. */
+  DiffPalette: 'diffPalette',
   /** The versions side by side, a single column, or automatic. */
   Layout: 'layout',
   /** How the single column shows a changed line; the user can change it in the single column. */
   InlineDiffStyle: 'inlineDiffStyle',
-  /** Light, dark, or automatic. */
-  ColorMode: 'colorMode',
   /** Hides unchanged lines far from changes. */
   HideUnchangedLines: 'hideUnchangedLines',
 } as const;
