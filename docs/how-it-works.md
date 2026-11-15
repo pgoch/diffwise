@@ -1,6 +1,6 @@
 # How it works
 
-This page describes version 0.3. Diffwise compares two HTML documents in five steps.
+This page describes version 0.4. Diffwise compares two HTML documents in five steps, and then builds the views of the comparison: two columns or a single one, with hidden lines and blocks of changes.
 
 ## 1. Clean and parse
 
@@ -65,6 +65,19 @@ A line a reader would not see, such as an empty paragraph, is left out. The `id`
 - The content of a line stays inside its cell, even an element that a class of your app gives a fixed position.
 - Colors and sizes come from CSS variables, and the options add modifier classes to the component, so you can adjust the look in your CSS; see [Styling with CSS](configuration.md#styling-with-css).
 
+## Views of the comparison
+
+The single column, the hidden lines and the navigation work on the rows of the comparison, the same rows that the two columns show, in the same order. Switching the layout therefore keeps the hidden lines the user has shown and the block the navigation has stepped to.
+
+- **Merged lines.** For the single column, each changed pair of lines becomes one line. It starts from the new line with its added words marked, and puts each removed part of the old line where it stood in the text: removed text that added text replaced stands right before it, 1px apart, so both markers show. The space between them is hidden, but screen readers read it and copied text keeps it. A removed part keeps its own formatting, such as bold or a link, and its `<del>` marker. Changes of formatting and links stay marked, with their icons and tooltips. A changed image shows as the old image, an arrow and the new image; a changed list marker or checkbox shows its old version before the new one. A pair that does not merge into valid HTML stays two lines, the old above the new. Like every line, a merged line is cleaned again after marking.
+- **Merged table rows.** A changed table row merges into one row with the columns of both versions. An added or a removed column stays in the table, marked whole, and the cell of a row whose version has no such column is an empty place. The words in each cell merge as in a paragraph. The tables of both versions are one table in the single column.
+- **The single column.** An unchanged line shows once, in its new version, under the numbers of both versions. A changed pair shows its merged line, or, with `inlineDiffStyle: 'stacked'`, the old line above the new one. With `'strikethrough'`, removed text and whole removed lines are struck through with a thin line.
+- **When merged lines are made.** Merging takes as long as a second comparison, so a diff that shows two columns does not wait for it. After each comparison, it merges the lines while the browser is idle (`requestIdleCallback`), so the first switch to the single column is as fast as the later ones. A diff that can never show merged lines, because your app fixes the layout or the stacked look and the user cannot change it, merges nothing.
+- **Hidden lines.** With `hideUnchangedLines`, each run of unchanged lines farther than `contextLines` from every changed line is hidden behind a bar with its number of lines; a run of a single line stays shown. Changed, added and removed lines always show, so the navigation never needs to show hidden lines. Hidden lines are not rendered, and a click on the bar renders them.
+- **Blocks of changes.** Changed, added and removed lines with no unchanged line between them form a block, and the navigation steps from block to block. A passage rewritten across several lines is therefore one step. Both layouts have the same blocks.
+- **Statistics.** The numbers count the rows of the comparison: added lines, removed lines, and changed pairs, each as one changed line, as the line numbers show them.
+- **Layout.** `layout: 'auto'` measures the width of the component with a `ResizeObserver`, so a diff in a narrow panel shows a single column, and it switches as the width changes.
+
 ## Architecture
 
-The diff engine is plain TypeScript with no dependency on Angular, and DOMPurify is its only dependency. It uses the DOM of the browser, so Diffwise does not support server-side rendering yet. The Angular package wraps the engine in the `DiffwiseHtmlDiff` component, `provideDiffwise()` and the `Diffwise` service. The engine describes changes with data, such as the styles before and after, and the component turns the data into the texts of the tooltips, so the engine knows no languages. This keeps the engine easy to test and leaves the door open for other frameworks later.
+The diff engine is plain TypeScript with no dependency on Angular, and DOMPurify is its only dependency. It uses the DOM of the browser, so Diffwise does not support server-side rendering yet. The Angular package wraps the engine in the `DiffwiseHtmlDiff` component, `provideDiffwise()` and the `Diffwise` service. The engine describes changes with data, such as the styles before and after, and the component turns the data into the texts of the tooltips, so the engine knows no languages. The views of the comparison, such as the rows of the single column, the hidden lines and the blocks of changes, are plain functions of the engine too. This keeps the engine easy to test and leaves the door open for other frameworks later.
