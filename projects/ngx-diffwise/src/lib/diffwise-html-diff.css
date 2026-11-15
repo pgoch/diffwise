@@ -606,6 +606,12 @@
   text-underline-offset: 2px;
 }
 
+/* A link in a changed part has the color of the text, which keeps its contrast on the highlight. */
+.diffwise-html-diff__content .diffwise-html-diff__highlight a,
+.diffwise-html-diff__content a .diffwise-html-diff__highlight {
+  color: var(--diffwise-text);
+}
+
 .diffwise-html-diff__content img {
   max-width: 100%;
   height: auto;

@@ -295,6 +295,7 @@ interface ShownVersionHeaders {
     './toolbar/view-settings.css',
     './navigation/active-change.css',
     './no-changes.css',
+    './forced-colors.css',
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,

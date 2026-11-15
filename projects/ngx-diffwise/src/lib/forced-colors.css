@@ -1,0 +1,60 @@
+/*
+ * The high contrast mode of Windows (forced colors). The browser replaces the colors of the page
+ * with a few colors of the system and drops backgrounds and shadows, so changes show by shapes in
+ * the color of the text. Apart from the other styles of the component, which have a size budget in
+ * the demo build.
+ */
+@media (forced-colors: active) {
+  /* A changed part has a frame: solid when added, dashed and struck through when removed. */
+  .diffwise-html-diff__highlight:not(.diffwise-html-diff__highlight--image) {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
+  }
+
+  .diffwise-html-diff__highlight--removed:not(.diffwise-html-diff__highlight--image) {
+    outline-style: dashed;
+    text-decoration: line-through;
+  }
+
+  .diffwise-html-diff__highlight--removed.diffwise-html-diff__highlight--image::after {
+    border-style: dashed;
+  }
+
+  /* A changed line has a bar at its number, also with colored backgrounds of the numbers. */
+  .diffwise-html-diff:not(.diffwise-html-diff--layout-inline)
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number {
+    border-inline-start: 3px solid CanvasText;
+  }
+
+  .diffwise-html-diff--layout-inline
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__line-number--new::before,
+  .diffwise-html-diff--layout-inline.diffwise-html-diff--no-line-numbers
+    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+    .diffwise-html-diff__change-details-cell:not(
+      :has(.diffwise-html-diff__change-details-icon)
+    )::before {
+    position: absolute;
+    top: 6px;
+    bottom: 6px;
+    border-inline-start: 3px solid CanvasText;
+    content: '';
+  }
+
+  /* Stripes opposite an added or a removed line, in the colors of the system. */
+  .diffwise-html-diff:not(.diffwise-html-diff--gap-style-empty) .diffwise-html-diff__gap {
+    background: repeating-linear-gradient(135deg, CanvasText 0 1px, Canvas 1px 9px);
+    forced-color-adjust: none;
+  }
+
+  /* Changed parts of values in the tooltip. */
+  .diffwise-html-diff__tooltip-highlight--added {
+    outline: 1px solid CanvasText;
+  }
+
+  .diffwise-html-diff__tooltip-highlight--removed {
+    outline: 1px dashed CanvasText;
+    text-decoration: line-through;
+  }
+}
