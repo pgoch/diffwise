@@ -48,7 +48,7 @@ const SampleLanguage = {
 
 type SampleLanguage = (typeof SampleLanguage)[keyof typeof SampleLanguage];
 
-/** Language of the diff interface for each language of the samples. */
+/** Language of the diff interface that each language of the samples brings with it. */
 const INTERFACE_LANGUAGES: Readonly<Record<SampleLanguage, DiffwiseLanguage>> = {
   [SampleLanguage.English]: DiffwiseLanguage.EN,
   [SampleLanguage.Polish]: DiffwiseLanguage.PL,
@@ -70,6 +70,22 @@ const SAMPLES_FOLDER = 'test-data';
 const PATH_SEPARATOR = '/';
 const HTML_EXTENSION = '.html';
 const LOAD_ERROR = 'Could not load a sample file.';
+
+/** Languages of the diff interface, each named in itself. */
+const INTERFACE_LANGUAGE_CHOICES: readonly Choice<DiffwiseLanguage>[] = [
+  { value: DiffwiseLanguage.EN, label: 'English' },
+  { value: DiffwiseLanguage.PL, label: 'Polski' },
+  { value: DiffwiseLanguage.ZH, label: '中文（简体）' },
+  { value: DiffwiseLanguage.ES, label: 'Español' },
+  { value: DiffwiseLanguage.HI, label: 'हिन्दी' },
+  { value: DiffwiseLanguage.FR, label: 'Français' },
+  { value: DiffwiseLanguage.RU, label: 'Русский' },
+  { value: DiffwiseLanguage.PT, label: 'Português' },
+  { value: DiffwiseLanguage.IT, label: 'Italiano' },
+  { value: DiffwiseLanguage.JA, label: '日本語' },
+  { value: DiffwiseLanguage.DE, label: 'Deutsch' },
+  { value: DiffwiseLanguage.KO, label: '한국어' },
+];
 
 const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
   { value: SampleLanguage.English, label: 'English' },
@@ -295,6 +311,7 @@ const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
 })
 export class App {
   protected readonly languages = LANGUAGE_CHOICES;
+  protected readonly interfaceLanguages = INTERFACE_LANGUAGE_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
   protected readonly colorModes = COLOR_MODE_CHOICES;
   protected readonly palettes = PALETTE_CHOICES;
@@ -336,8 +353,11 @@ export class App {
   /** Width of the diff, which the page narrows to show the automatic layout. */
   protected readonly diffWidth = signal<DiffWidth>(DiffWidth.Full);
 
-  /** Language of the diff interface: the one of the sample, set through an input of the diff. */
-  protected readonly interfaceLanguage = computed(() => INTERFACE_LANGUAGES[this.language()]);
+  /**
+   * Language of the diff interface, set through an input of the diff: the one of the sample, until
+   * the panel chooses another.
+   */
+  protected readonly interfaceLanguage = signal<DiffwiseLanguage>(DiffwiseLanguage.EN);
 
   /** The chosen headers; the first choice is set in `app.config.ts`. */
   protected readonly versionHeaders = signal<VersionHeaders>(DiffwiseVersionHeaders.Default);
@@ -462,6 +482,16 @@ export class App {
   }
 
   /** Switches the theme with the method of the service for each color mode. */
+  /** Shows the sample in the language, with the interface in the same language. */
+  protected chooseSampleLanguage(language: SampleLanguage): void {
+    this.language.set(language);
+    this.interfaceLanguage.set(INTERFACE_LANGUAGES[language]);
+  }
+
+  protected chooseInterfaceLanguage(event: Event): void {
+    this.interfaceLanguage.set((event.target as HTMLSelectElement).value as DiffwiseLanguage);
+  }
+
   protected chooseColorMode(colorMode: DiffwiseColorMode): void {
     switch (colorMode) {
       case DiffwiseColorMode.Light:

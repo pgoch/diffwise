@@ -17,7 +17,7 @@ describe('resolveLanguage', () => {
   });
 
   it('falls back to English when the interface has no texts in the language of the app', () => {
-    expect(resolveLanguage(DiffwiseLanguage.Auto, 'de-DE')).toBe(DiffwiseLanguage.EN);
+    expect(resolveLanguage(DiffwiseLanguage.Auto, 'nl-NL')).toBe(DiffwiseLanguage.EN);
     expect(resolveLanguage(DiffwiseLanguage.Auto, 'plt')).toBe(DiffwiseLanguage.EN);
   });
 });

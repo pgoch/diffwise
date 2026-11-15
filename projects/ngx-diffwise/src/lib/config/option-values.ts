@@ -244,6 +244,26 @@ export const DiffwiseLanguage = {
   EN: 'en',
   /** Polish. */
   PL: 'pl',
+  /** Chinese, in simplified characters. */
+  ZH: 'zh',
+  /** Spanish. */
+  ES: 'es',
+  /** Hindi. */
+  HI: 'hi',
+  /** French. */
+  FR: 'fr',
+  /** Russian. */
+  RU: 'ru',
+  /** Portuguese, in the words and spelling of Portugal. */
+  PT: 'pt',
+  /** Italian. */
+  IT: 'it',
+  /** Japanese. */
+  JA: 'ja',
+  /** German. */
+  DE: 'de',
+  /** Korean. */
+  KO: 'ko',
 } as const;
 
 export type DiffwiseLanguage = (typeof DiffwiseLanguage)[keyof typeof DiffwiseLanguage];
