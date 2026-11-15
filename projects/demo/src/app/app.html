@@ -368,7 +368,7 @@
 <main class="demo-main">
   @if (sample.error()) {
     <p role="alert">The sample could not be loaded.</p>
-  } @else if (sample.value(); as pair) {
+  } @else if (shownSample(); as pair) {
     <div class="demo-diff" [style.max-width]="diffWidth()">
       <diffwise-html-diff
         [oldHtml]="pair.oldHtml"

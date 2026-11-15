@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   resource,
   signal,
   viewChild,
@@ -113,6 +114,12 @@ const INLINE_DIFF_STYLE_CHOICES: readonly Choice<DiffwiseInlineDiffStyle>[] = [
   { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
   { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
 ];
+
+/** The two versions of a sample. */
+interface SamplePair {
+  readonly oldHtml: string;
+  readonly newHtml: string;
+}
 
 /** Versions the demo compares: the two versions of the sample, or its old version with itself. */
 const ComparedVersions = {
@@ -346,6 +353,15 @@ export class App {
 
       return { oldHtml, newHtml };
     },
+  });
+
+  /**
+   * The last loaded sample. It stays while another one loads, so the diff stays on the page and
+   * gets the new versions, as in an app that changes the documents of a diff.
+   */
+  protected readonly shownSample = linkedSignal<SamplePair | undefined, SamplePair | undefined>({
+    source: () => (this.sample.hasValue() ? this.sample.value() : undefined),
+    computation: (pair, previous) => pair ?? previous?.value,
   });
 
   /** Changes options of the global configuration, as an app can do while it runs. */
