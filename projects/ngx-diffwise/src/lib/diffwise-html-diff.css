@@ -11,7 +11,7 @@
   --diffwise-background: #fff;
   --diffwise-ink: #1f2328;
   --diffwise-text: #1f2328;
-  --diffwise-muted: #6b7280;
+  --diffwise-muted: #626975;
   --diffwise-border: #e3e6ea;
   --diffwise-link: #1d4ed8;
   --diffwise-contrast: 5%;
@@ -112,7 +112,7 @@
   --diffwise-text: #e6e8eb;
   --diffwise-muted: #8b93a1;
   --diffwise-border: #2a2f38;
-  --diffwise-link: #7aa7ff;
+  --diffwise-link: #93b9ff;
   --diffwise-removed-base: #ef5350;
   --diffwise-added-base: #3fb96b;
   --diffwise-removed-accent: #ff8a8a;
@@ -130,7 +130,7 @@
 :where(.diffwise-html-diff--diff-palette-colorblind) {
   --diffwise-removed-base: #f08a24;
   --diffwise-added-base: #3b82f6;
-  --diffwise-removed-accent: #b45309;
+  --diffwise-removed-accent: #ab4f09;
   --diffwise-added-accent: #1d4ed8;
 }
 
@@ -184,13 +184,26 @@
 :where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-4) {
   --diffwise-line-share: 21%;
   --diffwise-line-number-share: 16.2%;
-  --diffwise-highlight-share: 58%;
+  --diffwise-highlight-share: 55%;
 }
 
 :where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-5) {
   --diffwise-line-share: 28%;
   --diffwise-line-number-share: 15%;
-  --diffwise-highlight-share: 68%;
+  --diffwise-highlight-share: 57%;
+}
+
+/* The light blue of the colorblind palette takes less, so the text of changed words stays readable. */
+:where(
+  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-4
+) {
+  --diffwise-highlight-share: 50%;
+}
+
+:where(
+  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-5
+) {
+  --diffwise-highlight-share: 52%;
 }
 
 /*
@@ -199,12 +212,12 @@
  */
 :where(.diffwise-html-diff--ui-contrast-1) {
   --diffwise-contrast: 1.5%;
-  --diffwise-line-number-text-share: 50%;
+  --diffwise-line-number-text-share: 63%;
 }
 
 :where(.diffwise-html-diff--ui-contrast-2) {
   --diffwise-contrast: 3.25%;
-  --diffwise-line-number-text-share: 57.5%;
+  --diffwise-line-number-text-share: 64%;
 }
 
 :where(.diffwise-html-diff--ui-contrast-4) {
@@ -348,6 +361,28 @@
   .diffwise-html-diff__line-number--new {
   box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
   color: var(--diffwise-added-accent);
+}
+
+/*
+ * Colored numbers keep their contrast: on colored backgrounds of the numbers, and on the darker
+ * number column of the highest contrasts, they take in some of the text color.
+ */
+.diffwise-html-diff--line-number-style-background
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number-value {
+  color: color-mix(in srgb, currentColor 75%, var(--diffwise-text));
+}
+
+.diffwise-html-diff--ui-contrast-4
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number-value {
+  color: color-mix(in srgb, currentColor 88%, var(--diffwise-text));
+}
+
+.diffwise-html-diff--ui-contrast-5
+  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
+  .diffwise-html-diff__line-number-value {
+  color: color-mix(in srgb, currentColor 74%, var(--diffwise-text));
 }
 
 /* Or a colored background, which goes with the background of the changed line. */

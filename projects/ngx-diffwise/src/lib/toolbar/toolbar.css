@@ -7,7 +7,14 @@
 
 :where(.diffwise-html-diff) {
   --diffwise-toolbar-font-size: 0.8rem;
-  --diffwise-toolbar-top: 0;
+  --diffwise-toolbar-top: 0px;
+}
+
+/* An element that takes the keyboard focus scrolls into view below the toolbar, not under it. */
+.diffwise-html-diff :is(a[href], button, summary, input, [tabindex]) {
+  scroll-margin-top: calc(
+    var(--diffwise-toolbar-top) + 2.3 * var(--diffwise-toolbar-font-size) + 2rem
+  );
 }
 
 /* The background comes from the contrast of the interface, a little lighter than the headers. */
