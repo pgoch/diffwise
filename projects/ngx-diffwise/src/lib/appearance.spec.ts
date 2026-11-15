@@ -57,6 +57,7 @@ describe('appearanceClasses', () => {
 
   it('adds a modifier class with the value of each option that differs from its default', () => {
     const config = new DiffwiseConfig({
+      diffPalette: 'colorblind',
       highlightStyle: 'top-bottom',
       diffIntensity: 1,
       uiContrast: 5,
@@ -72,6 +73,7 @@ describe('appearanceClasses', () => {
     });
 
     expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual([
+      'diffwise-html-diff--diff-palette-colorblind',
       'diffwise-html-diff--highlight-style-top-bottom',
       'diffwise-html-diff--line-number-style-background',
       'diffwise-html-diff--line-number-alignment-bottom',
@@ -121,6 +123,20 @@ describe('appearanceClasses', () => {
     expect(
       appearanceClasses(config, { addedAccent: '#0f766e' }, DiffwiseLayout.SideBySide),
     ).toEqual(['diffwise-html-diff--ui-contrast-3']);
+  });
+
+  it('keeps the class of the palette with colors of the app, which give the colors they set', () => {
+    const config = new DiffwiseConfig({ diffPalette: 'colorblind' });
+    const customColors = { addedAccent: '#0f766e' };
+
+    expect(appearanceClasses(config, customColors, DiffwiseLayout.SideBySide)).toEqual([
+      'diffwise-html-diff--diff-palette-colorblind',
+      'diffwise-html-diff--ui-contrast-3',
+    ]);
+    expect(appearanceStyles(config, customColors, 2)).toEqual({
+      '--diffwise-line-number-digits': '2',
+      '--diffwise-added-accent': '#0f766e',
+    });
   });
 });
 

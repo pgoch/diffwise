@@ -126,6 +126,21 @@
   color-scheme: dark;
 }
 
+/* Colorblind-friendly palette: orange for removed and blue for added, in both themes. */
+:where(.diffwise-html-diff--diff-palette-colorblind) {
+  --diffwise-removed-base: #f08a24;
+  --diffwise-added-base: #3b82f6;
+  --diffwise-removed-accent: #b45309;
+  --diffwise-added-accent: #1d4ed8;
+}
+
+:where(.diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme) {
+  --diffwise-removed-base: #f59e3b;
+  --diffwise-added-base: #4d8ff8;
+  --diffwise-removed-accent: #fbbf6b;
+  --diffwise-added-accent: #8ab4ff;
+}
+
 /*
  * Intensity of the change colors: the backgrounds of lines and words change together. Level 3
  * has the defaults above, so its class needs no rule.

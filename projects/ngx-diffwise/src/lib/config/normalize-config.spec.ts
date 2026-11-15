@@ -15,6 +15,7 @@ import {
   DiffwiseLayout,
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -349,6 +350,17 @@ describe('normalizeConfig', () => {
       activeChangeStyle: DiffwiseActiveChangeStyle.Indicator,
     });
     expect(normalizeConfig({ activeChangeStyle: 'arrow' })).toEqual({});
+    expect(console.warn).toHaveBeenCalledOnce();
+  });
+
+  it('keeps the colors of changes, given as a constant or as plain text, and ignores another palette with a warning', () => {
+    expect(normalizeConfig({ diffPalette: 'colorblind' })).toEqual({
+      diffPalette: DiffwisePalette.Colorblind,
+    });
+    expect(normalizeConfig({ diffPalette: DiffwisePalette.Default })).toEqual({
+      diffPalette: 'default',
+    });
+    expect(normalizeConfig({ diffPalette: 'grayscale' })).toEqual({});
     expect(console.warn).toHaveBeenCalledOnce();
   });
 

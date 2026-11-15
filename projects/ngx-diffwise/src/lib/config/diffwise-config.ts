@@ -17,6 +17,7 @@ import {
   type DiffwiseLevel,
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -33,6 +34,11 @@ export interface DiffwiseConfigOptions {
    * follows the system. Default: `null`.
    */
   readonly darkModeSelector?: string | null;
+  /**
+   * Colors of changes: red and green, or orange and blue, which colorblind readers tell apart.
+   * Default: `DiffwisePalette.Default`.
+   */
+  readonly diffPalette?: DiffwisePalette;
   /**
    * Style of changed words: all have the same background, and a style can add lines in the
    * accent color. Default: `DiffwiseHighlightStyle.Outline`.
@@ -216,6 +222,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** In automatic mode, the dark mode marker of the app, such as `.dark`; `null` follows the system. */
   readonly darkModeSelector: string | null = null;
+
+  /** Colors of changes: red and green, or colorblind-friendly orange and blue. */
+  readonly diffPalette: DiffwisePalette = DiffwisePalette.Default;
 
   /** Style of changed words. */
   readonly highlightStyle: DiffwiseHighlightStyle = DiffwiseHighlightStyle.Outline;

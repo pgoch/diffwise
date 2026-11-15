@@ -12,6 +12,7 @@ import {
   DiffwiseGapStyle,
   DiffwiseLanguage,
   DiffwiseNoChangesView,
+  DiffwisePalette,
   DiffwiseTooltipColorMode,
   DiffwiseVersionHeaders,
 } from './config/option-values';
@@ -59,6 +60,7 @@ const HOST_CLASS = 'diffwise-html-diff';
 const GRAY_GAP_CLASS = 'diffwise-html-diff--gap-style-gray';
 const STRONGER_CONTRAST_CLASS = 'diffwise-html-diff--ui-contrast-4';
 const STRONGEST_INTENSITY_CLASS = 'diffwise-html-diff--diff-intensity-5';
+const COLORBLIND_PALETTE_CLASS = 'diffwise-html-diff--diff-palette-colorblind';
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
 const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
@@ -650,6 +652,20 @@ describe('DiffwiseHtmlDiff', () => {
     expect(light.classList).toContain(STRONGEST_INTENSITY_CLASS);
     expect(dark.style.getPropertyValue(ADDED_ACCENT_VARIABLE)).toBe('#5eead4');
     expect(dark.classList).not.toContain(STRONGEST_INTENSITY_CLASS);
+  });
+
+  it('shows the colorblind palette of the global configuration, and its own palette wins over it', () => {
+    TestBed.configureTestingModule({
+      providers: [provideDiffwise({ diffPalette: DiffwisePalette.Colorblind })],
+    });
+
+    const globalPalette = renderElement(ONE_LINE_HTML, ONE_LINE_HTML);
+    const ownPalette = renderElement(ONE_LINE_HTML, ONE_LINE_HTML, {
+      diffPalette: DiffwisePalette.Default,
+    });
+
+    expect(globalPalette.classList).toContain(COLORBLIND_PALETTE_CLASS);
+    expect(ownPalette.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
   });
 
   it('sets the font of the app on its element', () => {

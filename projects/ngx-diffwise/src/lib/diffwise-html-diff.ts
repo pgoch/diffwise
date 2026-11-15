@@ -68,6 +68,7 @@ import {
   type DiffwiseLevel,
   type DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
+  type DiffwisePalette,
   type DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -319,6 +320,9 @@ export class DiffwiseHtmlDiff {
   /** The app's dark mode marker, such as `.dark`; wins over `config` and the global configuration. */
   readonly darkModeSelector = input<string | null>();
 
+  /** Colors of changes; wins over `config` and the global configuration. */
+  readonly diffPalette = input<DiffwisePalette>();
+
   /** Style of changed words; wins over `config` and the global configuration. */
   readonly highlightStyle = input<DiffwiseHighlightStyle>();
 
@@ -533,6 +537,7 @@ export class DiffwiseHtmlDiff {
   private readonly inputOptions = computed<DiffwiseConfigOptions>(() => ({
     colorMode: this.colorMode(),
     darkModeSelector: this.darkModeSelector(),
+    diffPalette: this.diffPalette(),
     highlightStyle: this.highlightStyle(),
     diffIntensity: this.diffIntensity(),
     uiContrast: this.uiContrast(),

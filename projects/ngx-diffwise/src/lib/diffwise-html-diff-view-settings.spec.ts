@@ -5,6 +5,7 @@ import {
   DiffwiseColorMode,
   DiffwiseLanguage,
   DiffwiseLayout,
+  DiffwisePalette,
   DiffwiseUserSetting,
 } from './config/option-values';
 import { Diffwise } from './diffwise';
@@ -32,6 +33,7 @@ const TOOLTIP_TITLE_SELECTOR = '.diffwise-html-diff__tooltip-title';
 const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
 const STACKED_CLASS = 'diffwise-html-diff--inline-diff-style-stacked';
 const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
+const COLORBLIND_PALETTE_CLASS = 'diffwise-html-diff--diff-palette-colorblind';
 const PRESSED_SELECTOR = '[aria-pressed="true"]';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const ARIA_LABELLEDBY_ATTRIBUTE = 'aria-labelledby';
@@ -192,22 +194,25 @@ describe('DiffwiseHtmlDiff view settings', () => {
     const groups = Array.from(element.querySelectorAll(GROUP_SELECTOR));
 
     expect(textsOf(element, GROUP_LABEL_SELECTOR)).toEqual([
+      'Theme',
+      'Colors of changes',
       'Layout',
       'Changes in a single column',
-      'Theme',
     ]);
     expect(textsOf(element, CHOICE_SELECTOR)).toEqual([
+      'Auto',
+      'Light',
+      'Dark',
+      'Standard',
+      'Colorblind-friendly',
       'Auto',
       'Side by side',
       'Single column',
       'Merged',
       'Struck through',
       'Stacked',
-      'Auto',
-      'Light',
-      'Dark',
     ]);
-    expect(chosenOf(element)).toEqual(['Auto', 'Merged', 'Light']);
+    expect(chosenOf(element)).toEqual(['Light', 'Standard', 'Auto', 'Merged']);
     expect(textsOf(element, CHECKBOX_SELECTOR)).toEqual(['Hide unchanged lines']);
     expect(textsOf(element, RESET_SELECTOR)).toEqual(['Restore defaults']);
 
@@ -217,9 +222,15 @@ describe('DiffwiseHtmlDiff view settings', () => {
     }
   });
 
-  it('changes the layout, the changes in a single column, the theme and the hidden lines', () => {
+  it('changes the theme, the colors of changes, the layout, the changes in a single column and the hidden lines', () => {
     const fixture = render({ colorMode: DiffwiseColorMode.Light });
     const element = elementOf(fixture);
+
+    choose(fixture, 'Dark');
+    expect(element.classList).toContain(DARK_THEME_CLASS);
+
+    choose(fixture, 'Colorblind-friendly');
+    expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
 
     choose(fixture, 'Single column');
     expect(element.classList).toContain(INLINE_LAYOUT_CLASS);
@@ -227,12 +238,22 @@ describe('DiffwiseHtmlDiff view settings', () => {
     choose(fixture, 'Stacked');
     expect(element.classList).toContain(STACKED_CLASS);
 
-    choose(fixture, 'Dark');
-    expect(element.classList).toContain(DARK_THEME_CLASS);
-
     toggleHiddenLines(fixture);
     expect(element.querySelectorAll(COLLAPSED_LINES_SELECTOR)).toHaveLength(2);
-    expect(chosenOf(element)).toEqual(['Single column', 'Stacked', 'Dark']);
+    expect(chosenOf(element)).toEqual(['Dark', 'Colorblind-friendly', 'Single column', 'Stacked']);
+  });
+
+  it('lets a choice of the colors of changes win over the palette of the app', () => {
+    const fixture = render({ diffPalette: DiffwisePalette.Colorblind });
+    const element = elementOf(fixture);
+
+    expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
+    expect(chosenOf(element)).toContain('Colorblind-friendly');
+
+    choose(fixture, 'Standard');
+
+    expect(element.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
+    expect(chosenOf(element)).toContain('Standard');
   });
 
   it('lets a choice win over an input of the diff and the global configuration', () => {
@@ -260,13 +281,15 @@ describe('DiffwiseHtmlDiff view settings', () => {
 
     choose(fixture, 'Single column');
     choose(fixture, 'Light');
+    choose(fixture, 'Colorblind-friendly');
     toggleHiddenLines(fixture);
     restoreDefaults(fixture);
 
     expect(element.classList).not.toContain(INLINE_LAYOUT_CLASS);
     expect(element.classList).toContain(DARK_THEME_CLASS);
+    expect(element.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
     expect(element.querySelector(COLLAPSED_LINES_SELECTOR)).toBeNull();
-    expect(chosenOf(element)).toEqual(['Side by side', 'Merged', 'Dark']);
+    expect(chosenOf(element)).toEqual(['Dark', 'Standard', 'Side by side', 'Merged']);
   });
 
   it('shows only the options the app allows, and a choice of another option does nothing there', () => {
@@ -392,20 +415,23 @@ describe('DiffwiseHtmlDiff view settings', () => {
     expect(viewButtonOf(element)?.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Widok');
     expect(viewSettingsOf(element)?.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Ustawienia widoku');
     expect(textsOf(element, GROUP_LABEL_SELECTOR)).toEqual([
+      'Motyw',
+      'Kolory zmian',
       'Układ',
       'Zmiany w jednej kolumnie',
-      'Motyw',
     ]);
     expect(textsOf(element, CHOICE_SELECTOR)).toEqual([
+      'Auto',
+      'Jasny',
+      'Ciemny',
+      'Standardowe',
+      'Dla daltonistów',
       'Auto',
       'Obok siebie',
       'Jedna kolumna',
       'Scalone',
       'Przekreślone',
       'Jedna pod drugą',
-      'Auto',
-      'Jasny',
-      'Ciemny',
     ]);
     expect(textsOf(element, CHECKBOX_SELECTOR)).toEqual(['Ukryj niezmienione linie']);
     expect(textsOf(element, RESET_SELECTOR)).toEqual(['Przywróć domyślne']);

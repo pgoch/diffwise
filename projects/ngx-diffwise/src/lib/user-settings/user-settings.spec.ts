@@ -1,4 +1,9 @@
-import { DiffwiseColorMode, DiffwiseLayout, DiffwiseUserSetting } from '../config/option-values';
+import {
+  DiffwiseColorMode,
+  DiffwiseLayout,
+  DiffwisePalette,
+  DiffwiseUserSetting,
+} from '../config/option-values';
 import { choicesOfUserSettings, userSettingsOf, validUserChoices } from './user-settings';
 
 const WARN_METHOD = 'warn';
@@ -24,7 +29,11 @@ describe('validUserChoices', () => {
   });
 
   it('keeps the choices of the allowed options', () => {
-    const choices = { layout: DiffwiseLayout.Inline, hideUnchangedLines: true };
+    const choices = {
+      layout: DiffwiseLayout.Inline,
+      diffPalette: DiffwisePalette.Colorblind,
+      hideUnchangedLines: true,
+    };
 
     expect(validUserChoices(choices, ALL_SETTINGS)).toEqual(choices);
   });

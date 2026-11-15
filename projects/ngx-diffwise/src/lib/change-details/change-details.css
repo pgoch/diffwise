@@ -42,6 +42,31 @@
   --diffwise-tooltip-added-highlight: #ade6bb;
 }
 
+/* Changes in the tooltip in the colorblind-friendly palette, for each theme and tooltip colors. */
+:where(.diffwise-html-diff--diff-palette-colorblind) {
+  --diffwise-tooltip-removed-highlight: #ffc98f;
+  --diffwise-tooltip-added-highlight: #a9caff;
+}
+
+:where(.diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme) {
+  --diffwise-tooltip-removed-highlight: #7a4a12;
+  --diffwise-tooltip-added-highlight: #1e4fa3;
+}
+
+:where(
+  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--tooltip-color-mode-reversed
+) {
+  --diffwise-tooltip-removed-highlight: rgb(251 160 60 / 36%);
+  --diffwise-tooltip-added-highlight: rgb(120 165 255 / 40%);
+}
+
+:where(
+  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--tooltip-color-mode-reversed.diffwise-html-diff--dark-theme
+) {
+  --diffwise-tooltip-removed-highlight: #ffc98f;
+  --diffwise-tooltip-added-highlight: #a9caff;
+}
+
 /*
  * The column between the versions holds the icon of a row, at the first line of the text, like
  * the line numbers. The bottom padding has the extra 1px of every cell.

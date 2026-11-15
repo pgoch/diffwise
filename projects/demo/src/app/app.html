@@ -36,6 +36,12 @@
     Toggle dark mode
   </button>
   <demo-choice-buttons
+    label="Palette"
+    [choices]="palettes"
+    [value]="diffwise.config().diffPalette"
+    (chosen)="update({ diffPalette: $event })"
+  />
+  <demo-choice-buttons
     label="Changed words"
     [choices]="highlightStyles"
     [value]="diffwise.config().highlightStyle"

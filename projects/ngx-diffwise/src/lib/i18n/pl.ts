@@ -30,6 +30,9 @@ export const POLISH_TEXTS: UiTexts = {
   autoColorModeLabel: 'Auto',
   lightColorModeLabel: 'Jasny',
   darkColorModeLabel: 'Ciemny',
+  diffPaletteLabel: 'Kolory zmian',
+  defaultDiffPaletteLabel: 'Standardowe',
+  colorblindDiffPaletteLabel: 'Dla daltonistów',
   hideUnchangedLinesLabel: 'Ukryj niezmienione linie',
   resetUserSettingsLabel: 'Przywróć domyślne',
 
