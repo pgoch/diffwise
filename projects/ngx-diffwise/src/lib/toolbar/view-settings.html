@@ -1,0 +1,80 @@
+<button
+  #button
+  type="button"
+  class="diffwise-html-diff__view-button"
+  [attr.aria-label]="texts().viewButtonLabel"
+  [attr.aria-expanded]="isOpen()"
+  [attr.aria-controls]="viewSettingsId()"
+  [attr.popovertarget]="viewSettingsId()"
+>
+  <svg viewBox="0 0 16 16" aria-hidden="true">
+    <path
+      d="M7 13.25H3a1.75 1.75 0 0 1-1.75-1.75v-7A1.75 1.75 0 0 1 3 2.75h10a1.75 1.75 0 0 1 1.75 1.75V7"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.4"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <path d="M1.25 5.75h13.5" fill="none" stroke="currentColor" stroke-width="1.4" />
+    <path
+      d="M10.56 8.73L10.68 7.72A3.75 3.75 0 0 1 12.12 7.72L12.24 8.73A2.8 2.8 0 0 1 13.29 9.34L14.23 8.94A3.75 3.75 0 0 1 14.95 10.18L14.13 10.79A2.8 2.8 0 0 1 14.13 12.01L14.95 12.62A3.75 3.75 0 0 1 14.23 13.86L13.29 13.46A2.8 2.8 0 0 1 12.24 14.07L12.12 15.08A3.75 3.75 0 0 1 10.68 15.08L10.56 14.07A2.8 2.8 0 0 1 9.51 13.46L8.57 13.86A3.75 3.75 0 0 1 7.85 12.62L8.67 12.01A2.8 2.8 0 0 1 8.67 10.79L7.85 10.18A3.75 3.75 0 0 1 8.57 8.94L9.51 9.34A2.8 2.8 0 0 1 10.56 8.73ZM12.55 11.4a1.15 1.15 0 1 0 -2.3 0a1.15 1.15 0 1 0 2.3 0Z"
+      fill="currentColor"
+      fill-rule="evenodd"
+    />
+  </svg>
+</button>
+
+<div
+  #viewSettings
+  class="diffwise-html-diff__view-settings"
+  popover="auto"
+  role="dialog"
+  tabindex="-1"
+  [id]="viewSettingsId()"
+  [attr.aria-label]="texts().viewSettingsLabel"
+  (toggle)="followToggle($event)"
+>
+  @for (group of choiceGroups(); track group.setting) {
+    <div
+      class="diffwise-html-diff__view-settings-group"
+      role="group"
+      [attr.aria-labelledby]="group.labelId"
+    >
+      <div class="diffwise-html-diff__view-settings-label" [id]="group.labelId">
+        {{ group.label }}
+      </div>
+
+      @for (choice of group.choices; track choice.value) {
+        <button
+          type="button"
+          class="diffwise-html-diff__view-settings-choice"
+          [attr.aria-pressed]="choice.isChosen"
+          [disabled]="group.isDisabled"
+          (click)="choose(group.setting, choice.value)"
+        >
+          {{ choice.label }}
+        </button>
+      }
+    </div>
+  }
+
+  @if (showsHideUnchangedLines()) {
+    <label class="diffwise-html-diff__view-settings-checkbox">
+      <input
+        type="checkbox"
+        [checked]="config().hideUnchangedLines"
+        (change)="chooseHideUnchangedLines($event)"
+      />
+      {{ texts().hideUnchangedLinesLabel }}
+    </label>
+  }
+
+  <button
+    type="button"
+    class="diffwise-html-diff__view-settings-reset"
+    (click)="settingsReset.emit()"
+  >
+    {{ texts().resetUserSettingsLabel }}
+  </button>
+</div>

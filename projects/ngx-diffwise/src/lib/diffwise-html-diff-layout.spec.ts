@@ -7,6 +7,7 @@ import {
   DiffwiseInlineDiffStyle,
   DiffwiseLanguage,
   DiffwiseLayout,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
 } from './config/option-values';
 import { DiffwiseHtmlDiff } from './diffwise-html-diff';
@@ -62,6 +63,9 @@ const SCROLL_EVENT = 'scroll';
 const OLD = 'old';
 const NEW = 'new';
 const MERGED = 'merged';
+const REQUEST_IDLE_CALLBACK = 'requestIdleCallback';
+const CANCEL_IDLE_CALLBACK = 'cancelIdleCallback';
+const PARSE_FROM_STRING = 'parseFromString';
 
 /** One line removed, one unchanged, one changed and one added. */
 const OLD_TERMS_HTML = '<p>Old intro.</p><p>Terms of use.</p><p>Reply within 24 hours.</p>';
@@ -118,6 +122,29 @@ class FakeResizeObserver {
       observer.report();
     }
   }
+}
+
+/** Tasks waiting for the browser to be idle, by their handles; tests run them instead. */
+const idleTasks = new Map<number, () => void>();
+let lastIdleHandle = 0;
+
+function requestIdleTask(task: () => void): number {
+  lastIdleHandle++;
+  idleTasks.set(lastIdleHandle, task);
+
+  return lastIdleHandle;
+}
+
+function cancelIdleTask(handle: number): void {
+  idleTasks.delete(handle);
+}
+
+/** Runs the waiting tasks, as an idle browser does. */
+function runIdleTasks(): void {
+  const tasks = Array.from(idleTasks.values());
+
+  idleTasks.clear();
+  tasks.forEach((task) => task());
 }
 
 /** A diff to render, and the width its element has before it is first shown. */
@@ -252,6 +279,8 @@ function tooltipTitleOf(element: HTMLElement) {
 
 beforeEach(() => {
   vi.stubGlobal(RESIZE_OBSERVER, FakeResizeObserver);
+  vi.stubGlobal(REQUEST_IDLE_CALLBACK, requestIdleTask);
+  vi.stubGlobal(CANCEL_IDLE_CALLBACK, cancelIdleTask);
   vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
 });
 
@@ -260,6 +289,7 @@ afterEach(() => {
   vi.restoreAllMocks();
   FakeResizeObserver.watching.clear();
   openPopovers.clear();
+  idleTasks.clear();
 });
 
 describe('DiffwiseHtmlDiff layout', () => {
@@ -653,5 +683,64 @@ describe('DiffwiseHtmlDiff merged lines', () => {
     mergedRow.dispatchEvent(new Event(SCROLL_EVENT));
 
     expect(lines.map((line) => line.scrollLeft)).toEqual([80, 80, 80, 80]);
+  });
+});
+
+describe('DiffwiseHtmlDiff merged lines prepared ahead', () => {
+  it('compares the versions with merged lines while the browser is idle, so the first single column compares nothing', async () => {
+    const fixture = render({ options: { layout: DiffwiseLayout.SideBySide } });
+    const parse = vi.spyOn(DOMParser.prototype, PARSE_FROM_STRING);
+
+    await fixture.whenStable();
+    expect(idleTasks.size).toBe(1);
+
+    runIdleTasks();
+    expect(parse).toHaveBeenCalled();
+
+    parse.mockClear();
+    fixture.componentRef.setInput(LAYOUT_INPUT, DiffwiseLayout.Inline);
+    fixture.detectChanges();
+
+    expect(parse).not.toHaveBeenCalled();
+    expect(textsOf(fixture.nativeElement, MERGED_CONTENT_SELECTOR)).toEqual([MERGED_REPLY]);
+  });
+
+  it('prepares the new versions after a new comparison, and drops the waiting task', async () => {
+    const fixture = render({ options: { layout: DiffwiseLayout.SideBySide } });
+
+    await fixture.whenStable();
+    const [firstHandle] = idleTasks.keys();
+
+    fixture.componentRef.setInput(NEW_HTML_INPUT, OLD_TERMS_HTML.replace('24', '72'));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(idleTasks.has(firstHandle)).toBe(false);
+    expect(idleTasks.size).toBe(1);
+  });
+
+  it('prepares nothing once the diff shows merged lines', async () => {
+    const fixture = render({ options: { layout: DiffwiseLayout.Inline } });
+
+    await fixture.whenStable();
+
+    expect(idleTasks.size).toBe(0);
+  });
+
+  it('prepares nothing when the diff cannot show merged lines, or the versions are the same', async () => {
+    const sideBySideOnly = {
+      layout: DiffwiseLayout.SideBySide,
+      allowedUserSettings: [DiffwiseUserSetting.ColorMode],
+    };
+    const stackedOnly = {
+      inlineDiffStyle: DiffwiseInlineDiffStyle.Stacked,
+      allowedUserSettings: [DiffwiseUserSetting.Layout],
+    };
+
+    await render({ options: sideBySideOnly }).whenStable();
+    await render({ options: stackedOnly }).whenStable();
+    await render({ newHtml: OLD_TERMS_HTML }).whenStable();
+
+    expect(idleTasks.size).toBe(0);
   });
 });

@@ -55,7 +55,20 @@
     [texts]="texts()"
     (previousChange)="goToPreviousChange()"
     (nextChange)="goToNextChange()"
-  />
+  >
+    @if (showsViewSettings()) {
+      <diffwise-view-settings
+        [idPrefix]="idPrefix"
+        [allowed]="allowedSettings()"
+        [config]="effectiveConfig()"
+        [showsSingleColumn]="showsSingleColumn()"
+        [texts]="texts()"
+        (settingsChange)="changeUserSettings($event)"
+        (settingsReset)="resetUserSettings()"
+        (opened)="hideTooltip()"
+      />
+    }
+  </diffwise-diff-toolbar>
 }
 
 @if (showsDocumentOnce()) {

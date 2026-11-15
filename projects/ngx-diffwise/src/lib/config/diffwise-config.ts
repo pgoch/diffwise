@@ -18,6 +18,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -114,6 +115,12 @@ export interface DiffwiseConfigOptions {
    * versions as usual. Default: `DiffwiseNoChangesView.Message`.
    */
   readonly noChangesView?: DiffwiseNoChangesView;
+  /**
+   * Options the user can change in the view settings of the toolbar; an empty list hides the
+   * button. The choices of the user win over every level of the configuration. Default: all of
+   * `DiffwiseUserSetting`.
+   */
+  readonly allowedUserSettings?: readonly DiffwiseUserSetting[];
   /** A gray column or a line between the versions. Default: `DiffwiseDividerStyle.Column`. */
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
@@ -183,6 +190,11 @@ const NO_CUSTOM_TEXTS: DiffwiseCustomTexts = Object.freeze({});
 /** Colors of changes of a config that sets none. */
 const NO_DIFF_COLORS: DiffwiseDiffColors = Object.freeze({});
 
+/** Every option the user can change, which the view settings show by default. */
+const ALL_USER_SETTINGS: readonly DiffwiseUserSetting[] = Object.freeze(
+  Object.values(DiffwiseUserSetting),
+);
+
 /**
  * Options of Diffwise with their defaults. A config changes only the options given to it,
  * so the config of one diff keeps the other options of the global configuration.
@@ -247,6 +259,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** What shows under the text that the versions are the same. */
   readonly noChangesView: DiffwiseNoChangesView = DiffwiseNoChangesView.Message;
+
+  /** Options the user can change in the view settings of the toolbar. */
+  readonly allowedUserSettings: readonly DiffwiseUserSetting[] = ALL_USER_SETTINGS;
 
   /** What stands between the two versions. */
   readonly dividerStyle: DiffwiseDividerStyle = DiffwiseDividerStyle.Column;

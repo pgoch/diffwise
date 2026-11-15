@@ -15,6 +15,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from './option-values';
@@ -43,6 +44,12 @@ const DEFAULT_OPTIONS = {
   activeChangeStyle: DiffwiseActiveChangeStyle.Outline,
   showDiffStats: true,
   noChangesView: DiffwiseNoChangesView.Message,
+  allowedUserSettings: [
+    DiffwiseUserSetting.Layout,
+    DiffwiseUserSetting.InlineDiffStyle,
+    DiffwiseUserSetting.ColorMode,
+    DiffwiseUserSetting.HideUnchangedLines,
+  ],
   dividerStyle: DiffwiseDividerStyle.Column,
   gapStyle: DiffwiseGapStyle.Stripes,
   versionHeaders: DiffwiseVersionHeaders.Default,

@@ -309,6 +309,27 @@
     </p>
   }
 
+  <h2>View settings</h2>
+  <p class="demo-hint">What the user can change with the button at the end of the toolbar.</p>
+  @for (setting of userSettings; track setting.value) {
+    <label class="demo-check">
+      <input
+        type="checkbox"
+        [checked]="isAllowed(setting.value)"
+        (change)="allowUserSetting(setting.value, isChecked($event))"
+      />
+      {{ setting.label }}
+    </label>
+  }
+  <p class="demo-hint">
+    A choice in the view settings wins over this panel; “Restore defaults” brings the panel back.
+  </p>
+  @if (lastUserSettings()) {
+    <p class="demo-hint" aria-live="polite">
+      From the last choice: <code>{{ lastUserSettingsText() }}</code>
+    </p>
+  }
+
   <h2>Comparison</h2>
   <label class="demo-check">
     <input
@@ -347,13 +368,14 @@
 <main class="demo-main">
   @if (sample.error()) {
     <p role="alert">The sample could not be loaded.</p>
-  } @else if (sample.value(); as pair) {
+  } @else if (shownSample(); as pair) {
     <div class="demo-diff" [style.max-width]="diffWidth()">
       <diffwise-html-diff
         [oldHtml]="pair.oldHtml"
         [newHtml]="comparesSameVersions() ? pair.oldHtml : pair.newHtml"
         [language]="interfaceLanguage()"
         (diffStatsComputed)="lastStats.set($event)"
+        (userSettingsChange)="lastUserSettings.set($event)"
       />
     </div>
   }

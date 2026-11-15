@@ -47,6 +47,38 @@ export interface DiffwiseCustomTexts {
   readonly currentChangeLabel?: string;
   /** Names the counter before the first step; `{count}` stands for the number of blocks. */
   readonly changeCountLabel?: string;
+  /** Names the button of the view settings in the toolbar and titles its tooltip. */
+  readonly viewButtonLabel?: string;
+  /** Names the view settings for screen readers. */
+  readonly viewSettingsLabel?: string;
+  /** Names the choice of the layout in the view settings. */
+  readonly layoutLabel?: string;
+  /** The automatic layout: a single column in a narrow diff. */
+  readonly autoLayoutLabel?: string;
+  /** The versions side by side. */
+  readonly sideBySideLayoutLabel?: string;
+  /** A single column. */
+  readonly inlineLayoutLabel?: string;
+  /** Names the choice of how the single column shows a changed line. */
+  readonly inlineDiffStyleLabel?: string;
+  /** A changed line merged into one line. */
+  readonly mergedInlineDiffLabel?: string;
+  /** A merged line with removed text struck through. */
+  readonly strikethroughInlineDiffLabel?: string;
+  /** The old line above the new one. */
+  readonly stackedInlineDiffLabel?: string;
+  /** Names the choice of the theme. */
+  readonly colorModeLabel?: string;
+  /** The theme of the system or of the app. */
+  readonly autoColorModeLabel?: string;
+  /** The light theme. */
+  readonly lightColorModeLabel?: string;
+  /** The dark theme. */
+  readonly darkColorModeLabel?: string;
+  /** Names the checkbox that hides unchanged lines far from changes. */
+  readonly hideUnchangedLinesLabel?: string;
+  /** Names the button that takes back the choices of the user. */
+  readonly resetUserSettingsLabel?: string;
 
   /** Titles a tooltip about changed formatting, such as italic → bold, and names its icon. */
   readonly formattingChangeLabel?: string;

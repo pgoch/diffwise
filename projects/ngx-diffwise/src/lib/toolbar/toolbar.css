@@ -1,7 +1,8 @@
 /*
- * The toolbar above the diff: arrows between the blocks of changes and the numbers of changed
- * lines, or a text that the versions are the same. It stays at the top of the scrolled area; an
- * app with its own sticky header moves it down by the height of the header.
+ * The toolbar above the diff: arrows between the blocks of changes, the numbers of changed lines
+ * and the button of the view settings, or a text that the versions are the same. It stays at the
+ * top of the scrolled area; an app with its own sticky header moves it down by the height of the
+ * header.
  */
 
 :where(.diffwise-html-diff) {

@@ -83,9 +83,13 @@
   font-size: 13px;
 }
 
+/*
+ * The diff starts at the top of the page, so its toolbar does not move up when it sticks there,
+ * and the arrows stay under the pointer.
+ */
 .demo-main {
   min-width: 0;
-  padding: 28px 32px 80px;
+  padding: 0 32px 80px;
 }
 
 /* On a narrow screen the panel goes above the diff. */

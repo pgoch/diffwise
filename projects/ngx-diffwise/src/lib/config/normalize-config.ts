@@ -20,6 +20,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
+  DiffwiseUserSetting,
   DiffwiseVersionHeaders,
   type DiffwiseVersionHeaderTexts,
   DiffwiseVerticalAlignment,
@@ -65,6 +66,8 @@ const Warning = {
   InvalidThemeColors: 'Diffwise ignores the colors of "%s": the value %o is not an object.',
   UnknownColor: 'Diffwise ignores the color "%s": no color has this name.',
   InvalidColor: 'Diffwise ignores the color "%s": the value %o is not a CSS color.',
+  UnknownUserSetting:
+    'Diffwise ignores %o in "allowedUserSettings": the user cannot change such an option.',
 } as const;
 
 /** Checks of the values each option takes. */
@@ -89,6 +92,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   activeChangeStyle: isActiveChangeStyle,
   showDiffStats: isBoolean,
   noChangesView: isNoChangesView,
+  allowedUserSettings: isList,
   dividerStyle: isDividerStyle,
   gapStyle: isGapStyle,
   versionHeaders: isVersionHeaders,
@@ -118,6 +122,7 @@ type ItemCheck = (value: object) => object;
 const ITEM_CHECKS: Readonly<Partial<Record<keyof DiffwiseConfigOptions, ItemCheck>>> = {
   diffColors: validDiffColors,
   customTexts: validCustomTexts,
+  allowedUserSettings: validUserSettings,
 };
 
 /**
@@ -174,6 +179,10 @@ function isText(value: unknown): value is string {
 
 function isNumber(value: unknown): value is number {
   return typeof value === NUMBER_TYPE;
+}
+
+function isList(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value);
 }
 
 function isObject(value: unknown): value is object {
@@ -397,6 +406,25 @@ function validCustomTexts(customTexts: object): DiffwiseCustomTexts {
   }
 
   return validTexts;
+}
+
+/** Each option of the list once, in the order of the list; in development mode, warns about others. */
+function validUserSettings(settings: object): DiffwiseUserSetting[] {
+  const validSettings = new Set<DiffwiseUserSetting>();
+
+  for (const setting of settings as readonly unknown[]) {
+    if (isUserSetting(setting)) {
+      validSettings.add(setting);
+    } else {
+      warn(Warning.UnknownUserSetting, setting);
+    }
+  }
+
+  return Array.from(validSettings);
+}
+
+function isUserSetting(value: unknown): value is DiffwiseUserSetting {
+  return isValueOf(DiffwiseUserSetting, value);
 }
 
 /** True for the name of a text of the interface; English has every text. */
