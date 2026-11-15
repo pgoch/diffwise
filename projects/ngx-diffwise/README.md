@@ -1,8 +1,8 @@
 # ngx-diffwise
 
-Side-by-side diffs of rendered HTML for Angular. Diffwise shows two versions of a document side by side, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked.
+Side-by-side diffs of rendered HTML for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A toolbar steps between the changes, counts them, and lets your users choose the layout and the theme.
 
-> Version 0.3, an early preview. The API may change before 1.0.
+> Version 0.4, an early preview. The API may change before 1.0.
 
 ## Installation
 
@@ -29,7 +29,13 @@ export class PolicyHistory {
 }
 ```
 
-Every option, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).
+After each comparison, `(diffStatsComputed)` emits the numbers of changed lines, and `hasChanges` is `false` when the versions are the same:
+
+```html
+<diffwise-html-diff [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
+```
+
+Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).
 
 ## License
 

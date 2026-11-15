@@ -1,10 +1,10 @@
 # Configuration
 
-This page describes version 0.3. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.4. Diffwise works without any setup: every option has a default, and you set only what you want to change.
 
 ## Where to set options
 
-Options come from three levels. For each option, the most specific level that sets it wins.
+Options come from three levels of your app. For each option, the most specific level that sets it wins. Above them all stand the choices of the user in the view settings of the toolbar; see [Settings for the user](#settings-for-the-user).
 
 1. **One diff.** Each option is also an input of the component. The `config` input takes several options at once; a single input wins over the same option in `config`.
 
@@ -32,6 +32,8 @@ Options come from three levels. For each option, the most specific level that se
    ```
 
 An option that no level sets keeps its default. Each level changes only the options it sets, so a diff with its own `showLineNumbers` still follows the global `colorMode`.
+
+In short, from the strongest: a choice of the user in the view settings, a single input of the diff, the `config` input, the global configuration, the default.
 
 ### Values
 
@@ -74,15 +76,26 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 | `lineNumberAlignment` | `DiffwiseVerticalAlignment.Top`, `Middle`, `Bottom` | `Top` | Where a number sits next to a line of several rows of text: at its first row, in the middle or at its last row |
 | `highlightChangedLines` | `true`, `false` | `true` | Gives changed lines a light background. A table row gets none, so its cells keep their colors |
 | `highlightWholeLines` | `true`, `false` | `false` | Works only when `highlightChangedLines` is `false`. Then `true` marks an added or a removed line as a whole, like changed words, and `false` leaves the change to its number. In a list, it marks the item alone, so its marker and indentation stay. The cells of an added or a removed table row are marked with either value |
+| `hideUnchangedLines` | `true`, `false` | `false` | Hides unchanged lines far from changes behind a bar, such as "Show hidden lines: 12". A click on the bar shows them. Changed, added and removed lines always show |
+| `contextLines` | `1` to `100` | `3` | With `hideUnchangedLines`, the unchanged lines that stay shown above and below each change |
+
+Hidden lines are not rendered at all, so a long document with few changes opens faster. A single unchanged line is never hidden, as its bar would take as much room. Lines the user has shown stay shown until the versions or the options of the comparison change, or until `hideUnchangedLines` or `contextLines` changes. With `dividerStyle: 'line'`, the bar is a small button on the line between the versions, "Hidden lines: 12".
 
 ### Layout
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
+| `layout` | `DiffwiseLayout.Auto`, `SideBySide`, `Inline` | `Auto` | The versions side by side, or a single column. `Auto` shows a single column while the diff is narrower than `layoutBreakpoint`, and switches as its width changes |
+| `layoutBreakpoint` | a number above `0`, in pixels | `768` | The width of the diff under which `Auto` shows a single column. It is the width of the component, not of the window, so a diff in a narrow panel of a wide page shows a single column too |
+| `inlineDiffStyle` | `DiffwiseInlineDiffStyle.Merged`, `Strikethrough`, `Stacked` | `Merged` | How the single column shows a changed line: one line with the removed text right before the added text that replaced it, the same with the removed text struck through, or the old line above the new one |
 | `dividerStyle` | `DiffwiseDividerStyle.Column`, `Line` | `Column` | A gray column or a thin line between the versions |
 | `gapStyle` | `DiffwiseGapStyle.Stripes`, `Gray`, `Empty` | `Stripes` | What fills the place opposite an added or a removed line: diagonal stripes, a gray background, or an empty line |
 | `versionHeaders` | `DiffwiseVersionHeaders.Default`, `Icons`, `None`, or `{ old, new }` | `Default` | Headers above the versions: "Previous version" and "New version", icons named by these texts, no headers, or your own texts, such as `{ old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' }` |
 | `versionHeaderAlignment` | `DiffwiseAlignment.Start`, `Center`, `End` | `Center` | Where the headers sit in their columns. Start and end follow the direction of the text |
+
+Until the diff knows its width, `Auto` shows the versions side by side. The single column shows each line once: an unchanged line in its new version, under the numbers of both versions; a removed line under its old number; an added line under its new one. Two columns of numbers stand before the content, with "before" and "after" icons above them, named by `oldVersionLabel` and `newVersionLabel`. With `versionHeaders: 'default'`, the header above the content says "Content after changes"; with your own texts, it shows both, as in "Version 3 → Version 4". The icons of changes stand in a narrow column next to the content.
+
+A merged line keeps the formatting of both versions: the removed text in its own formatting, where it stood in the old line. A changed image shows as the old and the new image with an arrow between them, and a changed list marker or checkbox shows its old version before the new one. A row of a table merges into one row with the columns of both versions. A pair of lines that cannot merge into valid HTML stays as the old line above the new one.
 
 ### Change details
 
@@ -106,8 +119,26 @@ A tooltip shows on hover, and when its icon or marked change gets the focus from
 | `versionHeaderFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the headers |
 | `lineNumberFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the line numbers. Their column and the column between the versions, with its icons, grow with it |
 | `tooltipFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the tooltips |
+| `toolbarFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the toolbar and the view settings |
 
-The content keeps the font size of your app. The tooltips have the font of the diff.
+The content keeps the font size of your app. The tooltips, the toolbar and the view settings have the font of the diff.
+
+### Toolbar
+
+A toolbar stands above the diff and stays at the top of the nearest scrolling area while the page scrolls. It has arrows between the changes with a counter, the numbers of changed lines, and at its end the button of the view settings. In a narrow diff, its parts wrap to a second line.
+
+| Option | Values | Default | What it does |
+|---|---|---|---|
+| `showNavigationToolbar` | `true`, `false` | `true` | Shows the arrows to the previous and the next block of changes, and the counter between them, such as "2 / 3" |
+| `activeChangeStyle` | `DiffwiseActiveChangeStyle.Outline`, `Indicator` | `Outline` | How the block the navigation has stepped to shows: a frame around it, or an arrow at the number of its first line |
+| `showDiffStats` | `true`, `false` | `true` | Shows the numbers of added, removed and changed lines, such as "+3 −1 ~10" |
+| `noChangesView` | `DiffwiseNoChangesView.Message`, `Document`, `Diff` | `Message` | When the versions are the same, the toolbar says "No changes", and this option sets what stands under it: nothing, the document once, or both versions as usual |
+
+The view settings have options of their own; see [Settings for the user](#settings-for-the-user). Without the arrows, the numbers and the view settings, there is no toolbar, except the one that says "No changes".
+
+**Navigation.** A step leads to a block of adjacent changed lines, so a passage rewritten across several lines is one step. The first step down goes to the first block, and the first step up to the last one; after the last block comes the first again. The block scrolls to the middle of the window, or to its top when it is taller than the window, and the toolbar never covers it. The scroll is smooth over a short distance and a jump over a long one, and always a jump when the system asks for less motion. The focus stays on the arrow, and screen readers hear "Change 2 of 3". Before the first step, the counter shows "– / 3". When the versions or the options of the comparison change, the navigation starts again before the first step.
+
+**Numbers.** They count lines, as the line numbers do: an added line, a removed line, and a changed pair as one changed line. Each number has a tooltip, such as "Added lines: 3", which also names it for screen readers.
 
 ### Comparison
 
@@ -126,6 +157,68 @@ Only these options compare the versions again; the other options change only the
 |---|---|---|---|
 | `language` | `DiffwiseLanguage.Auto`, `EN`, `PL` | `Auto` | Language of the interface. `Auto` takes the language of your app from `LOCALE_ID`, without the region, so `pl-PL` gives Polish. A language the interface has no texts in gives English |
 | `customTexts` | `DiffwiseCustomTexts`, or `null` | none | Your own texts of the interface; see [Your own texts](#your-own-texts) |
+
+### View settings
+
+| Option | Values | Default | What it does |
+|---|---|---|---|
+| `allowedUserSettings` | a list of `DiffwiseUserSetting.Layout`, `InlineDiffStyle`, `ColorMode`, `HideUnchangedLines` | all four | The options the user can change in the view settings. An empty list hides their button |
+| `rememberUserSettings` | `true`, `false` | `false` | Keeps the choices of the user in `localStorage`, so they stay after a reload |
+| `userSettingsKey` | a name, or `null` | `null` | The name under which diffs keep the choices of the user. `null` takes the base path of your app, such as `/` or `/admin/` |
+
+## Settings for the user
+
+The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the layout, the look of changed lines in the single column, the theme, and whether to hide unchanged lines; "Restore defaults" takes the choices back. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
+
+**A choice of the user wins** over every level of your app, also over a change your app makes later. "Restore defaults" brings the options of your app back. If your app has its own theme switch, take `colorMode` out of `allowedUserSettings`, so the two do not compete:
+
+```ts
+provideDiffwise({
+  allowedUserSettings: [
+    DiffwiseUserSetting.Layout,
+    DiffwiseUserSetting.InlineDiffStyle,
+    DiffwiseUserSetting.HideUnchangedLines,
+  ],
+});
+```
+
+Only the allowed options show in the view settings, and a choice of another option does nothing, also one remembered from before. The values are the names of the options, so `['layout', 'colorMode']` works too. When the versions are the same, the toolbar shows only "No changes", without the button.
+
+**Diffs share the choices** under the same `userSettingsKey`. By default, all diffs of your app have the same key, its base path, so a choice in one diff changes the others too, as a theme of the app does. To keep the choices of a diff apart, give it a key of its own, such as `[userSettingsKey]="'contract-history'"`.
+
+**Remembered choices.** With `rememberUserSettings`, the choices are saved in `localStorage` after each change, and read when the first diff with their key starts, also after a reload. Choices made before remembering was turned on are saved at once. Only the choices go there, never the documents, under the entry `diffwise:user-settings:` followed by the key, such as `diffwise:user-settings:/`, as JSON in the same format as `DiffwiseUserSettings`. The key keeps apart the choices of apps on one domain. Without `localStorage`, such as when the browser blocks it or it is full, diffs work as usual and keep the choices until a reload. Saved choices in a format this version of Diffwise cannot read are ignored, with a warning in development mode. Diffs with one key should have the same `rememberUserSettings`, so set it in the global configuration.
+
+**Choices in your app.** To keep the choices elsewhere, such as in the account of the user, take them from the `(userSettingsChange)` event, and give them back with `importUserSettings()` of the `Diffwise` service:
+
+```ts
+@Component({
+  selector: 'app-contract-history',
+  imports: [DiffwiseHtmlDiff],
+  template: `
+    <diffwise-html-diff
+      [oldHtml]="previous()"
+      [newHtml]="current()"
+      (userSettingsChange)="account.saveDiffSettings($event)"
+    />
+  `,
+})
+export class ContractHistory {
+  readonly previous = input.required<string>();
+  readonly current = input.required<string>();
+  private readonly diffwise = inject(Diffwise);
+  protected readonly account = inject(AccountSettings);
+
+  constructor() {
+    const saved = this.account.diffSettings();
+
+    if (saved) {
+      this.diffwise.importUserSettings(saved);
+    }
+  }
+}
+```
+
+`DiffwiseUserSettings` is a plain object with the number of its format and the chosen options under their names, such as `{ version: 1, settings: { layout: 'inline', colorMode: 'dark' } }`. Options the user has not chosen are left out.
 
 ## Your own colors
 
@@ -211,6 +304,69 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `paragraphLabel` | paragraph | akapit | Text that is not a heading, as in "paragraph → heading 2" |
 | `alignLeftLabel`, `alignCenterLabel`, `alignRightLabel`, `alignJustifyLabel` | left, center, right, justified | do lewej, do środka, do prawej, do obu krawędzi | Values of the alignment; rare values, such as `start`, show as CSS writes them |
 
+### Texts of the single column and hidden lines
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `inlineContentLabel` | Content after changes | Treść po zmianach | The header above the content of the single column |
+| `showHiddenLinesLabel` | Show hidden lines: {count} | Pokaż ukryte linie: {count} | The bar in place of hidden lines; `{count}` stands for their number |
+| `hiddenLinesLabel` | Hidden lines: {count} | Ukryte linie: {count} | The same bar as a button on the line between the versions, with `dividerStyle: 'line'` |
+
+### Texts of the toolbar
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `addedLinesLabel`, `removedLinesLabel`, `changedLinesLabel` | Added lines: {count}, Removed lines: {count}, Changed lines: {count} | Dodane linie: {count}, Usunięte linie: {count}, Zmienione linie: {count} | The tooltips and the names of the numbers, such as "+3" |
+| `noChangesLabel` | No changes | Brak zmian | The only text of the toolbar when the versions are the same |
+| `previousChangeLabel`, `nextChangeLabel` | Previous change, Next change | Poprzednia zmiana, Następna zmiana | The names and the tooltips of the arrows |
+| `currentChangeLabel` | Change {current} of {total} | Zmiana {current} z {total} | The tooltip of the counter, such as "2 / 3", and what screen readers hear after each step |
+| `changeCountLabel` | Changes: {count} | Zmiany: {count} | The tooltip of the counter before the first step, "– / 3" |
+
+### Texts of the view settings
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `viewButtonLabel` | View | Widok | The name and the tooltip of the button that opens the view settings |
+| `viewSettingsLabel` | View settings | Ustawienia widoku | The name of the view settings for screen readers |
+| `layoutLabel` | Layout | Układ | The name of the layout |
+| `autoLayoutLabel`, `sideBySideLayoutLabel`, `inlineLayoutLabel` | Auto, Side by side, Single column | Auto, Obok siebie, Jedna kolumna | Its values |
+| `inlineDiffStyleLabel` | Changes in a single column | Zmiany w jednej kolumnie | The name of the look of changed lines in the single column |
+| `mergedInlineDiffLabel`, `strikethroughInlineDiffLabel`, `stackedInlineDiffLabel` | Merged, Struck through, Stacked | Scalone, Przekreślone, Jedna pod drugą | Its values |
+| `colorModeLabel` | Theme | Motyw | The name of the theme |
+| `autoColorModeLabel`, `lightColorModeLabel`, `darkColorModeLabel` | Auto, Light, Dark | Auto, Jasny, Ciemny | Its values |
+| `hideUnchangedLinesLabel` | Hide unchanged lines | Ukryj niezmienione linie | The checkbox of hidden lines |
+| `resetUserSettingsLabel` | Restore defaults | Przywróć domyślne | The button that takes the choices back |
+
+## Events and methods of the diff
+
+| Member | What it does |
+|---|---|
+| `(diffStatsComputed)` | Emits `DiffwiseDiffStats` after each comparison: when the versions or the options of the comparison change. Options of the look do not compare the versions again, so they emit nothing |
+| `(userSettingsChange)` | Emits `DiffwiseUserSettings` after each choice of the user in the view settings of this diff, and after "Restore defaults", with all choices under its key. Changes made by your app emit nothing |
+| `goToNextChange()`, `goToPreviousChange()` | Step to the next or the previous block of changes and scroll it into view, as the arrows do, also when the arrows are hidden |
+
+`DiffwiseDiffStats` has the numbers of the toolbar, `addedLines`, `removedLines` and `changedLines`, and `hasChanges`, which is `false` when the versions are the same. It tells your app whether there is anything to show:
+
+```ts
+@Component({
+  selector: 'app-policy-history',
+  imports: [DiffwiseHtmlDiff],
+  template: `
+    @if (stats(); as stats) {
+      <p>{{ stats.hasChanges ? stats.changedLines + ' changed lines' : 'Nothing changed' }}</p>
+    }
+    <diffwise-html-diff [oldHtml]="previous()" [newHtml]="current()" (diffStatsComputed)="stats.set($event)" />
+  `,
+})
+export class PolicyHistory {
+  readonly previous = input.required<string>();
+  readonly current = input.required<string>();
+  protected readonly stats = signal<DiffwiseDiffStats | null>(null);
+}
+```
+
+To call the methods, take the diff with `viewChild(DiffwiseHtmlDiff)`.
+
 ## The `Diffwise` service
 
 | Member | What it does |
@@ -219,8 +375,11 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `updateConfig(changes)` | Changes the given options of the global configuration; the diffs follow at once |
 | `switchToDarkMode()`, `switchToLightMode()`, `switchToAutoMode()` | Set `colorMode` of the global configuration |
 | `toggleDarkMode()` | Switches to the theme opposite to the one the diffs show now |
+| `exportUserSettings(key?)` | The choices of the user under the key, as `DiffwiseUserSettings`: the same object as from `(userSettingsChange)` |
+| `importUserSettings(settings, key?)` | Gives the user the choices your app has kept, in place of the current ones; the diffs follow at once. It leaves out invalid values and options that `allowedUserSettings` of the global configuration does not allow, and ignores choices in a format of an unknown version. With `rememberUserSettings` in the global configuration, it saves them in `localStorage` too |
+| `resetUserSettings(key?)` | Takes back the choices of the user under the key, also from `localStorage` |
 
-A diff that sets an option through an input or `config` keeps its value when the global configuration changes.
+Without `key`, the methods take `userSettingsKey` of the global configuration, or the base path of your app. A diff that sets an option through an input or `config` keeps its value when the global configuration changes.
 
 ## Styling with CSS
 
@@ -259,11 +418,13 @@ diffwise-html-diff.diffwise-html-diff--dark-theme {
 | `--diffwise-tooltip-shadow` | Shadow of the tooltips |
 | `--diffwise-tooltip-removed-highlight`, `--diffwise-tooltip-added-highlight` | Backgrounds of the changed parts of the old and the new value in a tooltip |
 | `--diffwise-tooltip-font-size` | Font size of the tooltips |
-| `--diffwise-focus` | The outline of an icon or a marked change with the focus |
+| `--diffwise-focus` | The outline of an icon or a marked change with the focus, and the frame or the arrow of the block the navigation has stepped to |
+| `--diffwise-toolbar-font-size` | Font size of the toolbar and the view settings |
+| `--diffwise-toolbar-top` | How far from the top of the scrolling area the toolbar sticks; `0` by default. An app with its own sticky header puts the height of the header here, so the toolbar stays under it |
 
-The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize` and `tooltipFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
+The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize`, `tooltipFontSize` and `toolbarFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
 
-The tooltip shows in the top layer of the page, so no `overflow` of your app cuts it, but it stays inside the component element, and the variables reach it. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
+The tooltip and the view settings show in the top layer of the page, so no `overflow` of your app cuts them, but they stay inside the component element, and the variables reach them. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
 
 ```css
 diffwise-html-diff.diffwise-html-diff--tooltip-color-mode-reversed {
@@ -279,20 +440,45 @@ The component element shows the options in its classes:
 - The levels always have a class, such as `diffwise-html-diff--diff-intensity-3` and `diffwise-html-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
 - `diffwise-html-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
 - `diffwise-html-diff--dark-theme` shows the dark theme.
+- `diffwise-html-diff--layout-inline` shows the single column, also when `Auto` has chosen it, so the class follows the layout on the screen, not the value of the option.
+- `diffwise-html-diff--no-changes` says that the versions are the same, so your CSS can hide or restyle the diff then. It is a state, not an option.
+
+Options that only show or hide a part, such as `hideUnchangedLines`, `showNavigationToolbar` and `showDiffStats`, add no class, and neither do the options of the comparison and of the settings for the user.
 
 ### Parts of the view
 
 | Class | What it is |
 |---|---|
 | `diffwise-html-diff__version-headers` | The row of the headers |
-| `diffwise-html-diff__version-header`, with `--old` or `--new` | The header of one version |
+| `diffwise-html-diff__version-header`, with `--old` or `--new` | The header of one version; in the single column, the icon above its numbers |
+| `diffwise-html-diff__version-header--inline` | The header above the content of the single column |
 | `diffwise-html-diff__version-header-icon` | An icon in place of a header text |
 | `diffwise-html-diff__row`, with `--unchanged`, `--changed`, `--added` or `--removed` | One row of the view |
+| `diffwise-html-diff__row--active`, with `--active-first` and `--active-last` | The rows of the block the navigation has stepped to, and its first and its last row |
 | `diffwise-html-diff__line-number`, with `--old` or `--new` | The cell of a line number |
 | `diffwise-html-diff__line-number-value` | The number in that cell |
 | `diffwise-html-diff__content`, with `--old` or `--new` | The content of a line |
+| `diffwise-html-diff__content--merged` | The content of a merged line of the single column, with removed and added text at once |
+| `diffwise-html-diff__image-change-arrow` | The arrow between the old and the new image of a changed image in a merged line |
 | `diffwise-html-diff__divider` | The column between the versions |
+| `diffwise-html-diff__change-details-cell` | The narrow column of the icons of changes next to the content of the single column |
 | `diffwise-html-diff__gap` | The empty place opposite an added or a removed line |
+| `diffwise-html-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
+| `diffwise-html-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
+| `diffwise-html-diff__toolbar` | The toolbar above the diff |
+| `diffwise-html-diff__navigation` | The arrows with the counter |
+| `diffwise-html-diff__navigation-button`, with `--previous` or `--next` | An arrow |
+| `diffwise-html-diff__change-counter` | The counter, such as "2 / 3" |
+| `diffwise-html-diff__diff-stats` | The numbers of changed lines |
+| `diffwise-html-diff__diff-stat`, with `--added`, `--removed` or `--changed` | One number, such as "+3" |
+| `diffwise-html-diff__no-changes` | The text "No changes" in the toolbar |
+| `diffwise-html-diff__view-button` | The button that opens the view settings |
+| `diffwise-html-diff__view-settings` | The view settings, in the top layer of the page |
+| `diffwise-html-diff__view-settings-group` | One option with a choice of values: its name and its buttons |
+| `diffwise-html-diff__view-settings-label` | The name of an option, such as "Layout" |
+| `diffwise-html-diff__view-settings-choice` | The button of one value; the chosen one has `aria-pressed="true"` |
+| `diffwise-html-diff__view-settings-checkbox` | The option with a checkbox |
+| `diffwise-html-diff__view-settings-reset` | The button "Restore defaults" |
 | `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
 | `diffwise-html-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
 | `diffwise-html-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |

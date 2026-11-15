@@ -10,7 +10,7 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## What it will show
 
-Version 0.3 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes. The rest comes with the releases in the [roadmap](roadmap.md).
+Version 0.4 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. The rest comes with the releases in the [roadmap](roadmap.md).
 
 | Change | How it is shown |
 |---|---|
@@ -27,7 +27,7 @@ Version 0.3 shows changes of the text, the formatting, the links and the images 
 
 ## Display and configuration
 
-Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, and version 0.3 adds lists and tables; see [Configuration](configuration.md). The whole scope, with what is planned:
+Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, and version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user; see [Configuration](configuration.md). The whole scope, with what is planned:
 
 - **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
 - **Colors:** light, dark and automatic color modes, a colorblind-friendly palette, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
