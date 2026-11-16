@@ -94,6 +94,11 @@
                 "output": "test-data"
               },
               {
+                "glob": "**/*.txt",
+                "input": "test-data",
+                "output": "test-data"
+              },
+              {
                 "glob": "**/*",
                 "input": "test-data/images",
                 "output": "images"
