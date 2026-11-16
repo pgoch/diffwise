@@ -15,6 +15,7 @@ import {
 } from '../model';
 import { EditKind, myersDiff } from './myers';
 import { pairSimilarLines } from './pair-similar-lines';
+import { slideChanges } from './slide-changes';
 
 const WHITESPACE = /\s/g;
 const NO_TEXT = '';
@@ -26,7 +27,11 @@ interface FormatRun {
   readonly format: string;
 }
 
-/** Matches the lines of both versions as unchanged, changed, added or removed, in reading order. */
+/**
+ * Matches the lines of both versions as unchanged, changed, added or removed, in reading order.
+ * Changes slide over equal lines to meet the changes of the other version, so that a removed and
+ * an added line split apart by an equal line, such as a blank line, can pair up as changed.
+ */
 export function diffLines(
   oldLines: readonly Line[],
   newLines: readonly Line[],
@@ -42,10 +47,9 @@ export function diffLines(
     added = [];
   };
 
-  const edits = myersDiff(
-    oldLines.map((line) => lineKey(line, options)),
-    newLines.map((line) => lineKey(line, options)),
-  );
+  const oldKeys = oldLines.map((line) => lineKey(line, options));
+  const newKeys = newLines.map((line) => lineKey(line, options));
+  const edits = slideChanges(myersDiff(oldKeys, newKeys), oldKeys, newKeys);
 
   for (const edit of edits) {
     if (edit.kind === EditKind.Delete) {

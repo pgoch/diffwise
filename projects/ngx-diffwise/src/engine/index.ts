@@ -1,4 +1,5 @@
 export { diffHtml } from './diff-html';
+export { diffText } from './diff-text';
 export {
   CHANGE_DETAILS_ATTRIBUTE,
   type ChangeDetail,

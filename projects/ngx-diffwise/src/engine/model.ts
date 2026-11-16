@@ -2,7 +2,7 @@
 export const LineKind = {
   /** `h1` to `h6`. */
   Heading: 'heading',
-  /** `p`, a container with text only, or text outside any block. */
+  /** `p`, a container with text only, text outside any block, or a line of plain text. */
   Paragraph: 'paragraph',
   /** `li`, `dt` or `dd`, or the text of one next to its inner blocks, such as a nested list. */
   ListItem: 'listItem',
@@ -16,10 +16,13 @@ export const LineKind = {
 
 export type LineKind = (typeof LineKind)[keyof typeof LineKind];
 
-/** A block a reader sees as one unit; HTML has no lines of its own. */
+/**
+ * A line of a version: in HTML, a block a reader sees as one unit, as HTML has no lines of its own;
+ * in plain text, a line of the text.
+ */
 export interface Line {
   readonly kind: LineKind;
-  /** Block tag, such as `p` or `li`; `null` for text outside any block. */
+  /** Block tag, such as `p` or `li`; `null` for text outside any block and for plain text. */
   readonly tag: string | null;
   /** Text as a reader sees it; lines are compared by it. An image is one character of it. */
   readonly text: string;
@@ -29,7 +32,8 @@ export interface Line {
   readonly images: readonly LineImage[];
   /**
    * Sanitized HTML inside copies of its containers, such as a quote or a list; its ids are prefixed
-   * and appear only in the first line of their element.
+   * and appear only in the first line of their element. In plain text, the text with the characters
+   * of markup escaped.
    */
   readonly html: string;
   /** Marker of the list item that the line starts; `null` in other lines, or with no marker shown. */
@@ -290,6 +294,18 @@ export const TABLE_COPY_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}table-copy`
 /** Marks the copy of a cell from a row above, without content, in a lower row that it spans. */
 export const CONTINUED_CELL_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}continued-cell`;
 
+/**
+ * Marks the end of removed text in a merged line that added text replaces right after it; styles
+ * leave a gap between the two.
+ */
+export const REPLACED_TEXT_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}replaced`;
+
+/**
+ * Marks the space between removed text in a merged line and the added text that replaces it.
+ * Styles hide it, as the gap shows instead, but screen readers read it and copied text keeps it.
+ */
+export const HIDDEN_SPACE_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}hidden-space`;
+
 /** Part of a line's text to mark, and the change details its marker shows. */
 export interface MarkedRange extends TextRange {
   /** Positions in the row's change details; changed text has none. */
@@ -367,7 +383,10 @@ export interface ViewLine {
   readonly kind: LineKind;
   /** Position of the line in its version, counted from 1. */
   readonly number: number;
-  /** Sanitized HTML; in a changed line, changed text, formatting and images are marked. */
+  /**
+   * Sanitized HTML, or plain text with the characters of markup escaped; in a changed line, changed
+   * text, formatting and images are marked.
+   */
   readonly html: string;
   /** Position of the line's table among the tables of its version, from 0; `null` outside tables. */
   readonly table: number | null;
