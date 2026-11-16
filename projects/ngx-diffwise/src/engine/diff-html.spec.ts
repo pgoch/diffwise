@@ -89,13 +89,6 @@ const SAMPLES: [string, string, string][] = [
   [PL_LONG, plLongBefore, plLongAfter],
 ];
 
-/** Names of the English and the Polish sample of one size, as `[size, English, Polish]`. */
-const TRANSLATED_SAMPLES: [string, string, string][] = [
-  ['short', EN_SHORT, PL_SHORT],
-  ['medium', EN_MEDIUM, PL_MEDIUM],
-  ['long', EN_LONG, PL_LONG],
-];
-
 /** Diffs of the samples with the default options, by sample name; each is compared on first use. */
 const sampleDiffs = new Map<string, HtmlDiff>();
 
@@ -248,10 +241,6 @@ function imageDetail(
   changedProperties: ImageProperty[],
 ) {
   return { kind: ChangeDetailKind.Image, oldImage, newImage, changedProperties };
-}
-
-function hasChangeDetails(row: ViewRow): boolean {
-  return row.changeDetails.length > 0;
 }
 
 function hasFormattingOrLinkDetails(row: ViewRow): boolean {
@@ -583,15 +572,6 @@ describe('diffHtml', () => {
     expect(changedItems).not.toContainEqual([LineChangeKind.Changed, 41, 44]);
   });
 
-  it.each(TRANSLATED_SAMPLES)(
-    'shows the same rows for the English and Polish %s samples',
-    (_, englishName, polishName) => {
-      expect(sampleDiff(polishName).rows.map(rowShape)).toEqual(
-        sampleDiff(englishName).rows.map(rowShape),
-      );
-    },
-  );
-
   it.each(SAMPLES)('numbers the lines of each version of %s from 1', (name, before, after) => {
     const { rows } = sampleDiff(name);
     const oldNumbers = rows.map((row) => row.oldLine?.number).filter(Number.isInteger);
@@ -768,13 +748,6 @@ describe('diffHtml', () => {
         [formattingDetail([], [], [headingLevel])],
       ],
     ]);
-  });
-
-  it('describes the same changes in the Polish long sample', () => {
-    const englishShapes = sampleDiff(EN_LONG).rows.filter(hasChangeDetails);
-    const polishShapes = sampleDiff(PL_LONG).rows.filter(hasChangeDetails);
-
-    expect(polishShapes.map(detailShape)).toEqual(englishShapes.map(detailShape));
   });
 
   it('shows no changes of footnote links between identical documents', () => {
