@@ -78,8 +78,12 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-block: calc(5px + 0.8em - 0.915 * var(--diffwise-line-number-font-size))
-    calc(6px + 0.8em - 0.915 * var(--diffwise-line-number-font-size));
+  padding-block: calc(
+      var(--diffwise-line-padding-top) + 0.8em - 0.915 * var(--diffwise-line-number-font-size)
+    )
+    calc(
+      var(--diffwise-line-padding-bottom) + 0.8em - 0.915 * var(--diffwise-line-number-font-size)
+    );
 }
 
 .diffwise-diff--line-number-alignment-middle .diffwise-diff__divider {

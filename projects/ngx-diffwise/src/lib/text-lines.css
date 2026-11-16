@@ -1,0 +1,57 @@
+/*
+ * Lines of the text diff: spaces, tabs and indentation as in the text, in a font of fixed width.
+ * Lines stand closer than the paragraphs of the HTML diff, with almost no space above and below.
+ */
+
+/* Defaults of the variables; `:where()` makes them weaker than any selector of the app. */
+:where(diffwise-text) {
+  --diffwise-tab-size: 4;
+  --diffwise-text-font-family:
+    ui-monospace, 'Cascadia Mono', 'Segoe UI Mono', Consolas, 'SF Mono', Menlo, monospace;
+  --diffwise-line-padding-top: 1px;
+  --diffwise-line-padding-bottom: 2px;
+}
+
+/*
+ * The font is a little smaller than the font of the diff, as fonts of fixed width look larger.
+ * The line keeps the height of a line of the diff font, so the numbers stay in line with it.
+ */
+diffwise-text .diffwise-diff__content {
+  font-family: var(--diffwise-text-font-family);
+  font-size: 0.9em;
+  line-height: calc(1.6 / 0.9);
+  white-space: pre-wrap;
+  tab-size: var(--diffwise-tab-size);
+}
+
+/* An empty line keeps the height of a line of text. */
+diffwise-text .diffwise-diff__content:empty::after {
+  content: '\200b';
+}
+
+/*
+ * A space or a tab of changed text shows a sign over itself, so copied text keeps the space or
+ * the tab. Screen readers skip the sign.
+ */
+.diffwise-diff__whitespace {
+  position: relative;
+}
+
+.diffwise-diff__whitespace::before {
+  position: absolute;
+  inset-inline-start: 0;
+  color: var(--diffwise-muted);
+  pointer-events: none;
+}
+
+.diffwise-diff__whitespace--space::before {
+  content: '\b7';
+  content: '\b7' / '';
+  width: 100%;
+  text-align: center;
+}
+
+.diffwise-diff__whitespace--tab::before {
+  content: '\2192';
+  content: '\2192' / '';
+}

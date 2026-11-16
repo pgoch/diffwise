@@ -45,8 +45,12 @@
   align-items: flex-start;
   justify-content: center;
   margin-bottom: -1px;
-  padding-block: calc(5px + 0.8em - 0.915 * var(--diffwise-line-number-font-size))
-    calc(6px + 0.8em - 0.915 * var(--diffwise-line-number-font-size));
+  padding-block: calc(
+      var(--diffwise-line-padding-top) + 0.8em - 0.915 * var(--diffwise-line-number-font-size)
+    )
+    calc(
+      var(--diffwise-line-padding-bottom) + 0.8em - 0.915 * var(--diffwise-line-number-font-size)
+    );
   border-inline: 1px solid var(--diffwise-border);
   background: var(--diffwise-divider-background);
 }

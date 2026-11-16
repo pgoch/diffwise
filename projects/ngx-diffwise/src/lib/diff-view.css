@@ -87,6 +87,10 @@
     var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.25rem
   );
   --diffwise-divider-width: calc(2.67 * var(--diffwise-line-number-font-size));
+
+  /* Space above and below the text of a line; the numbers and the icons stay in line with it. */
+  --diffwise-line-padding-top: 5px;
+  --diffwise-line-padding-bottom: 6px;
 }
 
 .diffwise-diff {
@@ -327,8 +331,12 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding: calc(5px + 0.8em - 0.8 * var(--diffwise-line-number-font-size)) 0.5rem
-    calc(6px + 0.8em - 0.8 * var(--diffwise-line-number-font-size)) 0.75rem;
+  padding: calc(
+      var(--diffwise-line-padding-top) + 0.8em - 0.8 * var(--diffwise-line-number-font-size)
+    )
+    0.5rem
+    calc(var(--diffwise-line-padding-bottom) + 0.8em - 0.8 * var(--diffwise-line-number-font-size))
+    0.75rem;
   background: var(--diffwise-line-number-background);
   color: var(--diffwise-line-number-color);
   user-select: none;
@@ -435,7 +443,7 @@
 .diffwise-diff__content {
   min-width: 0;
   overflow-x: auto;
-  padding: 5px 16px 6px;
+  padding: var(--diffwise-line-padding-top) 16px var(--diffwise-line-padding-bottom);
   background: var(--diffwise-background);
   overflow-wrap: anywhere;
   contain: paint;
@@ -451,7 +459,8 @@
  */
 .diffwise-diff__row:not(:has(> [data-diffwise-table])) {
   content-visibility: auto;
-  contain-intrinsic-block-size: auto calc(1.6em + 11px);
+  contain-intrinsic-block-size: auto
+    calc(1.6em + var(--diffwise-line-padding-top) + var(--diffwise-line-padding-bottom));
   overflow-clip-margin: 1px;
 }
 
