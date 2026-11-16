@@ -10,7 +10,7 @@ import {
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
 } from './config/option-values';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -161,9 +161,9 @@ function setWidth(element: HTMLElement, width: number): void {
 }
 
 /** Renders the diff of the terms, or of the given versions, with its options. */
-function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtmlDiff> {
+function render(diff: RenderedDiff = {}): ComponentFixture<DiffwiseHtml> {
   const { oldHtml = OLD_TERMS_HTML, newHtml = NEW_TERMS_HTML, options = {}, width } = diff;
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
@@ -202,7 +202,7 @@ function renderMergedLines(diff: RenderedDiff = {}): HTMLElement {
 }
 
 /** Resizes the diff as the browser does: the observer reports it, and the diff shows it. */
-function resize(fixture: ComponentFixture<DiffwiseHtmlDiff>, width: number): void {
+function resize(fixture: ComponentFixture<DiffwiseHtml>, width: number): void {
   setWidth(fixture.nativeElement, width);
   FakeResizeObserver.reportResize();
   fixture.detectChanges();
@@ -292,7 +292,7 @@ afterEach(() => {
   idleTasks.clear();
 });
 
-describe('DiffwiseHtmlDiff layout', () => {
+describe('DiffwiseHtml layout', () => {
   it('shows the versions side by side in a wide diff, and while its width is not known', () => {
     expect(showsSingleColumn(render({ width: 768 }).nativeElement)).toBe(false);
     expect(showsSingleColumn(render().nativeElement)).toBe(false);
@@ -365,7 +365,7 @@ describe('DiffwiseHtmlDiff layout', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff single column', () => {
+describe('DiffwiseHtml single column', () => {
   it('shows each line once under its two numbers, and a changed pair as its old line above its new one', () => {
     expect(singleColumnRowsOf(renderSingleColumn())).toEqual([
       [LineChangeKind.Removed, OLD, 1, null, 'Old intro.'],
@@ -532,7 +532,7 @@ describe('DiffwiseHtmlDiff single column', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff merged lines', () => {
+describe('DiffwiseHtml merged lines', () => {
   it('shows a changed pair as one merged line under both of its numbers, by default', () => {
     const element: HTMLElement = render({
       options: { layout: DiffwiseLayout.Inline },
@@ -686,7 +686,7 @@ describe('DiffwiseHtmlDiff merged lines', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff merged lines prepared ahead', () => {
+describe('DiffwiseHtml merged lines prepared ahead', () => {
   it('compares the versions with merged lines while the browser is idle, so the first single column compares nothing', async () => {
     const fixture = render({ options: { layout: DiffwiseLayout.SideBySide } });
     const parse = vi.spyOn(DOMParser.prototype, PARSE_FROM_STRING);

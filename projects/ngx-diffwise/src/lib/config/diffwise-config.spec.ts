@@ -15,6 +15,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwisePalette,
+  DiffwiseTextFont,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -49,6 +50,7 @@ const DEFAULT_OPTIONS = {
   allowedUserSettings: [
     DiffwiseUserSetting.ColorMode,
     DiffwiseUserSetting.DiffPalette,
+    DiffwiseUserSetting.TextFont,
     DiffwiseUserSetting.Layout,
     DiffwiseUserSetting.InlineDiffStyle,
     DiffwiseUserSetting.HideUnchangedLines,
@@ -60,6 +62,7 @@ const DEFAULT_OPTIONS = {
   versionHeaders: DiffwiseVersionHeaders.Default,
   versionHeaderAlignment: DiffwiseAlignment.Center,
   fontFamily: DiffwiseFontFamily.Inherit,
+  textFont: DiffwiseTextFont.Monospace,
   versionHeaderFontSize: 0.75,
   lineNumberFontSize: 0.75,
   tooltipFontSize: 0.8,

@@ -71,6 +71,7 @@ import {
   type DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   type DiffwisePalette,
+  type DiffwiseTextFont,
   type DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -427,6 +428,12 @@ export abstract class DiffView {
   /** Font of the diff, or a font of the app; wins over `config` and the global configuration. */
   readonly fontFamily = input<string>();
 
+  /**
+   * Font of the lines of the text diff, of fixed width or the font of the diff; wins over `config`
+   * and the global configuration. The HTML diff does not use it.
+   */
+  readonly textFont = input<DiffwiseTextFont>();
+
   /** Font size of the headers in rem; wins over `config` and the global configuration. */
   readonly versionHeaderFontSize = input<number>();
 
@@ -551,6 +558,7 @@ export abstract class DiffView {
     versionHeaders: this.versionHeaders(),
     versionHeaderAlignment: this.versionHeaderAlignment(),
     fontFamily: this.fontFamily(),
+    textFont: this.textFont(),
     versionHeaderFontSize: this.versionHeaderFontSize(),
     lineNumberFontSize: this.lineNumberFontSize(),
     tooltipFontSize: this.tooltipFontSize(),
@@ -573,8 +581,22 @@ export abstract class DiffView {
     this.diffwise.config().with(this.config()).with(this.inputOptions()),
   );
 
-  /** Options the user can change in the view settings. */
-  protected readonly allowedSettings = computed(() => this.appConfig().allowedUserSettings);
+  /**
+   * True when the lines are lines of plain text, whose font the user can switch in the view
+   * settings.
+   */
+  protected readonly showsTextLines: boolean = false;
+
+  /** Options the user can change in the view settings: those of the app that this diff has. */
+  protected readonly allowedSettings = computed(() => {
+    const allowed = this.appConfig().allowedUserSettings;
+
+    if (this.showsTextLines) {
+      return allowed;
+    }
+
+    return allowed.filter((setting) => setting !== DiffwiseUserSetting.TextFont);
+  });
 
   /** Name under which the choices of the user are kept: the one of the app, or its base path. */
   private readonly settingsKey = computed(() =>

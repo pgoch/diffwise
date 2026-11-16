@@ -41,6 +41,9 @@ export const JAPANESE_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: '色覚に配慮',
   highContrastDiffPaletteLabel: 'ハイコントラスト',
   customDiffPaletteLabel: 'カスタム',
+  textFontLabel: 'テキストのフォント',
+  monospaceTextFontLabel: '等幅',
+  proportionalTextFontLabel: '標準',
   hideUnchangedLinesLabel: '変更のない行を非表示',
   resetUserSettingsLabel: '既定に戻す',
 

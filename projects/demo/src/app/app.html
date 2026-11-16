@@ -6,10 +6,16 @@
   </p>
 
   <h2>Sample</h2>
+  <demo-choice-buttons
+    label="Diff"
+    [choices]="diffKinds"
+    [value]="diffKind()"
+    (chosen)="chooseDiffKind($event)"
+  />
   <label class="demo-field">
     Language
     <select (change)="chooseSampleLanguage($event)">
-      @for (choice of languages; track choice.value) {
+      @for (choice of languages(); track choice.value) {
         <option [value]="choice.value" [selected]="choice.value === language()">
           {{ choice.label }}
         </option>
@@ -19,7 +25,7 @@
   <label class="demo-field">
     Interface language
     <select (change)="chooseInterfaceLanguage($event)">
-      @for (choice of languages; track choice.value) {
+      @for (choice of interfaceLanguages; track choice.value) {
         <option [value]="choice.value" [selected]="choice.value === interfaceLanguage()">
           {{ choice.label }}
         </option>
@@ -235,6 +241,13 @@
     [value]="fontChoice()"
     (chosen)="chooseFont($event)"
   />
+  <demo-choice-buttons
+    label="Text font"
+    [choices]="textFonts"
+    [value]="diffwise.config().textFont"
+    (chosen)="update({ textFont: $event })"
+  />
+  <p class="demo-hint">Only the text diff has a text font.</p>
   @if (fontChoice() === fontChoices.Custom) {
     <label class="demo-field">
       Font name
@@ -417,13 +430,23 @@
     <p role="alert">The sample could not be loaded.</p>
   } @else if (shownSample(); as pair) {
     <div class="demo-diff" [style.max-width]="diffWidth()">
-      <diffwise-html-diff
-        [oldHtml]="pair.oldHtml"
-        [newHtml]="comparesSameVersions() ? pair.oldHtml : pair.newHtml"
-        [language]="interfaceLanguage()"
-        (diffStatsComputed)="lastStats.set($event)"
-        (userSettingsChange)="lastUserSettings.set($event)"
-      />
+      @if (pair.kind === diffKindValues.Text) {
+        <diffwise-text
+          [oldText]="pair.oldVersion"
+          [newText]="comparesSameVersions() ? pair.oldVersion : pair.newVersion"
+          [language]="interfaceLanguage()"
+          (diffStatsComputed)="lastStats.set($event)"
+          (userSettingsChange)="lastUserSettings.set($event)"
+        />
+      } @else {
+        <diffwise-html
+          [oldHtml]="pair.oldVersion"
+          [newHtml]="comparesSameVersions() ? pair.oldVersion : pair.newVersion"
+          [language]="interfaceLanguage()"
+          (diffStatsComputed)="lastStats.set($event)"
+          (userSettingsChange)="lastUserSettings.set($event)"
+        />
+      }
     </div>
   }
 </main>

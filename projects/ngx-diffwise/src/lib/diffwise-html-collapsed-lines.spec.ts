@@ -7,7 +7,7 @@ import {
   DiffwiseLayout,
   DiffwiseNoChangesView,
 } from './config/option-values';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -70,8 +70,8 @@ function render(
   options: DiffwiseConfigOptions = {},
   oldHtml = OLD_HTML,
   newHtml = NEW_HTML,
-): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
   const inputs = { [HIDE_UNCHANGED_LINES_INPUT]: true, ...options };
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
@@ -86,7 +86,7 @@ function render(
   return fixture;
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
@@ -115,7 +115,7 @@ function numbers(first: number, last: number): number[] {
 
 /** Clicks the bar at the position among the bars and waits until the diff shows its lines. */
 async function showLinesOfBar(
-  fixture: ComponentFixture<DiffwiseHtmlDiff>,
+  fixture: ComponentFixture<DiffwiseHtml>,
   position: number,
 ): Promise<void> {
   const bar = elementOf(fixture).querySelectorAll<HTMLElement>(BAR_SELECTOR).item(position);
@@ -133,7 +133,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('DiffwiseHtmlDiff hidden lines', () => {
+describe('DiffwiseHtml hidden lines', () => {
   it('shows every line by default', () => {
     const element = elementOf(render({ hideUnchangedLines: false }));
 

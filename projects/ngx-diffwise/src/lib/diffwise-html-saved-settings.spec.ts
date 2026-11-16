@@ -6,7 +6,7 @@ import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import { DiffwiseColorMode, DiffwiseLayout, DiffwiseUserSetting } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
 import { Diffwise } from './diffwise';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 import type { DiffwiseUserSettings } from './user-settings/user-settings';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -40,8 +40,8 @@ const SINGLE_COLUMN_SETTINGS: DiffwiseUserSettings = {
 };
 
 /** Renders the diff of two versions with its options. */
-function render(options: DiffwiseConfigOptions = {}): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+function render(options: DiffwiseConfigOptions = {}): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, OLD_HTML);
   fixture.componentRef.setInput(NEW_HTML_INPUT, NEW_HTML);
@@ -56,7 +56,7 @@ function render(options: DiffwiseConfigOptions = {}): ComponentFixture<DiffwiseH
 }
 
 /** Clicks the button of a value in the view settings and lets the diff show the choice. */
-function choose(fixture: ComponentFixture<DiffwiseHtmlDiff>, text: string): void {
+function choose(fixture: ComponentFixture<DiffwiseHtml>, text: string): void {
   const choices = elementOf(fixture).querySelectorAll<HTMLButtonElement>(CHOICE_SELECTOR);
 
   Array.from(choices)
@@ -65,16 +65,16 @@ function choose(fixture: ComponentFixture<DiffwiseHtmlDiff>, text: string): void
   fixture.detectChanges();
 }
 
-function restoreDefaults(fixture: ComponentFixture<DiffwiseHtmlDiff>): void {
+function restoreDefaults(fixture: ComponentFixture<DiffwiseHtml>): void {
   elementOf(fixture).querySelector<HTMLElement>(RESET_SELECTOR)?.click();
   fixture.detectChanges();
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
-function showsSingleColumn(fixture: ComponentFixture<DiffwiseHtmlDiff>): boolean {
+function showsSingleColumn(fixture: ComponentFixture<DiffwiseHtml>): boolean {
   return elementOf(fixture).classList.contains(INLINE_LAYOUT_CLASS);
 }
 
@@ -102,7 +102,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe('DiffwiseHtmlDiff remembered choices', () => {
+describe('DiffwiseHtml remembered choices', () => {
   it('brings the choices back after a reload when the diff remembers them', () => {
     choose(render({ rememberUserSettings: true }), SINGLE_COLUMN_TEXT);
 

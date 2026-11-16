@@ -41,6 +41,9 @@ export const SPANISH_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Para daltónicos',
   highContrastDiffPaletteLabel: 'Alto contraste',
   customDiffPaletteLabel: 'Personalizados',
+  textFontLabel: 'Fuente del texto',
+  monospaceTextFontLabel: 'Ancho fijo',
+  proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Ocultar líneas sin cambios',
   resetUserSettingsLabel: 'Restablecer valores predeterminados',
 

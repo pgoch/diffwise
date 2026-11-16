@@ -2,7 +2,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import { DiffwiseInlineDiffStyle, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -43,8 +43,8 @@ function render(
   options: DiffwiseConfigOptions = {},
   oldHtml = OLD_HTML,
   newHtml = NEW_HTML,
-): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
@@ -58,7 +58,7 @@ function render(
   return fixture;
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
@@ -90,7 +90,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('DiffwiseHtmlDiff for screen readers', () => {
+describe('DiffwiseHtml for screen readers', () => {
   it('describes each changed line beside the other version, with its number', () => {
     const element = elementOf(render({ layout: DiffwiseLayout.SideBySide }));
 

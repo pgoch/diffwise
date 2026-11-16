@@ -3,7 +3,7 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import { DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 import { LANGUAGE_TEXTS, type UiLanguage, languageTag } from './i18n/resolve-language';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -25,8 +25,8 @@ const NEW_HTML =
 
 const LANGUAGES = Object.keys(LANGUAGE_TEXTS) as UiLanguage[];
 
-function render(options: DiffwiseConfigOptions): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+function render(options: DiffwiseConfigOptions): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, OLD_HTML);
   fixture.componentRef.setInput(NEW_HTML_INPUT, NEW_HTML);
@@ -48,7 +48,7 @@ function textsOf(element: HTMLElement, selector: string): (string | undefined)[]
   return Array.from(element.querySelectorAll(selector), (found) => found.textContent?.trim());
 }
 
-describe('DiffwiseHtmlDiff languages of the interface', () => {
+describe('DiffwiseHtml languages of the interface', () => {
   for (const language of LANGUAGES) {
     it(`shows the interface in the language "${language}", marked with its tag`, () => {
       const texts = LANGUAGE_TEXTS[language];

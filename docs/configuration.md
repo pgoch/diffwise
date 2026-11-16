@@ -9,8 +9,8 @@ Options come from three levels of your app. For each option, the most specific l
 1. **One diff.** Each option is also an input of the component. The `config` input takes several options at once; a single input wins over the same option in `config`.
 
    ```html
-   <diffwise-html-diff [oldHtml]="previous" [newHtml]="current" [showLineNumbers]="false" />
-   <diffwise-html-diff [oldHtml]="previous" [newHtml]="current" [config]="compactView" />
+   <diffwise-html [oldHtml]="previous" [newHtml]="current" [showLineNumbers]="false" />
+   <diffwise-html [oldHtml]="previous" [newHtml]="current" [config]="compactView" />
    ```
 
 2. **All diffs, while the app runs.** `updateConfig()` of the `Diffwise` service changes the global configuration, and the diffs follow at once.
@@ -225,9 +225,9 @@ Only the allowed options show in the view settings, and a choice of another opti
 ```ts
 @Component({
   selector: 'app-contract-history',
-  imports: [DiffwiseHtmlDiff],
+  imports: [DiffwiseHtml],
   template: `
-    <diffwise-html-diff
+    <diffwise-html
       [oldHtml]="previous()"
       [newHtml]="current()"
       (userSettingsChange)="account.saveDiffSettings($event)"
@@ -400,12 +400,12 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 ```ts
 @Component({
   selector: 'app-policy-history',
-  imports: [DiffwiseHtmlDiff],
+  imports: [DiffwiseHtml],
   template: `
     @if (stats(); as stats) {
       <p>{{ stats.hasChanges ? stats.changedLines + ' changed lines' : 'Nothing changed' }}</p>
     }
-    <diffwise-html-diff [oldHtml]="previous()" [newHtml]="current()" (diffStatsComputed)="stats.set($event)" />
+    <diffwise-html [oldHtml]="previous()" [newHtml]="current()" (diffStatsComputed)="stats.set($event)" />
   `,
 })
 export class PolicyHistory {
@@ -415,7 +415,7 @@ export class PolicyHistory {
 }
 ```
 
-To call the methods, take the diff with `viewChild(DiffwiseHtmlDiff)`.
+To call the methods, take the diff with `viewChild(DiffwiseHtml)`.
 
 ## The `Diffwise` service
 
@@ -440,11 +440,11 @@ The component has no view encapsulation. Its classes start with `diffwise-diff` 
 Override the variables on the component element, with any selector. A value set higher up, such as on `<body>`, does not reach the diff, which has its own defaults.
 
 ```css
-diffwise-html-diff {
+diffwise-html {
   --diffwise-link: #0b57d0;
 }
 
-diffwise-html-diff.diffwise-diff--dark-theme {
+diffwise-html.diffwise-diff--dark-theme {
   --diffwise-link: #8ab4f8;
 }
 ```
@@ -479,7 +479,7 @@ The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize`, `toolti
 The tooltip and the view settings show in the top layer of the page, so no `overflow` of your app cuts them, but they stay inside the component element, and the variables reach them. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
 
 ```css
-diffwise-html-diff.diffwise-diff--tooltip-color-mode-reversed {
+diffwise-html.diffwise-diff--tooltip-color-mode-reversed {
   --diffwise-tooltip-background: #0b1f3a;
 }
 ```

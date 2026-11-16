@@ -11,6 +11,7 @@ const DEFAULT_CONFIG = new DiffwiseConfig();
  */
 const VALUE_MODIFIERS = {
   diffPalette: 'diffwise-diff--diff-palette-',
+  textFont: 'diffwise-diff--text-font-',
   highlightStyle: 'diffwise-diff--highlight-style-',
   inlineDiffStyle: 'diffwise-diff--inline-diff-style-',
   noChangesView: 'diffwise-diff--no-changes-view-',

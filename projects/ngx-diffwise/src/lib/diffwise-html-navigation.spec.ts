@@ -7,7 +7,7 @@ import {
   DiffwiseLanguage,
   DiffwiseLayout,
 } from './config/option-values';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -75,8 +75,8 @@ function render(
   options: DiffwiseConfigOptions = {},
   oldHtml = OLD_HTML,
   newHtml = NEW_HTML,
-): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
@@ -90,12 +90,12 @@ function render(
   return fixture;
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
 /** Clicks an arrow of the toolbar and waits until the diff has scrolled. */
-async function click(fixture: ComponentFixture<DiffwiseHtmlDiff>, selector: string) {
+async function click(fixture: ComponentFixture<DiffwiseHtml>, selector: string) {
   elementOf(fixture).querySelector<HTMLElement>(selector)?.click();
   await fixture.whenStable();
 }
@@ -141,7 +141,7 @@ afterEach(() => {
   openPopovers.clear();
 });
 
-describe('DiffwiseHtmlDiff navigation', () => {
+describe('DiffwiseHtml navigation', () => {
   it('shows arrows and the number of the blocks of changes before the first step', () => {
     const element = elementOf(render());
 

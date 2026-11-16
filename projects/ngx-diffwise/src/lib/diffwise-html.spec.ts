@@ -18,7 +18,7 @@ import {
 } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
 import { Diffwise } from './diffwise';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -165,7 +165,7 @@ function clickNewFootnoteLink(element: HTMLElement, options: MouseEventInit = {}
  * versions here, unless the options say otherwise.
  */
 function render(oldHtml: string, newHtml: string, inputs: OptionInputs = {}) {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+  const fixture = TestBed.createComponent(DiffwiseHtml);
   const allInputs = { noChangesView: DiffwiseNoChangesView.Diff, ...inputs };
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
@@ -287,17 +287,17 @@ function newMarkersOf(element: HTMLElement) {
 
 /** Two diffs of the same document on one page. */
 @Component({
-  imports: [DiffwiseHtmlDiff],
+  imports: [DiffwiseHtml],
   template: `
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
-    <diffwise-html-diff [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
+    <diffwise-html [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
+    <diffwise-html [oldHtml]="html" [newHtml]="html" noChangesView="diff" />
   `,
 })
 class TwoDiffs {
   protected readonly html = '<h2 id="plans">Plany</h2><p><a href="#plans">Zobacz plany</a></p>';
 }
 
-describe('DiffwiseHtmlDiff', () => {
+describe('DiffwiseHtml', () => {
   it('shows the headers of both versions', () => {
     const element = render('', '').nativeElement as HTMLElement;
 
@@ -688,7 +688,7 @@ describe('DiffwiseHtmlDiff', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff change details', () => {
+describe('DiffwiseHtml change details', () => {
   it('shows an icon between the versions for a change besides text, named by its kind', () => {
     const versions = [
       [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],

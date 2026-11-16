@@ -55,12 +55,12 @@ Import the component and give it both versions of the document:
 
 ```ts
 import { Component } from '@angular/core';
-import { DiffwiseHtmlDiff } from 'ngx-diffwise';
+import { DiffwiseHtml } from 'ngx-diffwise';
 
 @Component({
   selector: 'app-policy-history',
-  imports: [DiffwiseHtmlDiff],
-  template: `<diffwise-html-diff [oldHtml]="previous" [newHtml]="current" />`,
+  imports: [DiffwiseHtml],
+  template: `<diffwise-html [oldHtml]="previous" [newHtml]="current" />`,
 })
 export class PolicyHistory {
   protected readonly previous = '<h2>Returns</h2><p>You can return a product within 14 days.</p>';
@@ -90,13 +90,13 @@ The diff tells your app what it found. After each comparison, `(diffStatsCompute
 
 ```ts
 import { Component, signal } from '@angular/core';
-import { type DiffwiseDiffStats, DiffwiseHtmlDiff } from 'ngx-diffwise';
+import { type DiffwiseDiffStats, DiffwiseHtml } from 'ngx-diffwise';
 
 @Component({
   selector: 'app-policy-history',
-  imports: [DiffwiseHtmlDiff],
+  imports: [DiffwiseHtml],
   template: `
-    <diffwise-html-diff [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
+    <diffwise-html [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
     @if (stats()?.hasChanges === false) {
       <p>This version changed nothing.</p>
     }

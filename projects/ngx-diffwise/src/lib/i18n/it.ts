@@ -41,6 +41,9 @@ export const ITALIAN_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Per daltonici',
   highContrastDiffPaletteLabel: 'Contrasto elevato',
   customDiffPaletteLabel: 'Personalizzati',
+  textFontLabel: 'Carattere del testo',
+  monospaceTextFontLabel: 'Larghezza fissa',
+  proportionalTextFontLabel: 'Normale',
   hideUnchangedLinesLabel: 'Nascondi righe invariate',
   resetUserSettingsLabel: 'Ripristina predefiniti',
 

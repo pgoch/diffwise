@@ -41,6 +41,9 @@ export const HINDI_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'रंग-अंधता के अनुकूल',
   highContrastDiffPaletteLabel: 'उच्च कंट्रास्ट',
   customDiffPaletteLabel: 'कस्टम',
+  textFontLabel: 'टेक्स्ट फ़ॉन्ट',
+  monospaceTextFontLabel: 'निश्चित चौड़ाई',
+  proportionalTextFontLabel: 'सामान्य',
   hideUnchangedLinesLabel: 'बिना बदली पंक्तियाँ छिपाएँ',
   resetUserSettingsLabel: 'डिफ़ॉल्ट पुनर्स्थापित करें',
 

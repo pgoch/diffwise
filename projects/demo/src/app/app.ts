@@ -22,7 +22,7 @@ import {
   DiffwiseFontFamily,
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
-  DiffwiseHtmlDiff,
+  DiffwiseHtml,
   DiffwiseLanguage,
   DiffwiseInlineDiffStyle,
   DiffwiseLayout,
@@ -30,6 +30,8 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwisePalette,
+  DiffwiseText,
+  DiffwiseTextFont,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   type DiffwiseUserSettings,
@@ -55,12 +57,30 @@ const SampleSize = {
 
 type SampleSize = (typeof SampleSize)[keyof typeof SampleSize];
 
+/** Kinds of diff the demo shows; each compares its own samples. */
+const DiffKind = {
+  Html: 'html',
+  Text: 'text',
+} as const;
+
+type DiffKind = (typeof DiffKind)[keyof typeof DiffKind];
+
+const DIFF_KIND_CHOICES: readonly Choice<DiffKind>[] = [
+  { value: DiffKind.Html, label: 'HTML' },
+  { value: DiffKind.Text, label: 'Text' },
+];
+
 /** File names of the earlier and the later version of a sample. */
 const SAMPLE_FILES = ['before', 'after'];
 
 const SAMPLES_FOLDER = 'test-data';
+
+/** Folder of the plain text samples in `test-data/`. */
+const TEXT_SAMPLES_FOLDER = 'text';
+
 const PATH_SEPARATOR = '/';
 const HTML_EXTENSION = '.html';
+const TEXT_EXTENSION = '.txt';
 const LOAD_ERROR = 'Could not load a sample file.';
 
 /** Languages of the samples and of the diff interface, each named in itself. */
@@ -78,6 +98,13 @@ const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
   { value: DiffwiseLanguage.DE, label: 'Deutsch' },
   { value: DiffwiseLanguage.KO, label: '한국어' },
 ];
+
+/** Languages of the plain text samples. */
+const TEXT_SAMPLE_LANGUAGES: readonly SampleLanguage[] = [DiffwiseLanguage.EN, DiffwiseLanguage.PL];
+
+const TEXT_LANGUAGE_CHOICES = LANGUAGE_CHOICES.filter((choice) =>
+  TEXT_SAMPLE_LANGUAGES.includes(choice.value),
+);
 
 const SIZE_CHOICES: readonly Choice<SampleSize>[] = [
   { value: SampleSize.Short, label: 'Short' },
@@ -125,10 +152,10 @@ const INLINE_DIFF_STYLE_CHOICES: readonly Choice<DiffwiseInlineDiffStyle>[] = [
   { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
 ];
 
-/** The two versions of a sample. */
+/** The two versions of a sample, HTML documents or plain texts. */
 interface SamplePair {
-  readonly oldHtml: string;
-  readonly newHtml: string;
+  readonly oldVersion: string;
+  readonly newVersion: string;
 }
 
 /** Versions the demo compares: the two versions of the sample, or its old version with itself. */
@@ -138,6 +165,18 @@ const ComparedVersions = {
 } as const;
 
 type ComparedVersions = (typeof ComparedVersions)[keyof typeof ComparedVersions];
+
+/** A pair of samples with the kind of diff that shows it. */
+interface ShownSample extends SamplePair {
+  readonly kind: DiffKind;
+}
+
+/** What chooses a sample: the kind of diff, the language and the size. */
+interface SampleChoice {
+  readonly kind: DiffKind;
+  readonly language: SampleLanguage;
+  readonly size: SampleSize;
+}
 
 const COMPARED_VERSIONS_CHOICES: readonly Choice<ComparedVersions>[] = [
   { value: ComparedVersions.Different, label: 'Before and after' },
@@ -186,6 +225,7 @@ const JSON_INDENT = 2;
 const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
   { value: DiffwiseUserSetting.DiffPalette, label: 'Colors of changes' },
+  { value: DiffwiseUserSetting.TextFont, label: 'Text font' },
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
   { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
   { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
@@ -260,6 +300,11 @@ const FontChoice = {
 
 type FontChoice = (typeof FontChoice)[keyof typeof FontChoice];
 
+const TEXT_FONT_CHOICES: readonly Choice<DiffwiseTextFont>[] = [
+  { value: DiffwiseTextFont.Monospace, label: 'Fixed width' },
+  { value: DiffwiseTextFont.Proportional, label: 'Regular' },
+];
+
 const FONT_CHOICES: readonly Choice<FontChoice>[] = [
   { value: FontChoice.App, label: 'App' },
   { value: FontChoice.Builtin, label: 'Built-in' },
@@ -291,13 +336,16 @@ const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
 
 @Component({
   selector: 'demo-root',
-  imports: [ChoiceButtons, DiffwiseHtmlDiff],
+  imports: [ChoiceButtons, DiffwiseHtml, DiffwiseText],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected readonly languages = LANGUAGE_CHOICES;
+  protected readonly diffKinds = DIFF_KIND_CHOICES;
+  protected readonly interfaceLanguages = LANGUAGE_CHOICES;
+  protected readonly diffKindValues = DiffKind;
+  protected readonly textFonts = TEXT_FONT_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
   protected readonly colorModes = COLOR_MODE_CHOICES;
   protected readonly palettes = PALETTE_CHOICES;
@@ -324,6 +372,14 @@ export class App {
 
   /** Changes the global configuration while the app runs; the panel shows its values. */
   protected readonly diffwise = inject(Diffwise);
+
+  /** The kind of diff, which compares the HTML samples or the plain text samples. */
+  protected readonly diffKind = signal<DiffKind>(DiffKind.Html);
+
+  /** Languages of the samples of the kind of diff. */
+  protected readonly languages = computed(() =>
+    this.diffKind() === DiffKind.Text ? TEXT_LANGUAGE_CHOICES : LANGUAGE_CHOICES,
+  );
 
   protected readonly language = signal<SampleLanguage>(DiffwiseLanguage.EN);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
@@ -363,8 +419,11 @@ export class App {
   /** Why the last import failed; `null` after an import that worked. */
   protected readonly choicesError = signal<string | null>(null);
 
+  private readonly htmlDiff = viewChild(DiffwiseHtml);
+  private readonly textDiff = viewChild(DiffwiseText);
+
   /** The diff of the sample, whose methods step between the blocks of changes. */
-  private readonly diff = viewChild(DiffwiseHtmlDiff);
+  private readonly diff = computed(() => this.htmlDiff() ?? this.textDiff());
 
   /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
@@ -375,16 +434,16 @@ export class App {
   /** The chosen font, from the global configuration. */
   protected readonly fontChoice = computed(() => fontChoiceOf(this.diffwise.config().fontFamily));
 
-  /** The selected pair of sample documents from `test-data/`. */
+  /** The selected pair of samples from `test-data/`: HTML documents or plain texts. */
   protected readonly sample = resource({
-    params: () => ({ language: this.language(), size: this.size() }),
+    params: () => ({ kind: this.diffKind(), language: this.language(), size: this.size() }),
     loader: async ({ params, abortSignal }) => {
-      const paths = SAMPLE_FILES.map((file) => samplePath(params.language, params.size, file));
-      const [oldHtml, newHtml] = await Promise.all(
+      const paths = SAMPLE_FILES.map((file) => samplePath(params, file));
+      const [oldVersion, newVersion] = await Promise.all(
         paths.map((path) => loadText(path, abortSignal)),
       );
 
-      return { oldHtml, newHtml };
+      return { kind: params.kind, oldVersion, newVersion };
     },
   });
 
@@ -392,7 +451,7 @@ export class App {
    * The last loaded sample. It stays while another one loads, so the diff stays on the page and
    * gets the new versions, as in an app that changes the documents of a diff.
    */
-  protected readonly shownSample = linkedSignal<SamplePair | undefined, SamplePair | undefined>({
+  protected readonly shownSample = linkedSignal<ShownSample | undefined, ShownSample | undefined>({
     source: () => (this.sample.hasValue() ? this.sample.value() : undefined),
     computation: (pair, previous) => pair ?? previous?.value,
   });
@@ -465,6 +524,20 @@ export class App {
   /** Takes back every choice of the user, also from localStorage. */
   protected resetChoices(): void {
     this.diffwise.resetUserSettings();
+  }
+
+  /**
+   * Shows the samples of the kind of diff; a language without plain text samples gives way to
+   * English. The language of the interface stays.
+   */
+  protected chooseDiffKind(kind: DiffKind): void {
+    const hasSamples = kind === DiffKind.Html || TEXT_SAMPLE_LANGUAGES.includes(this.language());
+
+    this.diffKind.set(kind);
+
+    if (!hasSamples) {
+      this.language.set(DiffwiseLanguage.EN);
+    }
   }
 
   /** Shows the sample in the chosen language, with the interface in the same language. */
@@ -582,9 +655,16 @@ function selectedValueOf(event: Event): string {
   return (event.target as HTMLSelectElement).value;
 }
 
-/** Path of a sample file, such as `test-data/en/short/before.html`. */
-function samplePath(language: SampleLanguage, size: SampleSize, file: string): string {
-  return [SAMPLES_FOLDER, language, size, file + HTML_EXTENSION].join(PATH_SEPARATOR);
+/**
+ * Path of a sample file, such as `test-data/en/short/before.html`, or
+ * `test-data/text/en/short/before.txt` for a plain text sample.
+ */
+function samplePath({ kind, language, size }: SampleChoice, file: string): string {
+  const isText = kind === DiffKind.Text;
+  const folders = isText ? [SAMPLES_FOLDER, TEXT_SAMPLES_FOLDER] : [SAMPLES_FOLDER];
+  const extension = isText ? TEXT_EXTENSION : HTML_EXTENSION;
+
+  return [...folders, language, size, file + extension].join(PATH_SEPARATOR);
 }
 
 async function loadText(path: string, abortSignal: AbortSignal): Promise<string> {

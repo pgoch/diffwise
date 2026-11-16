@@ -18,6 +18,7 @@ import {
   DiffwiseInlineDiffStyle,
   DiffwiseLayout,
   DiffwisePalette,
+  DiffwiseTextFont,
   DiffwiseUserSetting,
 } from '../config/option-values';
 import type { UiTexts } from '../i18n/texts';
@@ -27,6 +28,7 @@ import type { UserChoices } from '../user-settings/user-settings';
 type ChoiceSetting =
   | typeof DiffwiseUserSetting.ColorMode
   | typeof DiffwiseUserSetting.DiffPalette
+  | typeof DiffwiseUserSetting.TextFont
   | typeof DiffwiseUserSetting.Layout
   | typeof DiffwiseUserSetting.InlineDiffStyle;
 
@@ -72,6 +74,14 @@ const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
       { value: CUSTOM_COLORS_CHOICE, label: 'customDiffPaletteLabel' },
     ],
     isInPairs: true,
+  },
+  {
+    setting: DiffwiseUserSetting.TextFont,
+    label: 'textFontLabel',
+    choices: [
+      { value: DiffwiseTextFont.Monospace, label: 'monospaceTextFontLabel' },
+      { value: DiffwiseTextFont.Proportional, label: 'proportionalTextFontLabel' },
+    ],
   },
   {
     setting: DiffwiseUserSetting.Layout,

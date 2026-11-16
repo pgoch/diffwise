@@ -18,6 +18,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwisePalette,
+  DiffwiseTextFont,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -153,6 +154,12 @@ export interface DiffwiseConfigOptions {
    * such as `'Inter'`. Default: `DiffwiseFontFamily.Inherit`.
    */
   readonly fontFamily?: string;
+  /**
+   * Font of the lines of the text diff: a font of fixed width, which keeps indentation and columns
+   * in line, or the font of the diff. The HTML diff does not use it. Default:
+   * `DiffwiseTextFont.Monospace`.
+   */
+  readonly textFont?: DiffwiseTextFont;
   /** Font size of the headers in rem, from 0.5 to 10. Default: `0.75`. */
   readonly versionHeaderFontSize?: number;
   /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
@@ -306,6 +313,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Font of the diff: the one of the app, a built-in one, or the name of a font the app loads. */
   readonly fontFamily: string = DiffwiseFontFamily.Inherit;
+
+  /** Font of the lines of the text diff: of fixed width, or the font of the diff. */
+  readonly textFont: DiffwiseTextFont = DiffwiseTextFont.Monospace;
 
   /** Font size of the headers in rem. */
   readonly versionHeaderFontSize: number = 0.75;

@@ -125,7 +125,7 @@
   content: '';
 }
 
-.demo-diff diffwise-html-diff {
+.demo-diff :is(diffwise-html, diffwise-text) {
   --diffwise-toolbar-top: var(--demo-toolbar-gap);
 }
 

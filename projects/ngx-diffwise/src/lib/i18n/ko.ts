@@ -41,6 +41,9 @@ export const KOREAN_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: '색각 이상 배려',
   highContrastDiffPaletteLabel: '고대비',
   customDiffPaletteLabel: '사용자 지정',
+  textFontLabel: '텍스트 글꼴',
+  monospaceTextFontLabel: '고정 폭',
+  proportionalTextFontLabel: '보통',
   hideUnchangedLinesLabel: '변경되지 않은 줄 숨기기',
   resetUserSettingsLabel: '기본값으로 복원',
 

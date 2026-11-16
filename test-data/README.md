@@ -207,4 +207,4 @@ With `ignoreWhitespace`, the changes of whitespace above are not changes: indent
 - Use only `example.com` addresses.
 - Keep `before` and `after` identical apart from the changes listed above, and update this list when you change a sample.
 - Change a sample in every language at once, so that all of them keep the same structure and the same changes.
-- Keep the tabs and the spaces at the end of lines in the plain text samples: they are part of the changes. An editor that removes spaces at the end of lines when it saves a file breaks the samples.
+- Keep the tabs and the spaces at the end of lines in the plain text samples: they are part of the changes. `.editorconfig` tells editors to keep them; an editor that removes spaces at the end of lines anyway breaks the samples.

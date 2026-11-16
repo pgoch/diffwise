@@ -41,6 +41,9 @@ export const PORTUGUESE_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Para daltónicos',
   highContrastDiffPaletteLabel: 'Alto contraste',
   customDiffPaletteLabel: 'Personalizadas',
+  textFontLabel: 'Tipo de letra do texto',
+  monospaceTextFontLabel: 'Largura fixa',
+  proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Ocultar linhas sem alterações',
   resetUserSettingsLabel: 'Repor predefinições',
 

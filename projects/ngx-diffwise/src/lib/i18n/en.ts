@@ -41,6 +41,9 @@ export const ENGLISH_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Colorblind-friendly',
   highContrastDiffPaletteLabel: 'High contrast',
   customDiffPaletteLabel: 'Custom',
+  textFontLabel: 'Text font',
+  monospaceTextFontLabel: 'Fixed width',
+  proportionalTextFontLabel: 'Regular',
   hideUnchangedLinesLabel: 'Hide unchanged lines',
   resetUserSettingsLabel: 'Restore defaults',
 
