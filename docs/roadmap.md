@@ -1,6 +1,6 @@
 # Roadmap
 
-> Tentative. The order and scope may change. Versions 0.1 to 0.4 are complete; [Configuration](configuration.md) describes what they can do.
+> Tentative. The order and scope may change. Versions 0.1 to 0.5 are complete; [Configuration](configuration.md) describes what they can do.
 
 | Version | Scope |
 |---|---|
@@ -8,12 +8,12 @@
 | 0.2 | Changes in formatting, links and images; their details in icons between the versions and in tooltips; options to ignore changes of formatting or links |
 | 0.3 | Lists and tables split into lines: list items, table rows and captions; changes of list markers and checkboxes; table columns matched between the versions, with changes compared cell by cell |
 | 0.4 | Single-column layout with automatic switching, and merged lines; collapsing of unchanged lines; a toolbar with navigation between changes, statistics and view settings for end users, which can be remembered, exported and imported |
-| 0.5 | Interface in 10 more languages, 12 in all; colorblind-friendly palette; accessibility review |
+| 0.5 | Interface in 10 more languages, 12 in all, with sample documents in each; colorblind-friendly and high contrast palettes, which end users can also choose; accessibility: descriptions of changed lines for screen readers, keyboard access to wide tables, the high contrast mode of Windows, and contrast at every level of the scales |
 | 0.6 | Plain text diffs: a second component that compares two versions of plain text line by line, with the same look and configuration as the HTML diff |
 | 0.7+ | Further improvements based on feedback, as needed |
 | 1.0 | Stable API, complete documentation, a live demo and a configurator page that turns your choices into ready-to-copy configuration |
 
-The first version on npm is planned after 0.5, with the interface in 12 languages. Later versions before 1.0 will be published as they are ready.
+The first version on npm is planned after 0.6. Later versions before 1.0 will be published as they are ready.
 
 ## Ideas after 1.0
 
