@@ -8,14 +8,14 @@ const STATS_INPUT = 'stats';
 const SHOWS_STATS_INPUT = 'showsStats';
 const NAVIGATION_INPUT = 'navigation';
 const TEXTS_INPUT = 'texts';
-const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
-const NAVIGATION_SELECTOR = '.diffwise-html-diff__navigation';
-const PREVIOUS_BUTTON_SELECTOR = '.diffwise-html-diff__navigation-button--previous';
-const NEXT_BUTTON_SELECTOR = '.diffwise-html-diff__navigation-button--next';
-const COUNTER_SELECTOR = '.diffwise-html-diff__change-counter';
+const DIFF_STAT_SELECTOR = '.diffwise-diff__diff-stat';
+const NAVIGATION_SELECTOR = '.diffwise-diff__navigation';
+const PREVIOUS_BUTTON_SELECTOR = '.diffwise-diff__navigation-button--previous';
+const NEXT_BUTTON_SELECTOR = '.diffwise-diff__navigation-button--next';
+const COUNTER_SELECTOR = '.diffwise-diff__change-counter';
 const ANNOUNCEMENT_SELECTOR = '[data-diffwise-announcement]';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
-const TOOLBAR_CLASS = 'diffwise-html-diff__toolbar';
+const TOOLBAR_CLASS = 'diffwise-diff__toolbar';
 
 const SOME_CHANGES: DiffwiseDiffStats = {
   addedLines: 3,

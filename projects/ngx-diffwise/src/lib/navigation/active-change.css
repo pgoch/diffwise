@@ -3,7 +3,7 @@
  * number of its first line. Both take the color of the focus.
  */
 
-.diffwise-html-diff__row--active {
+.diffwise-diff__row--active {
   position: relative;
 }
 
@@ -11,11 +11,11 @@
  * The frame: each row of the block draws its sides, the first row the top and the last row the
  * bottom, above the cells. Without line numbers, the arrow has no place, so the frame shows.
  */
-.diffwise-html-diff:is(
-    :not(.diffwise-html-diff--active-change-style-indicator),
-    .diffwise-html-diff--no-line-numbers
+.diffwise-diff:is(
+    :not(.diffwise-diff--active-change-style-indicator),
+    .diffwise-diff--no-line-numbers
   )
-  .diffwise-html-diff__row--active::after {
+  .diffwise-diff__row--active::after {
   position: absolute;
   z-index: 2;
   inset: 0;
@@ -24,24 +24,24 @@
   pointer-events: none;
 }
 
-.diffwise-html-diff:is(
-    :not(.diffwise-html-diff--active-change-style-indicator),
-    .diffwise-html-diff--no-line-numbers
+.diffwise-diff:is(
+    :not(.diffwise-diff--active-change-style-indicator),
+    .diffwise-diff--no-line-numbers
   )
-  .diffwise-html-diff__row--active-first::after {
+  .diffwise-diff__row--active-first::after {
   border-top: 2px solid var(--diffwise-focus);
 }
 
-.diffwise-html-diff:is(
-    :not(.diffwise-html-diff--active-change-style-indicator),
-    .diffwise-html-diff--no-line-numbers
+.diffwise-diff:is(
+    :not(.diffwise-diff--active-change-style-indicator),
+    .diffwise-diff--no-line-numbers
   )
-  .diffwise-html-diff__row--active-last::after {
+  .diffwise-diff__row--active-last::after {
   border-bottom: 2px solid var(--diffwise-focus);
 }
 
 /* The arrow: the columns of numbers grow by its width, at the side away from the digits. */
-.diffwise-html-diff--active-change-style-indicator:not(.diffwise-html-diff--no-line-numbers) {
+.diffwise-diff--active-change-style-indicator:not(.diffwise-diff--no-line-numbers) {
   --diffwise-line-number-width: calc(
     var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.75rem
   );
@@ -51,31 +51,31 @@
  * It stands at the old number of the first line, or at the new number of an added line, which has
  * no old one; the number takes the color of the arrow.
  */
-.diffwise-html-diff--active-change-style-indicator
-  .diffwise-html-diff__row--active-first
-  > .diffwise-html-diff__line-number--old
-  > .diffwise-html-diff__line-number-value,
-.diffwise-html-diff--active-change-style-indicator
-  .diffwise-html-diff__row--active-first:not(
-    :has(> .diffwise-html-diff__line-number--old > .diffwise-html-diff__line-number-value)
+.diffwise-diff--active-change-style-indicator
+  .diffwise-diff__row--active-first
+  > .diffwise-diff__line-number--old
+  > .diffwise-diff__line-number-value,
+.diffwise-diff--active-change-style-indicator
+  .diffwise-diff__row--active-first:not(
+    :has(> .diffwise-diff__line-number--old > .diffwise-diff__line-number-value)
   )
-  > .diffwise-html-diff__line-number--new
-  > .diffwise-html-diff__line-number-value {
+  > .diffwise-diff__line-number--new
+  > .diffwise-diff__line-number-value {
   position: relative;
   color: var(--diffwise-focus);
   font-weight: 700;
 }
 
-.diffwise-html-diff--active-change-style-indicator
-  .diffwise-html-diff__row--active-first
-  > .diffwise-html-diff__line-number--old
-  > .diffwise-html-diff__line-number-value::before,
-.diffwise-html-diff--active-change-style-indicator
-  .diffwise-html-diff__row--active-first:not(
-    :has(> .diffwise-html-diff__line-number--old > .diffwise-html-diff__line-number-value)
+.diffwise-diff--active-change-style-indicator
+  .diffwise-diff__row--active-first
+  > .diffwise-diff__line-number--old
+  > .diffwise-diff__line-number-value::before,
+.diffwise-diff--active-change-style-indicator
+  .diffwise-diff__row--active-first:not(
+    :has(> .diffwise-diff__line-number--old > .diffwise-diff__line-number-value)
   )
-  > .diffwise-html-diff__line-number--new
-  > .diffwise-html-diff__line-number-value::before {
+  > .diffwise-diff__line-number--new
+  > .diffwise-diff__line-number-value::before {
   position: absolute;
   top: 50%;
   left: calc(4px - 0.75rem);

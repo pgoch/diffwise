@@ -10,20 +10,20 @@ const DEFAULT_CONFIG = new DiffwiseConfig();
  * class ends with the value, such as `gray`.
  */
 const VALUE_MODIFIERS = {
-  diffPalette: 'diffwise-html-diff--diff-palette-',
-  highlightStyle: 'diffwise-html-diff--highlight-style-',
-  inlineDiffStyle: 'diffwise-html-diff--inline-diff-style-',
-  noChangesView: 'diffwise-html-diff--no-changes-view-',
-  activeChangeStyle: 'diffwise-html-diff--active-change-style-',
-  lineNumberStyle: 'diffwise-html-diff--line-number-style-',
-  lineNumberAlignment: 'diffwise-html-diff--line-number-alignment-',
-  dividerStyle: 'diffwise-html-diff--divider-style-',
-  gapStyle: 'diffwise-html-diff--gap-style-',
-  versionHeaderAlignment: 'diffwise-html-diff--version-header-alignment-',
-  changeDetails: 'diffwise-html-diff--change-details-',
-  changeDetailsIconStyle: 'diffwise-html-diff--change-details-icon-style-',
-  tooltipColorMode: 'diffwise-html-diff--tooltip-color-mode-',
-  tooltipTitleAlignment: 'diffwise-html-diff--tooltip-title-alignment-',
+  diffPalette: 'diffwise-diff--diff-palette-',
+  highlightStyle: 'diffwise-diff--highlight-style-',
+  inlineDiffStyle: 'diffwise-diff--inline-diff-style-',
+  noChangesView: 'diffwise-diff--no-changes-view-',
+  activeChangeStyle: 'diffwise-diff--active-change-style-',
+  lineNumberStyle: 'diffwise-diff--line-number-style-',
+  lineNumberAlignment: 'diffwise-diff--line-number-alignment-',
+  dividerStyle: 'diffwise-diff--divider-style-',
+  gapStyle: 'diffwise-diff--gap-style-',
+  versionHeaderAlignment: 'diffwise-diff--version-header-alignment-',
+  changeDetails: 'diffwise-diff--change-details-',
+  changeDetailsIconStyle: 'diffwise-diff--change-details-icon-style-',
+  tooltipColorMode: 'diffwise-diff--tooltip-color-mode-',
+  tooltipTitleAlignment: 'diffwise-diff--tooltip-title-alignment-',
 } as const;
 
 type ValueOption = keyof typeof VALUE_MODIFIERS;
@@ -34,15 +34,15 @@ export type ShownLayout = typeof DiffwiseLayout.SideBySide | typeof DiffwiseLayo
 const VALUE_OPTIONS = Object.keys(VALUE_MODIFIERS) as ValueOption[];
 
 /** Starts of the classes of the levels, which every level has, the default one too. */
-const DIFF_INTENSITY_MODIFIER = 'diffwise-html-diff--diff-intensity-';
-const UI_CONTRAST_MODIFIER = 'diffwise-html-diff--ui-contrast-';
+const DIFF_INTENSITY_MODIFIER = 'diffwise-diff--diff-intensity-';
+const UI_CONTRAST_MODIFIER = 'diffwise-diff--ui-contrast-';
 
 /** The class of a diff that shows a single column, also when the automatic layout chose it. */
-const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
-const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
-const NO_CHANGED_LINE_HIGHLIGHT_CLASS = 'diffwise-html-diff--no-changed-line-highlight';
-const HIGHLIGHT_WHOLE_LINES_CLASS = 'diffwise-html-diff--highlight-whole-lines';
-const NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS = 'diffwise-html-diff--no-tooltip-change-highlight';
+const INLINE_LAYOUT_CLASS = 'diffwise-diff--layout-inline';
+const NO_LINE_NUMBERS_CLASS = 'diffwise-diff--no-line-numbers';
+const NO_CHANGED_LINE_HIGHLIGHT_CLASS = 'diffwise-diff--no-changed-line-highlight';
+const HIGHLIGHT_WHOLE_LINES_CLASS = 'diffwise-diff--highlight-whole-lines';
+const NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS = 'diffwise-diff--no-tooltip-change-highlight';
 
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const LINE_NUMBER_FONT_SIZE_VARIABLE = '--diffwise-line-number-font-size';

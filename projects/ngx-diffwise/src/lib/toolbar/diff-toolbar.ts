@@ -59,7 +59,7 @@ const NO_NAVIGATION: ToolbarNavigation = { current: null, total: 0 };
   templateUrl: './diff-toolbar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
-  host: { class: 'diffwise-html-diff__toolbar' },
+  host: { class: 'diffwise-diff__toolbar' },
 })
 export class DiffToolbar {
   /** Numbers of the changed lines of the comparison. */

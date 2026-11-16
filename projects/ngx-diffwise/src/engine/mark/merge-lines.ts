@@ -50,7 +50,7 @@ const REPLACED_TEXT_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}replaced`;
 const HIDDEN_SPACE_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}hidden-space`;
 
 /** The arrow between the old and the new image of a changed image; styles draw it. */
-const IMAGE_CHANGE_ARROW_CLASS = 'diffwise-html-diff__image-change-arrow';
+const IMAGE_CHANGE_ARROW_CLASS = 'diffwise-diff__image-change-arrow';
 
 /** A changed line pair and its changes, which become one line. */
 export interface ChangedPair {

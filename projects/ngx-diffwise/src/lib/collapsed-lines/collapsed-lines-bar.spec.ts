@@ -4,7 +4,7 @@ import { CollapsedLinesBar } from './collapsed-lines-bar';
 
 const COUNT_INPUT = 'count';
 const TEXT_INPUT = 'text';
-const BAR_SELECTOR = '.diffwise-html-diff__collapsed-lines';
+const BAR_SELECTOR = '.diffwise-diff__collapsed-lines';
 const SHOW_HIDDEN_LINES_TEXT = 'Show hidden lines: {count}';
 
 /** Renders a bar for the number of hidden lines, with the text of the interface. */

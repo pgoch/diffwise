@@ -13,17 +13,17 @@ import {
   markWholeTableLine,
 } from './mark-changes';
 
-const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
-const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
-const IMAGE_CLASS = 'diffwise-html-diff__highlight--image';
-const LIST_MARKER_CLASS = 'diffwise-html-diff__highlight--list-marker';
-const CHECKBOX_CLASS = 'diffwise-html-diff__highlight--checkbox';
+const REMOVED_CLASSES = 'diffwise-diff__highlight diffwise-diff__highlight--removed';
+const ADDED_CLASSES = 'diffwise-diff__highlight diffwise-diff__highlight--added';
+const IMAGE_CLASS = 'diffwise-diff__highlight--image';
+const LIST_MARKER_CLASS = 'diffwise-diff__highlight--list-marker';
+const CHECKBOX_CLASS = 'diffwise-diff__highlight--checkbox';
 const CHECKBOX_MARKER_SELECTOR = `ins.${CHECKBOX_CLASS}`;
 const CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
 const TEMPLATE_TAG = 'template';
 const ROW_SELECTOR = 'tr';
-const CELL_CLASS = 'diffwise-html-diff__highlight--cell';
+const CELL_CLASS = 'diffwise-diff__highlight--cell';
 const ADDED_CELL_CLASSES = `${ADDED_CLASSES} ${CELL_CLASS}`;
 const REMOVED_CELL_CLASSES = `${REMOVED_CLASSES} ${CELL_CLASS}`;
 const ID_PREFIX = 'diff-';

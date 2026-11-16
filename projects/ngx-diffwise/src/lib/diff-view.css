@@ -1,12 +1,12 @@
 /*
- * Two versions of an HTML document side by side, in the light or the dark theme.
- * Styles are global (no view encapsulation), so every class starts with `diffwise-html-diff`
+ * The view of a diff: two versions side by side or in a single column, in the light or the dark
+ * theme. Styles are global (no view encapsulation), so every class starts with `diffwise-diff`
  * and apps can override the `--diffwise-…` variables. An option with a value other than its
- * default adds a modifier class to the component, such as `diffwise-html-diff--gap-style-gray`.
+ * default adds a modifier class to the component, such as `diffwise-diff--gap-style-gray`.
  */
 
 /* Defaults of the variables; `:where()` makes them weaker than any selector of the app. */
-:where(.diffwise-html-diff) {
+:where(.diffwise-diff) {
   /* Neutral colors: the background mixed with ink. The contrast sets how much ink. */
   --diffwise-background: #fff;
   --diffwise-ink: #1f2328;
@@ -89,7 +89,7 @@
   --diffwise-divider-width: calc(2.67 * var(--diffwise-line-number-font-size));
 }
 
-.diffwise-html-diff {
+.diffwise-diff {
   display: block;
   overflow: clip;
   border: 1px solid var(--diffwise-border);
@@ -106,7 +106,7 @@
 }
 
 /* Dark theme: other base colors and shares; the colors mixed from them follow. */
-:where(.diffwise-html-diff--dark-theme) {
+:where(.diffwise-diff--dark-theme) {
   --diffwise-background: #16191f;
   --diffwise-ink: #e6e8eb;
   --diffwise-text: #e6e8eb;
@@ -122,19 +122,19 @@
   --diffwise-highlight-share: 48%;
 }
 
-.diffwise-html-diff--dark-theme {
+.diffwise-diff--dark-theme {
   color-scheme: dark;
 }
 
 /* Colorblind-friendly palette: orange for removed and blue for added, in both themes. */
-:where(.diffwise-html-diff--diff-palette-colorblind) {
+:where(.diffwise-diff--diff-palette-colorblind) {
   --diffwise-removed-base: #f08a24;
   --diffwise-added-base: #3b82f6;
   --diffwise-removed-accent: #ab4f09;
   --diffwise-added-accent: #1d4ed8;
 }
 
-:where(.diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme) {
+:where(.diffwise-diff--diff-palette-colorblind.diffwise-diff--dark-theme) {
   --diffwise-removed-base: #f59e3b;
   --diffwise-added-base: #4d8ff8;
   --diffwise-removed-accent: #fbbf6b;
@@ -145,49 +145,49 @@
  * Intensity of the change colors: the backgrounds of lines and words change together. Level 3
  * has the defaults above, so its class needs no rule.
  */
-:where(.diffwise-html-diff--diff-intensity-1) {
+:where(.diffwise-diff--diff-intensity-1) {
   --diffwise-line-share: 4%;
   --diffwise-line-number-share: 37.5%;
   --diffwise-highlight-share: 20%;
 }
 
-:where(.diffwise-html-diff--diff-intensity-2) {
+:where(.diffwise-diff--diff-intensity-2) {
   --diffwise-line-share: 6.5%;
   --diffwise-line-number-share: 29.8%;
   --diffwise-highlight-share: 30%;
 }
 
-:where(.diffwise-html-diff--diff-intensity-4) {
+:where(.diffwise-diff--diff-intensity-4) {
   --diffwise-line-share: 14%;
   --diffwise-line-number-share: 21.1%;
   --diffwise-highlight-share: 52%;
 }
 
-:where(.diffwise-html-diff--diff-intensity-5) {
+:where(.diffwise-diff--diff-intensity-5) {
   --diffwise-line-share: 20%;
   --diffwise-line-number-share: 17.8%;
   --diffwise-highlight-share: 65%;
 }
 
-:where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-1) {
+:where(.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-1) {
   --diffwise-line-share: 8%;
   --diffwise-line-number-share: 25%;
   --diffwise-highlight-share: 28%;
 }
 
-:where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-2) {
+:where(.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-2) {
   --diffwise-line-share: 11.5%;
   --diffwise-line-number-share: 20.8%;
   --diffwise-highlight-share: 38%;
 }
 
-:where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-4) {
+:where(.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-4) {
   --diffwise-line-share: 21%;
   --diffwise-line-number-share: 16.2%;
   --diffwise-highlight-share: 55%;
 }
 
-:where(.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-5) {
+:where(.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-5) {
   --diffwise-line-share: 28%;
   --diffwise-line-number-share: 15%;
   --diffwise-highlight-share: 57%;
@@ -195,13 +195,13 @@
 
 /* The light blue of the colorblind palette takes less, so the text of changed words stays readable. */
 :where(
-  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-4
+  .diffwise-diff--diff-palette-colorblind.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-4
 ) {
   --diffwise-highlight-share: 50%;
 }
 
 :where(
-  .diffwise-html-diff--diff-palette-colorblind.diffwise-html-diff--dark-theme.diffwise-html-diff--diff-intensity-5
+  .diffwise-diff--diff-palette-colorblind.diffwise-diff--dark-theme.diffwise-diff--diff-intensity-5
 ) {
   --diffwise-highlight-share: 52%;
 }
@@ -210,51 +210,51 @@
  * Contrast of everything besides the content: how much ink, and how strong the digits. Level 3
  * has the defaults above, so its class needs no rule.
  */
-:where(.diffwise-html-diff--ui-contrast-1) {
+:where(.diffwise-diff--ui-contrast-1) {
   --diffwise-contrast: 1.5%;
   --diffwise-line-number-text-share: 63%;
 }
 
-:where(.diffwise-html-diff--ui-contrast-2) {
+:where(.diffwise-diff--ui-contrast-2) {
   --diffwise-contrast: 3.25%;
   --diffwise-line-number-text-share: 64%;
 }
 
-:where(.diffwise-html-diff--ui-contrast-4) {
+:where(.diffwise-diff--ui-contrast-4) {
   --diffwise-contrast: 9%;
   --diffwise-line-number-text-share: 80.5%;
 }
 
-:where(.diffwise-html-diff--ui-contrast-5) {
+:where(.diffwise-diff--ui-contrast-5) {
   --diffwise-contrast: 13%;
   --diffwise-line-number-text-share: 96%;
 }
 
 /* Without line numbers, their columns take no space. */
-.diffwise-html-diff--no-line-numbers {
+.diffwise-diff--no-line-numbers {
   --diffwise-line-number-width: 0px;
 }
 
 /* A line between the versions takes 1px. */
-:where(.diffwise-html-diff--divider-style-line) {
+:where(.diffwise-diff--divider-style-line) {
   --diffwise-divider-width: 1px;
 }
 
 /* Gaps without stripes leave the plain background behind the rows. */
-.diffwise-html-diff--gap-style-gray,
-.diffwise-html-diff--gap-style-empty {
+.diffwise-diff--gap-style-gray,
+.diffwise-diff--gap-style-empty {
   background: var(--diffwise-background);
 }
 
-.diffwise-html-diff__version-headers,
-.diffwise-html-diff__row {
+.diffwise-diff__version-headers,
+.diffwise-diff__row {
   display: grid;
   grid-template-columns:
     var(--diffwise-line-number-width) minmax(0, 1fr) var(--diffwise-divider-width)
     var(--diffwise-line-number-width) minmax(0, 1fr);
 }
 
-.diffwise-html-diff__version-headers {
+.diffwise-diff__version-headers {
   border-bottom: 1px solid var(--diffwise-border);
   background: var(--diffwise-divider-background);
   color: var(--diffwise-muted);
@@ -263,7 +263,7 @@
   letter-spacing: 0.02em;
 }
 
-.diffwise-html-diff__version-header {
+.diffwise-diff__version-header {
   overflow: hidden;
   padding: 0.65em 16px;
   text-align: center;
@@ -272,7 +272,7 @@
 }
 
 /* A description of a changed line, such as "Added line 6", which only screen readers read. */
-.diffwise-html-diff [data-diffwise-line-description] {
+.diffwise-diff [data-diffwise-line-description] {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -281,32 +281,32 @@
   white-space: nowrap;
 }
 
-.diffwise-html-diff--version-header-alignment-start .diffwise-html-diff__version-header {
+.diffwise-diff--version-header-alignment-start .diffwise-diff__version-header {
   text-align: start;
 }
 
-.diffwise-html-diff--version-header-alignment-end .diffwise-html-diff__version-header {
+.diffwise-diff--version-header-alignment-end .diffwise-diff__version-header {
   text-align: end;
 }
 
 /* Fixed columns keep headers and content in place when the line numbers are hidden. */
-.diffwise-html-diff__version-header--old,
-.diffwise-html-diff__content--old {
+.diffwise-diff__version-header--old,
+.diffwise-diff__content--old {
   grid-column: 2;
 }
 
-.diffwise-html-diff__version-header--new,
-.diffwise-html-diff__content--new {
+.diffwise-diff__version-header--new,
+.diffwise-diff__content--new {
   grid-column: 5;
 }
 
 /* Icons in place of the header texts, which name them. */
-.diffwise-html-diff__version-header-icon {
+.diffwise-diff__version-header-icon {
   display: inline-flex;
   vertical-align: middle;
 }
 
-.diffwise-html-diff__version-header-icon svg {
+.diffwise-diff__version-header-icon svg {
   width: 1.4em;
   height: 1.4em;
 }
@@ -315,15 +315,15 @@
  * A row can end at a fraction of a pixel, where the background behind would show through as a
  * thin line. Cells reach 1px into the next row to cover it, and their bottom padding grows by 1px.
  */
-.diffwise-html-diff__line-number,
-.diffwise-html-diff__content,
-.diffwise-html-diff__divider,
-.diffwise-html-diff__gap {
+.diffwise-diff__line-number,
+.diffwise-diff__content,
+.diffwise-diff__divider,
+.diffwise-diff__gap {
   margin-bottom: -1px;
 }
 
 /* The padding puts the number in the middle of the first text line, or of the last one. */
-.diffwise-html-diff__line-number {
+.diffwise-diff__line-number {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -334,15 +334,15 @@
   user-select: none;
 }
 
-.diffwise-html-diff--line-number-alignment-middle .diffwise-html-diff__line-number {
+.diffwise-diff--line-number-alignment-middle .diffwise-diff__line-number {
   justify-content: center;
 }
 
-.diffwise-html-diff--line-number-alignment-bottom .diffwise-html-diff__line-number {
+.diffwise-diff--line-number-alignment-bottom .diffwise-diff__line-number {
   justify-content: flex-end;
 }
 
-.diffwise-html-diff__line-number-value {
+.diffwise-diff__line-number-value {
   display: block;
   font-size: var(--diffwise-line-number-font-size);
   font-variant-numeric: tabular-nums;
@@ -351,14 +351,12 @@
 }
 
 /* A changed line has a colored number with a bar. */
-.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number--old {
+.diffwise-diff__row:not(.diffwise-diff__row--unchanged) .diffwise-diff__line-number--old {
   box-shadow: inset 3px 0 0 var(--diffwise-removed-accent);
   color: var(--diffwise-removed-accent);
 }
 
-.diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number--new {
+.diffwise-diff__row:not(.diffwise-diff__row--unchanged) .diffwise-diff__line-number--new {
   box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
   color: var(--diffwise-added-accent);
 }
@@ -367,69 +365,65 @@
  * Colored numbers keep their contrast: on colored backgrounds of the numbers, and on the darker
  * number column of the highest contrasts, they take in some of the text color.
  */
-.diffwise-html-diff--line-number-style-background
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number-value {
+.diffwise-diff--line-number-style-background
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number-value {
   color: color-mix(in srgb, currentColor 75%, var(--diffwise-text));
 }
 
-.diffwise-html-diff--ui-contrast-4
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number-value {
+.diffwise-diff--ui-contrast-4
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number-value {
   color: color-mix(in srgb, currentColor 88%, var(--diffwise-text));
 }
 
-.diffwise-html-diff--ui-contrast-5
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number-value {
+.diffwise-diff--ui-contrast-5
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number-value {
   color: color-mix(in srgb, currentColor 74%, var(--diffwise-text));
 }
 
 /* Or a colored background, which goes with the background of the changed line. */
-.diffwise-html-diff--line-number-style-background
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number {
+.diffwise-diff--line-number-style-background
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number {
   box-shadow: none;
 }
 
-.diffwise-html-diff--line-number-style-background:not(
-    .diffwise-html-diff--no-changed-line-highlight
-  )
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number--old {
+.diffwise-diff--line-number-style-background:not(.diffwise-diff--no-changed-line-highlight)
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number--old {
   background: var(--diffwise-removed-line-number);
 }
 
-.diffwise-html-diff--line-number-style-background:not(
-    .diffwise-html-diff--no-changed-line-highlight
-  )
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number--new {
+.diffwise-diff--line-number-style-background:not(.diffwise-diff--no-changed-line-highlight)
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number--new {
   background: var(--diffwise-added-line-number);
 }
 
 /* Without backgrounds of changed lines, such a number keeps the colors of its column... */
-.diffwise-html-diff--line-number-style-background.diffwise-html-diff--no-changed-line-highlight
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__line-number {
+.diffwise-diff--line-number-style-background.diffwise-diff--no-changed-line-highlight
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__line-number {
   color: var(--diffwise-line-number-color);
 }
 
 /* ...and an added or a removed line not highlighted as a whole gets a colored number with a bar. */
-.diffwise-html-diff--line-number-style-background.diffwise-html-diff--no-changed-line-highlight:not(
-    .diffwise-html-diff--highlight-whole-lines
+.diffwise-diff--line-number-style-background.diffwise-diff--no-changed-line-highlight:not(
+    .diffwise-diff--highlight-whole-lines
   )
-  .diffwise-html-diff__row--removed
-  .diffwise-html-diff__line-number--old {
+  .diffwise-diff__row--removed
+  .diffwise-diff__line-number--old {
   box-shadow: inset 3px 0 0 var(--diffwise-removed-accent);
   color: var(--diffwise-removed-accent);
 }
 
-.diffwise-html-diff--line-number-style-background.diffwise-html-diff--no-changed-line-highlight:not(
-    .diffwise-html-diff--highlight-whole-lines
+.diffwise-diff--line-number-style-background.diffwise-diff--no-changed-line-highlight:not(
+    .diffwise-diff--highlight-whole-lines
   )
-  .diffwise-html-diff__row--added
-  .diffwise-html-diff__line-number--new {
+  .diffwise-diff__row--added
+  .diffwise-diff__line-number--new {
   box-shadow: inset 3px 0 0 var(--diffwise-added-accent);
   color: var(--diffwise-added-accent);
 }
@@ -438,7 +432,7 @@
  * `contain: paint` keeps everything in the content, even an app class with a fixed position.
  * Each side sets the colors of its highlights: removed in the old version, added in the new one.
  */
-.diffwise-html-diff__content {
+.diffwise-diff__content {
   min-width: 0;
   overflow-x: auto;
   padding: 5px 16px 6px;
@@ -455,55 +449,55 @@
  * tables always have their layout: a skipped line forgets how far it is scrolled, and the lines of
  * a table scroll together.
  */
-.diffwise-html-diff__row:not(:has(> [data-diffwise-table])) {
+.diffwise-diff__row:not(:has(> [data-diffwise-table])) {
   content-visibility: auto;
   contain-intrinsic-block-size: auto calc(1.6em + 11px);
   overflow-clip-margin: 1px;
 }
 
-.diffwise-html-diff__content--old {
+.diffwise-diff__content--old {
   --diffwise-side-highlight: var(--diffwise-removed-highlight);
   --diffwise-side-accent: var(--diffwise-removed-accent);
 }
 
-.diffwise-html-diff__content--new {
+.diffwise-diff__content--new {
   --diffwise-side-highlight: var(--diffwise-added-highlight);
   --diffwise-side-accent: var(--diffwise-added-accent);
 }
 
-.diffwise-html-diff:not(.diffwise-html-diff--no-changed-line-highlight)
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__content--old:not([data-diffwise-table]) {
+.diffwise-diff:not(.diffwise-diff--no-changed-line-highlight)
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__content--old:not([data-diffwise-table]) {
   background: var(--diffwise-removed-line);
 }
 
-.diffwise-html-diff:not(.diffwise-html-diff--no-changed-line-highlight)
-  .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-  .diffwise-html-diff__content--new:not([data-diffwise-table]) {
+.diffwise-diff:not(.diffwise-diff--no-changed-line-highlight)
+  .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+  .diffwise-diff__content--new:not([data-diffwise-table]) {
   background: var(--diffwise-added-line);
 }
 
-.diffwise-html-diff__divider {
+.diffwise-diff__divider {
   padding-bottom: 1px;
   border-inline: 1px solid var(--diffwise-border);
   background: var(--diffwise-divider-background);
 }
 
-.diffwise-html-diff--divider-style-line .diffwise-html-diff__divider {
+.diffwise-diff--divider-style-line .diffwise-diff__divider {
   border-inline: 0;
   background: var(--diffwise-border);
 }
 
-.diffwise-html-diff__gap {
+.diffwise-diff__gap {
   grid-column: span 2;
 }
 
-.diffwise-html-diff--gap-style-gray .diffwise-html-diff__gap {
+.diffwise-diff--gap-style-gray .diffwise-diff__gap {
   background: var(--diffwise-gap-gray);
 }
 
 /* An empty gap looks like a line without text: the column of the numbers keeps its background. */
-.diffwise-html-diff--gap-style-empty .diffwise-html-diff__gap {
+.diffwise-diff--gap-style-empty .diffwise-diff__gap {
   background: linear-gradient(
     to right,
     var(--diffwise-line-number-background) var(--diffwise-line-number-width),
@@ -512,7 +506,7 @@
 }
 
 /* Changed words: the same background in every style; a style adds lines in the accent color. */
-.diffwise-html-diff__highlight {
+.diffwise-diff__highlight {
   padding: 0 0.14em;
   border-radius: 3px;
   -webkit-box-decoration-break: clone;
@@ -523,16 +517,16 @@
   text-decoration: none;
 }
 
-.diffwise-html-diff--highlight-style-background .diffwise-html-diff__highlight {
+.diffwise-diff--highlight-style-background .diffwise-diff__highlight {
   box-shadow: none;
 }
 
-.diffwise-html-diff--highlight-style-underline .diffwise-html-diff__highlight {
+.diffwise-diff--highlight-style-underline .diffwise-diff__highlight {
   border-radius: 0;
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-style-top-bottom .diffwise-html-diff__highlight {
+.diffwise-diff--highlight-style-top-bottom .diffwise-diff__highlight {
   border-radius: 0;
   box-shadow:
     inset 0 2px 0 var(--diffwise-side-accent),
@@ -543,7 +537,7 @@
  * A changed image: a frame with a gap instead of a background, which follows the highlight style.
  * The padding keeps the frame off the text, and the image stays on the baseline of its line.
  */
-.diffwise-html-diff__content .diffwise-html-diff__highlight--image {
+.diffwise-diff__content .diffwise-diff__highlight--image {
   position: relative;
   display: inline-block;
   padding: 6px;
@@ -553,11 +547,11 @@
   vertical-align: -6px;
 }
 
-.diffwise-html-diff__highlight--image :is(img, picture) {
+.diffwise-diff__highlight--image :is(img, picture) {
   display: block;
 }
 
-.diffwise-html-diff__highlight--image::after {
+.diffwise-diff__highlight--image::after {
   position: absolute;
   inset: 0;
   border: 3px solid var(--diffwise-side-accent);
@@ -566,16 +560,16 @@
   pointer-events: none;
 }
 
-.diffwise-html-diff--highlight-style-background .diffwise-html-diff__highlight--image::after {
+.diffwise-diff--highlight-style-background .diffwise-diff__highlight--image::after {
   border-color: var(--diffwise-side-highlight);
 }
 
-.diffwise-html-diff--highlight-style-underline .diffwise-html-diff__highlight--image::after {
+.diffwise-diff--highlight-style-underline .diffwise-diff__highlight--image::after {
   border-width: 0 0 3px;
   border-radius: 0;
 }
 
-.diffwise-html-diff--highlight-style-top-bottom .diffwise-html-diff__highlight--image::after {
+.diffwise-diff--highlight-style-top-bottom .diffwise-diff__highlight--image::after {
   border-width: 3px 0;
   border-radius: 0;
 }
@@ -585,10 +579,10 @@
  * but keeps its rounded corners. A list item line highlights only its item, and a table line its
  * cells; see the list and table styles.
  */
-.diffwise-html-diff--highlight-whole-lines
+.diffwise-diff--highlight-whole-lines
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   padding-inline: 6px;
@@ -597,28 +591,28 @@
   box-shadow: inset 0 0 0 2px var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-background
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-background
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow: none;
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-underline
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-underline
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-top-bottom
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-top-bottom
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   > :not(:has([data-diffwise-line-item])) {
   box-shadow:
@@ -627,36 +621,36 @@
 }
 
 /* Each line stands alone, so the outer margins of its blocks go. */
-.diffwise-html-diff__content :first-child {
+.diffwise-diff__content :first-child {
   margin-top: 0;
 }
 
-.diffwise-html-diff__content :last-child {
+.diffwise-diff__content :last-child {
   margin-bottom: 0;
 }
 
-.diffwise-html-diff__content a {
+.diffwise-diff__content a {
   color: var(--diffwise-link);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 /* A link in a changed part has the color of the text, which keeps its contrast on the highlight. */
-.diffwise-html-diff__content .diffwise-html-diff__highlight a,
-.diffwise-html-diff__content a .diffwise-html-diff__highlight {
+.diffwise-diff__content .diffwise-diff__highlight a,
+.diffwise-diff__content a .diffwise-diff__highlight {
   color: var(--diffwise-text);
 }
 
-.diffwise-html-diff__content img {
+.diffwise-diff__content img {
   max-width: 100%;
   height: auto;
 }
 
-.diffwise-html-diff__content table {
+.diffwise-diff__content table {
   border-collapse: collapse;
 }
 
-.diffwise-html-diff__content :is(td, th) {
+.diffwise-diff__content :is(td, th) {
   padding: 4px 10px;
   border: 1px solid var(--diffwise-border);
 }

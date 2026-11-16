@@ -58,7 +58,7 @@ const SCROLL_EVENT = 'scroll';
 const PIXEL_UNIT = 'px';
 const FUNCTION_TYPE = 'function';
 
-const HIGHLIGHT_CLASS = 'diffwise-html-diff__tooltip-highlight';
+const HIGHLIGHT_CLASS = 'diffwise-diff__tooltip-highlight';
 
 /** Classes of a highlighted part of a value, by the change it shows. */
 const HIGHLIGHT_CLASSES: Readonly<Record<TooltipHighlight, string>> = {
@@ -68,9 +68,9 @@ const HIGHLIGHT_CLASSES: Readonly<Record<TooltipHighlight, string>> = {
 
 /** Classes of the lines of the tooltip. */
 const LINE_CLASSES: Readonly<Record<TooltipLineKind, string>> = {
-  [TooltipLineKind.Subtitle]: 'diffwise-html-diff__tooltip-subtitle',
-  [TooltipLineKind.Description]: 'diffwise-html-diff__tooltip-description',
-  [TooltipLineKind.Row]: 'diffwise-html-diff__tooltip-row',
+  [TooltipLineKind.Subtitle]: 'diffwise-diff__tooltip-subtitle',
+  [TooltipLineKind.Description]: 'diffwise-diff__tooltip-description',
+  [TooltipLineKind.Row]: 'diffwise-diff__tooltip-row',
 };
 
 /**
@@ -83,7 +83,7 @@ const LINE_CLASSES: Readonly<Record<TooltipLineKind, string>> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    class: 'diffwise-html-diff__tooltip',
+    class: 'diffwise-diff__tooltip',
     popover: 'manual',
     role: 'tooltip',
     '[id]': 'tooltipId()',

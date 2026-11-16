@@ -25,22 +25,22 @@ const NEW_HTML_INPUT = 'newHtml';
 const TOOLTIP_COLOR_MODE_INPUT = 'tooltipColorMode';
 const IGNORE_LINK_CHANGES_INPUT = 'ignoreLinkChanges';
 const WARN_METHOD = 'warn';
-const VERSION_HEADERS_SELECTOR = '.diffwise-html-diff__version-headers';
-const VERSION_HEADER_SELECTOR = '.diffwise-html-diff__version-header';
-const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
-const LINE_NUMBER_SELECTOR = '.diffwise-html-diff__line-number';
-const NO_LINE_NUMBERS_CLASS = 'diffwise-html-diff--no-line-numbers';
+const VERSION_HEADERS_SELECTOR = '.diffwise-diff__version-headers';
+const VERSION_HEADER_SELECTOR = '.diffwise-diff__version-header';
+const VERSION_HEADER_ICON_SELECTOR = '.diffwise-diff__version-header-icon';
+const LINE_NUMBER_SELECTOR = '.diffwise-diff__line-number';
+const NO_LINE_NUMBERS_CLASS = 'diffwise-diff--no-line-numbers';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
-const ROW_SELECTOR = '.diffwise-html-diff__row';
-const ROW_KIND_CLASS_START = 'diffwise-html-diff__row--';
-const ROW_PART_SELECTOR = '.diffwise-html-diff__line-number, .diffwise-html-diff__gap';
-const GAP_CLASS = 'diffwise-html-diff__gap';
-const OLD_CONTENT_SELECTOR = '.diffwise-html-diff__content--old';
-const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
-const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
-const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
+const ROW_SELECTOR = '.diffwise-diff__row';
+const ROW_KIND_CLASS_START = 'diffwise-diff__row--';
+const ROW_PART_SELECTOR = '.diffwise-diff__line-number, .diffwise-diff__gap';
+const GAP_CLASS = 'diffwise-diff__gap';
+const OLD_CONTENT_SELECTOR = '.diffwise-diff__content--old';
+const NEW_CONTENT_SELECTOR = '.diffwise-diff__content--new';
+const REMOVED_SELECTOR = 'del.diffwise-diff__highlight--removed';
+const ADDED_SELECTOR = 'ins.diffwise-diff__highlight--added';
 const ID_SELECTOR = '[id]';
-const CONTENT_ID_SELECTOR = '.diffwise-html-diff__content [id]';
+const CONTENT_ID_SELECTOR = '.diffwise-diff__content [id]';
 const FRAGMENT_LINK_SELECTOR = 'a[href^="#"]';
 const CHECKBOX_SELECTOR = 'input[type="checkbox"]';
 const HREF_ATTRIBUTE = 'href';
@@ -49,43 +49,43 @@ const GAP = 'gap';
 const CLICK_EVENT = 'click';
 const FOOTNOTE_HTML = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
 const ONE_LINE_HTML = '<p>Zasady ogólne.</p>';
-const DARK_THEME_CLASS = 'diffwise-html-diff--dark-theme';
+const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
 const PAGE_DARK_CLASS = 'dark';
 const PAGE_DARK_SELECTOR = '.dark';
 const ROLE_ATTRIBUTE = 'role';
 const REGION_ROLE = 'region';
 const POLISH_LOCALE = 'pl-PL';
 const POLISH_VERSION_LABELS = ['Poprzednia wersja', 'Nowa wersja'];
-const HOST_CLASS = 'diffwise-html-diff';
-const GRAY_GAP_CLASS = 'diffwise-html-diff--gap-style-gray';
-const STRONGER_CONTRAST_CLASS = 'diffwise-html-diff--ui-contrast-4';
-const STRONGEST_INTENSITY_CLASS = 'diffwise-html-diff--diff-intensity-5';
-const COLORBLIND_PALETTE_CLASS = 'diffwise-html-diff--diff-palette-colorblind';
+const HOST_CLASS = 'diffwise-diff';
+const GRAY_GAP_CLASS = 'diffwise-diff--gap-style-gray';
+const STRONGER_CONTRAST_CLASS = 'diffwise-diff--ui-contrast-4';
+const STRONGEST_INTENSITY_CLASS = 'diffwise-diff--diff-intensity-5';
+const COLORBLIND_PALETTE_CLASS = 'diffwise-diff--diff-palette-colorblind';
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const ADDED_ACCENT_VARIABLE = '--diffwise-added-accent';
 const TOOLTIP_FONT_SIZE_VARIABLE = '--diffwise-tooltip-font-size';
 
 /** Classes of the looks of the icons and the tooltips, other than the defaults. */
 const ICON_AND_TOOLTIP_CLASSES = [
-  'diffwise-html-diff--change-details-icon-style-filled',
-  'diffwise-html-diff--tooltip-color-mode-reversed',
-  'diffwise-html-diff--tooltip-title-alignment-end',
-  'diffwise-html-diff--no-tooltip-change-highlight',
+  'diffwise-diff--change-details-icon-style-filled',
+  'diffwise-diff--tooltip-color-mode-reversed',
+  'diffwise-diff--tooltip-title-alignment-end',
+  'diffwise-diff--no-tooltip-change-highlight',
 ];
-const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
-const CHANGE_DETAILS_COUNT_SELECTOR = '.diffwise-html-diff__change-details-count';
-const ICON_KIND_CLASS_START = 'diffwise-html-diff__change-details-icon--';
-const TOOLTIP_SELECTOR = '.diffwise-html-diff__tooltip';
+const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-diff__change-details-icon';
+const CHANGE_DETAILS_COUNT_SELECTOR = '.diffwise-diff__change-details-count';
+const ICON_KIND_CLASS_START = 'diffwise-diff__change-details-icon--';
+const TOOLTIP_SELECTOR = '.diffwise-diff__tooltip';
 const TOOLTIP_LINE_SELECTOR = [
-  '.diffwise-html-diff__tooltip-title',
-  '.diffwise-html-diff__tooltip-subtitle',
-  '.diffwise-html-diff__tooltip-description',
-  '.diffwise-html-diff__tooltip-row',
+  '.diffwise-diff__tooltip-title',
+  '.diffwise-diff__tooltip-subtitle',
+  '.diffwise-diff__tooltip-description',
+  '.diffwise-diff__tooltip-row',
 ].join();
-const REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-html-diff__tooltip-highlight--removed';
-const ADDED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-html-diff__tooltip-highlight--added';
+const REMOVED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-diff__tooltip-highlight--removed';
+const ADDED_TOOLTIP_HIGHLIGHT_SELECTOR = '.diffwise-diff__tooltip-highlight--added';
 const DESCRIBED_MARKER_SELECTOR = '[data-diffwise-change-details]';
-const ICON_ONLY_CLASS = 'diffwise-html-diff--change-details-icon';
+const ICON_ONLY_CLASS = 'diffwise-diff--change-details-icon';
 const DESCRIBED_BY_ATTRIBUTE = 'aria-describedby';
 const TABINDEX_ATTRIBUTE = 'tabindex';
 const TITLE_ATTRIBUTE = 'title';
@@ -120,7 +120,7 @@ const BULLETED_HTML = '<ul><li>Text notes</li><li>Checklists</li></ul>';
 const NUMBERED_HTML = '<ol><li>Text notes</li><li>Checklists</li></ol>';
 const LIST_FROM_FIVE_HTML = '<ol start="5"><li>Import notes</li></ol>';
 const LIST_FROM_SIX_HTML = '<ol start="6"><li>Import notes</li></ol>';
-const NEW_DRAWN_MARKER_SELECTOR = `${NEW_CONTENT_SELECTOR} .diffwise-html-diff__highlight--list-marker`;
+const NEW_DRAWN_MARKER_SELECTOR = `${NEW_CONTENT_SELECTOR} .diffwise-diff__highlight--list-marker`;
 const UNCHECKED_HTML =
   '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>';
 const CHECKED_HTML =

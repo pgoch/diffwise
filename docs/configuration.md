@@ -433,7 +433,7 @@ Without `key`, the methods take `userSettingsKey` of the global configuration, o
 
 ## Styling with CSS
 
-The component has no view encapsulation. Its classes start with `diffwise-html-diff` and follow BEM.
+The component has no view encapsulation. Its classes start with `diffwise-diff` and follow BEM.
 
 ### Variables
 
@@ -444,7 +444,7 @@ diffwise-html-diff {
   --diffwise-link: #0b57d0;
 }
 
-diffwise-html-diff.diffwise-html-diff--dark-theme {
+diffwise-html-diff.diffwise-diff--dark-theme {
   --diffwise-link: #8ab4f8;
 }
 ```
@@ -479,7 +479,7 @@ The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize`, `toolti
 The tooltip and the view settings show in the top layer of the page, so no `overflow` of your app cuts them, but they stay inside the component element, and the variables reach them. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
 
 ```css
-diffwise-html-diff.diffwise-html-diff--tooltip-color-mode-reversed {
+diffwise-html-diff.diffwise-diff--tooltip-color-mode-reversed {
   --diffwise-tooltip-background: #0b1f3a;
 }
 ```
@@ -488,12 +488,12 @@ diffwise-html-diff.diffwise-html-diff--tooltip-color-mode-reversed {
 
 The component element shows the options in its classes:
 
-- An option with a value other than its default adds a class with its name and value, such as `diffwise-html-diff--gap-style-gray`, `diffwise-html-diff--highlight-style-underline` or `diffwise-html-diff--diff-palette-colorblind`. A value the user has chosen in the view settings counts too.
-- The levels always have a class, such as `diffwise-html-diff--diff-intensity-3` and `diffwise-html-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
-- `diffwise-html-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
-- `diffwise-html-diff--dark-theme` shows the dark theme.
-- `diffwise-html-diff--layout-inline` shows the single column, also when `Auto` has chosen it, so the class follows the layout on the screen, not the value of the option.
-- `diffwise-html-diff--no-changes` says that the versions are the same, so your CSS can hide or restyle the diff then. It is a state, not an option.
+- An option with a value other than its default adds a class with its name and value, such as `diffwise-diff--gap-style-gray`, `diffwise-diff--highlight-style-underline` or `diffwise-diff--diff-palette-colorblind`. A value the user has chosen in the view settings counts too.
+- The levels always have a class, such as `diffwise-diff--diff-intensity-3` and `diffwise-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
+- `diffwise-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
+- `diffwise-diff--dark-theme` shows the dark theme.
+- `diffwise-diff--layout-inline` shows the single column, also when `Auto` has chosen it, so the class follows the layout on the screen, not the value of the option.
+- `diffwise-diff--no-changes` says that the versions are the same, so your CSS can hide or restyle the diff then. It is a state, not an option.
 
 Options that only show or hide a part, such as `hideUnchangedLines`, `showNavigationToolbar` and `showDiffStats`, add no class, and neither do the options of the comparison and of the settings for the user.
 
@@ -501,50 +501,50 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 
 | Class | What it is |
 |---|---|
-| `diffwise-html-diff__version-headers` | The row of the headers |
-| `diffwise-html-diff__version-header`, with `--old` or `--new` | The header of one version; in the single column, the icon above its numbers |
-| `diffwise-html-diff__version-header--inline` | The header above the content of the single column |
-| `diffwise-html-diff__version-header-icon` | An icon in place of a header text |
-| `diffwise-html-diff__row`, with `--unchanged`, `--changed`, `--added` or `--removed` | One row of the view |
-| `diffwise-html-diff__row--active`, with `--active-first` and `--active-last` | The rows of the block the navigation has stepped to, and its first and its last row |
-| `diffwise-html-diff__line-number`, with `--old` or `--new` | The cell of a line number |
-| `diffwise-html-diff__line-number-value` | The number in that cell |
-| `diffwise-html-diff__content`, with `--old` or `--new` | The content of a line |
-| `diffwise-html-diff__content--merged` | The content of a merged line of the single column, with removed and added text at once |
-| `diffwise-html-diff__image-change-arrow` | The arrow between the old and the new image of a changed image in a merged line |
-| `diffwise-html-diff__divider` | The column between the versions |
-| `diffwise-html-diff__change-details-cell` | The narrow column of the icons of changes next to the content of the single column |
-| `diffwise-html-diff__gap` | The empty place opposite an added or a removed line |
-| `diffwise-html-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
-| `diffwise-html-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
-| `diffwise-html-diff__toolbar` | The toolbar above the diff |
-| `diffwise-html-diff__navigation` | The arrows with the counter |
-| `diffwise-html-diff__navigation-button`, with `--previous` or `--next` | An arrow |
-| `diffwise-html-diff__change-counter` | The counter, such as "2 / 3" |
-| `diffwise-html-diff__diff-stats` | The numbers of changed lines |
-| `diffwise-html-diff__diff-stat`, with `--added`, `--removed` or `--changed` | One number, such as "+3" |
-| `diffwise-html-diff__no-changes` | The text "No changes" in the toolbar |
-| `diffwise-html-diff__view-button` | The button that opens the view settings |
-| `diffwise-html-diff__view-settings` | The view settings, in the top layer of the page |
-| `diffwise-html-diff__view-settings-group` | One option with a choice of values: its name and its buttons |
-| `diffwise-html-diff__view-settings-group--pairs` | A group with its buttons in two columns, such as the colors of changes |
-| `diffwise-html-diff__view-settings-label` | The name of an option, such as "Layout" |
-| `diffwise-html-diff__view-settings-choice` | The button of one value; the chosen one has `aria-pressed="true"` |
-| `diffwise-html-diff__view-settings-checkbox` | The option with a checkbox |
-| `diffwise-html-diff__view-settings-reset` | The button "Restore defaults" |
-| `diffwise-html-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
-| `diffwise-html-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
-| `diffwise-html-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
-| `diffwise-html-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background. A merged line of the single column has two: the old checkbox, then the new one |
-| `diffwise-html-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-html-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
-| `diffwise-html-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
-| `diffwise-html-diff__change-details-count` | The number of changes on the icon of several changes |
-| `diffwise-html-diff__tooltip` | The tooltip; one for each diff |
-| `diffwise-html-diff__tooltip-title` | The title of the tooltip, such as "Link address changed" |
-| `diffwise-html-diff__tooltip-item` | One of several changes in the tooltip, under a line |
-| `diffwise-html-diff__tooltip-subtitle` | The title of one of several changes, or of a part of an image, such as "alternative text" |
-| `diffwise-html-diff__tooltip-description` | A line that describes a change, such as "italic → bold" |
-| `diffwise-html-diff__tooltip-row` | A row with a label and a value, such as the old address |
-| `diffwise-html-diff__tooltip-label`, `diffwise-html-diff__tooltip-value` | The label and the value of that row |
-| `diffwise-html-diff__tooltip-highlight`, with `--removed` or `--added` | The changed part of a value |
-| `diffwise-html-diff__tooltip-color` | A swatch before a color |
+| `diffwise-diff__version-headers` | The row of the headers |
+| `diffwise-diff__version-header`, with `--old` or `--new` | The header of one version; in the single column, the icon above its numbers |
+| `diffwise-diff__version-header--inline` | The header above the content of the single column |
+| `diffwise-diff__version-header-icon` | An icon in place of a header text |
+| `diffwise-diff__row`, with `--unchanged`, `--changed`, `--added` or `--removed` | One row of the view |
+| `diffwise-diff__row--active`, with `--active-first` and `--active-last` | The rows of the block the navigation has stepped to, and its first and its last row |
+| `diffwise-diff__line-number`, with `--old` or `--new` | The cell of a line number |
+| `diffwise-diff__line-number-value` | The number in that cell |
+| `diffwise-diff__content`, with `--old` or `--new` | The content of a line |
+| `diffwise-diff__content--merged` | The content of a merged line of the single column, with removed and added text at once |
+| `diffwise-diff__image-change-arrow` | The arrow between the old and the new image of a changed image in a merged line |
+| `diffwise-diff__divider` | The column between the versions |
+| `diffwise-diff__change-details-cell` | The narrow column of the icons of changes next to the content of the single column |
+| `diffwise-diff__gap` | The empty place opposite an added or a removed line |
+| `diffwise-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
+| `diffwise-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
+| `diffwise-diff__toolbar` | The toolbar above the diff |
+| `diffwise-diff__navigation` | The arrows with the counter |
+| `diffwise-diff__navigation-button`, with `--previous` or `--next` | An arrow |
+| `diffwise-diff__change-counter` | The counter, such as "2 / 3" |
+| `diffwise-diff__diff-stats` | The numbers of changed lines |
+| `diffwise-diff__diff-stat`, with `--added`, `--removed` or `--changed` | One number, such as "+3" |
+| `diffwise-diff__no-changes` | The text "No changes" in the toolbar |
+| `diffwise-diff__view-button` | The button that opens the view settings |
+| `diffwise-diff__view-settings` | The view settings, in the top layer of the page |
+| `diffwise-diff__view-settings-group` | One option with a choice of values: its name and its buttons |
+| `diffwise-diff__view-settings-group--pairs` | A group with its buttons in two columns, such as the colors of changes |
+| `diffwise-diff__view-settings-label` | The name of an option, such as "Layout" |
+| `diffwise-diff__view-settings-choice` | The button of one value; the chosen one has `aria-pressed="true"` |
+| `diffwise-diff__view-settings-checkbox` | The option with a checkbox |
+| `diffwise-diff__view-settings-reset` | The button "Restore defaults" |
+| `diffwise-diff__highlight`, with `--removed` or `--added` | Changed words, and text with changed formatting or a changed link: `<del>` in the earlier version, `<ins>` in the later one |
+| `diffwise-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
+| `diffwise-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
+| `diffwise-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background. A merged line of the single column has two: the old checkbox, then the new one |
+| `diffwise-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
+| `diffwise-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
+| `diffwise-diff__change-details-count` | The number of changes on the icon of several changes |
+| `diffwise-diff__tooltip` | The tooltip; one for each diff |
+| `diffwise-diff__tooltip-title` | The title of the tooltip, such as "Link address changed" |
+| `diffwise-diff__tooltip-item` | One of several changes in the tooltip, under a line |
+| `diffwise-diff__tooltip-subtitle` | The title of one of several changes, or of a part of an image, such as "alternative text" |
+| `diffwise-diff__tooltip-description` | A line that describes a change, such as "italic → bold" |
+| `diffwise-diff__tooltip-row` | A row with a label and a value, such as the old address |
+| `diffwise-diff__tooltip-label`, `diffwise-diff__tooltip-value` | The label and the value of that row |
+| `diffwise-diff__tooltip-highlight`, with `--removed` or `--added` | The changed part of a value |
+| `diffwise-diff__tooltip-color` | A swatch before a color |

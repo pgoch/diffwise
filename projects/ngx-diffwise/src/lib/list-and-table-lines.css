@@ -9,7 +9,7 @@
  * An item split into several lines, such as one with a nested list, shows its marker only in its
  * first line. `!important` wins over a marker style on the item itself, as Google Docs writes it.
  */
-.diffwise-html-diff__content [data-diffwise-continued-item] {
+.diffwise-diff__content [data-diffwise-continued-item] {
   list-style-type: none !important;
 }
 
@@ -17,10 +17,10 @@
  * A list item highlighted as a whole: the item itself, not the copies of its lists, so the marker
  * and the indentation stay as in the document. A table line has its cells marked instead.
  */
-.diffwise-html-diff--highlight-whole-lines
+.diffwise-diff--highlight-whole-lines
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   [data-diffwise-line-item] {
   padding-inline: 6px;
@@ -29,28 +29,28 @@
   box-shadow: inset 0 0 0 2px var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-background
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-background
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   [data-diffwise-line-item] {
   box-shadow: none;
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-underline
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-underline
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   [data-diffwise-line-item] {
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-whole-lines.diffwise-html-diff--highlight-style-top-bottom
+.diffwise-diff--highlight-whole-lines.diffwise-diff--highlight-style-top-bottom
   :is(
-    .diffwise-html-diff__row--removed .diffwise-html-diff__content--old,
-    .diffwise-html-diff__row--added .diffwise-html-diff__content--new
+    .diffwise-diff__row--removed .diffwise-diff__content--old,
+    .diffwise-diff__row--added .diffwise-diff__content--new
   ):not([data-diffwise-table])
   [data-diffwise-line-item] {
   box-shadow:
@@ -62,13 +62,13 @@
  * A changed list marker, which Diffwise draws, since the browser's takes no background. It stands
  * where the browser's would, before the item, in the item's font; the browser's marker hides.
  */
-.diffwise-html-diff__content li:has(> .diffwise-html-diff__highlight--list-marker) {
+.diffwise-diff__content li:has(> .diffwise-diff__highlight--list-marker) {
   position: relative;
   list-style-type: none !important;
 }
 
 /* Half an em between the marker and the item, as browsers leave. */
-.diffwise-html-diff__content .diffwise-html-diff__highlight--list-marker {
+.diffwise-diff__content .diffwise-diff__highlight--list-marker {
   position: absolute;
   inset-inline-end: 100%;
   margin-inline-end: 0.3em;
@@ -77,13 +77,13 @@
 }
 
 /* In a line of the single column, the old marker stands right before the new one, 1px apart. */
-.diffwise-html-diff__content
-  .diffwise-html-diff__highlight--list-marker
-  > .diffwise-html-diff__highlight--list-marker {
+.diffwise-diff__content
+  .diffwise-diff__highlight--list-marker
+  > .diffwise-diff__highlight--list-marker {
   margin-inline-end: 1px;
 }
 
-.diffwise-html-diff__highlight--list-marker::before {
+.diffwise-diff__highlight--list-marker::before {
   content: attr(data-diffwise-list-marker);
 }
 
@@ -91,7 +91,7 @@
  * Bullets are shapes of the size browsers draw them, not characters of the font, with their middle
  * as high above the baseline as the browser's.
  */
-.diffwise-html-diff__highlight--list-marker:is(
+.diffwise-diff__highlight--list-marker:is(
     [data-diffwise-list-marker='\2022'],
     [data-diffwise-list-marker='\25e6'],
     [data-diffwise-list-marker='\25aa']
@@ -106,12 +106,12 @@
   vertical-align: 0.18em;
 }
 
-.diffwise-html-diff__highlight--list-marker[data-diffwise-list-marker='\25e6']::before {
+.diffwise-diff__highlight--list-marker[data-diffwise-list-marker='\25e6']::before {
   border: max(1px, 0.03em) solid currentColor;
   background: none;
 }
 
-.diffwise-html-diff__highlight--list-marker[data-diffwise-list-marker='\25aa']::before {
+.diffwise-diff__highlight--list-marker[data-diffwise-list-marker='\25aa']::before {
   width: 0.3em;
   height: 0.3em;
   border-radius: 0;
@@ -119,7 +119,7 @@
 }
 
 /* The drawn marker comes first in the item, so the block after it loses its top margin instead. */
-.diffwise-html-diff__content .diffwise-html-diff__highlight--list-marker + * {
+.diffwise-diff__content .diffwise-diff__highlight--list-marker + * {
   margin-top: 0;
 }
 
@@ -127,7 +127,7 @@
  * A checked or cleared checkbox: a thin frame with a gap, like a changed image, which follows the
  * highlight style. The checkbox takes no pointer events, as it is only shown.
  */
-.diffwise-html-diff__content .diffwise-html-diff__highlight--checkbox {
+.diffwise-diff__content .diffwise-diff__highlight--checkbox {
   position: relative;
   display: inline-block;
   padding: 0;
@@ -136,18 +136,16 @@
   box-shadow: none;
 }
 
-.diffwise-html-diff__highlight--checkbox input {
+.diffwise-diff__highlight--checkbox input {
   pointer-events: none;
 }
 
 /* A line of the single column shows the old checkbox right before the new one, 1px apart. */
-.diffwise-html-diff__content
-  .diffwise-html-diff__highlight--checkbox
-  + .diffwise-html-diff__highlight--checkbox {
+.diffwise-diff__content .diffwise-diff__highlight--checkbox + .diffwise-diff__highlight--checkbox {
   margin-inline-start: 1px;
 }
 
-.diffwise-html-diff__highlight--checkbox::after {
+.diffwise-diff__highlight--checkbox::after {
   position: absolute;
   inset: 0;
   border: 2px solid var(--diffwise-side-accent);
@@ -156,16 +154,16 @@
   pointer-events: none;
 }
 
-.diffwise-html-diff--highlight-style-background .diffwise-html-diff__highlight--checkbox::after {
+.diffwise-diff--highlight-style-background .diffwise-diff__highlight--checkbox::after {
   border-color: var(--diffwise-side-highlight);
 }
 
-.diffwise-html-diff--highlight-style-underline .diffwise-html-diff__highlight--checkbox::after {
+.diffwise-diff--highlight-style-underline .diffwise-diff__highlight--checkbox::after {
   border-width: 0 0 2px;
   border-radius: 0;
 }
 
-.diffwise-html-diff--highlight-style-top-bottom .diffwise-html-diff__highlight--checkbox::after {
+.diffwise-diff--highlight-style-top-bottom .diffwise-diff__highlight--checkbox::after {
   border-width: 2px 0;
   border-radius: 0;
 }
@@ -175,7 +173,7 @@
  * last pixel of a line goes under the next one. A table line has no background of a changed line,
  * as its cells are marked. Words in cells break only where they would not fit.
  */
-.diffwise-html-diff__content[data-diffwise-table] {
+.diffwise-diff__content[data-diffwise-table] {
   display: flex;
   flex-direction: column;
   padding-block: 0 1px;
@@ -183,53 +181,53 @@
 }
 
 /* A table wider than its column scrolls as one, by the scrollbar under its last row. */
-.diffwise-html-diff__content[data-diffwise-table]:not(:has([data-diffwise-last-table-row])) {
+.diffwise-diff__content[data-diffwise-table]:not(:has([data-diffwise-last-table-row])) {
   scrollbar-width: none;
 }
 
 /* A row grows to the height of the row on the other side, so the table has no holes. */
-.diffwise-html-diff__content[data-diffwise-table] > table {
+.diffwise-diff__content[data-diffwise-table] > table {
   flex: 1 0 auto;
   align-self: flex-start;
 }
 
 /* The rows look like one table with rounded corners; the caption stands above it. */
-.diffwise-html-diff__content table[data-diffwise-table-copy] {
+.diffwise-diff__content table[data-diffwise-table-copy] {
   border: 1px solid var(--diffwise-border);
   border-block-width: 0;
   border-collapse: separate;
   border-spacing: 0;
 }
 
-.diffwise-html-diff__content table[data-diffwise-table-copy]:has(> caption) {
+.diffwise-diff__content table[data-diffwise-table-copy]:has(> caption) {
   border: 0;
 }
 
-.diffwise-html-diff__content table[data-diffwise-first-table-line] {
+.diffwise-diff__content table[data-diffwise-first-table-line] {
   margin-top: 4px;
 }
 
-.diffwise-html-diff__content table[data-diffwise-first-table-row] {
+.diffwise-diff__content table[data-diffwise-first-table-row] {
   border-top-width: 1px;
   border-start-start-radius: 6px;
   border-start-end-radius: 6px;
 }
 
-.diffwise-html-diff__content table[data-diffwise-last-table-row] {
+.diffwise-diff__content table[data-diffwise-last-table-row] {
   margin-bottom: 4px;
   border-bottom-width: 1px;
   border-end-start-radius: 6px;
   border-end-end-radius: 6px;
 }
 
-.diffwise-html-diff__content [data-diffwise-table-copy] > * > tr > * {
+.diffwise-diff__content [data-diffwise-table-copy] > * > tr > * {
   padding: 5px 10px;
   border: 0;
   border-inline-start: 1px solid var(--diffwise-border);
   vertical-align: top;
 }
 
-.diffwise-html-diff__content [data-diffwise-table-copy] > * > tr > :first-child {
+.diffwise-diff__content [data-diffwise-table-copy] > * > tr > :first-child {
   border-inline-start: 0;
 }
 
@@ -237,7 +235,7 @@
  * The line between two rows is the top edge of the lower one, as the next line of the diff can
  * cover the last pixel of a line. A cell continued from a row above has no line above it.
  */
-.diffwise-html-diff__content
+.diffwise-diff__content
   [data-diffwise-table-copy]:not([data-diffwise-first-table-row])
   > *
   > tr
@@ -246,33 +244,33 @@
 }
 
 /* Corner cells round with the table, so their backgrounds stay inside its corners. */
-.diffwise-html-diff__content [data-diffwise-first-table-row] > * > tr > :first-child {
+.diffwise-diff__content [data-diffwise-first-table-row] > * > tr > :first-child {
   border-start-start-radius: 5px;
 }
 
-.diffwise-html-diff__content [data-diffwise-first-table-row] > * > tr > :last-child {
+.diffwise-diff__content [data-diffwise-first-table-row] > * > tr > :last-child {
   border-start-end-radius: 5px;
 }
 
-.diffwise-html-diff__content [data-diffwise-last-table-row] > * > tr > :first-child {
+.diffwise-diff__content [data-diffwise-last-table-row] > * > tr > :first-child {
   border-end-start-radius: 5px;
 }
 
-.diffwise-html-diff__content [data-diffwise-last-table-row] > * > tr > :last-child {
+.diffwise-diff__content [data-diffwise-last-table-row] > * > tr > :last-child {
   border-end-end-radius: 5px;
 }
 
 /* Header rows: rows of the table head, and rows of header cells only. */
-.diffwise-html-diff__content
+.diffwise-diff__content
   [data-diffwise-table-copy]
   > thead
   > tr
-  > :not(.diffwise-html-diff__highlight--cell),
-.diffwise-html-diff__content
+  > :not(.diffwise-diff__highlight--cell),
+.diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr:not(:has(> td))
-  > :not(.diffwise-html-diff__highlight--cell) {
+  > :not(.diffwise-diff__highlight--cell) {
   background: color-mix(in srgb, var(--diffwise-ink) 3.5%, var(--diffwise-background));
 }
 
@@ -280,44 +278,38 @@
  * Hidden copies of all rows of the table, which give the row of a line the columns of the whole
  * table. They take no height, whatever the styles of the document say.
  */
-.diffwise-html-diff__content [data-diffwise-column-sizers] {
+.diffwise-diff__content [data-diffwise-column-sizers] {
   visibility: hidden;
 }
 
-.diffwise-html-diff__content [data-diffwise-column-sizers] > tr,
-.diffwise-html-diff__content [data-diffwise-column-sizers] > tr > * {
+.diffwise-diff__content [data-diffwise-column-sizers] > tr,
+.diffwise-diff__content [data-diffwise-column-sizers] > tr > * {
   height: 0 !important;
   padding-block: 0 !important;
   border-block-width: 0 !important;
   vertical-align: top !important;
 }
 
-.diffwise-html-diff__content [data-diffwise-column-sizers] > tr > * > div {
+.diffwise-diff__content [data-diffwise-column-sizers] > tr > * > div {
   height: 0;
   overflow: hidden;
 }
 
 /* A whole added or removed cell looks like changed words, with the line of the highlight style. */
-.diffwise-html-diff__content .diffwise-html-diff__highlight--cell {
+.diffwise-diff__content .diffwise-diff__highlight--cell {
   border-radius: 0;
   box-shadow: inset 0 0 0 2px var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-style-background
-  .diffwise-html-diff__content
-  .diffwise-html-diff__highlight--cell {
+.diffwise-diff--highlight-style-background .diffwise-diff__content .diffwise-diff__highlight--cell {
   box-shadow: none;
 }
 
-.diffwise-html-diff--highlight-style-underline
-  .diffwise-html-diff__content
-  .diffwise-html-diff__highlight--cell {
+.diffwise-diff--highlight-style-underline .diffwise-diff__content .diffwise-diff__highlight--cell {
   box-shadow: inset 0 -2px 0 var(--diffwise-side-accent);
 }
 
-.diffwise-html-diff--highlight-style-top-bottom
-  .diffwise-html-diff__content
-  .diffwise-html-diff__highlight--cell {
+.diffwise-diff--highlight-style-top-bottom .diffwise-diff__content .diffwise-diff__highlight--cell {
   box-shadow:
     inset 0 2px 0 var(--diffwise-side-accent),
     inset 0 -2px 0 var(--diffwise-side-accent);
@@ -327,11 +319,11 @@
  * In a table whose two versions show as one, the place of a column that the version of a row does
  * not have: a gap in the style of the gaps opposite added and removed lines.
  */
-.diffwise-html-diff__content
+.diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
-  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  > .diffwise-diff__gap.diffwise-diff__gap--cell {
   background: repeating-linear-gradient(
     135deg,
     var(--diffwise-gap-light) 0 6px,
@@ -339,21 +331,21 @@
   );
 }
 
-.diffwise-html-diff--gap-style-gray
-  .diffwise-html-diff__content
+.diffwise-diff--gap-style-gray
+  .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
-  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  > .diffwise-diff__gap.diffwise-diff__gap--cell {
   background: var(--diffwise-gap-gray);
 }
 
-.diffwise-html-diff--gap-style-empty
-  .diffwise-html-diff__content
+.diffwise-diff--gap-style-empty
+  .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
-  > .diffwise-html-diff__gap.diffwise-html-diff__gap--cell {
+  > .diffwise-diff__gap.diffwise-diff__gap--cell {
   background: none;
 }
 
@@ -361,13 +353,13 @@
  * A table that bars of hidden lines cut into parts: each part looks like a whole table, with
  * rounded corners and its own scrollbar under its last row. The part above a bar ends there...
  */
-.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
-  > .diffwise-html-diff__content[data-diffwise-table]:not(:has(caption)) {
+.diffwise-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-diff__content[data-diffwise-table]:not(:has(caption)) {
   scrollbar-width: auto;
 }
 
-.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
-  > .diffwise-html-diff__content
+.diffwise-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-diff__content
   table[data-diffwise-table-copy]:not(:has(> caption)) {
   margin-bottom: 4px;
   border-bottom-width: 1px;
@@ -375,8 +367,8 @@
   border-end-end-radius: 6px;
 }
 
-.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
-  > .diffwise-html-diff__content
+.diffwise-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
@@ -384,8 +376,8 @@
   border-end-start-radius: 5px;
 }
 
-.diffwise-html-diff__row:has(+ diffwise-collapsed-lines-bar)
-  > .diffwise-html-diff__content
+.diffwise-diff__row:has(+ diffwise-collapsed-lines-bar)
+  > .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
@@ -395,8 +387,8 @@
 
 /* ...and the part below a bar starts there, with the top edge of a table instead of a row. */
 diffwise-collapsed-lines-bar
-  + .diffwise-html-diff__row
-  > .diffwise-html-diff__content
+  + .diffwise-diff__row
+  > .diffwise-diff__content
   table[data-diffwise-table-copy]:not(:has(> caption)) {
   margin-top: 4px;
   border-top-width: 1px;
@@ -405,8 +397,8 @@ diffwise-collapsed-lines-bar
 }
 
 diffwise-collapsed-lines-bar
-  + .diffwise-html-diff__row
-  > .diffwise-html-diff__content
+  + .diffwise-diff__row
+  > .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
@@ -415,8 +407,8 @@ diffwise-collapsed-lines-bar
 }
 
 diffwise-collapsed-lines-bar
-  + .diffwise-html-diff__row
-  > .diffwise-html-diff__content
+  + .diffwise-diff__row
+  > .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr
@@ -425,8 +417,8 @@ diffwise-collapsed-lines-bar
 }
 
 diffwise-collapsed-lines-bar
-  + .diffwise-html-diff__row
-  > .diffwise-html-diff__content
+  + .diffwise-diff__row
+  > .diffwise-diff__content
   [data-diffwise-table-copy]
   > *
   > tr

@@ -19,7 +19,7 @@ import { listMarkerText } from './list-marker-text';
 
 const TEMPLATE_TAG = 'template';
 const HTML_NAMESPACE = 'http://www.w3.org/1999/xhtml';
-const HIGHLIGHT_CLASS = 'diffwise-html-diff__highlight';
+const HIGHLIGHT_CLASS = 'diffwise-diff__highlight';
 const LINE_ITEM_SELECTOR = `[${LINE_ITEM_ATTRIBUTE}]`;
 
 /** Cells of the row in a table line: children of the row, in the copies of its table and group. */

@@ -1,8 +1,6 @@
 <button
   type="button"
-  class="diffwise-html-diff__change-details-icon diffwise-html-diff__change-details-icon--{{
-    icon()
-  }}"
+  class="diffwise-diff__change-details-icon diffwise-diff__change-details-icon--{{ icon() }}"
   [attr.aria-label]="label()"
 >
   @switch (icon()) {
@@ -57,7 +55,7 @@
         <path d="M8 2.2l5.6 3L8 8.2 2.4 5.2z" />
         <path d="M2.4 8.2L8 11.2l5.6-3M2.4 11L8 14l5.6-3" stroke-linecap="round" />
       </svg>
-      <span class="diffwise-html-diff__change-details-count" aria-hidden="true">{{
+      <span class="diffwise-diff__change-details-count" aria-hidden="true">{{
         details().length
       }}</span>
     }

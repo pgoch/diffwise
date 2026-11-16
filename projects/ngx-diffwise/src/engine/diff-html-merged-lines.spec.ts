@@ -3,29 +3,29 @@ import { DEFAULT_DIFF_OPTIONS, type DiffOptions, LineChangeKind, type ViewRow } 
 
 const ID_PREFIX = 'diff';
 const TEMPLATE_TAG = 'template';
-const REMOVED = 'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed"';
+const REMOVED = 'class="diffwise-diff__highlight diffwise-diff__highlight--removed"';
 const REPLACED = `${REMOVED} data-diffwise-replaced=""`;
 const HIDDEN_SPACE = '<span data-diffwise-hidden-space=""> </span>';
-const ADDED = 'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added"';
+const ADDED = 'class="diffwise-diff__highlight diffwise-diff__highlight--added"';
 const REMOVED_IMAGE =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--image"';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--removed diffwise-diff__highlight--image"';
 const ADDED_IMAGE =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added diffwise-html-diff__highlight--image"';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--added diffwise-diff__highlight--image"';
 const REMOVED_LIST_MARKER =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--list-marker"';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--removed diffwise-diff__highlight--list-marker"';
 const ADDED_LIST_MARKER =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added diffwise-html-diff__highlight--list-marker"';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--added diffwise-diff__highlight--list-marker"';
 const REMOVED_CHECKBOX =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--removed diffwise-html-diff__highlight--checkbox"';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--removed diffwise-diff__highlight--checkbox"';
 const ADDED_CHECKBOX =
-  'class="diffwise-html-diff__highlight diffwise-html-diff__highlight--added diffwise-html-diff__highlight--checkbox"';
-const CHECKBOX_FRAMES_SELECTOR = 'label > .diffwise-html-diff__highlight--checkbox';
+  'class="diffwise-diff__highlight diffwise-diff__highlight--added diffwise-diff__highlight--checkbox"';
+const CHECKBOX_FRAMES_SELECTOR = 'label > .diffwise-diff__highlight--checkbox';
 const CHECKED_ATTRIBUTE = 'checked';
 const FIRST_DETAIL = 'data-diffwise-change-details="0"';
-const ARROW = '<span class="diffwise-html-diff__image-change-arrow" aria-hidden="true"></span>';
+const ARROW = '<span class="diffwise-diff__image-change-arrow" aria-hidden="true"></span>';
 const LINE_ITEM = 'data-diffwise-line-item=""';
 const CONTINUED_ITEM = 'data-diffwise-continued-item=""';
-const REMOVED_SELECTOR = '.diffwise-html-diff__highlight--removed';
+const REMOVED_SELECTOR = '.diffwise-diff__highlight--removed';
 const ID_SELECTOR = '[id]';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
 const IGNORE_WHITESPACE_AND_CASE: DiffOptions = {
