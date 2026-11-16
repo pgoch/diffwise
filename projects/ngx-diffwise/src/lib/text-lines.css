@@ -24,6 +24,13 @@ diffwise-text .diffwise-diff__content {
   tab-size: var(--diffwise-tab-size);
 }
 
+/* The font of the diff, when the reader or the app switches to it. */
+diffwise-text.diffwise-diff--text-font-proportional .diffwise-diff__content {
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 /* An empty line keeps the height of a line of text. */
 diffwise-text .diffwise-diff__content:empty::after {
   content: '\200b';

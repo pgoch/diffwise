@@ -20,6 +20,7 @@ import {
   DiffwiseLineNumberStyle,
   DiffwiseNoChangesView,
   DiffwisePalette,
+  DiffwiseTextFont,
   DiffwiseTooltipColorMode,
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
@@ -102,6 +103,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   versionHeaders: isVersionHeaders,
   versionHeaderAlignment: isAlignment,
   fontFamily: isFontFamily,
+  textFont: isTextFont,
   versionHeaderFontSize: isFontSize,
   lineNumberFontSize: isFontSize,
   tooltipFontSize: isFontSize,
@@ -299,6 +301,10 @@ function isAlignment(value: unknown): boolean {
 }
 
 /** True for a font of the diff, or for the name of a font of the app, such as `Inter`. */
+function isTextFont(value: unknown): boolean {
+  return isValueOf(DiffwiseTextFont, value);
+}
+
 function isFontFamily(value: unknown): boolean {
   return isValueOf(DiffwiseFontFamily, value) || (isText(value) && isFontName(value));
 }

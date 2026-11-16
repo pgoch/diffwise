@@ -158,6 +158,8 @@ export const DiffwiseUserSetting = {
    * the app, when it gives them.
    */
   DiffPalette: 'diffPalette',
+  /** A font of fixed width or the font of the diff, for the lines of the text diff only. */
+  TextFont: 'textFont',
   /** The versions side by side, a single column, or automatic. */
   Layout: 'layout',
   /** How the single column shows a changed line; the user can change it in the single column. */
@@ -177,6 +179,16 @@ export const DiffwiseFontFamily = {
 } as const;
 
 export type DiffwiseFontFamily = (typeof DiffwiseFontFamily)[keyof typeof DiffwiseFontFamily];
+
+/** Fonts of the lines of the text diff; the HTML diff does not use the option. */
+export const DiffwiseTextFont = {
+  /** A font of fixed width, from the variable `--diffwise-text-font-family`. */
+  Monospace: 'monospace',
+  /** The font of the diff, as the option `fontFamily` sets it. */
+  Proportional: 'proportional',
+} as const;
+
+export type DiffwiseTextFont = (typeof DiffwiseTextFont)[keyof typeof DiffwiseTextFont];
 
 /** Where the details of a change besides its text show, such as the old and new link address. */
 export const DiffwiseChangeDetails = {

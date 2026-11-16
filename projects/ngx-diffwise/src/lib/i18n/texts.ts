@@ -100,6 +100,12 @@ export interface DiffwiseCustomTexts {
   readonly highContrastDiffPaletteLabel?: string;
   /** The colors of changes the app gives. */
   readonly customDiffPaletteLabel?: string;
+  /** Names the choice of the font of the lines of the text diff. */
+  readonly textFontLabel?: string;
+  /** A font of fixed width, which keeps indentation and columns in line. */
+  readonly monospaceTextFontLabel?: string;
+  /** The font of the diff, with letters of their own widths. */
+  readonly proportionalTextFontLabel?: string;
   /** Names the checkbox that hides unchanged lines far from changes. */
   readonly hideUnchangedLinesLabel?: string;
   /** Names the button that takes back the choices of the user. */

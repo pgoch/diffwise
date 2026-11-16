@@ -41,6 +41,9 @@ export const GERMAN_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Für Farbenblinde',
   highContrastDiffPaletteLabel: 'Hoher Kontrast',
   customDiffPaletteLabel: 'Eigene',
+  textFontLabel: 'Textschrift',
+  monospaceTextFontLabel: 'Feste Breite',
+  proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Unveränderte Zeilen ausblenden',
   resetUserSettingsLabel: 'Standard wiederherstellen',
 

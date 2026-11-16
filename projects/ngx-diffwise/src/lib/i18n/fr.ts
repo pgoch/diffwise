@@ -44,6 +44,9 @@ export const FRENCH_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Pour daltoniens',
   highContrastDiffPaletteLabel: 'Contraste élevé',
   customDiffPaletteLabel: 'Personnalisées',
+  textFontLabel: 'Police du texte',
+  monospaceTextFontLabel: 'Chasse fixe',
+  proportionalTextFontLabel: 'Normale',
   hideUnchangedLinesLabel: 'Masquer les lignes inchangées',
   resetUserSettingsLabel: 'Rétablir les valeurs par défaut',
 

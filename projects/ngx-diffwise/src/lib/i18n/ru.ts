@@ -41,6 +41,9 @@ export const RUSSIAN_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Для дальтоников',
   highContrastDiffPaletteLabel: 'Высокий контраст',
   customDiffPaletteLabel: 'Свои',
+  textFontLabel: 'Шрифт текста',
+  monospaceTextFontLabel: 'Моноширинный',
+  proportionalTextFontLabel: 'Обычный',
   hideUnchangedLinesLabel: 'Скрыть неизменённые строки',
   resetUserSettingsLabel: 'Сбросить настройки',
 

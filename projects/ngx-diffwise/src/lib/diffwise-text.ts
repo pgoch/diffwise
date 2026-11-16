@@ -49,6 +49,9 @@ import { ViewSettings } from './toolbar/view-settings';
   encapsulation: ViewEncapsulation.None,
 })
 export class DiffwiseText extends DiffView {
+  /** Lines of plain text, whose font the user can switch. */
+  protected override readonly showsTextLines = true;
+
   /** The earlier version of the text. */
   readonly oldText = input('');
 

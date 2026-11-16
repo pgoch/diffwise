@@ -46,6 +46,7 @@ const DESCRIPTION_SELECTOR = '[data-diffwise-line-description]';
 const CHOICE_SELECTOR = '.diffwise-diff__view-settings-choice';
 const GROUP_LABEL_SELECTOR = '.diffwise-diff__view-settings-label';
 const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
+const TEXT_FONT_GROUP = 'Text font';
 const LINE_COUNT = 12;
 const CHANGED_LINE = 6;
 
@@ -118,6 +119,13 @@ function partText(part: Element) {
 /** Texts of the elements as they are, with their spaces and tabs. */
 function textsOf(element: Element, selector: string) {
   return Array.from(element.querySelectorAll(selector), (found) => found.textContent);
+}
+
+/** Names of the groups of the view settings. */
+function labelsOf(element: HTMLElement) {
+  return Array.from(element.querySelectorAll(GROUP_LABEL_SELECTOR), (label) =>
+    label.textContent?.trim(),
+  );
 }
 
 function countOf(element: Element, selector: string): number {
@@ -310,7 +318,7 @@ describe('DiffwiseText', () => {
     );
   });
 
-  it('shows the view settings of the HTML diff and shares the choices with it', () => {
+  it('shows the view settings of the HTML diff and the text font, and shares the choices', () => {
     const textFixture = render('one', 'two');
     const htmlFixture = TestBed.createComponent(DiffwiseHtml);
     const textElement = textFixture.nativeElement as HTMLElement;
@@ -319,9 +327,11 @@ describe('DiffwiseText', () => {
     htmlFixture.componentRef.setInput(NEW_HTML_INPUT, '<p>two</p>');
     htmlFixture.detectChanges();
 
-    expect(textsOf(textElement, GROUP_LABEL_SELECTOR)).toEqual(
-      textsOf(htmlFixture.nativeElement, GROUP_LABEL_SELECTOR),
-    );
+    const htmlGroups = labelsOf(htmlFixture.nativeElement);
+    const textGroups = labelsOf(textElement);
+
+    expect(textGroups.filter((label) => label !== TEXT_FONT_GROUP)).toEqual(htmlGroups);
+    expect(textGroups).toContain(TEXT_FONT_GROUP);
 
     choiceOf(textElement, 'Dark').click();
     textFixture.detectChanges();

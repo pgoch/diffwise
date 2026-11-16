@@ -41,6 +41,9 @@ export const POLISH_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: 'Dla daltonistów',
   highContrastDiffPaletteLabel: 'Wysoki kontrast',
   customDiffPaletteLabel: 'Własne',
+  textFontLabel: 'Czcionka tekstu',
+  monospaceTextFontLabel: 'Stała szerokość',
+  proportionalTextFontLabel: 'Zwykła',
   hideUnchangedLinesLabel: 'Ukryj niezmienione linie',
   resetUserSettingsLabel: 'Przywróć domyślne',
 

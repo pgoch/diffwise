@@ -41,6 +41,9 @@ export const CHINESE_TEXTS: UiTexts = {
   colorblindDiffPaletteLabel: '色盲友好',
   highContrastDiffPaletteLabel: '高对比度',
   customDiffPaletteLabel: '自定义',
+  textFontLabel: '文本字体',
+  monospaceTextFontLabel: '等宽',
+  proportionalTextFontLabel: '常规',
   hideUnchangedLinesLabel: '隐藏未更改的行',
   resetUserSettingsLabel: '恢复默认设置',
 
