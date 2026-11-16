@@ -10,10 +10,12 @@
 | 0.4 | Single-column layout with automatic switching, and merged lines; collapsing of unchanged lines; a toolbar with navigation between changes, statistics and view settings for end users, which can be remembered, exported and imported |
 | 0.5 | Interface in 10 more languages, 12 in all, with sample documents in each; colorblind-friendly and high contrast palettes, which end users can also choose; accessibility: descriptions of changed lines for screen readers, keyboard access to wide tables, the high contrast mode of Windows, and contrast at every level of the scales |
 | 0.6 | Plain text diffs: a second component that compares two versions of plain text line by line, with the same look and configuration as the HTML diff; spaces, tabs and indentation as in the text, changed whitespace shown as signs, and a font of fixed width that end users can switch |
-| 0.7+ | Further improvements based on feedback, as needed |
-| 1.0 | Stable API, complete documentation, a live demo and a configurator page that turns your choices into ready-to-copy configuration |
+| 0.7 | A configurator: a page that leads you step by step through the options, with a live preview of the diff, and gives you configuration ready to copy into your app, as a plain object or as a `DiffwiseConfig`; cleaner code and smaller improvements |
+| 0.8 | Performance: a review of the whole code for faster comparison and display of long documents and texts, and a smaller bundle |
+| 0.9 | Final tests in Chrome, Edge, Firefox and Safari and with screen readers, bug fixes, and the first release on npm |
+| 1.0 | Stable API, complete documentation and a live demo with the configurator |
 
-The first version on npm comes next. Later versions before 1.0 will be published as they are ready.
+The first version on npm is planned at the end of 0.9. Later versions will be published as they are ready.
 
 ## Ideas after 1.0
 

@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup. A second component does the same for plain text.
 
-> **Status: version 0.6, an early preview.** It is not on npm yet; the first release comes next. The API may change before 1.0.
+> **Status: version 0.6, an early preview.** It is not on npm yet; the first release is planned with version 0.9. The API may change before 1.0.
 
 ## Why Diffwise?
 
@@ -40,7 +40,7 @@ Diffwise fills that gap:
 - Options to ignore whitespace, letter case, formatting or link changes.
 - Configuration on three levels: global defaults, changes while the app runs, and inputs of each diff.
 
-A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: the first release on npm.
+A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: a step-by-step configurator, better performance and, with version 0.9, the first release on npm.
 
 ## Installation
 
