@@ -1,8 +1,11 @@
 export { diffHtml } from './diff-html';
+export { diffText } from './diff-text';
 export {
   CHANGE_DETAILS_ATTRIBUTE,
   type ChangeDetail,
   ChangeDetailKind,
+  type Comparison,
+  type ComparisonSettings,
   DEFAULT_DIFF_OPTIONS,
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
@@ -11,8 +14,6 @@ export {
   type FormattingChangeDetail,
   FormattingValue,
   type FormattingValueChange,
-  type HtmlDiff,
-  type HtmlDiffSettings,
   type ImageChangeDetail,
   type ImageProperties,
   ImageProperty,

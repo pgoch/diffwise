@@ -1,0 +1,106 @@
+NOTEBOOK ONLINE - SYNC SERVICE
+==============================
+
+Operations notes, version 3.3
+Last update: 16 March 2026
+Owner: platform team (platform@example.com)
+
+
+1. Overview
+-----------
+
+The sync service keeps notes the same on every device of a user. It runs in four regions and stores a copy of each note in at least two of them, so a note stays available when one region goes down. Changes made offline wait on the device and go out as soon as it is online again.
+
+This file is plain text on purpose: it opens in any editor, it reads well in a terminal, and a diff of two versions shows every space and every tab, which matters for the settings below.
+
+Contents:
+  1. Overview
+  2. Plans and limits
+  3. Sync settings
+  4. Release checklist
+  5. Known issues
+  6. Notes for translators
+  7. Contacts
+
+
+2. Plans and limits
+-------------------
+
+Plan        Notes        Storage     Devices
+Free        100          1 GB        2
+Plus        10,000       50 GB       5
+Pro         unlimited    100 GB      unlimited
+Team        unlimited    1 TB        unlimited
+
+Prices are in EUR per month and include VAT.
+Students get the Plus plan for free for one year.
+
+
+3. Sync settings
+----------------
+
+The settings below are the defaults for new accounts. Indentation shows which group each setting belongs to.
+
+sync:
+    interval: 15 minutes
+    wifi only: yes
+    background: yes
+    retries: 3
+backup:
+    time: 02:00 UTC
+    keep: 90 days
+
+Regions, separated by tabs:
+region	nodes	status
+eu-west	12	ok
+us-east	9	ok
+ap-south	6	degraded
+
+
+4. Release checklist
+--------------------
+
+1. Freeze the release branch.
+2. Run the full test suite.
+3. Check the translations.
+4. Update the changelog.
+5. Deploy to the staging region.
+6. Deploy to all regions.
+
+✅ Steps 1-4 are done for version 3.3. 🎉
+⏳ Staging deploy is planned for Wednesday.
+
+Do not deploy on Fridays.  
+
+
+5. Known issues
+---------------
+
+- Notes with more than 50,000 characters sync slowly.
+- Some editors paste text such as <strong>bold</strong> or <script>alert("hi")</script> into the title. The app must show such text as it is and never run it.
+- Titles with &amp; or &lt; show the code instead of the character in the old Android app.
+- Very long links, such as https://example.com/notebooks/shared/2026/03/team-planning/very-long-note-title-that-never-ends, do not wrap on small screens.
+
+- The emoji picker 🙂 is missing on desktop.
+- Search ignores words shorter than three letters.
+
+
+6. Notes for translators
+------------------------
+
+Keep the texts of screens short: they must fit on a phone.
+Texts of the sync screen in Chinese (simplified characters):
+  同步已完成。
+  笔记会自动同步到您的所有设备。
+  每天凌晨三点备份一次。
+Write dates the way the language of the screen writes them.
+
+
+7. Contacts
+-----------
+
+Platform team: platform@example.com
+Status page: https://status.example.com
+
+
+End of file.

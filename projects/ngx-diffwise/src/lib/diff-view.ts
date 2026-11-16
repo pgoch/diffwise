@@ -23,12 +23,12 @@ import {
   CHANGE_DETAILS_ATTRIBUTE,
   type ChangeDetail,
   type CollapsibleRow,
+  type Comparison,
+  type ComparisonSettings,
   DETAIL_INDEX_SEPARATOR,
   type DiffOptions,
   DocumentVersion,
   HiddenLines,
-  type HtmlDiff,
-  type HtmlDiffSettings,
   LineChangeKind,
   type SingleColumnRow,
   type SingleColumnTablePlace,
@@ -930,7 +930,10 @@ export abstract class DiffView {
   }
 
   /** Compares the versions as the kind of content of the diff needs. */
-  protected abstract compareVersions(versions: DiffVersions, settings: HtmlDiffSettings): HtmlDiff;
+  protected abstract compareVersions(
+    versions: DiffVersions,
+    settings: ComparisonSettings,
+  ): Comparison;
 
   /**
    * Adds the choice of the user, which every diff with the same key follows, and tells the app.
@@ -1059,7 +1062,7 @@ export abstract class DiffView {
   }
 
   /** Compares the versions with the options of the comparison, with merged lines or without. */
-  private compare(mergesChangedLines: boolean): HtmlDiff {
+  private compare(mergesChangedLines: boolean): Comparison {
     const settings = { options: this.diffOptions(), idPrefix: this.idPrefix, mergesChangedLines };
     return this.compareVersions(this.versions(), settings);
   }

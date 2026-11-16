@@ -1,0 +1,11 @@
+Przerwa techniczna w niedzielę
+
+Przed 22:00:
+- Powiadom zespół wsparcia o przerwie technicznej.
+- Opublikuj komunikat na stronie statusu i w mediach społecznościowych.
+- Sprawdź, czy kopie zapasowe się zakończyły.
+
+Po 23:30:
+- Włącz z powrotem synchronizację.
+- Obserwuj dziennik błędów przez dwie godziny.
+- Wyślij zespołowi krótkie podsumowanie.

@@ -95,6 +95,17 @@ describe('diffWords', () => {
     expect(changedTexts('Kliknij', 'Kliknij tutaj')).toEqual({ removed: [], added: ['tutaj'] });
   });
 
+  it('keeps whitespace at the start and the end of the text in a change, such as an indentation', () => {
+    expect(changedTexts('  old words', '    new words')).toEqual({
+      removed: ['  old'],
+      added: ['    new'],
+    });
+    expect(changedTexts('first item  ', 'first entry')).toEqual({
+      removed: ['item  '],
+      added: ['entry'],
+    });
+  });
+
   it('moves a removed sentence to start at a word and end with its full stop', () => {
     expect(
       changedTexts(

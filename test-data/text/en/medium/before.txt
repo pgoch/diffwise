@@ -1,0 +1,57 @@
+# Notebook Online Export
+
+Export your notes from Notebook Online to Markdown files, one file per note.
+
+## Requirements
+
+- Node.js 20 or newer
+- A Notebook Online account with an API key
+
+## Installation
+
+```
+npm install --global notebook-export
+```
+
+## Usage
+
+```
+notebook-export --key YOUR_API_KEY --out ./notes
+```
+
+The tool creates one folder for each notebook and keeps the tags of each note in its front matter.
+
+## Options
+
+| Option     | Default   | Description                            |
+|------------|-----------|----------------------------------------|
+| `--key`    |           | Your API key, required                 |
+| `--out`    | `./notes` | Folder for the exported files          |
+| `--format` | `md`      | File format: `md` or `txt`             |
+| `--since`  |           | Export only notes changed after a date |
+
+## Configuration file
+
+Instead of options, you can keep the settings in `notebook-export.json`:
+
+```json
+{
+  "key": "YOUR_API_KEY",
+  "out": "./notes",
+  "format": "md"
+}
+```
+
+## Limits
+
+- The API allows 100 requests per minute.
+- Attachments larger than 25 MB are skipped.
+- A notebook with 1,000 notes takes about ten minutes to export.
+
+## Help
+
+Read the [documentation](https://example.com/docs/export) or open an issue at https://example.com/export/issues.
+
+## License
+
+MIT

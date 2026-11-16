@@ -1,6 +1,6 @@
 # Test data
 
-Sample documents for trying out Diffwise and checking it by eye. All samples were auto-generated. Each sample is a pair, `before.html` and `after.html`. Both are HTML fragments, the way an editor or a CMS stores content, not full pages.
+Sample documents for trying out Diffwise and checking it by eye. All samples were auto-generated. Each HTML sample is a pair, `before.html` and `after.html`. Both are HTML fragments, the way an editor or a CMS stores content, not full pages. Samples of plain text are described in [Plain text samples](#plain-text-samples).
 
 | Sample | Content |
 |---|---|
@@ -114,9 +114,97 @@ The long sample also covers content without changes: headings h1–h4, `<sub>`, 
 
 Scripts, event handlers, `javascript:` links and embedded media (`<iframe>`, `<video>`) are left out, so the samples are safe to open. Automated tests cover them.
 
+## Plain text samples
+
+Samples for the plain text diff are in [text](text). Each is a pair, `before.txt` and `after.txt`, about the same fictional service as the HTML samples.
+
+| Sample | Content |
+|---|---|
+| Short | A note: a short list of tasks |
+| Medium | A README in Markdown, shown as plain text: headings, lists, code blocks and a table |
+| Long | Operations notes with everything at once: indentation with spaces and tabs, columns aligned with spaces, empty lines, long lines, spaces at the end of lines, text that looks like HTML, emoji and Chinese |
+
+| Language | Short | Medium | Long |
+|---|---|---|---|
+| English | [text/en/short](text/en/short) | [text/en/medium](text/en/medium) | [text/en/long](text/en/long) |
+| Polish | [text/pl/short](text/pl/short) | [text/pl/medium](text/pl/medium) | [text/pl/long](text/pl/long) |
+
+The Polish samples have the same structure and the same changes as the English ones, so the diff shows the same rows in both languages; the engine tests check it. The plain text diff splits words with the same code as the HTML diff, which the HTML samples check in all twelve languages.
+
+### Changes in each plain text sample
+
+#### Short
+
+- A word changed in the title: Saturday → Sunday.
+- A phrase added at the end of a line.
+- A time changed: 23:00 → 23:30.
+- Words changed: "one hour" → "two hours".
+- A line added at the end.
+
+#### Medium
+
+- Words added to the introduction ("or plain text").
+- A version number changed in a list (20 → 22).
+- A section added: a heading and a code block ("Updating").
+- A value changed in a command inside a code block (`./notes` → `./backup`).
+- The end of a sentence removed.
+- Table: a word changed in a row, a row added. The columns stay aligned with spaces.
+- JSON in a code block: a value changed, a comma added and a line added.
+- Bulleted list: numbers changed in two items, an item removed.
+- A link address changed; its text stayed the same.
+
+#### Long
+
+Header and overview:
+
+- The version and the date changed.
+- Two spaces became one ("Owner:  platform team").
+- A word changed in the middle of a long line, and an empty line added after it.
+- An item added to an indented list of contents.
+
+Plans and limits:
+
+- A value changed in columns aligned with spaces, and a row added.
+- One of two empty lines removed.
+- Spaces at the end of a line removed.
+
+Sync settings:
+
+- Indentation changed: two spaces → four spaces in two lines, a tab → four spaces in another one. A line indented with four spaces stays unchanged.
+- A value changed in an indented line.
+- A value changed in a line with columns separated by tabs.
+
+Release checklist:
+
+- A step added to a numbered list, so the numbers of the next three steps changed.
+- Numbers changed and an emoji added in a line that starts with an emoji.
+- A word changed in another line that starts with an emoji.
+- Spaces added at the end of a line.
+
+Known issues:
+
+- Text that looks like HTML changed: `<b>` → `<strong>`. It shows as plain characters, like the `<script>` next to it.
+- A word changed next to `&amp;` and `&lt;`, which show as plain characters too.
+- A line of four spaces became an empty line.
+- An emoji changed (😀 → 🙂).
+- An item added.
+
+Notes for translators:
+
+- Chinese text changed: a word added in one line, another word changed in the next one.
+
+Contacts:
+
+- A section added before the last line.
+
+The long sample also has lines without changes: a title underlined with `=`, section titles underlined with `-`, a line indented with four spaces, a very long link and a line of Chinese text.
+
+With `ignoreWhitespace`, the changes of whitespace above are not changes: indentation, two spaces → one, spaces at the end of lines and the line of four spaces, which then equals an empty line.
+
 ## Rules
 
 - All content is made up and describes a fictional service. Do not add real documents, names or data.
 - Use only `example.com` addresses.
-- Keep `before.html` and `after.html` identical apart from the changes listed above, and update this list when you change a sample.
+- Keep `before` and `after` identical apart from the changes listed above, and update this list when you change a sample.
 - Change a sample in every language at once, so that all of them keep the same structure and the same changes.
+- Keep the tabs and the spaces at the end of lines in the plain text samples: they are part of the changes. An editor that removes spaces at the end of lines when it saves a file breaks the samples.

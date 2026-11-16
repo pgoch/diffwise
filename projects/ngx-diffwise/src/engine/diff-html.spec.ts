@@ -17,11 +17,11 @@ import { splitLines } from './html/split-lines';
 import {
   type ChangeDetail,
   ChangeDetailKind,
+  type Comparison,
   DEFAULT_DIFF_OPTIONS,
   type DiffOptions,
   FormattingValue,
   type FormattingValueChange,
-  type HtmlDiff,
   type ImageProperties,
   ImageProperty,
   LineChangeKind,
@@ -90,14 +90,14 @@ const SAMPLES: [string, string, string][] = [
 ];
 
 /** Diffs of the samples with the default options, by sample name; each is compared on first use. */
-const sampleDiffs = new Map<string, HtmlDiff>();
+const sampleDiffs = new Map<string, Comparison>();
 
 /** Compares two documents; ids of the versions start with `diff-old-` and `diff-new-`. */
 function compare(
   oldHtml: string,
   newHtml: string,
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
-): HtmlDiff {
+): Comparison {
   return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX, mergesChangedLines: false });
 }
 
@@ -105,7 +105,7 @@ function compare(
  * The diff of a sample with the default options. Tests share it, because comparing a long sample
  * takes most of the time of a test.
  */
-function sampleDiff(name: string): HtmlDiff {
+function sampleDiff(name: string): Comparison {
   const sharedDiff = sampleDiffs.get(name);
 
   if (sharedDiff !== undefined) {

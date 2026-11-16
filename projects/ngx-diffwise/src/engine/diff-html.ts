@@ -26,10 +26,10 @@ import {
 import { addTableColumns } from './mark/table-columns';
 import {
   type ChangeDetail,
+  type Comparison,
+  type ComparisonSettings,
   type DescribedChanges,
   type DiffOptions,
-  type HtmlDiff,
-  type HtmlDiffSettings,
   type Line,
   type LineChange,
   LineChangeKind,
@@ -53,7 +53,11 @@ const NO_CELLS: readonly number[] = [];
  * settings ask for it, each changed pair gets its merged line too, for the single-column view, and
  * so does every line of a table whose two versions show as one table there.
  */
-export function diffHtml(oldHtml: string, newHtml: string, settings: HtmlDiffSettings): HtmlDiff {
+export function diffHtml(
+  oldHtml: string,
+  newHtml: string,
+  settings: ComparisonSettings,
+): Comparison {
   const oldLines = versionLines(oldHtml, settings.idPrefix, OLD_VERSION_ID_PART);
   const newLines = versionLines(newHtml, settings.idPrefix, NEW_VERSION_ID_PART);
   const { changes, stats } = diffLines(oldLines, newLines, settings.options);
@@ -89,7 +93,7 @@ class ViewRowBuilder {
   private readonly changedTableLines = new Map<ViewRow, ChangedTableLine>();
 
   constructor(
-    settings: HtmlDiffSettings,
+    settings: ComparisonSettings,
     private readonly columns: ColumnMatches,
   ) {
     this.options = settings.options;

@@ -3,10 +3,12 @@ import { type TextPiece, mapReaderText } from '../html/reader-text';
 import {
   type ChangeDetail,
   ChangeDetailKind,
-  DIFFWISE_DATA_ATTRIBUTE_START,
   type DescribedChanges,
+  HIDDEN_SPACE_ATTRIBUTE,
   type Line,
   type MarkedRange,
+  REPLACED_TEXT_ATTRIBUTE,
+  type RemovedRange,
   type TextRange,
   type WordChanges,
 } from '../model';
@@ -37,18 +39,6 @@ const REMOVED_MARKER_SELECTOR = [REMOVED_TEXT_MARKER.tag, ...REMOVED_TEXT_MARKER
   CLASS_SELECTOR_START,
 );
 
-/**
- * Marks the end of removed text that added text replaces right after it; styles leave a gap
- * between the two.
- */
-const REPLACED_TEXT_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}replaced`;
-
-/**
- * Marks the space between removed text and the added text that replaces it. Styles hide it, as the
- * gap shows instead, but screen readers read it and copied text keeps it.
- */
-const HIDDEN_SPACE_ATTRIBUTE = `${DIFFWISE_DATA_ATTRIBUTE_START}hidden-space`;
-
 /** The arrow between the old and the new image of a changed image; styles draw it. */
 const IMAGE_CHANGE_ARROW_CLASS = 'diffwise-diff__image-change-arrow';
 
@@ -61,6 +51,22 @@ export interface ChangedPair {
   readonly wordChanges: WordChanges;
   readonly describedChanges: DescribedChanges;
   readonly itemMarks: ListItemMarks;
+}
+
+/** The lines of a changed pair and their text changes, compared word by word. */
+export type WordChangedPair = Pick<ChangedPair, 'oldLine' | 'newLine' | 'wordChanges'>;
+
+/** What goes around text removed from the old line, where a merged line shows it. */
+export interface RemovedTextSeparators {
+  /** True when a space goes before the removed text. */
+  readonly spaceBefore: boolean;
+  /**
+   * True when added text that replaces the removed text follows it: styles leave a gap between
+   * the two, and a hidden space separates them for screen readers and copied text.
+   */
+  readonly isReplaced: boolean;
+  /** True when a space goes after the removed text. */
+  readonly spaceAfter: boolean;
 }
 
 /** A part of the old line that the merged line shows, and where it goes in the new line's text. */
@@ -427,30 +433,49 @@ function withSeparators(
   }
 
   const { start, end } = part.ranges[0];
-  const oldText = pair.oldLine.text;
-  const newText = pair.newLine.text;
-  const position = part.newPosition;
-  const startsAddedText = pair.wordChanges.added.some((range) => range.start === position);
-  const hadSpaceBefore = isWhitespaceAt(oldText, start - 1);
-  const hadSpaceAfter = isWhitespaceAt(oldText, end);
-  const textBefore = position > bounds.start && !isWhitespaceAt(newText, position - 1);
-  const textAfter = position < bounds.end && !isWhitespaceAt(newText, position);
+  const removed = { start, end, newPosition: part.newPosition };
+  const { spaceBefore, isReplaced, spaceAfter } = removedTextSeparators(removed, pair, bounds);
   const separated: Node[] = [];
 
-  if (hadSpaceBefore && textBefore) {
+  if (spaceBefore) {
     separated.push(spaceNode());
   }
 
   separated.push(nodes);
 
-  if (startsAddedText) {
+  if (isReplaced) {
     markAsReplaced(nodes);
     separated.push(hiddenSpace());
-  } else if (hadSpaceAfter && textAfter) {
+  } else if (spaceAfter) {
     separated.push(spaceNode());
   }
 
   return separated;
+}
+
+/**
+ * What separates text removed from the old line from the text around it in a merged line: a space
+ * wherever the old line had one and the new line has none. Before added text that replaces it,
+ * the removed text gets a gap and a hidden space instead of the space after it. The text around is
+ * the new line's text within `bounds`, such as the part of a cell.
+ */
+export function removedTextSeparators(
+  removed: RemovedRange,
+  pair: WordChangedPair,
+  bounds: TextRange,
+): RemovedTextSeparators {
+  const oldText = pair.oldLine.text;
+  const newText = pair.newLine.text;
+  const position = removed.newPosition;
+  const hadSpaceBefore = isWhitespaceAt(oldText, removed.start - 1);
+  const hadSpaceAfter = isWhitespaceAt(oldText, removed.end);
+  const textBefore = position > bounds.start && !isWhitespaceAt(newText, position - 1);
+  const textAfter = position < bounds.end && !isWhitespaceAt(newText, position);
+  const isReplaced = pair.wordChanges.added.some((range) => range.start === position);
+  const spaceBefore = hadSpaceBefore && textBefore;
+  const spaceAfter = !isReplaced && hadSpaceAfter && textAfter;
+
+  return { spaceBefore, isReplaced, spaceAfter };
 }
 
 /** Marks the last marker of the copy, which the added text follows. */

@@ -314,8 +314,9 @@ function onlyWhitespaceBetween(text: string, start: number, end: number): boolea
 }
 
 /**
- * Drops whitespace at the edges of a range, so a marker hugs its words. A range of whitespace
- * only, such as changed indentation, stays.
+ * Drops whitespace at the edges of a range, so a marker hugs its words. Whitespace at the start or
+ * the end of the text stays, such as an indentation or spaces at the end of a line, since it
+ * separates no words; so does a range of whitespace only, such as changed indentation.
  */
 function withoutEdgeWhitespace(range: PlacedRange, text: string): PlacedRange {
   const rangeText = text.slice(range.start, range.end);
@@ -325,7 +326,12 @@ function withoutEdgeWhitespace(range: PlacedRange, text: string): PlacedRange {
     return range;
   }
 
-  const start = range.start + rangeText.length - rangeText.trimStart().length;
+  const leadingWhitespace = rangeText.length - rangeText.trimStart().length;
+  const trailingWhitespace = rangeText.length - rangeText.trimEnd().length;
+  const startsText = range.start === 0;
+  const endsText = range.end === text.length;
+  const start = startsText ? range.start : range.start + leadingWhitespace;
+  const end = endsText ? range.end : range.end - trailingWhitespace;
 
-  return { ...range, start, end: start + words.length };
+  return { ...range, start, end };
 }
