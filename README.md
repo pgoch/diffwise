@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup.
 
-> **Status: version 0.4, an early preview.** It is not on npm yet; the first release is planned after version 0.5, with the interface in 12 languages. The API may change before 1.0.
+> **Status: version 0.5, an early preview.** It is not on npm yet; the first release is planned after version 0.6. The API may change before 1.0.
 
 ## Why Diffwise?
 
@@ -17,7 +17,7 @@ Diffwise fills that gap:
 - You can use it anywhere you have access to the HTML of both versions, whatever editor or system produced it.
 - It is designed to be highly configurable, so you can adapt it to your own needs: colors, marking styles, layout, line numbers and the controls your users see.
 
-## What 0.4 does
+## What 0.5 does
 
 - Shows two versions side by side, one row per paragraph, heading, list item or table row, with line numbers.
 - Shows a single column in a narrow diff, or always: each changed line merged into one, optionally with the removed text struck through, or the old line above the new one.
@@ -29,15 +29,17 @@ Diffwise fills that gap:
 - Shows an added or a removed paragraph, list item or table row on one side, with an empty place on the other.
 - Hides unchanged lines far from changes behind a bar, which shows them on a click.
 - A toolbar that stays on top while the page scrolls, with arrows between the changes and the numbers of added, removed and changed lines.
-- View settings for the users of your app: layout, theme and hidden lines. Their choices can be remembered in the browser, or exported to your app and imported back.
+- View settings for the users of your app: theme, colors of changes, layout and hidden lines. Their choices can be remembered in the browser, or exported to your app and imported back.
 - Cleans both versions with DOMPurify, so HTML from users or other systems is safe to show.
 - Light, dark and automatic color modes, following the system or the dark mode of your app.
-- Interface in English and Polish, or with your own texts.
+- A colorblind-friendly palette, orange and blue, and a high contrast palette, with changes in frames instead of colored backgrounds.
+- Readable with screen readers, which hear "Changed line 2, before" before a change, and with the keyboard alone; changes stay visible in the high contrast mode of Windows.
+- Interface in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, or with your own texts.
 - Many options for the look: marking styles, color intensity, contrast, line numbers, the column between the versions, icons, tooltips, fonts and your own colors.
 - Options to ignore whitespace, letter case, formatting or link changes.
 - Configuration on three levels: global defaults, changes while the app runs, and inputs of each diff.
 
-A code block is still one line. The [roadmap](docs/roadmap.md) shows what comes next: more languages, a colorblind-friendly palette and diffs of plain text.
+A code block is still one line. The [roadmap](docs/roadmap.md) shows what comes next: diffs of plain text.
 
 ## Installation
 
@@ -116,7 +118,7 @@ export class PolicyHistory {
 
 ## Demo
 
-The demo compares sample documents in English and Polish, with a panel for every option. To run it, clone the repository and start it with a Node.js version that Angular 20 supports, such as 22 or 24:
+The demo compares sample documents in the 12 languages of the interface, with a panel for every option. To run it, clone the repository and start it with a Node.js version that Angular 20 supports, such as 22 or 24:
 
 ```bash
 git clone https://github.com/pgoch/diffwise.git

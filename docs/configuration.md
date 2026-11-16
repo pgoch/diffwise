@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.4. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.5. Diffwise works without any setup: every option has a default, and you set only what you want to change.
 
 ## Where to set options
 
@@ -62,10 +62,13 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 |---|---|---|---|
 | `colorMode` | `DiffwiseColorMode.Auto`, `Light`, `Dark` | `Auto` | Light or dark theme. `Auto` follows the system, or your app with `darkModeSelector` |
 | `darkModeSelector` | a CSS selector, such as `'.dark'`, or `null` | `null` | In `Auto` mode, the diff is dark while it is inside an element that matches the selector, such as `<html class="dark">`, and switches as soon as the class changes. `null` follows the system |
+| `diffPalette` | `DiffwisePalette.Default`, `Colorblind`, `HighContrast` | `Default` | Colors of changes: red for removed and green for added; orange and blue, which colorblind readers tell apart; or high contrast, with no colored backgrounds. The user can choose another palette in the view settings |
 | `highlightStyle` | `DiffwiseHighlightStyle.Outline`, `Background`, `Underline`, `TopBottom` | `Outline` | How changed words are marked. All styles share the same background and differ only in the lines drawn over it, so switching styles never moves the text |
 | `diffIntensity` | `1` to `5` | `3` | Strength of the change colors. The backgrounds of changed lines and of changed words change together |
 | `uiContrast` | `1` to `5` | `3` | How much everything besides the content stands out: the headers, the line numbers and the column between the versions |
 | `diffColors` | `DiffwiseDiffColors`, or `null` | none | Your own colors of changes; see [Your own colors](#your-own-colors) |
+
+**Palettes.** The colorblind-friendly palette changes only the colors: removed changes are orange and added ones blue, in both themes, and the outline of the focus is teal, so it stands apart from the blue. The high contrast palette has no colored backgrounds. A changed part stands in a frame in every marking style: solid and blue when added, dashed, orange and struck through when removed. A changed line has a bar at its number, also with `lineNumberStyle: 'background'`, and the same bar at its start when the line numbers are hidden. Its colors are dark in the light theme and light in the dark one, and `diffIntensity` has no backgrounds to change.
 
 ### Lines
 
@@ -155,20 +158,43 @@ Only these options compare the versions again; the other options change only the
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
-| `language` | `DiffwiseLanguage.Auto`, `EN`, `PL` | `Auto` | Language of the interface. `Auto` takes the language of your app from `LOCALE_ID`, without the region, so `pl-PL` gives Polish. A language the interface has no texts in gives English |
+| `language` | `DiffwiseLanguage.Auto`, or one of the languages below | `Auto` | Language of the interface. `Auto` takes the language of your app from `LOCALE_ID` |
 | `customTexts` | `DiffwiseCustomTexts`, or `null` | none | Your own texts of the interface; see [Your own texts](#your-own-texts) |
+
+The interface comes in twelve languages, all in the package:
+
+| Language | Constant | Value |
+|---|---|---|
+| English | `DiffwiseLanguage.EN` | `'en'` |
+| Polish | `DiffwiseLanguage.PL` | `'pl'` |
+| Chinese, in simplified characters | `DiffwiseLanguage.ZH` | `'zh'` |
+| Spanish | `DiffwiseLanguage.ES` | `'es'` |
+| Hindi | `DiffwiseLanguage.HI` | `'hi'` |
+| French | `DiffwiseLanguage.FR` | `'fr'` |
+| Russian | `DiffwiseLanguage.RU` | `'ru'` |
+| Portuguese, in the words and spelling of Portugal | `DiffwiseLanguage.PT` | `'pt'` |
+| Italian | `DiffwiseLanguage.IT` | `'it'` |
+| Japanese | `DiffwiseLanguage.JA` | `'ja'` |
+| German | `DiffwiseLanguage.DE` | `'de'` |
+| Korean | `DiffwiseLanguage.KO` | `'ko'` |
+
+**`Auto`** takes the language of `LOCALE_ID` with or without its region or script, so `pl-PL` gives Polish and `de-AT` German. Every Chinese locale, such as `zh-CN` or `zh-TW`, gives Chinese in simplified characters. Portuguese goes only to `pt` and `pt-PT`, also with a script, such as `pt-Latn-PT`; Portuguese of another region gives English. A language the interface has no texts in gives English too.
+
+The texts of the interface carry the tag of their language in `lang`, so screen readers pronounce them in that language also on a page in another one; Chinese is `zh-Hans`. The documents keep the language of your page.
+
+The translations other than English and Polish have not been reviewed by native speakers yet. To correct a text, or to add a language, use `customTexts`.
 
 ### View settings
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
-| `allowedUserSettings` | a list of `DiffwiseUserSetting.Layout`, `InlineDiffStyle`, `ColorMode`, `HideUnchangedLines` | all four | The options the user can change in the view settings. An empty list hides their button |
+| `allowedUserSettings` | a list of `DiffwiseUserSetting.ColorMode`, `DiffPalette`, `Layout`, `InlineDiffStyle`, `HideUnchangedLines` | all five | The options the user can change in the view settings. An empty list hides their button |
 | `rememberUserSettings` | `true`, `false` | `false` | Keeps the choices of the user in `localStorage`, so they stay after a reload |
 | `userSettingsKey` | a name, or `null` | `null` | The name under which diffs keep the choices of the user. `null` takes the base path of your app, such as `/` or `/admin/` |
 
 ## Settings for the user
 
-The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the layout, the look of changed lines in the single column, the theme, and whether to hide unchanged lines; "Restore defaults" takes the choices back. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
+The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the theme, the colors of changes, the layout, the look of changed lines in the single column, and whether to hide unchanged lines; "Restore defaults" takes the choices back. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
 
 **A choice of the user wins** over every level of your app, also over a change your app makes later. "Restore defaults" brings the options of your app back. If your app has its own theme switch, take `colorMode` out of `allowedUserSettings`, so the two do not compete:
 
@@ -183,6 +209,12 @@ provideDiffwise({
 ```
 
 Only the allowed options show in the view settings, and a choice of another option does nothing, also one remembered from before. The values are the names of the options, so `['layout', 'colorMode']` works too. When the versions are the same, the toolbar shows only "No changes", without the button.
+
+**Colors of changes** has four buttons in two rows: "Standard" and "Colorblind-friendly", then "High contrast" and "Custom". "Custom" stands for the colors of your app, from `diffColors`:
+
+- It is chosen while your colors are in effect, and disabled when your app gives no colors for the theme the diff shows, such as dark colors alone in the light theme.
+- A palette the user chooses takes the place of your colors, until the user chooses "Custom" again. That takes back the choice of the palette, so your colors apply again, over the `diffPalette` of your app, and `(userSettingsChange)` emits the choices without `diffPalette`.
+- If `allowedUserSettings` leaves out `DiffwiseUserSetting.DiffPalette`, your colors always apply.
 
 **Diffs share the choices** under the same `userSettingsKey`. By default, all diffs of your app have the same key, its base path, so a choice in one diff changes the others too, as a theme of the app does. To keep the choices of a diff apart, give it a key of its own, such as `[userSettingsKey]="'contract-history'"`.
 
@@ -222,7 +254,7 @@ export class ContractHistory {
 
 ## Your own colors
 
-`diffColors` takes colors of changes for the light and the dark theme. Any CSS color works, and a color you leave out comes from the built-in palette.
+`diffColors` takes colors of changes for the light and the dark theme. Any CSS color works, and a color you leave out comes from the palette of `diffPalette`.
 
 ```ts
 provideDiffwise({
@@ -239,11 +271,15 @@ provideDiffwise({
 | `removedHighlight`, `addedHighlight` | The background of removed and of added words |
 | `removedAccent`, `addedAccent` | The lines of the marking style, and the bar and the number of a changed line |
 
-In a theme with your colors, `diffIntensity` does not apply. Each level of the configuration changes only the colors it sets. `null` takes away the colors of the levels below, for example `updateConfig({ diffColors: null })` returns all diffs to the built-in palette.
+In a theme with your colors, `diffIntensity` does not apply. Each level of the configuration changes only the colors it sets. `null` takes away the colors of the levels below, for example `updateConfig({ diffColors: null })` returns all diffs to the palette of `diffPalette`.
+
+A palette the user chooses in the view settings takes the place of your colors, and "Custom" brings them back; see [Settings for the user](#settings-for-the-user). Choose colors that keep the contrast of the built-in palettes: at least 4.5:1 for the text on the backgrounds of changed lines and words, and for the accents against the background, as they also color the numbers of changed lines.
 
 ## Your own texts
 
 `customTexts` replaces texts of the interface. A text you leave out stays in the language of the interface, and all of them together add a language.
+
+The tables below show the texts in English and Polish; the texts of the other languages are in [the source](../projects/ngx-diffwise/src/lib/i18n).
 
 | Text | English | Polish | Where it shows |
 |---|---|---|---|
@@ -256,6 +292,18 @@ provideDiffwise({ customTexts: { oldVersionLabel: 'Draft', newVersionLabel: 'Pub
 ```
 
 Each level of the configuration changes only the texts it sets. `null` takes away the texts of the levels below. The component element has the `region` role, named by `diffLabel`; to name it with a heading of your page instead, set `aria-labelledby` on the element.
+
+### Texts for screen readers
+
+A screen reader hears a short description before each removed, added or changed line, in place of its line number. These texts do not show on the screen; `{number}` stands for the number of the line.
+
+| Text | English | Polish | Where it is heard |
+|---|---|---|---|
+| `removedLineLabel` | Removed line {number} | Usunięta linia {number} | Before a removed line |
+| `addedLineLabel` | Added line {number} | Dodana linia {number} | Before an added line |
+| `changedLineBeforeLabel`, `changedLineAfterLabel` | Changed line {number}, before; Changed line {number}, after | Zmieniona linia {number}, przed; Zmieniona linia {number}, po | Before the old and the new version of a changed line, side by side |
+| `changedLineLabel` | Changed line {number} | Zmieniona linia {number} | Before a merged line of the single column |
+| `wideTableLabel` | Wide table, scroll sideways | Szeroka tabela, przewiń w bok | The name of a table wider than its column, which takes the focus to scroll |
 
 ### Texts of the tooltips
 
@@ -334,6 +382,8 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `mergedInlineDiffLabel`, `strikethroughInlineDiffLabel`, `stackedInlineDiffLabel` | Merged, Struck through, Stacked | Scalone, Przekreślone, Jedna pod drugą | Its values |
 | `colorModeLabel` | Theme | Motyw | The name of the theme |
 | `autoColorModeLabel`, `lightColorModeLabel`, `darkColorModeLabel` | Auto, Light, Dark | Auto, Jasny, Ciemny | Its values |
+| `diffPaletteLabel` | Colors of changes | Kolory zmian | The name of the colors of changes |
+| `defaultDiffPaletteLabel`, `colorblindDiffPaletteLabel`, `highContrastDiffPaletteLabel`, `customDiffPaletteLabel` | Standard, Colorblind-friendly, High contrast, Custom | Standardowe, Dla daltonistów, Wysoki kontrast, Własne | Its values; "Custom" stands for the colors of your app |
 | `hideUnchangedLinesLabel` | Hide unchanged lines | Ukryj niezmienione linie | The checkbox of hidden lines |
 | `resetUserSettingsLabel` | Restore defaults | Przywróć domyślne | The button that takes the choices back |
 
@@ -342,7 +392,7 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | Member | What it does |
 |---|---|
 | `(diffStatsComputed)` | Emits `DiffwiseDiffStats` after each comparison: when the versions or the options of the comparison change. Options of the look do not compare the versions again, so they emit nothing |
-| `(userSettingsChange)` | Emits `DiffwiseUserSettings` after each choice of the user in the view settings of this diff, and after "Restore defaults", with all choices under its key. Changes made by your app emit nothing |
+| `(userSettingsChange)` | Emits `DiffwiseUserSettings` after each choice of the user in the view settings of this diff, also "Custom", and after "Restore defaults", with all choices under its key. Changes made by your app emit nothing |
 | `goToNextChange()`, `goToPreviousChange()` | Step to the next or the previous block of changes and scroll it into view, as the arrows do, also when the arrows are hidden |
 
 `DiffwiseDiffStats` has the numbers of the toolbar, `addedLines`, `removedLines` and `changedLines`, and `hasChanges`, which is `false` when the versions are the same. It tells your app whether there is anything to show:
@@ -416,11 +466,13 @@ diffwise-html-diff.diffwise-html-diff--dark-theme {
 | `--diffwise-line-number-digits` | Digits of the highest line number, which set the width of the numbers; the component sets it |
 | `--diffwise-tooltip-background`, `--diffwise-tooltip-text`, `--diffwise-tooltip-border` | Background, text and frame of the tooltips |
 | `--diffwise-tooltip-shadow` | Shadow of the tooltips |
-| `--diffwise-tooltip-removed-highlight`, `--diffwise-tooltip-added-highlight` | Backgrounds of the changed parts of the old and the new value in a tooltip |
+| `--diffwise-tooltip-removed-highlight`, `--diffwise-tooltip-added-highlight` | Backgrounds of the changed parts of the old and the new value in a tooltip; their frames in the high contrast palette |
 | `--diffwise-tooltip-font-size` | Font size of the tooltips |
-| `--diffwise-focus` | The outline of an icon or a marked change with the focus, and the frame or the arrow of the block the navigation has stepped to |
+| `--diffwise-focus` | The outline of an icon or a marked change with the focus, and the frame or the arrow of the block the navigation has stepped to: blue, and teal in the colorblind-friendly and the high contrast palettes |
 | `--diffwise-toolbar-font-size` | Font size of the toolbar and the view settings |
-| `--diffwise-toolbar-top` | How far from the top of the scrolling area the toolbar sticks; `0` by default. An app with its own sticky header puts the height of the header here, so the toolbar stays under it |
+| `--diffwise-toolbar-top` | How far from the top of the scrolling area the toolbar sticks; `0px` by default. An app with its own sticky header puts the height of the header here, so the toolbar stays under it, and so does an element that takes the focus. Give it a unit, such as `64px` |
+
+Version 0.5 changed a few defaults for contrast: `--diffwise-muted` is `#626975` in the light theme, `--diffwise-link` is `#93b9ff` in the dark theme, and the removed accent of the colorblind-friendly palette is `#ab4f09` in the light theme. A link in a changed part has the color of the text, with its underline, so it stays readable on the background of the change. If your CSS sets these colors, keep their contrast.
 
 The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize`, `tooltipFontSize` and `toolbarFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
 
@@ -436,7 +488,7 @@ diffwise-html-diff.diffwise-html-diff--tooltip-color-mode-reversed {
 
 The component element shows the options in its classes:
 
-- An option with a value other than its default adds a class with its name and value, such as `diffwise-html-diff--gap-style-gray` or `diffwise-html-diff--highlight-style-underline`.
+- An option with a value other than its default adds a class with its name and value, such as `diffwise-html-diff--gap-style-gray`, `diffwise-html-diff--highlight-style-underline` or `diffwise-html-diff--diff-palette-colorblind`. A value the user has chosen in the view settings counts too.
 - The levels always have a class, such as `diffwise-html-diff--diff-intensity-3` and `diffwise-html-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
 - `diffwise-html-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
 - `diffwise-html-diff--dark-theme` shows the dark theme.
@@ -475,6 +527,7 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-html-diff__view-button` | The button that opens the view settings |
 | `diffwise-html-diff__view-settings` | The view settings, in the top layer of the page |
 | `diffwise-html-diff__view-settings-group` | One option with a choice of values: its name and its buttons |
+| `diffwise-html-diff__view-settings-group--pairs` | A group with its buttons in two columns, such as the colors of changes |
 | `diffwise-html-diff__view-settings-label` | The name of an option, such as "Layout" |
 | `diffwise-html-diff__view-settings-choice` | The button of one value; the chosen one has `aria-pressed="true"` |
 | `diffwise-html-diff__view-settings-checkbox` | The option with a checkbox |

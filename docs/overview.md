@@ -10,15 +10,15 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## What it will show
 
-Version 0.4 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. The rest comes with the releases in the [roadmap](roadmap.md).
+Version 0.5 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. The rest comes with the releases in the [roadmap](roadmap.md).
 
 | Change | How it is shown |
 |---|---|
-| Text | The changed line is tinted on both sides; the changed words are marked more strongly |
+| Text | The changed line is tinted on both sides; the changed words are marked more strongly. In the high contrast palette, the changed words stand in frames instead |
 | Formatting, e.g. italic → bold | Marked like a text change, with an icon between the two sides and a tooltip that describes what changed |
 | Link address | The link is highlighted in the text; an icon between the two sides and a tooltip show the old and new address, with the changed part highlighted |
 | Added or removed link | The text is highlighted; the tooltip shows the address |
-| Image | The old image is framed in red, the new one in green, with an icon between the two sides and a tooltip that shows the changed file, size or alternative text; the frame follows the marking style |
+| Image | The old image is framed in red, the new one in green, or in the colors of another palette, with an icon between the two sides and a tooltip that shows the changed file, size or alternative text; the frame follows the marking style |
 | List markers, e.g. bullets → numbers | The line is tinted; the markers are marked like changed words, with no icon or tooltip, as both sides show them |
 | Item number, e.g. 3. → 4. | The line is tinted; the numbers are marked like changed words, with no icon or tooltip, also when an added or removed item shifts them |
 | Checkbox in a task list | Framed like an image when checked or cleared, with no icon or tooltip; the single column shows the old checkbox before the new one |
@@ -27,10 +27,10 @@ Version 0.4 shows changes of the text, the formatting, the links and the images 
 
 ## Display and configuration
 
-Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, and version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user; see [Configuration](configuration.md). The whole scope, with what is planned:
+Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user, and version 0.5 adds the colorblind-friendly and the high contrast palettes, the interface in 12 languages and support for screen readers and the high contrast mode of Windows; see [Configuration](configuration.md). The whole scope, with what is planned:
 
 - **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
-- **Colors:** light, dark and automatic color modes, a colorblind-friendly palette, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
+- **Colors:** light, dark and automatic color modes, a colorblind-friendly and a high contrast palette, which users can also choose themselves, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
 - **Contrast:** one more scale (1–5) sets how much everything around the diff stands out: the toolbar, column headers, the line-number column and the column between the two sides. Each keeps its own shade — the line numbers darkest, the toolbar lightest — and the scale moves them together.
 - **Marking styles:** several ways to mark changed words, such as an outline, a background or an underline. All styles share the same fill and differ only in the lines drawn over it, so switching styles never moves the text.
 - **Change details:** for changes to links, images and formatting, a tooltip on the element, an icon between the two sides, or both. Tooltips use the component's colors or those of the opposite theme, and highlight the changed part of an address. Changes of formatting or links alone can be ignored.
@@ -39,7 +39,7 @@ Version 0.1 has the side-by-side layout, the color modes, the intensity and cont
 - **Reading aids:** optional line numbers, collapsing of unchanged lines, navigation between groups of neighboring changes and change statistics.
 - **Toolbar:** navigation between changes, change statistics and settings for end users, all shown by default. The application can hide any part of it or limit the settings users see.
 - **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides.
-- **Languages:** interface texts in 12 languages.
+- **Languages:** interface texts in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, chosen by your app or taken from its locale.
 
 Other optional features are turned off by default.
 
