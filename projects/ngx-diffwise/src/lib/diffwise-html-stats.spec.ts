@@ -8,7 +8,7 @@ import {
   DiffwiseNoChangesView,
 } from './config/option-values';
 import type { DiffwiseDiffStats } from './diff-stats';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -73,7 +73,7 @@ HTMLElement.prototype.hidePopover = function (this: HTMLElement) {
 
 /** A rendered diff and the statistics it has emitted so far. */
 interface RenderedStats {
-  readonly fixture: ComponentFixture<DiffwiseHtmlDiff>;
+  readonly fixture: ComponentFixture<DiffwiseHtml>;
   readonly emitted: DiffwiseDiffStats[];
 }
 
@@ -83,7 +83,7 @@ function render(
   newHtml = NEW_TERMS_HTML,
   options: DiffwiseConfigOptions = {},
 ): RenderedStats {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+  const fixture = TestBed.createComponent(DiffwiseHtml);
   const emitted: DiffwiseDiffStats[] = [];
 
   fixture.componentInstance.diffStatsComputed.subscribe((stats) => emitted.push(stats));
@@ -100,12 +100,12 @@ function render(
 }
 
 /** Sets an input and lets the diff show the change. */
-function change(fixture: ComponentFixture<DiffwiseHtmlDiff>, name: string, value: unknown): void {
+function change(fixture: ComponentFixture<DiffwiseHtml>, name: string, value: unknown): void {
   fixture.componentRef.setInput(name, value);
   fixture.detectChanges();
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
@@ -141,7 +141,7 @@ afterEach(() => {
   openPopovers.clear();
 });
 
-describe('DiffwiseHtmlDiff statistics', () => {
+describe('DiffwiseHtml statistics', () => {
   it('emits the numbers of changed lines after the first comparison', () => {
     const { emitted } = render();
 
@@ -191,7 +191,7 @@ describe('DiffwiseHtmlDiff statistics', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff toolbar', () => {
+describe('DiffwiseHtml toolbar', () => {
   it('shows the numbers of changed lines in a toolbar above the diff', () => {
     const element = elementOf(render().fixture);
 
@@ -276,7 +276,7 @@ describe('DiffwiseHtmlDiff toolbar', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff identical versions', () => {
+describe('DiffwiseHtml identical versions', () => {
   it('shows nothing under the toolbar, by default', () => {
     const element = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML).fixture);
 

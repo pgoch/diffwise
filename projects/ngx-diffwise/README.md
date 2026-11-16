@@ -16,12 +16,12 @@ Diffwise needs Angular 20 or newer. It runs in the browser; server-side renderin
 
 ```ts
 import { Component } from '@angular/core';
-import { DiffwiseHtmlDiff } from 'ngx-diffwise';
+import { DiffwiseHtml } from 'ngx-diffwise';
 
 @Component({
   selector: 'app-policy-history',
-  imports: [DiffwiseHtmlDiff],
-  template: `<diffwise-html-diff [oldHtml]="previous" [newHtml]="current" />`,
+  imports: [DiffwiseHtml],
+  template: `<diffwise-html [oldHtml]="previous" [newHtml]="current" />`,
 })
 export class PolicyHistory {
   protected readonly previous = '<h2>Returns</h2><p>You can return a product within 14 days.</p>';
@@ -32,7 +32,7 @@ export class PolicyHistory {
 After each comparison, `(diffStatsComputed)` emits the numbers of changed lines, and `hasChanges` is `false` when the versions are the same:
 
 ```html
-<diffwise-html-diff [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
+<diffwise-html [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
 ```
 
 Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). What the diff does for the keyboard, screen readers and contrast is in the [accessibility guide](https://github.com/pgoch/diffwise/blob/master/docs/accessibility.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).

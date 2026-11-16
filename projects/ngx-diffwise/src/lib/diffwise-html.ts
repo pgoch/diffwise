@@ -20,7 +20,7 @@ import { ViewSettings } from './toolbar/view-settings';
  * column, which a narrow diff shows by itself.
  */
 @Component({
-  selector: 'diffwise-html-diff',
+  selector: 'diffwise-html',
   imports: [
     ChangeDetailsButton,
     ChangeTooltip,
@@ -46,7 +46,7 @@ import { ViewSettings } from './toolbar/view-settings';
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
 })
-export class DiffwiseHtmlDiff extends DiffView {
+export class DiffwiseHtml extends DiffView {
   /** The earlier version of the document. */
   readonly oldHtml = input('');
 

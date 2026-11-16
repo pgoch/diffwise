@@ -9,7 +9,7 @@ import {
   DiffwiseUserSetting,
 } from './config/option-values';
 import { Diffwise } from './diffwise';
-import { DiffwiseHtmlDiff } from './diffwise-html-diff';
+import { DiffwiseHtml } from './diffwise-html';
 import type { DiffwiseUserSettings } from './user-settings/user-settings';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -81,8 +81,8 @@ function render(
   options: DiffwiseConfigOptions = {},
   oldHtml = OLD_HTML,
   newHtml = NEW_HTML,
-): ComponentFixture<DiffwiseHtmlDiff> {
-  const fixture = TestBed.createComponent(DiffwiseHtmlDiff);
+): ComponentFixture<DiffwiseHtml> {
+  const fixture = TestBed.createComponent(DiffwiseHtml);
 
   fixture.componentRef.setInput(OLD_HTML_INPUT, oldHtml);
   fixture.componentRef.setInput(NEW_HTML_INPUT, newHtml);
@@ -96,7 +96,7 @@ function render(
   return fixture;
 }
 
-function elementOf(fixture: ComponentFixture<DiffwiseHtmlDiff>): HTMLElement {
+function elementOf(fixture: ComponentFixture<DiffwiseHtml>): HTMLElement {
   return fixture.nativeElement;
 }
 
@@ -125,18 +125,18 @@ function choiceOf(element: HTMLElement, text: string): HTMLButtonElement {
 }
 
 /** Clicks the button of a value in the view settings and lets the diff show the choice. */
-function choose(fixture: ComponentFixture<DiffwiseHtmlDiff>, text: string): void {
+function choose(fixture: ComponentFixture<DiffwiseHtml>, text: string): void {
   choiceOf(elementOf(fixture), text).click();
   fixture.detectChanges();
 }
 
 /** Clicks the checkbox of hidden lines and lets the diff show the choice. */
-function toggleHiddenLines(fixture: ComponentFixture<DiffwiseHtmlDiff>): void {
+function toggleHiddenLines(fixture: ComponentFixture<DiffwiseHtml>): void {
   elementOf(fixture).querySelector<HTMLInputElement>(`${CHECKBOX_SELECTOR} input`)?.click();
   fixture.detectChanges();
 }
 
-function restoreDefaults(fixture: ComponentFixture<DiffwiseHtmlDiff>): void {
+function restoreDefaults(fixture: ComponentFixture<DiffwiseHtml>): void {
   elementOf(fixture).querySelector<HTMLElement>(RESET_SELECTOR)?.click();
   fixture.detectChanges();
 }
@@ -147,7 +147,7 @@ function chosenOf(element: HTMLElement): (string | undefined)[] {
 }
 
 /** Lets the view settings follow the browser, which fires `toggle` when it opens or closes them. */
-function toggle(fixture: ComponentFixture<DiffwiseHtmlDiff>, newState: string): void {
+function toggle(fixture: ComponentFixture<DiffwiseHtml>, newState: string): void {
   const event = Object.assign(new Event(TOGGLE_EVENT), { newState });
 
   viewSettingsOf(elementOf(fixture))?.dispatchEvent(event);
@@ -155,7 +155,7 @@ function toggle(fixture: ComponentFixture<DiffwiseHtmlDiff>, newState: string): 
 }
 
 /** Collects the choices the diff emits after each change the user makes. */
-function emittedBy(fixture: ComponentFixture<DiffwiseHtmlDiff>): DiffwiseUserSettings[] {
+function emittedBy(fixture: ComponentFixture<DiffwiseHtml>): DiffwiseUserSettings[] {
   const emitted: DiffwiseUserSettings[] = [];
 
   fixture.componentInstance.userSettingsChange.subscribe((settings) => emitted.push(settings));
@@ -176,7 +176,7 @@ afterEach(() => {
   openPopovers.clear();
 });
 
-describe('DiffwiseHtmlDiff view settings', () => {
+describe('DiffwiseHtml view settings', () => {
   it('shows a named button at the end of the toolbar, which opens the view settings', () => {
     const element = elementOf(render());
     const toolbar = element.querySelector(TOOLBAR_SELECTOR);
@@ -522,7 +522,7 @@ describe('DiffwiseHtmlDiff view settings', () => {
   });
 });
 
-describe('DiffwiseHtmlDiff choices of the user', () => {
+describe('DiffwiseHtml choices of the user', () => {
   it('emits all choices after each change, with the number of their format', () => {
     const fixture = render();
     const emitted = emittedBy(fixture);

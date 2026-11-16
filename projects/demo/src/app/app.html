@@ -417,7 +417,7 @@
     <p role="alert">The sample could not be loaded.</p>
   } @else if (shownSample(); as pair) {
     <div class="demo-diff" [style.max-width]="diffWidth()">
-      <diffwise-html-diff
+      <diffwise-html
         [oldHtml]="pair.oldHtml"
         [newHtml]="comparesSameVersions() ? pair.oldHtml : pair.newHtml"
         [language]="interfaceLanguage()"

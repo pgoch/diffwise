@@ -22,7 +22,7 @@ import {
   DiffwiseFontFamily,
   DiffwiseGapStyle,
   DiffwiseHighlightStyle,
-  DiffwiseHtmlDiff,
+  DiffwiseHtml,
   DiffwiseLanguage,
   DiffwiseInlineDiffStyle,
   DiffwiseLayout,
@@ -291,7 +291,7 @@ const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
 
 @Component({
   selector: 'demo-root',
-  imports: [ChoiceButtons, DiffwiseHtmlDiff],
+  imports: [ChoiceButtons, DiffwiseHtml],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -364,7 +364,7 @@ export class App {
   protected readonly choicesError = signal<string | null>(null);
 
   /** The diff of the sample, whose methods step between the blocks of changes. */
-  private readonly diff = viewChild(DiffwiseHtmlDiff);
+  private readonly diff = viewChild(DiffwiseHtml);
 
   /** True while the global configuration has the example colors. */
   protected readonly showsExampleColors = signal(false);
