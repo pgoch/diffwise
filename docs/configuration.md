@@ -1,6 +1,21 @@
 # Configuration
 
-This page describes version 0.5. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.6. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+
+## Two diffs
+
+Diffwise has two components with the same view:
+
+- `<diffwise-html>` (`DiffwiseHtml`) compares two HTML documents, given in `oldHtml` and `newHtml`.
+- `<diffwise-text>` (`DiffwiseText`) compares two plain texts line by line, given in `oldText` and `newText`.
+
+```html
+<diffwise-text [oldText]="previousSettings" [newText]="currentSettings" />
+```
+
+Both take the same options, emit the same events, have the same methods, and share the global configuration and the choices of the user. The examples on this page use `DiffwiseHtml`; `DiffwiseText` works the same way.
+
+Plain text has no formatting, links or images, so a few options do nothing in the text diff: `changeDetails`, `changeDetailsIconStyle`, `tooltipColorMode`, `highlightTooltipChanges`, `tooltipTitleAlignment`, `tooltipFontSize`, `ignoreFormatting` and `ignoreLinkChanges`. One option, `textFont`, belongs to the text diff alone; see [Fonts](#fonts). [How it works](how-it-works.md#plain-text) describes how plain text is compared.
 
 ## Where to set options
 
@@ -119,12 +134,15 @@ A tooltip shows on hover, and when its icon or marked change gets the focus from
 | Option | Values | Default | What it does |
 |---|---|---|---|
 | `fontFamily` | `DiffwiseFontFamily.Inherit`, `Builtin`, or a font name | `Inherit` | The font of the element around the diff, the font of the system, or a font your app loads, such as `'Inter'`. The built-in font is used while yours is missing |
+| `textFont` | `DiffwiseTextFont.Monospace`, `Proportional` | `Monospace` | Only in the text diff: the font of its lines. A font of fixed width, from `--diffwise-text-font-family`, keeps indentation and columns in line; `Proportional` takes the font of the diff, as `fontFamily` sets it. The user can switch it in the view settings |
 | `versionHeaderFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the headers |
 | `lineNumberFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the line numbers. Their column and the column between the versions, with its icons, grow with it |
 | `tooltipFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the tooltips |
 | `toolbarFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the toolbar and the view settings |
 
 The content keeps the font size of your app. The tooltips, the toolbar and the view settings have the font of the diff.
+
+The lines of the text diff keep the spaces, tabs and indentation of the text, and long lines wrap. In the font of fixed width, they are a little smaller, 90% of the size of your app, as such fonts look larger, and stand closer together than the paragraphs of the HTML diff. A tab is as wide as 4 characters; `--diffwise-tab-size` changes it.
 
 ### Toolbar
 
@@ -188,13 +206,13 @@ The translations other than English and Polish have not been reviewed by native 
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
-| `allowedUserSettings` | a list of `DiffwiseUserSetting.ColorMode`, `DiffPalette`, `Layout`, `InlineDiffStyle`, `HideUnchangedLines` | all five | The options the user can change in the view settings. An empty list hides their button |
+| `allowedUserSettings` | a list of `DiffwiseUserSetting.ColorMode`, `DiffPalette`, `TextFont`, `Layout`, `InlineDiffStyle`, `HideUnchangedLines` | all six | The options the user can change in the view settings. An empty list hides their button. `TextFont` shows only in the text diff |
 | `rememberUserSettings` | `true`, `false` | `false` | Keeps the choices of the user in `localStorage`, so they stay after a reload |
 | `userSettingsKey` | a name, or `null` | `null` | The name under which diffs keep the choices of the user. `null` takes the base path of your app, such as `/` or `/admin/` |
 
 ## Settings for the user
 
-The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the theme, the colors of changes, the layout, the look of changed lines in the single column, and whether to hide unchanged lines; "Restore defaults" takes the choices back. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
+The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the theme, the colors of changes, the layout, the look of changed lines in the single column, and whether to hide unchanged lines; "Restore defaults" takes the choices back. The text diff also has the font of its lines, "Fixed width" or "Regular", between the colors of changes and the layout; the HTML diff never shows it. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
 
 **A choice of the user wins** over every level of your app, also over a change your app makes later. "Restore defaults" brings the options of your app back. If your app has its own theme switch, take `colorMode` out of `allowedUserSettings`, so the two do not compete:
 
@@ -384,6 +402,8 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `autoColorModeLabel`, `lightColorModeLabel`, `darkColorModeLabel` | Auto, Light, Dark | Auto, Jasny, Ciemny | Its values |
 | `diffPaletteLabel` | Colors of changes | Kolory zmian | The name of the colors of changes |
 | `defaultDiffPaletteLabel`, `colorblindDiffPaletteLabel`, `highContrastDiffPaletteLabel`, `customDiffPaletteLabel` | Standard, Colorblind-friendly, High contrast, Custom | Standardowe, Dla daltonistów, Wysoki kontrast, Własne | Its values; "Custom" stands for the colors of your app |
+| `textFontLabel` | Text font | Czcionka tekstu | The name of the font of the text diff |
+| `monospaceTextFontLabel`, `proportionalTextFontLabel` | Fixed width, Regular | Stała szerokość, Zwykła | Its values |
 | `hideUnchangedLinesLabel` | Hide unchanged lines | Ukryj niezmienione linie | The checkbox of hidden lines |
 | `resetUserSettingsLabel` | Restore defaults | Przywróć domyślne | The button that takes the choices back |
 
@@ -415,7 +435,7 @@ export class PolicyHistory {
 }
 ```
 
-To call the methods, take the diff with `viewChild(DiffwiseHtml)`.
+To call the methods, take the diff with `viewChild(DiffwiseHtml)` or `viewChild(DiffwiseText)`.
 
 ## The `Diffwise` service
 
@@ -433,11 +453,11 @@ Without `key`, the methods take `userSettingsKey` of the global configuration, o
 
 ## Styling with CSS
 
-The component has no view encapsulation. Its classes start with `diffwise-diff` and follow BEM.
+The components have no view encapsulation. Their classes start with `diffwise-diff`, follow BEM, and are the same in both diffs.
 
 ### Variables
 
-Override the variables on the component element, with any selector. A value set higher up, such as on `<body>`, does not reach the diff, which has its own defaults.
+Override the variables on the component element, `diffwise-html` or `diffwise-text`, with any selector. A value set higher up, such as on `<body>`, does not reach the diff, which has its own defaults.
 
 ```css
 diffwise-html {
@@ -471,6 +491,8 @@ diffwise-html.diffwise-diff--dark-theme {
 | `--diffwise-focus` | The outline of an icon or a marked change with the focus, and the frame or the arrow of the block the navigation has stepped to: blue, and teal in the colorblind-friendly and the high contrast palettes |
 | `--diffwise-toolbar-font-size` | Font size of the toolbar and the view settings |
 | `--diffwise-toolbar-top` | How far from the top of the scrolling area the toolbar sticks; `0px` by default. An app with its own sticky header puts the height of the header here, so the toolbar stays under it, and so does an element that takes the focus. Give it a unit, such as `64px` |
+| `--diffwise-text-font-family` | The font of fixed width of the text diff: by default the monospace font of the system, such as Cascadia Mono, Consolas or Menlo |
+| `--diffwise-tab-size` | The width of a tab in the text diff, in characters; `4` by default |
 
 Version 0.5 changed a few defaults for contrast: `--diffwise-muted` is `#626975` in the light theme, `--diffwise-link` is `#93b9ff` in the dark theme, and the removed accent of the colorblind-friendly palette is `#ab4f09` in the light theme. A link in a changed part has the color of the text, with its underline, so it stays readable on the background of the change. If your CSS sets these colors, keep their contrast.
 
@@ -488,7 +510,7 @@ diffwise-html.diffwise-diff--tooltip-color-mode-reversed {
 
 The component element shows the options in its classes:
 
-- An option with a value other than its default adds a class with its name and value, such as `diffwise-diff--gap-style-gray`, `diffwise-diff--highlight-style-underline` or `diffwise-diff--diff-palette-colorblind`. A value the user has chosen in the view settings counts too.
+- An option with a value other than its default adds a class with its name and value, such as `diffwise-diff--gap-style-gray`, `diffwise-diff--highlight-style-underline`, `diffwise-diff--diff-palette-colorblind` or `diffwise-diff--text-font-proportional`. A value the user has chosen in the view settings counts too.
 - The levels always have a class, such as `diffwise-diff--diff-intensity-3` and `diffwise-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
 - `diffwise-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
 - `diffwise-diff--dark-theme` shows the dark theme.
@@ -536,6 +558,7 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
 | `diffwise-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
 | `diffwise-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background. A merged line of the single column has two: the old checkbox, then the new one |
+| `diffwise-diff__whitespace`, with `--space` or `--tab` | A space or a tab inside a marker of the text diff, which shows `·` or `→` over itself |
 | `diffwise-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
 | `diffwise-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
 | `diffwise-diff__change-details-count` | The number of changes on the icon of several changes |

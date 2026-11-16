@@ -4,7 +4,7 @@ import { IMAGE_CHARACTER } from '../html/reader-text';
 import { splitLines } from '../html/split-lines';
 import { DEFAULT_DIFF_OPTIONS, type DiffOptions, type LineContent } from '../model';
 
-const SENTENCE = 'Usługa działa przez całą dobę, także w święta i długie weekendy. ';
+const SENTENCE = 'The service runs all day and night, also on holidays and long weekends. ';
 const SENTENCES_AROUND_CHANGE = 5;
 const ID_PREFIX = 'diff-';
 const NO_CHANGES = { removed: [], added: [] };
@@ -52,47 +52,50 @@ function removedTextPlaces(oldText: string, newText: string, options = DEFAULT_D
 /** A paragraph of about 700 characters with one chosen word in the middle. */
 function longParagraph(middleWord: string): string {
   const around = SENTENCE.repeat(SENTENCES_AROUND_CHANGE);
-  return `${around}Pomoc jest ${middleWord} dla klientów. ${around}`;
+  return `${around}Support is ${middleWord} for all customers. ${around}`;
 }
 
 describe('diffWords', () => {
   it('marks only the changed word', () => {
     expect(
-      changedTexts('Konto można usunąć w ustawieniach.', 'Konto można zamknąć w ustawieniach.'),
-    ).toEqual({ removed: ['usunąć'], added: ['zamknąć'] });
+      changedTexts(
+        'You can delete the account in the settings.',
+        'You can close the account in the settings.',
+      ),
+    ).toEqual({ removed: ['delete'], added: ['close'] });
   });
 
   it('marks two changes in one line separately', () => {
     expect(
       changedTexts(
-        'Opłata wynosi 19 zł i jest pobierana z góry.',
-        'Opłata wynosi 29 zł i jest pobierana z dołu.',
+        'The fee is 19 USD and is paid at the start.',
+        'The fee is 29 USD and is paid at the end.',
       ),
-    ).toEqual({ removed: ['19', 'góry'], added: ['29', 'dołu'] });
+    ).toEqual({ removed: ['19', 'start'], added: ['29', 'end'] });
   });
 
   it('joins changed words separated only by whitespace', () => {
-    expect(changedTexts('stara nazwa planu', 'nowa marka planu')).toEqual({
-      removed: ['stara nazwa'],
-      added: ['nowa marka'],
+    expect(changedTexts('old plan name', 'new brand name')).toEqual({
+      removed: ['old plan'],
+      added: ['new brand'],
     });
   });
 
   it('marks a change of letter case unless case is ignored', () => {
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
-    expect(changedTexts('Konto Firmowe', 'Konto firmowe')).toEqual({
-      removed: ['Firmowe'],
-      added: ['firmowe'],
+    expect(changedTexts('Business Account', 'Business account')).toEqual({
+      removed: ['Account'],
+      added: ['account'],
     });
-    expect(changedTexts('Konto Firmowe', 'Konto firmowe', ignoreCase)).toEqual({
+    expect(changedTexts('Business Account', 'Business account', ignoreCase)).toEqual({
       removed: [],
       added: [],
     });
   });
 
   it('leaves whitespace at the edges of a change unmarked', () => {
-    expect(changedTexts('Kliknij', 'Kliknij tutaj')).toEqual({ removed: [], added: ['tutaj'] });
+    expect(changedTexts('Click', 'Click here')).toEqual({ removed: [], added: ['here'] });
   });
 
   it('keeps whitespace at the start and the end of the text in a change, such as an indentation', () => {
@@ -109,19 +112,19 @@ describe('diffWords', () => {
   it('moves a removed sentence to start at a word and end with its full stop', () => {
     expect(
       changedTexts(
-        'Kliknij w menu i nadaj nazwę. Możesz ją zmienić później.',
-        'Kliknij na górze menu i nadaj nazwę.',
+        'Open the side menu and add a name. You can change it later.',
+        'Open the top menu and add a name.',
       ),
-    ).toEqual({ removed: ['w', 'Możesz ją zmienić później.'], added: ['na górze'] });
+    ).toEqual({ removed: ['side', 'You can change it later.'], added: ['top'] });
   });
 
   it('moves an added sentence to start at a word and end with its full stop', () => {
     expect(
       changedTexts(
-        'Używaj krótkich nazw. Unikaj powtórzeń. Przeglądaj tagi co miesiąc.',
-        'Używaj krótkich nazw. Przeglądaj tagi co miesiąc. Pisz w jednym języku.',
+        'Use short names. Avoid repeats. Review tags every month.',
+        'Use short names. Review tags every month. Write in one language.',
       ),
-    ).toEqual({ removed: ['Unikaj powtórzeń.'], added: ['Pisz w jednym języku.'] });
+    ).toEqual({ removed: ['Avoid repeats.'], added: ['Write in one language.'] });
   });
 
   it('marks a change of whitespace unless whitespace is ignored', () => {
@@ -135,14 +138,14 @@ describe('diffWords', () => {
   });
 
   it('finds one changed word in a long paragraph', () => {
-    expect(changedTexts(longParagraph('bezpłatna'), longParagraph('płatna'))).toEqual({
-      removed: ['bezpłatna'],
-      added: ['płatna'],
+    expect(changedTexts(longParagraph('unlimited'), longParagraph('limited'))).toEqual({
+      removed: ['unlimited'],
+      added: ['limited'],
     });
   });
 
   it('marks an added emoji whole, never half of it', () => {
-    expect(changedTexts('Zażółć gęślą jaźń 🙂', 'Zażółć gęślą jaźń 🙂🎉')).toEqual({
+    expect(changedTexts('Thanks for the update 🙂', 'Thanks for the update 🙂🎉')).toEqual({
       removed: [],
       added: ['🎉'],
     });
@@ -158,8 +161,8 @@ describe('diffWords', () => {
   it('compares images by their files, like words', () => {
     expect(
       changedLineTexts(
-        '<p><img src="images/logo-2025.svg" alt="Logo"> Notatnik Online</p>',
-        '<p><img src="images/logo-2026.svg" alt="Logo"> Notatnik Online</p>',
+        '<p><img src="images/logo-2025.svg" alt="Logo"> Notebook Online</p>',
+        '<p><img src="images/logo-2026.svg" alt="Logo"> Notebook Online</p>',
       ),
     ).toEqual({ removed: [IMAGE_CHARACTER], added: [IMAGE_CHARACTER] });
   });
@@ -167,8 +170,8 @@ describe('diffWords', () => {
   it('keeps the same file unchanged as a word, whatever its size or alternative text', () => {
     expect(
       changedLineTexts(
-        '<p><img src="images/logo-2025.svg" alt="Logo" width="160"> Notatnik</p>',
-        '<p><img src="images/logo-2025.svg" alt="Logo serwisu" width="220"> Notatnik</p>',
+        '<p><img src="images/logo-2025.svg" alt="Logo" width="160"> Notebook</p>',
+        '<p><img src="images/logo-2025.svg" alt="Notebook logo" width="220"> Notebook</p>',
       ),
     ).toEqual(NO_CHANGES);
   });
@@ -176,8 +179,8 @@ describe('diffWords', () => {
   it('marks an image added to a sentence like an added word', () => {
     expect(
       changedLineTexts(
-        '<p>Kliknij <strong>Udostępnij</strong>.</p>',
-        '<p>Kliknij <img src="images/icon-share.svg" alt=""> <strong>Udostępnij</strong>.</p>',
+        '<p>Click <strong>Share</strong>.</p>',
+        '<p>Click <img src="images/icon-share.svg" alt=""> <strong>Share</strong>.</p>',
       ),
     ).toEqual({ removed: [], added: [IMAGE_CHARACTER] });
   });

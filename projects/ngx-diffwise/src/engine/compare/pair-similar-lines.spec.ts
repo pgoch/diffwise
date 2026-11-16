@@ -91,68 +91,64 @@ function sourceOf(line: Line): string | null {
 describe('pairSimilarLines', () => {
   it('pairs a line with one changed word as a changed line', () => {
     expect(
-      pair(['Konto można usunąć w ustawieniach.'], ['Konto można zamknąć w ustawieniach.']),
+      pair(
+        ['You can delete the account in the settings.'],
+        ['You can close the account in the settings.'],
+      ),
     ).toEqual([
       [
         LineChangeKind.Changed,
-        'Konto można usunąć w ustawieniach.',
-        'Konto można zamknąć w ustawieniach.',
+        'You can delete the account in the settings.',
+        'You can close the account in the settings.',
       ],
     ]);
   });
 
   it('keeps lines with less than half of their words in common apart', () => {
-    expect(pair(['Okres próbny trwa miesiąc.'], ['Kontakt z pomocą techniczną.'])).toEqual([
-      [LineChangeKind.Removed, 'Okres próbny trwa miesiąc.', null],
-      [LineChangeKind.Added, null, 'Kontakt z pomocą techniczną.'],
+    expect(pair(['The trial lasts a month.'], ['Contact technical support.'])).toEqual([
+      [LineChangeKind.Removed, 'The trial lasts a month.', null],
+      [LineChangeKind.Added, null, 'Contact technical support.'],
     ]);
   });
 
   it('pairs the similar line even when a new line comes before it', () => {
     expect(
-      pair(
-        ['Opłata wynosi 19 zł miesięcznie.'],
-        ['Nowy akapit.', 'Opłata wynosi 29 zł miesięcznie.'],
-      ),
+      pair(['The fee is 19 USD a month.'], ['New paragraph.', 'The fee is 29 USD a month.']),
     ).toEqual([
-      [LineChangeKind.Added, null, 'Nowy akapit.'],
-      [
-        LineChangeKind.Changed,
-        'Opłata wynosi 19 zł miesięcznie.',
-        'Opłata wynosi 29 zł miesięcznie.',
-      ],
+      [LineChangeKind.Added, null, 'New paragraph.'],
+      [LineChangeKind.Changed, 'The fee is 19 USD a month.', 'The fee is 29 USD a month.'],
     ]);
   });
 
   it('pairs several lines in their order', () => {
     expect(
       pair(
-        ['Pierwszy akapit tekstu.', 'Drugi akapit tekstu.'],
-        ['Pierwszy akapit.', 'Drugi akapit.'],
+        ['First paragraph of text.', 'Second paragraph of text.'],
+        ['First paragraph.', 'Second paragraph.'],
       ),
     ).toEqual([
-      [LineChangeKind.Changed, 'Pierwszy akapit tekstu.', 'Pierwszy akapit.'],
-      [LineChangeKind.Changed, 'Drugi akapit tekstu.', 'Drugi akapit.'],
+      [LineChangeKind.Changed, 'First paragraph of text.', 'First paragraph.'],
+      [LineChangeKind.Changed, 'Second paragraph of text.', 'Second paragraph.'],
     ]);
   });
 
   it('compares words in the case the options say', () => {
     const options = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
-    expect(pair(['Konto Firmowe Plus'], ['konto firmowe premium'], options)).toEqual([
-      [LineChangeKind.Changed, 'Konto Firmowe Plus', 'konto firmowe premium'],
+    expect(pair(['Business Account Plus'], ['business account premium'], options)).toEqual([
+      [LineChangeKind.Changed, 'Business Account Plus', 'business account premium'],
     ]);
-    expect(pair(['Konto Firmowe Plus'], ['konto firmowe premium'])).toEqual([
-      [LineChangeKind.Removed, 'Konto Firmowe Plus', null],
-      [LineChangeKind.Added, null, 'konto firmowe premium'],
+    expect(pair(['Business Account Plus'], ['business account premium'])).toEqual([
+      [LineChangeKind.Removed, 'Business Account Plus', null],
+      [LineChangeKind.Added, null, 'business account premium'],
     ]);
   });
 
   it('lists only removed or only added lines when the other side is empty', () => {
-    expect(pair(['Usunięty akapit.'], [])).toEqual([
-      [LineChangeKind.Removed, 'Usunięty akapit.', null],
+    expect(pair(['Removed paragraph.'], [])).toEqual([
+      [LineChangeKind.Removed, 'Removed paragraph.', null],
     ]);
-    expect(pair([], ['Nowy akapit.'])).toEqual([[LineChangeKind.Added, null, 'Nowy akapit.']]);
+    expect(pair([], ['New paragraph.'])).toEqual([[LineChangeKind.Added, null, 'New paragraph.']]);
   });
 
   it('pairs lines with only an image, also when the file changed', () => {
@@ -172,16 +168,19 @@ describe('pairSimilarLines', () => {
   });
 
   it('pairs lines at the same position in very large blocks', () => {
-    const removed = Array.from({ length: LARGE_BLOCK_SIZE }, (_, index) => `Akapit ${index} stary`);
-    const added = Array.from({ length: LARGE_BLOCK_SIZE }, (_, index) => `Akapit ${index} nowy`);
+    const removed = Array.from(
+      { length: LARGE_BLOCK_SIZE },
+      (_, index) => `Paragraph ${index} old`,
+    );
+    const added = Array.from({ length: LARGE_BLOCK_SIZE }, (_, index) => `Paragraph ${index} new`);
     const changes = pair(removed, added);
 
     expect(changes).toHaveLength(LARGE_BLOCK_SIZE);
     expect(changes.every(([kind]) => kind === LineChangeKind.Changed)).toBe(true);
     expect(changes[LARGE_BLOCK_SIZE - 1]).toEqual([
       LineChangeKind.Changed,
-      `Akapit ${LARGE_BLOCK_SIZE - 1} stary`,
-      `Akapit ${LARGE_BLOCK_SIZE - 1} nowy`,
+      `Paragraph ${LARGE_BLOCK_SIZE - 1} old`,
+      `Paragraph ${LARGE_BLOCK_SIZE - 1} new`,
     ]);
   });
 });

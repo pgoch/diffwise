@@ -33,11 +33,11 @@ function checkboxStates(html: string): (CheckboxState | null)[] {
 
 describe('ListMarkerReader', () => {
   it('counts the items of a list from 1', () => {
-    expect(itemNumbers('<ol><li>Jeden</li><li>Dwa</li><li>Trzy</li></ol>')).toEqual([1, 2, 3]);
+    expect(itemNumbers('<ol><li>One</li><li>Two</li><li>Three</li></ol>')).toEqual([1, 2, 3]);
   });
 
   it('starts a numbered list at its start, also below zero', () => {
-    expect(itemNumbers('<ol start="5"><li>Import</li><li>Zaproszenie</li></ol>')).toEqual([5, 6]);
+    expect(itemNumbers('<ol start="5"><li>Import</li><li>Invitation</li></ol>')).toEqual([5, 6]);
     expect(itemNumbers('<ol start="-2"><li>A</li><li>B</li><li>C</li></ol>')).toEqual([-2, -1, 0]);
   });
 
@@ -54,14 +54,15 @@ describe('ListMarkerReader', () => {
   });
 
   it('counts the items of a nested list separately', () => {
-    const html = '<ol reversed><li>Konta<ol><li>osobiste</li></ol></li><li>B</li><li>C</li></ol>';
+    const html =
+      '<ol reversed><li>Accounts<ol><li>personal</li></ol></li><li>B</li><li>C</li></ol>';
 
     expect(itemNumbers(html)).toEqual([3, 1, 2, 1]);
   });
 
   it('counts the items of bulleted lists too', () => {
     expect(itemNumbers('<ul><li>A</li><li value="5">B</li><li>C</li></ul>')).toEqual([1, 5, 6]);
-    expect(itemNumbers('<menu><li>Kopiuj</li><li>Wklej</li></menu>')).toEqual([1, 2]);
+    expect(itemNumbers('<menu><li>Copy</li><li>Paste</li></menu>')).toEqual([1, 2]);
   });
 
   it('counts an item inside another element of a list in that list', () => {
@@ -77,7 +78,7 @@ describe('ListMarkerReader', () => {
   it('reads start and value as HTML reads integers', () => {
     expect(itemNumbers('<ol start=" 3x"><li>A</li></ol>')).toEqual([3]);
     expect(itemNumbers('<ol start=""><li>A</li><li value="2.9">B</li></ol>')).toEqual([1, 2]);
-    expect(itemNumbers('<ol><li>A</li><li value="dwa">B</li></ol>')).toEqual([1, 2]);
+    expect(itemNumbers('<ol><li>A</li><li value="two">B</li></ol>')).toEqual([1, 2]);
   });
 });
 
