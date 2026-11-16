@@ -1,8 +1,8 @@
 # ngx-diffwise
 
-Side-by-side diffs of rendered HTML for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A toolbar steps between the changes, counts them, and lets your users choose the layout, the theme and the colors of changes, such as a colorblind-friendly or a high contrast palette. The interface comes in 12 languages and works with screen readers and the keyboard.
+Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A second component compares plain text line by line, with spaces, tabs and indentation as in the text. A toolbar steps between the changes, counts them, and lets your users choose the layout, the theme and the colors of changes, such as a colorblind-friendly or a high contrast palette. The interface comes in 12 languages and works with screen readers and the keyboard.
 
-> Version 0.5, an early preview. The API may change before 1.0.
+> Version 0.6, an early preview. The API may change before 1.0.
 
 ## Installation
 
@@ -27,6 +27,12 @@ export class PolicyHistory {
   protected readonly previous = '<h2>Returns</h2><p>You can return a product within 14 days.</p>';
   protected readonly current = '<h2>Returns</h2><p>You can return a product within 30 days.</p>';
 }
+```
+
+Plain text goes to `<diffwise-text>` (`DiffwiseText`), which takes the same options:
+
+```html
+<diffwise-text [oldText]="previousSettings" [newText]="currentSettings" />
 ```
 
 After each comparison, `(diffStatsComputed)` emits the numbers of changed lines, and `hasChanges` is `false` when the versions are the same:

@@ -1,8 +1,8 @@
 # Accessibility
 
-This page describes version 0.5. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does.
+This page describes version 0.6. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
 
-Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. It has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
+Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. The text diff of version 0.6 uses the same view. Diffwise has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
 
 ## Keyboard
 
@@ -20,6 +20,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - Before each removed, added or changed line, a screen reader hears a description that does not show on the screen, such as "Removed line 6", "Added line 6", or "Changed line 2, before" and "Changed line 2, after" side by side. A merged line of the single column is "Changed line 2". The line numbers themselves are skipped.
 - Side by side, an unchanged line is read once: screen readers skip its old copy, so each heading and link of the documents is there once.
 - Removed and added words are `<del>` and `<ins>`, which some screen readers announce as a deletion and an insertion.
+- In the text diff, the signs of changed spaces and tabs, `·` and `→`, show only on the screen: screen readers skip them, and copied text keeps plain spaces and tabs.
 - The rows of a table are read as lines of the diff, cell by cell, not as tables of one row each.
 - Each icon of changes is named by the title of its tooltip, such as "Link address changed", and the lines under the title describe it.
 - After a step of the navigation, screen readers hear "Change 2 of 3". The numbers of changed lines are named, such as "Added lines: 3".
@@ -56,7 +57,11 @@ The navigation scrolls smoothly over a short distance and jumps over a long one;
 
 ## Zoom and narrow screens
 
-In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
+In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either. Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
+
+## Font of plain text
+
+The text diff shows its lines in a font of fixed width, which keeps indentation and columns in line. Readers who find such a font hard to read can switch to the regular font of the diff in the view settings, under "Text font".
 
 ## Known limits
 
@@ -68,7 +73,7 @@ In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a sing
 
 - Set `lang` on your page, or on an element around the diff, in the language of the documents, so screen readers pronounce them right.
 - Keep the contrast when you change colors: with `diffColors`, at least 4.5:1 for the text on the backgrounds of changes and for the accents, which also color the numbers of changed lines; with CSS variables, the same for the colors you set. See [Your own colors](configuration.md#your-own-colors).
-- Leave `DiffwiseUserSetting.DiffPalette` in `allowedUserSettings`, so readers can choose the colorblind-friendly or the high contrast palette themselves.
+- Leave `DiffwiseUserSetting.DiffPalette` in `allowedUserSettings`, so readers can choose the colorblind-friendly or the high contrast palette themselves, and `DiffwiseUserSetting.TextFont`, so readers of the text diff can choose the regular font.
 - If your page has a sticky header, put its height into `--diffwise-toolbar-top`, so the toolbar and the element with the focus stay below it.
 - Give the diff a name that fits your page, with `diffLabel` or `aria-labelledby`.
 - The translations other than English and Polish have not been reviewed by native speakers yet. Check the texts in the languages of your users, and correct them with `customTexts`.
