@@ -1,6 +1,6 @@
 /*
- * Two versions of an HTML document side by side, in the light or the dark theme.
- * Styles are global (no view encapsulation), so every class starts with `diffwise-diff`
+ * The view of a diff: two versions side by side or in a single column, in the light or the dark
+ * theme. Styles are global (no view encapsulation), so every class starts with `diffwise-diff`
  * and apps can override the `--diffwise-…` variables. An option with a value other than its
  * default adds a modifier class to the component, such as `diffwise-diff--gap-style-gray`.
  */
