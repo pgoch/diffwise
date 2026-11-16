@@ -2,13 +2,30 @@
 
 Sample documents for trying out Diffwise and checking it by eye. All samples were auto-generated. Each sample is a pair, `before.html` and `after.html`. Both are HTML fragments, the way an editor or a CMS stores content, not full pages.
 
-| Sample | English | Polish | Content |
-|---|---|---|---|
-| Short | [en/short](en/short) | [pl/short](pl/short) | An announcement: a heading and a few paragraphs |
-| Medium | [en/medium](en/medium) | [pl/medium](pl/medium) | A help article: headings, paragraphs, lists, links, a quote and an image |
-| Long | [en/long](en/long) | [pl/long](pl/long) | A user guide with every kind of content an editor can produce |
+| Sample | Content |
+|---|---|
+| Short | An announcement: a heading and a few paragraphs |
+| Medium | A help article: headings, paragraphs, lists, links, a quote and an image |
+| Long | A user guide with every kind of content an editor can produce |
 
-The English and Polish versions have the same structure and the same changes. Samples in the other interface languages will follow with the translations (roadmap 0.5).
+Each sample comes in the twelve languages of the interface, in a folder named by the code of the language:
+
+| Language | Short | Medium | Long |
+|---|---|---|---|
+| English | [en/short](en/short) | [en/medium](en/medium) | [en/long](en/long) |
+| Polish | [pl/short](pl/short) | [pl/medium](pl/medium) | [pl/long](pl/long) |
+| Chinese (simplified characters) | [zh/short](zh/short) | [zh/medium](zh/medium) | [zh/long](zh/long) |
+| Spanish | [es/short](es/short) | [es/medium](es/medium) | [es/long](es/long) |
+| Hindi | [hi/short](hi/short) | [hi/medium](hi/medium) | [hi/long](hi/long) |
+| French | [fr/short](fr/short) | [fr/medium](fr/medium) | [fr/long](fr/long) |
+| Russian | [ru/short](ru/short) | [ru/medium](ru/medium) | [ru/long](ru/long) |
+| Portuguese (Portugal) | [pt/short](pt/short) | [pt/medium](pt/medium) | [pt/long](pt/long) |
+| Italian | [it/short](it/short) | [it/medium](it/medium) | [it/long](it/long) |
+| Japanese | [ja/short](ja/short) | [ja/medium](ja/medium) | [ja/long](ja/long) |
+| German | [de/short](de/short) | [de/medium](de/medium) | [de/long](de/long) |
+| Korean | [ko/short](ko/short) | [ko/medium](ko/medium) | [ko/long](ko/long) |
+
+The translations have the same structure and the same changes as the English samples, so the diff shows the same rows in every language; the engine tests check it. Only the words follow each language, such as dates, units and quotation marks. Translations other than English and Polish have not been reviewed by native speakers.
 
 Images are simple drawings in [images](images). Paths in the samples are relative to this folder, for example `images/logo-2025.svg`.
 
@@ -102,3 +119,4 @@ Scripts, event handlers, `javascript:` links and embedded media (`<iframe>`, `<v
 - All content is made up and describes a fictional service. Do not add real documents, names or data.
 - Use only `example.com` addresses.
 - Keep `before.html` and `after.html` identical apart from the changes listed above, and update this list when you change a sample.
+- Change a sample in every language at once, so that all of them keep the same structure and the same changes.
