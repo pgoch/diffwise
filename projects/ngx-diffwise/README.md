@@ -35,7 +35,7 @@ After each comparison, `(diffStatsComputed)` emits the numbers of changed lines,
 <diffwise-html-diff [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
 ```
 
-Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).
+Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). What the diff does for the keyboard, screen readers and contrast is in the [accessibility guide](https://github.com/pgoch/diffwise/blob/master/docs/accessibility.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).
 
 ## License
 

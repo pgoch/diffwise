@@ -33,7 +33,7 @@ Diffwise fills that gap:
 - Cleans both versions with DOMPurify, so HTML from users or other systems is safe to show.
 - Light, dark and automatic color modes, following the system or the dark mode of your app.
 - A colorblind-friendly palette, orange and blue, and a high contrast palette, with changes in frames instead of colored backgrounds.
-- Readable with screen readers, which hear "Changed line 2, before" before a change, and with the keyboard alone; changes stay visible in the high contrast mode of Windows.
+- Readable with screen readers, which hear "Changed line 2, before" before a change, and with the keyboard alone; changes stay visible in the high contrast mode of Windows. See [Accessibility](docs/accessibility.md).
 - Interface in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, or with your own texts.
 - Many options for the look: marking styles, color intensity, contrast, line numbers, the column between the versions, icons, tooltips, fonts and your own colors.
 - Options to ignore whitespace, letter case, formatting or link changes.
@@ -114,6 +114,7 @@ export class PolicyHistory {
 - [Overview](docs/overview.md): what Diffwise is, who it is for and what it will show
 - [Configuration](docs/configuration.md): every option, the `Diffwise` service and styling with CSS
 - [How it works](docs/how-it-works.md): how two HTML documents are compared and displayed
+- [Accessibility](docs/accessibility.md): the keyboard, screen readers, contrast and the high contrast mode of Windows
 - [Roadmap](docs/roadmap.md): planned releases
 
 ## Demo
