@@ -44,7 +44,7 @@ describe('Diffwise', () => {
     const diffwise = TestBed.inject(Diffwise);
 
     diffwise.updateConfig({
-      customTexts: { oldVersionLabel: 'Przed zmianami' },
+      customTexts: { oldVersionLabel: 'Before the changes' },
       diffColors: { dark: { addedAccent: '#5eead4' } },
     });
     diffwise.updateConfig({ customTexts: null, diffColors: null });

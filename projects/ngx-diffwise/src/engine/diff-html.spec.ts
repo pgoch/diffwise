@@ -607,8 +607,8 @@ describe('diffHtml', () => {
   });
 
   it('numbers removed and added lines only on their own side', () => {
-    const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
-    const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p><p>Płatności.</p>';
+    const oldHtml = '<p>General rules.</p><p>Trial period.</p><p>Contact.</p>';
+    const newHtml = '<p>General rules.</p><p>Contact.</p><p>Payments.</p>';
 
     expect(compare(oldHtml, newHtml).rows.map(rowShape)).toEqual([
       [LineChangeKind.Unchanged, 1, 1],
@@ -619,12 +619,12 @@ describe('diffHtml', () => {
   });
 
   it('applies the options to lines and words', () => {
-    const oldHtml = '<p>Konto Firmowe</p>';
-    const newHtml = '<p>Konto firmowe</p>';
+    const oldHtml = '<p>Business Account</p>';
+    const newHtml = '<p>Business account</p>';
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
     expect(compare(oldHtml, newHtml).rows.map(rowSummary)).toEqual([
-      [LineChangeKind.Changed, 1, 1, ['Firmowe'], ['firmowe']],
+      [LineChangeKind.Changed, 1, 1, ['Account'], ['account']],
     ]);
     expect(compare(oldHtml, newHtml, ignoreCase).rows.map(rowSummary)).toEqual([
       [LineChangeKind.Unchanged, 1, 1, [], []],
@@ -633,7 +633,9 @@ describe('diffHtml', () => {
 
   it('marks an added emoji whole and only the changed word in Chinese', () => {
     expect(
-      compare('<p>Zażółć gęślą jaźń 🙂</p>', '<p>Zażółć gęślą jaźń 🙂🎉</p>').rows.map(rowSummary),
+      compare('<p>Thanks for the update 🙂</p>', '<p>Thanks for the update 🙂🎉</p>').rows.map(
+        rowSummary,
+      ),
     ).toEqual([[LineChangeKind.Changed, 1, 1, [], ['🎉']]]);
     expect(
       compare('<p>我们的服务全天开放。</p>', '<p>我们的服务每天开放。</p>').rows.map(rowSummary),
@@ -655,12 +657,12 @@ describe('diffHtml', () => {
   it('shows no scripts, event handlers or javascript: links', () => {
     const unsafeLink = '<a href="javascript:alert(1)">';
     const script = '<script>alert(1)</script>';
-    const oldHtml = `<p onclick="alert(1)">Regulamin ${unsafeLink}Kliknij</a></p>${script}`;
-    const newHtml = `<p onclick="alert(1)">Regulamin ${unsafeLink}Kliknij tutaj</a></p>${script}`;
+    const oldHtml = `<p onclick="alert(1)">Terms ${unsafeLink}Click</a></p>${script}`;
+    const newHtml = `<p onclick="alert(1)">Terms ${unsafeLink}Click here</a></p>${script}`;
     const { rows } = compare(oldHtml, newHtml);
     const shownHtml = rows.flatMap(({ oldLine, newLine }) => [oldLine?.html, newLine?.html]).join();
 
-    expect(rows.map(rowSummary)).toEqual([[LineChangeKind.Changed, 1, 1, [], ['tutaj']]]);
+    expect(rows.map(rowSummary)).toEqual([[LineChangeKind.Changed, 1, 1, [], ['here']]]);
     expect(shownHtml).not.toMatch(UNSAFE_HTML);
   });
 
@@ -669,15 +671,18 @@ describe('diffHtml', () => {
   });
 
   it('gives the ids of each version a prefix of their own', () => {
-    const html = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
+    const html = '<p>See the note<a href="#note">1</a>.</p><p id="note">Text of the note.</p>';
     const { rows } = compare(html, html);
 
     expect(rows.map(({ oldLine, newLine }) => [oldLine?.html, newLine?.html])).toEqual([
       [
-        '<p>Zobacz przypis<a href="#diff-old-note">1</a>.</p>',
-        '<p>Zobacz przypis<a href="#diff-new-note">1</a>.</p>',
+        '<p>See the note<a href="#diff-old-note">1</a>.</p>',
+        '<p>See the note<a href="#diff-new-note">1</a>.</p>',
       ],
-      ['<p id="diff-old-note">Treść przypisu.</p>', '<p id="diff-new-note">Treść przypisu.</p>'],
+      [
+        '<p id="diff-old-note">Text of the note.</p>',
+        '<p id="diff-new-note">Text of the note.</p>',
+      ],
     ]);
   });
 
@@ -694,19 +699,19 @@ describe('diffHtml', () => {
 
   it('marks a change of formatting on both sides and describes it', () => {
     const { rows, stats } = compare(
-      '<p><i>Ważne:</i> chroń hasło.</p>',
-      '<p><b>Ważne:</b> chroń hasło.</p>',
+      '<p><i>Important:</i> protect passwords.</p>',
+      '<p><b>Important:</b> protect passwords.</p>',
     );
     const detailsAttribute = 'data-diffwise-change-details="0"';
-    const removedMarker = `<del class="${REMOVED_CLASSES}" ${detailsAttribute}>Ważne:</del>`;
-    const addedMarker = `<ins class="${ADDED_CLASSES}" ${detailsAttribute}>Ważne:</ins>`;
+    const removedMarker = `<del class="${REMOVED_CLASSES}" ${detailsAttribute}>Important:</del>`;
+    const addedMarker = `<ins class="${ADDED_CLASSES}" ${detailsAttribute}>Important:</ins>`;
     const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
     expect(rows).toEqual([
       {
         kind: LineChangeKind.Changed,
-        oldLine: { ...paragraph, html: `<p><i>${removedMarker}</i> chroń hasło.</p>` },
-        newLine: { ...paragraph, html: `<p><b>${addedMarker}</b> chroń hasło.</p>` },
+        oldLine: { ...paragraph, html: `<p><i>${removedMarker}</i> protect passwords.</p>` },
+        newLine: { ...paragraph, html: `<p><b>${addedMarker}</b> protect passwords.</p>` },
         changeDetails: [formattingDetail([TextStyle.Italic], [TextStyle.Bold])],
         mergedLine: null,
       },
@@ -751,7 +756,7 @@ describe('diffHtml', () => {
   });
 
   it('shows no changes of footnote links between identical documents', () => {
-    const html = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
+    const html = '<p>See the note<a href="#note">1</a>.</p><p id="note">Text of the note.</p>';
 
     expect(compare(html, html).rows.map(rowShape)).toEqual([
       [LineChangeKind.Unchanged, 1, 1],
@@ -769,12 +774,12 @@ describe('diffHtml', () => {
     const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
     const paragraph = { kind: LineKind.Paragraph, number: 1, table: null };
 
-    expect(compare(`<p>${oldImageHtml} Notatnik</p>`, `<p>${newImageHtml} Notatnik</p>`)).toEqual({
+    expect(compare(`<p>${oldImageHtml} Notebook</p>`, `<p>${newImageHtml} Notebook</p>`)).toEqual({
       rows: [
         {
           kind: LineChangeKind.Changed,
-          oldLine: { ...paragraph, html: `<p>${removedMarker}${oldImageHtml}</del> Notatnik</p>` },
-          newLine: { ...paragraph, html: `<p>${addedMarker}${newImageHtml}</ins> Notatnik</p>` },
+          oldLine: { ...paragraph, html: `<p>${removedMarker}${oldImageHtml}</del> Notebook</p>` },
+          newLine: { ...paragraph, html: `<p>${addedMarker}${newImageHtml}</ins> Notebook</p>` },
           changeDetails: [imageDetail(oldImage, newImage, [ImageProperty.Source])],
           mergedLine: null,
         },
@@ -906,22 +911,22 @@ describe('diffHtml', () => {
     const detailsAttribute = 'data-diffwise-change-details="0 1"';
     const addedMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}" ${detailsAttribute}>`;
     const [row] = compare(
-      '<p><a href="/stara"><img src="images/logo.svg" width="32"></a> Notatnik</p>',
-      '<p><a href="/nowa"><img src="images/logo.svg" width="48"></a> Notatnik</p>',
+      '<p><a href="/old"><img src="images/logo.svg" width="32"></a> Notebook</p>',
+      '<p><a href="/new"><img src="images/logo.svg" width="48"></a> Notebook</p>',
     ).rows;
 
     expect(row.newLine?.html).toBe(
-      `<p><a href="/nowa">${addedMarker}<img src="images/logo.svg" width="48"></ins></a> Notatnik</p>`,
+      `<p><a href="/new">${addedMarker}<img src="images/logo.svg" width="48"></ins></a> Notebook</p>`,
     );
     expect(row.changeDetails).toEqual([
-      linkDetail('/stara', '/nowa'),
+      linkDetail('/old', '/new'),
       imageDetail(oldImage, newImage, [ImageProperty.Width]),
     ]);
   });
 
   it('shows a line with only an image added or removed as a whole line', () => {
-    const textHtml = '<p>Notatki synchronizują się w tle.</p>';
-    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
+    const textHtml = '<p>Notes sync in the background.</p>';
+    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Sync"></p>';
 
     expect(compare(textHtml, textHtml + imageHtml).rows.map(rowSummary)).toEqual([
       [LineChangeKind.Unchanged, 1, 1, [], []],
@@ -934,8 +939,8 @@ describe('diffHtml', () => {
   });
 
   it('shows changes of formatting and links as unchanged when the options ignore them', () => {
-    const oldHtml = '<h3>Regulamin</h3><p>Zobacz <b>regulamin</b>.</p>';
-    const newHtml = '<h2>Regulamin</h2><p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const oldHtml = '<h3>Terms</h3><p>See the <b>terms</b>.</p>';
+    const newHtml = '<h2>Terms</h2><p>See the <a href="/terms">terms</a>.</p>';
     const ignoring = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true, ignoreLinkChanges: true };
 
     expect(compare(oldHtml, newHtml, ignoring).rows.map(rowShape)).toEqual([

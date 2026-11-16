@@ -146,103 +146,102 @@ describe('splitLines', () => {
   });
 
   it('makes a line of every list item inside a copy of its list', () => {
-    expect(lines('<ul class="plany"><li>Osobisty</li><li>Firmowy</li></ul>')).toEqual([
+    expect(lines('<ul class="plans"><li>Personal</li><li>Business</li></ul>')).toEqual([
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'Osobisty',
-        html: `<ul class="plany"><li value="1" ${LINE_ITEM}>Osobisty</li></ul>`,
+        text: 'Personal',
+        html: `<ul class="plans"><li value="1" ${LINE_ITEM}>Personal</li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'Firmowy',
-        html: `<ul class="plany"><li value="2" ${LINE_ITEM}>Firmowy</li></ul>`,
+        text: 'Business',
+        html: `<ul class="plans"><li value="2" ${LINE_ITEM}>Business</li></ul>`,
       },
     ]);
   });
 
   it('gives the copy of each item the number it has in its list', () => {
     const html =
-      '<ol start="5" type="a"><li>Import</li><li value="9">Eksport</li><li>Kopia</li></ol>'
-      + '<ol reversed><li>Dwa</li><li>Jeden</li></ol>';
+      '<ol start="5" type="a"><li>Import</li><li value="9">Export</li><li>Copy</li></ol>'
+      + '<ol reversed><li>Two</li><li>One</li></ol>';
 
     expect(htmlOfLines(html)).toEqual([
       `<ol start="5" type="a"><li value="5" ${LINE_ITEM}>Import</li></ol>`,
-      `<ol start="5" type="a"><li value="9" ${LINE_ITEM}>Eksport</li></ol>`,
-      `<ol start="5" type="a"><li value="10" ${LINE_ITEM}>Kopia</li></ol>`,
-      `<ol reversed=""><li value="2" ${LINE_ITEM}>Dwa</li></ol>`,
-      `<ol reversed=""><li value="1" ${LINE_ITEM}>Jeden</li></ol>`,
+      `<ol start="5" type="a"><li value="9" ${LINE_ITEM}>Export</li></ol>`,
+      `<ol start="5" type="a"><li value="10" ${LINE_ITEM}>Copy</li></ol>`,
+      `<ol reversed=""><li value="2" ${LINE_ITEM}>Two</li></ol>`,
+      `<ol reversed=""><li value="1" ${LINE_ITEM}>One</li></ol>`,
     ]);
   });
 
   it('splits an item with a nested list and shows its marker only in its first line', () => {
     const html =
-      '<ul><li>Konta<ul><li>osobiste</li><li>firmowe</li></ul>i ich ustawienia</li></ul>';
+      '<ul><li>Accounts<ul><li>personal</li><li>business</li></ul>and their settings</li></ul>';
     const outerItemCopy = `<ul><li value="1" ${CONTINUED_ITEM}>`;
 
     expect(lines(html)).toEqual([
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'Konta',
-        html: `<ul><li value="1" ${LINE_ITEM}>Konta</li></ul>`,
+        text: 'Accounts',
+        html: `<ul><li value="1" ${LINE_ITEM}>Accounts</li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'osobiste',
-        html: `${outerItemCopy}<ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ul>`,
+        text: 'personal',
+        html: `${outerItemCopy}<ul><li value="1" ${LINE_ITEM}>personal</li></ul></li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'firmowe',
-        html: `${outerItemCopy}<ul><li value="2" ${LINE_ITEM}>firmowe</li></ul></li></ul>`,
+        text: 'business',
+        html: `${outerItemCopy}<ul><li value="2" ${LINE_ITEM}>business</li></ul></li></ul>`,
       },
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'i ich ustawienia',
-        html: `<ul><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}>i ich ustawienia</li></ul>`,
+        text: 'and their settings',
+        html: `<ul><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}>and their settings</li></ul>`,
       },
     ]);
   });
 
   it('shows the marker of an item that starts with a nested list next to its first item', () => {
-    expect(htmlOfLines('<ol><li><ul><li>osobiste</li><li>firmowe</li></ul></li></ol>')).toEqual([
-      `<ol><li value="1"><ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ol>`,
-      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="2" ${LINE_ITEM}>firmowe</li></ul></li></ol>`,
+    expect(htmlOfLines('<ol><li><ul><li>personal</li><li>business</li></ul></li></ol>')).toEqual([
+      `<ol><li value="1"><ul><li value="1" ${LINE_ITEM}>personal</li></ul></li></ol>`,
+      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="2" ${LINE_ITEM}>business</li></ul></li></ol>`,
     ]);
   });
 
   it('splits an item with several paragraphs, which read like the item without them', () => {
-    expect(lines('<ol><li><p>Pierwszy akapit</p><p>Drugi akapit</p></li></ol>')).toEqual([
+    expect(lines('<ol><li><p>First paragraph</p><p>Second paragraph</p></li></ol>')).toEqual([
       {
         kind: LineKind.Paragraph,
         tag: 'p',
-        text: 'Pierwszy akapit',
-        html: `<ol><li value="1" ${LINE_ITEM}><p>Pierwszy akapit</p></li></ol>`,
+        text: 'First paragraph',
+        html: `<ol><li value="1" ${LINE_ITEM}><p>First paragraph</p></li></ol>`,
       },
       {
         kind: LineKind.Paragraph,
         tag: 'p',
-        text: 'Drugi akapit',
-        html: `<ol><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}><p>Drugi akapit</p></li></ol>`,
+        text: 'Second paragraph',
+        html: `<ol><li value="1" ${CONTINUED_ITEM} ${LINE_ITEM}><p>Second paragraph</p></li></ol>`,
       },
     ]);
   });
 
   it('keeps an empty list item as a line, as its marker shows', () => {
-    const html =
-      '<ol><li>Jeden</li><li></li><li><p> </p></li></ol><dl><dt>Termin</dt><dd></dd></dl>';
+    const html = '<ol><li>One</li><li></li><li><p> </p></li></ol><dl><dt>Term</dt><dd></dd></dl>';
 
     expect(lines(html)).toEqual([
       {
         kind: LineKind.ListItem,
         tag: 'li',
-        text: 'Jeden',
-        html: `<ol><li value="1" ${LINE_ITEM}>Jeden</li></ol>`,
+        text: 'One',
+        html: `<ol><li value="1" ${LINE_ITEM}>One</li></ol>`,
       },
       {
         kind: LineKind.ListItem,
@@ -259,8 +258,8 @@ describe('splitLines', () => {
       {
         kind: LineKind.ListItem,
         tag: 'dt',
-        text: 'Termin',
-        html: `<dl><dt ${LINE_ITEM}>Termin</dt></dl>`,
+        text: 'Term',
+        html: `<dl><dt ${LINE_ITEM}>Term</dt></dl>`,
       },
     ]);
   });
@@ -294,28 +293,28 @@ describe('splitLines', () => {
   });
 
   it('makes a line of each term and description of a definition list', () => {
-    expect(htmlOfLines('<dl><dt>Notatnik</dt><dd>Zbiór notatek</dd></dl>')).toEqual([
-      `<dl><dt ${LINE_ITEM}>Notatnik</dt></dl>`,
-      `<dl><dd ${LINE_ITEM}>Zbiór notatek</dd></dl>`,
+    expect(htmlOfLines('<dl><dt>Notebook</dt><dd>A set of notes</dd></dl>')).toEqual([
+      `<dl><dt ${LINE_ITEM}>Notebook</dt></dl>`,
+      `<dl><dd ${LINE_ITEM}>A set of notes</dd></dl>`,
     ]);
   });
 
   it('splits a list inside a quote and keeps both around each item', () => {
-    expect(htmlOfLines('<blockquote><ul><li>Jeden</li><li>Dwa</li></ul></blockquote>')).toEqual([
-      `<blockquote><ul><li value="1" ${LINE_ITEM}>Jeden</li></ul></blockquote>`,
-      `<blockquote><ul><li value="2" ${LINE_ITEM}>Dwa</li></ul></blockquote>`,
+    expect(htmlOfLines('<blockquote><ul><li>One</li><li>Two</li></ul></blockquote>')).toEqual([
+      `<blockquote><ul><li value="1" ${LINE_ITEM}>One</li></ul></blockquote>`,
+      `<blockquote><ul><li value="2" ${LINE_ITEM}>Two</li></ul></blockquote>`,
     ]);
   });
 
   it('keeps an id only in the first line of its element', () => {
-    const list = '<ol id="kroki"><li id="konto">Konto<ul><li>osobiste</li></ul></li></ol>';
-    const quote = '<blockquote id="cytat"><p>Jeden</p><p>Dwa</p></blockquote>';
+    const list = '<ol id="steps"><li id="account">Account<ul><li>personal</li></ul></li></ol>';
+    const quote = '<blockquote id="quote"><p>One</p><p>Two</p></blockquote>';
 
     expect(htmlOfLines(list + quote)).toEqual([
-      `<ol id="diff-kroki"><li id="diff-konto" value="1" ${LINE_ITEM}>Konto</li></ol>`,
-      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="1" ${LINE_ITEM}>osobiste</li></ul></li></ol>`,
-      '<blockquote id="diff-cytat"><p>Jeden</p></blockquote>',
-      '<blockquote><p>Dwa</p></blockquote>',
+      `<ol id="diff-steps"><li id="diff-account" value="1" ${LINE_ITEM}>Account</li></ol>`,
+      `<ol><li value="1" ${CONTINUED_ITEM}><ul><li value="1" ${LINE_ITEM}>personal</li></ul></li></ol>`,
+      '<blockquote id="diff-quote"><p>One</p></blockquote>',
+      '<blockquote><p>Two</p></blockquote>',
     ]);
   });
 
@@ -474,14 +473,14 @@ describe('splitLines', () => {
   });
 
   it('gives the same lines for unclosed and closed tags', () => {
-    expect(lines('<p>Akapit <b>bez zamknięcia')).toEqual(
-      lines('<p>Akapit <b>bez zamknięcia</b></p>'),
+    expect(lines('<p>Paragraph <b>without an end')).toEqual(
+      lines('<p>Paragraph <b>without an end</b></p>'),
     );
   });
 
   it('leaves scripts out of the text and the HTML', () => {
-    expect(lines('<p onclick="alert(1)">Tekst</p><script>alert(1)</script>')).toEqual([
-      { kind: LineKind.Paragraph, tag: 'p', text: 'Tekst', html: '<p>Tekst</p>' },
+    expect(lines('<p onclick="alert(1)">Text</p><script>alert(1)</script>')).toEqual([
+      { kind: LineKind.Paragraph, tag: 'p', text: 'Text', html: '<p>Text</p>' },
     ]);
   });
 

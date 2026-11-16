@@ -78,64 +78,62 @@ function link(oldLink: string | null, newLink: string | null): LinkChangeDetail 
 describe('diffFormats', () => {
   it('finds italic changed to bold', () => {
     expect(
-      formatChanges('<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'),
-    ).toEqual([['Ważne:', 'Ważne:', [formatting([TextStyle.Italic], [TextStyle.Bold])]]]);
+      formatChanges(
+        '<p><i>Important:</i> protect passwords.</p>',
+        '<p><b>Important:</b> protect passwords.</p>',
+      ),
+    ).toEqual([['Important:', 'Important:', [formatting([TextStyle.Italic], [TextStyle.Bold])]]]);
   });
 
   it('joins words with the same change across the spaces between them', () => {
-    const oldHtml = '<p>Szczegółowe warunki opisano niżej.</p>';
-    const newHtml = '<p><b>Szczegółowe warunki</b> opisano niżej.</p>';
+    const oldHtml = '<p>Detailed rules are described below.</p>';
+    const newHtml = '<p><b>Detailed rules</b> are described below.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['Szczegółowe warunki', 'Szczegółowe warunki', [formatting([], [TextStyle.Bold])]],
+      ['Detailed rules', 'Detailed rules', [formatting([], [TextStyle.Bold])]],
     ]);
   });
 
   it('compares the formatting of unchanged words only', () => {
-    const oldHtml = '<p><i>Uwaga:</i> jedno konto.</p>';
-    const newHtml = '<p><b>Uwaga:</b> <b>trzy</b> konta.</p>';
+    const oldHtml = '<p><i>Note:</i> one account.</p>';
+    const newHtml = '<p><b>Note:</b> <b>three</b> accounts.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['Uwaga:', 'Uwaga:', [formatting([TextStyle.Italic], [TextStyle.Bold])]],
+      ['Note:', 'Note:', [formatting([TextStyle.Italic], [TextStyle.Bold])]],
     ]);
   });
 
   it('finds another address of a link', () => {
-    const oldLink = 'https://example.com/regulamin-2025';
-    const newLink = 'https://example.com/regulamin-2026';
-    const oldHtml = `<p>Zasady są w <a href="${oldLink}">regulaminie</a>.</p>`;
-    const newHtml = `<p>Zasady są w <a href="${newLink}">regulaminie</a>.</p>`;
+    const oldLink = 'https://example.com/terms-2025';
+    const newLink = 'https://example.com/terms-2026';
+    const oldHtml = `<p>The rules are in the <a href="${oldLink}">terms</a>.</p>`;
+    const newHtml = `<p>The rules are in the <a href="${newLink}">terms</a>.</p>`;
 
-    expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['regulaminie', 'regulaminie', [link(oldLink, newLink)]],
-    ]);
+    expect(formatChanges(oldHtml, newHtml)).toEqual([['terms', 'terms', [link(oldLink, newLink)]]]);
   });
 
   it('finds no link change when only the text of a link changed', () => {
-    const oldHtml = '<p>Zobacz <a href="/pomoc">pomocy</a>.</p>';
-    const newHtml = '<p>Zobacz <a href="/pomoc">centrum pomocy</a>.</p>';
+    const oldHtml = '<p>See the <a href="/help">help</a>.</p>';
+    const newHtml = '<p>See the <a href="/help">help center</a>.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([]);
   });
 
   it('finds a link added around unchanged text', () => {
-    const oldHtml = '<p>Zobacz regulamin.</p>';
-    const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const oldHtml = '<p>See the terms.</p>';
+    const newHtml = '<p>See the <a href="/terms">terms</a>.</p>';
 
-    expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['regulamin', 'regulamin', [link(null, '/regulamin')]],
-    ]);
+    expect(formatChanges(oldHtml, newHtml)).toEqual([['terms', 'terms', [link(null, '/terms')]]]);
   });
 
   it('describes each change of a line separately, for markers on both sides', () => {
-    const oldHtml = '<p>Szczegółowe warunki są w <a href="/regulamin-2025">regulaminie</a>.</p>';
-    const newHtml =
-      '<p><b>Szczegółowe warunki</b> są w <a href="/regulamin-2026">regulaminie</a>.</p>';
+    const oldHtml = '<p>Detailed rules are in the <a href="/terms-2025">terms</a>.</p>';
+    const newHtml = '<p><b>Detailed rules</b> are in the <a href="/terms-2026">terms</a>.</p>';
     const { oldRanges, newRanges } = compareFormats(oldHtml, newHtml);
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['Szczegółowe warunki', 'Szczegółowe warunki', [formatting([], [TextStyle.Bold])]],
-      ['regulaminie', 'regulaminie', [link('/regulamin-2025', '/regulamin-2026')]],
+      ['Detailed rules', 'Detailed rules', [formatting([], [TextStyle.Bold])]],
+      ['terms', 'terms', [link('/terms-2025', '/terms-2026')]],
     ]);
     expect(oldRanges.map((range) => range.detailIndices)).toEqual([[0], [1]]);
     expect(newRanges.map((range) => range.detailIndices)).toEqual([[0], [1]]);
@@ -145,17 +143,17 @@ describe('diffFormats', () => {
     const headingChange = valueChange(FormattingValue.HeadingLevel, '2', '3');
     const paragraphChange = valueChange(FormattingValue.HeadingLevel, null, '2');
 
-    expect(formatChanges('<h2>Plany i ceny</h2>', '<h3>Plany i ceny</h3>')).toEqual([
-      ['Plany i ceny', 'Plany i ceny', [formatting([], [], [headingChange])]],
+    expect(formatChanges('<h2>Plans and prices</h2>', '<h3>Plans and prices</h3>')).toEqual([
+      ['Plans and prices', 'Plans and prices', [formatting([], [], [headingChange])]],
     ]);
-    expect(formatChanges('<p>Plany i ceny</p>', '<h2>Plany i ceny</h2>')).toEqual([
-      ['Plany i ceny', 'Plany i ceny', [formatting([], [], [paragraphChange])]],
+    expect(formatChanges('<p>Plans and prices</p>', '<h2>Plans and prices</h2>')).toEqual([
+      ['Plans and prices', 'Plans and prices', [formatting([], [], [paragraphChange])]],
     ]);
   });
 
   it('finds another text color', () => {
-    const oldHtml = '<p>Tekst ma <span style="color: #c0392b">kolor</span>.</p>';
-    const newHtml = '<p>Tekst ma <span style="color: #1e7d4f">kolor</span>.</p>';
+    const oldHtml = '<p>The text has <span style="color: #c0392b">color</span>.</p>';
+    const newHtml = '<p>The text has <span style="color: #1e7d4f">color</span>.</p>';
     const colorChange = valueChange(
       FormattingValue.TextColor,
       'rgb(192, 57, 43)',
@@ -163,52 +161,52 @@ describe('diffFormats', () => {
     );
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['kolor', 'kolor', [formatting([], [], [colorChange])]],
+      ['color', 'color', [formatting([], [], [colorChange])]],
     ]);
   });
 
   it('marks only the part of a word whose format changed', () => {
-    expect(
-      formatChanges('<p>Przeczytaj regulamin.</p>', '<p>Przeczytaj <b>regu</b>lamin.</p>'),
-    ).toEqual([['regu', 'regu', [formatting([], [TextStyle.Bold])]]]);
+    expect(formatChanges('<p>Read the terms.</p>', '<p>Read the <b>ter</b>ms.</p>')).toEqual([
+      ['ter', 'ter', [formatting([], [TextStyle.Bold])]],
+    ]);
   });
 
   it('gives text a change of formatting and a change of link at once', () => {
-    const oldHtml = '<p>Zobacz <b>regulamin</b>.</p>';
-    const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const oldHtml = '<p>See the <b>terms</b>.</p>';
+    const newHtml = '<p>See the <a href="/terms">terms</a>.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['regulamin', 'regulamin', [formatting([TextStyle.Bold], []), link(null, '/regulamin')]],
+      ['terms', 'terms', [formatting([TextStyle.Bold], []), link(null, '/terms')]],
     ]);
   });
 
   it('joins words whose formats changed the same way, even from different formats', () => {
-    const oldHtml = '<p><i>jeden</i> dwa trzy</p>';
-    const newHtml = '<p><b><i>jeden</i> dwa</b> trzy</p>';
+    const oldHtml = '<p><i>one</i> two three</p>';
+    const newHtml = '<p><b><i>one</i> two</b> three</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['jeden dwa', 'jeden dwa', [formatting([], [TextStyle.Bold])]],
+      ['one two', 'one two', [formatting([], [TextStyle.Bold])]],
     ]);
   });
 
   it('does not join changes across changed text', () => {
-    const oldHtml = '<p>jeden dwa trzy</p>';
-    const newHtml = '<p><b>jeden</b> cztery <b>trzy</b></p>';
+    const oldHtml = '<p>one two three</p>';
+    const newHtml = '<p><b>one</b> four <b>three</b></p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      ['jeden', 'jeden', [formatting([], [TextStyle.Bold])]],
-      ['trzy', 'trzy', [formatting([], [TextStyle.Bold])]],
+      ['one', 'one', [formatting([], [TextStyle.Bold])]],
+      ['three', 'three', [formatting([], [TextStyle.Bold])]],
     ]);
   });
 
   it('finds no change in other markup of the same look or in the format of spaces', () => {
     const differentTags = [
-      '<p><b>Ważne:</b> <em>chroń</em> hasło.</p>',
-      '<p><strong>Ważne:</strong> <i>chroń</i> hasło.</p>',
+      '<p><b>Important:</b> <em>protect</em> passwords.</p>',
+      '<p><strong>Important:</strong> <i>protect</i> passwords.</p>',
     ] as const;
     const boldSpace = [
-      '<p><b>jeden</b> <b>dwa</b> trzy</p>',
-      '<p><b>jeden dwa </b>trzy</p>',
+      '<p><b>one</b> <b>two</b> three</p>',
+      '<p><b>one two </b>three</p>',
     ] as const;
 
     expect(formatChanges(...differentTags)).toEqual([]);
@@ -216,31 +214,31 @@ describe('diffFormats', () => {
   });
 
   it('finds another link around an image, together with the words next to it', () => {
-    const oldHtml = '<p><a href="/stara"><img src="logo.svg" alt="Logo"> Notatnik</a> Online</p>';
-    const newHtml = '<p><a href="/nowa"><img src="logo.svg" alt="Logo"> Notatnik</a> Online</p>';
-    const imageAndWord = `${IMAGE_CHARACTER} Notatnik`;
+    const oldHtml = '<p><a href="/old"><img src="logo.svg" alt="Logo"> Notebook</a> Online</p>';
+    const newHtml = '<p><a href="/new"><img src="logo.svg" alt="Logo"> Notebook</a> Online</p>';
+    const imageAndWord = `${IMAGE_CHARACTER} Notebook`;
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([
-      [imageAndWord, imageAndWord, [link('/stara', '/nowa')]],
+      [imageAndWord, imageAndWord, [link('/old', '/new')]],
     ]);
   });
 
   it('compares links within the document without the id prefixes of the versions', () => {
-    const oldHtml = '<p>Dane są szyfrowane<a href="#note-1">1</a>.</p>';
-    const newHtml = '<p>Dane są zawsze szyfrowane<a href="#note-1">1</a>.</p>';
+    const oldHtml = '<p>Data is encrypted<a href="#note-1">1</a>.</p>';
+    const newHtml = '<p>Data is always encrypted<a href="#note-1">1</a>.</p>';
 
     expect(formatChanges(oldHtml, newHtml)).toEqual([]);
   });
 
   it('ignores formatting, links or both when the options say so', () => {
-    const oldHtml = '<p>Zobacz <b>regulamin</b>.</p>';
-    const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const oldHtml = '<p>See the <b>terms</b>.</p>';
+    const newHtml = '<p>See the <a href="/terms">terms</a>.</p>';
 
     expect(formatChanges(oldHtml, newHtml, IGNORE_FORMATTING)).toEqual([
-      ['regulamin', 'regulamin', [link(null, '/regulamin')]],
+      ['terms', 'terms', [link(null, '/terms')]],
     ]);
     expect(formatChanges(oldHtml, newHtml, IGNORE_LINK_CHANGES)).toEqual([
-      ['regulamin', 'regulamin', [formatting([TextStyle.Bold], [])]],
+      ['terms', 'terms', [formatting([TextStyle.Bold], [])]],
     ]);
     expect(formatChanges(oldHtml, newHtml, IGNORE_BOTH)).toEqual([]);
   });

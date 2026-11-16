@@ -13,23 +13,22 @@ function prefixed(html: string): string {
 
 describe('prefixIds', () => {
   it('prefixes ids and anchor names', () => {
-    expect(prefixed('<h2 id="plans">Plany</h2><p><a name="top"></a>Treść</p>')).toBe(
-      '<h2 id="diff-old-plans">Plany</h2><p><a name="diff-old-top"></a>Treść</p>',
+    expect(prefixed('<h2 id="plans">Plans</h2><p><a name="top"></a>Content</p>')).toBe(
+      '<h2 id="diff-old-plans">Plans</h2><p><a name="diff-old-top"></a>Content</p>',
     );
   });
 
   it('prefixes links to parts of the document and leaves other links alone', () => {
-    const links =
-      '<a href="#plans">Plany</a> <a href="#">Góra</a> <a href="/pomoc#konto">Pomoc</a>';
+    const links = '<a href="#plans">Plans</a> <a href="#">Top</a> <a href="/help#account">Help</a>';
 
     expect(prefixed(`<p>${links}</p>`)).toBe(
-      '<p><a href="#diff-old-plans">Plany</a> <a href="#">Góra</a> <a href="/pomoc#konto">Pomoc</a></p>',
+      '<p><a href="#diff-old-plans">Plans</a> <a href="#">Top</a> <a href="/help#account">Help</a></p>',
     );
   });
 
   it('prefixes every id an attribute refers to', () => {
-    expect(prefixed('<p aria-describedby="hint note">Tekst</p>')).toBe(
-      '<p aria-describedby="diff-old-hint diff-old-note">Tekst</p>',
+    expect(prefixed('<p aria-describedby="hint note">Text</p>')).toBe(
+      '<p aria-describedby="diff-old-hint diff-old-note">Text</p>',
     );
     expect(prefixed('<label for="email">E-mail</label><input id="email" name="email">')).toBe(
       '<label for="diff-old-email">E-mail</label><input id="diff-old-email" name="email" disabled="">',
@@ -38,9 +37,9 @@ describe('prefixIds', () => {
 
   it('prefixes header cells that data cells refer to', () => {
     expect(
-      prefixed('<table><tr><th id="plan">Plan</th><td headers="plan">Osobisty</td></tr></table>'),
+      prefixed('<table><tr><th id="plan">Plan</th><td headers="plan">Personal</td></tr></table>'),
     ).toBe(
-      '<table><tbody><tr><th id="diff-old-plan">Plan</th><td headers="diff-old-plan">Osobisty</td></tr></tbody></table>',
+      '<table><tbody><tr><th id="diff-old-plan">Plan</th><td headers="diff-old-plan">Personal</td></tr></tbody></table>',
     );
   });
 

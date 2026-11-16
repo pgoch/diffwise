@@ -30,55 +30,59 @@ function summary(oldHtml: string, newHtml: string, options?: DiffOptions) {
 
 describe('diffLines', () => {
   it('finds no changes in identical documents', () => {
-    const html = '<p>Serwis działa całą dobę.</p>';
+    const html = '<p>The service runs day and night.</p>';
 
     expect(summary(html, html)).toEqual([
-      [LineChangeKind.Unchanged, 'Serwis działa całą dobę.', 'Serwis działa całą dobę.'],
+      [
+        LineChangeKind.Unchanged,
+        'The service runs day and night.',
+        'The service runs day and night.',
+      ],
     ]);
     expect(diff(html, html).stats).toEqual(NO_CHANGES);
   });
 
   it('pairs a line with a changed word as one changed line', () => {
-    const oldHtml = '<p>Konto można usunąć w ustawieniach.</p>';
-    const newHtml = '<p>Konto można zamknąć w ustawieniach.</p>';
+    const oldHtml = '<p>You can delete the account in the settings.</p>';
+    const newHtml = '<p>You can close the account in the settings.</p>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
       [
         LineChangeKind.Changed,
-        'Konto można usunąć w ustawieniach.',
-        'Konto można zamknąć w ustawieniach.',
+        'You can delete the account in the settings.',
+        'You can close the account in the settings.',
       ],
     ]);
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
   });
 
   it('finds a paragraph added in the middle', () => {
-    const oldHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p>';
-    const newHtml = '<p>Zasady ogólne.</p><p>Płatności.</p><p>Kontakt.</p>';
+    const oldHtml = '<p>General rules.</p><p>Contact.</p>';
+    const newHtml = '<p>General rules.</p><p>Payments.</p><p>Contact.</p>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
-      [LineChangeKind.Unchanged, 'Zasady ogólne.', 'Zasady ogólne.'],
-      [LineChangeKind.Added, null, 'Płatności.'],
-      [LineChangeKind.Unchanged, 'Kontakt.', 'Kontakt.'],
+      [LineChangeKind.Unchanged, 'General rules.', 'General rules.'],
+      [LineChangeKind.Added, null, 'Payments.'],
+      [LineChangeKind.Unchanged, 'Contact.', 'Contact.'],
     ]);
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1 });
   });
 
   it('finds a removed paragraph', () => {
-    const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
-    const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p>';
+    const oldHtml = '<p>General rules.</p><p>Trial period.</p><p>Contact.</p>';
+    const newHtml = '<p>General rules.</p><p>Contact.</p>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
-      [LineChangeKind.Unchanged, 'Zasady ogólne.', 'Zasady ogólne.'],
-      [LineChangeKind.Removed, 'Okres próbny.', null],
-      [LineChangeKind.Unchanged, 'Kontakt.', 'Kontakt.'],
+      [LineChangeKind.Unchanged, 'General rules.', 'General rules.'],
+      [LineChangeKind.Removed, 'Trial period.', null],
+      [LineChangeKind.Unchanged, 'Contact.', 'Contact.'],
     ]);
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, removedLines: 1 });
   });
 
   it('shows swapped paragraphs as removed and added', () => {
-    const oldHtml = '<p>Rejestracja.</p><p>Logowanie.</p>';
-    const newHtml = '<p>Logowanie.</p><p>Rejestracja.</p>';
+    const oldHtml = '<p>Registration.</p><p>Login.</p>';
+    const newHtml = '<p>Login.</p><p>Registration.</p>';
 
     expect(diff(oldHtml, newHtml).stats).toEqual({
       addedLines: 1,
@@ -88,19 +92,19 @@ describe('diffLines', () => {
   });
 
   it('adds every line when the old document is empty', () => {
-    const newHtml = '<p>Jeden.</p><p>Dwa.</p><p>Trzy.</p>';
+    const newHtml = '<p>One.</p><p>Two.</p><p>Three.</p>';
 
     expect(summary('', newHtml)).toEqual([
-      [LineChangeKind.Added, null, 'Jeden.'],
-      [LineChangeKind.Added, null, 'Dwa.'],
-      [LineChangeKind.Added, null, 'Trzy.'],
+      [LineChangeKind.Added, null, 'One.'],
+      [LineChangeKind.Added, null, 'Two.'],
+      [LineChangeKind.Added, null, 'Three.'],
     ]);
     expect(diff('', newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 3 });
   });
 
   it('finds a change of letter case unless case is ignored', () => {
-    const oldHtml = '<p>Konto Firmowe</p>';
-    const newHtml = '<p>Konto firmowe</p>';
+    const oldHtml = '<p>Business Account</p>';
+    const newHtml = '<p>Business account</p>';
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
 
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
@@ -117,38 +121,40 @@ describe('diffLines', () => {
   });
 
   it('shows a paragraph turned into a heading as changed', () => {
-    expect(summary('<p>Cennik</p>', '<h2>Cennik</h2>')).toEqual([
-      [LineChangeKind.Changed, 'Cennik', 'Cennik'],
+    expect(summary('<p>Pricing</p>', '<h2>Pricing</h2>')).toEqual([
+      [LineChangeKind.Changed, 'Pricing', 'Pricing'],
     ]);
   });
 
   it('finds an item added to a list and another removed from it', () => {
-    const oldHtml = '<ul><li>Osobisty</li><li>Rodzinny</li><li>Firmowy</li></ul>';
-    const newHtml = '<ul><li>Osobisty</li><li>Firmowy</li><li>Zespołowy</li></ul>';
+    const oldHtml = '<ul><li>Personal</li><li>Family</li><li>Business</li></ul>';
+    const newHtml = '<ul><li>Personal</li><li>Business</li><li>Team</li></ul>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
-      [LineChangeKind.Unchanged, 'Osobisty', 'Osobisty'],
-      [LineChangeKind.Removed, 'Rodzinny', null],
-      [LineChangeKind.Unchanged, 'Firmowy', 'Firmowy'],
-      [LineChangeKind.Added, null, 'Zespołowy'],
+      [LineChangeKind.Unchanged, 'Personal', 'Personal'],
+      [LineChangeKind.Removed, 'Family', null],
+      [LineChangeKind.Unchanged, 'Business', 'Business'],
+      [LineChangeKind.Added, null, 'Team'],
     ]);
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1, removedLines: 1 });
   });
 
   it('finds a change in a nested list only in its item', () => {
-    const oldHtml = '<ul><li>Konta<ul><li>konto osobiste</li><li>konto firmowe</li></ul></li></ul>';
-    const newHtml = '<ul><li>Konta<ul><li>konto prywatne</li><li>konto firmowe</li></ul></li></ul>';
+    const oldHtml =
+      '<ul><li>Accounts<ul><li>personal account</li><li>business account</li></ul></li></ul>';
+    const newHtml =
+      '<ul><li>Accounts<ul><li>private account</li><li>business account</li></ul></li></ul>';
 
     expect(summary(oldHtml, newHtml)).toEqual([
-      [LineChangeKind.Unchanged, 'Konta', 'Konta'],
-      [LineChangeKind.Changed, 'konto osobiste', 'konto prywatne'],
-      [LineChangeKind.Unchanged, 'konto firmowe', 'konto firmowe'],
+      [LineChangeKind.Unchanged, 'Accounts', 'Accounts'],
+      [LineChangeKind.Changed, 'personal account', 'private account'],
+      [LineChangeKind.Unchanged, 'business account', 'business account'],
     ]);
   });
 
   it('finds no change in an item whose text got a paragraph around it', () => {
-    const oldHtml = '<ol><li>Utwórz konto.</li><li>Zaloguj się.</li></ol>';
-    const newHtml = '<ol><li><p>Utwórz konto.</p></li><li><p>Zaloguj się.</p></li></ol>';
+    const oldHtml = '<ol><li>Create an account.</li><li>Sign in.</li></ol>';
+    const newHtml = '<ol><li><p>Create an account.</p></li><li><p>Sign in.</p></li></ol>';
 
     expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
   });
@@ -187,25 +193,28 @@ describe('diffLines', () => {
   });
 
   it('finds a change of formatting or of a link in the same text', () => {
-    const italicToBold = ['<p><i>Ważne:</i> chroń hasło.</p>', '<p><b>Ważne:</b> chroń hasło.</p>'];
+    const italicToBold = [
+      '<p><i>Important:</i> protect passwords.</p>',
+      '<p><b>Important:</b> protect passwords.</p>',
+    ];
     const otherAddress = [
-      '<p><a href="/regulamin-2025">Regulamin</a></p>',
-      '<p><a href="/regulamin-2026">Regulamin</a></p>',
+      '<p><a href="/terms-2025">Terms</a></p>',
+      '<p><a href="/terms-2026">Terms</a></p>',
     ];
 
     expect(summary(italicToBold[0], italicToBold[1])).toEqual([
-      [LineChangeKind.Changed, 'Ważne: chroń hasło.', 'Ważne: chroń hasło.'],
+      [LineChangeKind.Changed, 'Important: protect passwords.', 'Important: protect passwords.'],
     ]);
     expect(summary(otherAddress[0], otherAddress[1])).toEqual([
-      [LineChangeKind.Changed, 'Regulamin', 'Regulamin'],
+      [LineChangeKind.Changed, 'Terms', 'Terms'],
     ]);
   });
 
   it('finds no change in other markup of the same look or in the format of spaces', () => {
     const oldHtml =
-      '<p><b>Ważne:</b> <em>chroń</em> <u>hasło</u>.</p><p><b>jeden</b> <b>dwa</b></p>';
+      '<p><b>Important:</b> <em>protect</em> <u>passwords</u>.</p><p><b>one</b> <b>two</b></p>';
     const newHtml =
-      '<p><strong>Ważne:</strong> <i>chroń</i> <span style="text-decoration: underline">hasło</span>.</p><p><b>jeden dwa</b></p>';
+      '<p><strong>Important:</strong> <i>protect</i> <span style="text-decoration: underline">passwords</span>.</p><p><b>one two</b></p>';
 
     expect(diff(oldHtml, newHtml).stats).toEqual(NO_CHANGES);
   });
@@ -213,27 +222,29 @@ describe('diffLines', () => {
   it('ignores formatting and heading levels with ignoreFormatting', () => {
     const ignoreFormatting = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
 
-    expect(diff('<h2>Cennik</h2>', '<h3>Cennik</h3>').stats).toEqual({
+    expect(diff('<h2>Pricing</h2>', '<h3>Pricing</h3>').stats).toEqual({
       ...NO_CHANGES,
       changedLines: 1,
     });
-    expect(diff('<h2>Cennik</h2>', '<h3>Cennik</h3>', ignoreFormatting).stats).toEqual(NO_CHANGES);
-    expect(diff('<p><i>Cennik</i></p>', '<h2>Cennik</h2>', ignoreFormatting).stats).toEqual(
+    expect(diff('<h2>Pricing</h2>', '<h3>Pricing</h3>', ignoreFormatting).stats).toEqual(
+      NO_CHANGES,
+    );
+    expect(diff('<p><i>Pricing</i></p>', '<h2>Pricing</h2>', ignoreFormatting).stats).toEqual(
       NO_CHANGES,
     );
   });
 
   it('ignores links added, removed or changed with ignoreLinkChanges', () => {
     const ignoreLinkChanges = { ...DEFAULT_DIFF_OPTIONS, ignoreLinkChanges: true };
-    const oldHtml = '<p>Zobacz regulamin.</p>';
-    const newHtml = '<p>Zobacz <a href="/regulamin">regulamin</a>.</p>';
+    const oldHtml = '<p>See the terms.</p>';
+    const newHtml = '<p>See the <a href="/terms">terms</a>.</p>';
 
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
     expect(diff(oldHtml, newHtml, ignoreLinkChanges).stats).toEqual(NO_CHANGES);
   });
 
   it('compares links within the document without the id prefixes of the versions', () => {
-    const html = '<p>Dane są szyfrowane<a href="#note-1">1</a>.</p><p id="note-1">TLS 1.3.</p>';
+    const html = '<p>Data is encrypted<a href="#note-1">1</a>.</p><p id="note-1">TLS 1.3.</p>';
 
     expect(diff(html, html).stats).toEqual(NO_CHANGES);
   });
@@ -242,7 +253,7 @@ describe('diffLines', () => {
     const logo = '<p><img src="images/logo-2025.svg" alt="Logo" width="160"></p>';
     const otherVersions = [
       '<p><img src="images/logo-2026.svg" alt="Logo" width="160"></p>',
-      '<p><img src="images/logo-2025.svg" alt="Logo serwisu" width="160"></p>',
+      '<p><img src="images/logo-2025.svg" alt="Notebook logo" width="160"></p>',
       '<p><img src="images/logo-2025.svg" alt="Logo" width="220"></p>',
     ];
 
@@ -255,16 +266,16 @@ describe('diffLines', () => {
 
   it('compares alternative texts in the case the options say', () => {
     const ignoreCase = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
-    const oldHtml = '<p><img src="images/logo-2025.svg" alt="Logo serwisu"></p>';
-    const newHtml = '<p><img src="images/logo-2025.svg" alt="logo serwisu"></p>';
+    const oldHtml = '<p><img src="images/logo-2025.svg" alt="Notebook logo"></p>';
+    const newHtml = '<p><img src="images/logo-2025.svg" alt="notebook logo"></p>';
 
     expect(diff(oldHtml, newHtml).stats).toEqual({ ...NO_CHANGES, changedLines: 1 });
     expect(diff(oldHtml, newHtml, ignoreCase).stats).toEqual(NO_CHANGES);
   });
 
   it('finds a line with only an image added or removed', () => {
-    const textHtml = '<p>Notatki synchronizują się w tle.</p>';
-    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Synchronizacja"></p>';
+    const textHtml = '<p>Notes sync in the background.</p>';
+    const imageHtml = '<p><img src="images/sync-diagram.svg" alt="Sync"></p>';
 
     expect(diff(textHtml, textHtml + imageHtml).stats).toEqual({ ...NO_CHANGES, addedLines: 1 });
     expect(diff(textHtml + imageHtml, textHtml).stats).toEqual({ ...NO_CHANGES, removedLines: 1 });

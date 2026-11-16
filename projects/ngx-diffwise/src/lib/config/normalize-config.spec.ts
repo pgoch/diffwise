@@ -46,7 +46,7 @@ describe('normalizeConfig', () => {
   });
 
   it('keeps texts of the app as a frozen copy', () => {
-    const texts = { old: 'Wersja 3 · 12.10.2026', new: 'Wersja 4 · 05.11.2026' };
+    const texts = { old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' };
     const { versionHeaders } = normalizeConfig({ versionHeaders: texts });
 
     expect(versionHeaders).toEqual(texts);
@@ -69,8 +69,8 @@ describe('normalizeConfig', () => {
   });
 
   it('ignores texts of the app without both texts', () => {
-    expect(normalizeConfig({ versionHeaders: { old: 'Wersja 3' } })).toEqual({});
-    expect(normalizeConfig({ versionHeaders: { old: 'Wersja 3', new: 4 } })).toEqual({});
+    expect(normalizeConfig({ versionHeaders: { old: 'Version 3' } })).toEqual({});
+    expect(normalizeConfig({ versionHeaders: { old: 'Version 3', new: 4 } })).toEqual({});
     expect(normalizeConfig({ versionHeaders: null })).toEqual({});
   });
 
@@ -131,13 +131,13 @@ describe('normalizeConfig', () => {
 
   it('keeps the valid custom texts as a frozen copy, with a warning for each invalid one', () => {
     const customTexts = {
-      oldVersionLabel: 'Przed zmianami',
+      oldVersionLabel: 'Before the changes',
       newVersionLabel: 4,
       oldVerisonLabel: 'Po zmianach',
     };
     const validTexts = normalizeConfig({ customTexts }).customTexts;
 
-    expect(validTexts).toEqual({ oldVersionLabel: 'Przed zmianami' });
+    expect(validTexts).toEqual({ oldVersionLabel: 'Before the changes' });
     expect(Object.isFrozen(validTexts)).toBe(true);
     expect(console.warn).toHaveBeenCalledTimes(2);
   });
@@ -146,7 +146,7 @@ describe('normalizeConfig', () => {
     expect(normalizeConfig({ customTexts: { oldVersionLabel: undefined } })).toEqual({
       customTexts: {},
     });
-    expect(normalizeConfig({ customTexts: 'Przed zmianami' })).toEqual({});
+    expect(normalizeConfig({ customTexts: 'Before the changes' })).toEqual({});
     expect(console.warn).toHaveBeenCalledOnce();
   });
 

@@ -7,20 +7,20 @@ function kindsAndTexts(text: string) {
 
 describe('splitWords', () => {
   it('splits words, whitespace and punctuation', () => {
-    expect(kindsAndTexts('Opłata wynosi 19 zł.')).toEqual([
-      [TokenKind.Word, 'Opłata'],
+    expect(kindsAndTexts('Fees cost 19 USD.')).toEqual([
+      [TokenKind.Word, 'Fees'],
       [TokenKind.Whitespace, ' '],
-      [TokenKind.Word, 'wynosi'],
+      [TokenKind.Word, 'cost'],
       [TokenKind.Whitespace, ' '],
       [TokenKind.Word, '19'],
       [TokenKind.Whitespace, ' '],
-      [TokenKind.Word, 'zł'],
+      [TokenKind.Word, 'USD'],
       [TokenKind.Symbol, '.'],
     ]);
   });
 
   it('gives the position of every token', () => {
-    const text = 'Konto  można';
+    const text = 'Plans  today';
 
     for (const token of splitWords(text)) {
       expect(text.slice(token.start, token.start + token.text.length)).toBe(token.text);
@@ -38,8 +38,8 @@ describe('splitWords', () => {
   });
 
   it('keeps each emoji whole', () => {
-    expect(kindsAndTexts('jaźń 🙂🎉')).toEqual([
-      [TokenKind.Word, 'jaźń'],
+    expect(kindsAndTexts('done 🙂🎉')).toEqual([
+      [TokenKind.Word, 'done'],
       [TokenKind.Whitespace, ' '],
       [TokenKind.Symbol, '🙂'],
       [TokenKind.Symbol, '🎉'],

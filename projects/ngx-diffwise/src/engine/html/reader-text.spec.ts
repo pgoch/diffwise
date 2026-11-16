@@ -28,14 +28,14 @@ function sourceText({ node, nodeOffset, start, end }: TextPiece): string {
 
 describe('readerText', () => {
   it('collapses whitespace a reader cannot see', () => {
-    expect(textOf('<p>Konto  osobiste</p>')).toBe('Konto osobiste');
-    expect(textOf('<p>Konto&nbsp;osobiste</p>')).toBe('Konto osobiste');
-    expect(textOf('<p>\n  Konto\nosobiste </p>')).toBe('Konto osobiste');
+    expect(textOf('<p>Personal  account</p>')).toBe('Personal account');
+    expect(textOf('<p>Personal&nbsp;account</p>')).toBe('Personal account');
+    expect(textOf('<p>\n  Personal\naccount </p>')).toBe('Personal account');
   });
 
   it('reads entities as the characters a reader sees', () => {
-    expect(textOf('<p>Rabat &lt; 20 zł &amp; darmowa dostawa</p>')).toBe(
-      'Rabat < 20 zł & darmowa dostawa',
+    expect(textOf('<p>Discount &lt; 20 USD &amp; free delivery</p>')).toBe(
+      'Discount < 20 USD & free delivery',
     );
   });
 

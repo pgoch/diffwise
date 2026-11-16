@@ -262,7 +262,7 @@ describe('ChangeDescriber', () => {
   });
 
   it('titles an added or a removed link and shows its address', () => {
-    const address = 'https://example.com/pomoc/linki-publiczne';
+    const address = 'https://example.com/help/public-links';
 
     expect(tooltipText(polish.tooltip([link(null, address)]))).toEqual(['Dodany link', address]);
     expect(tooltipText(polish.tooltip([link(address, null)]))).toEqual(['Usunięty link', address]);
@@ -311,12 +311,12 @@ describe('ChangeDescriber', () => {
 
   it('heads the alternative text, and the files when more of the image changed', () => {
     const detail = image(
-      { source: 'img/logo-2025.svg', width: '220px', height: '72px', altText: 'Logo serwisu' },
+      { source: 'img/logo-2025.svg', width: '220px', height: '72px', altText: 'Notebook logo' },
       {
         source: 'img/logo-2026.svg',
         width: '240px',
         height: '80px',
-        altText: 'Logo serwisu Notatnik',
+        altText: 'Notebook logo in color',
       },
     );
 
@@ -326,8 +326,8 @@ describe('ChangeDescriber', () => {
       'Jest: logo-[+2026+].svg',
       'rozmiar: 220 × 72 → 240 × 80 px',
       '# tekst alternatywny',
-      'Było: Logo serwisu',
-      'Jest: Logo serwisu[+ Notatnik+]',
+      'Było: Notebook logo',
+      'Jest: Notebook logo[+ in color+]',
     ]);
   });
 

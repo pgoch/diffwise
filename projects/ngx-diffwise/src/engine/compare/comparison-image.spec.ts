@@ -5,7 +5,7 @@ const LOGO: ImageProperties = {
   source: 'images/logo-2025.svg',
   width: '160px',
   height: null,
-  altText: 'Logo  Serwisu',
+  altText: 'Notebook  Logo',
 };
 
 describe('imageWordKey', () => {
@@ -31,7 +31,7 @@ describe('comparisonImage', () => {
     const options = { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace: true, ignoreCase: true };
     const withoutAltText = { ...LOGO, altText: null };
 
-    expect(comparisonImage(LOGO, options)).toEqual({ ...LOGO, altText: 'logoserwisu' });
+    expect(comparisonImage(LOGO, options)).toEqual({ ...LOGO, altText: 'notebooklogo' });
     expect(comparisonImage(withoutAltText, options)).toEqual(withoutAltText);
   });
 });

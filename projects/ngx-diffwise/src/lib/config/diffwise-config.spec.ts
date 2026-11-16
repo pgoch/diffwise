@@ -134,22 +134,22 @@ describe('DiffwiseConfig', () => {
   });
 
   it('keeps texts of the app as they were given', () => {
-    const texts = { old: 'Wersja 3', new: 'Wersja 4' };
+    const texts = { old: 'Version 3', new: 'Version 4' };
     const config = new DiffwiseConfig({ versionHeaders: texts });
 
-    texts.old = 'Wersja 5';
+    texts.old = 'Version 5';
 
-    expect(config.versionHeaders).toEqual({ old: 'Wersja 3', new: 'Wersja 4' });
+    expect(config.versionHeaders).toEqual({ old: 'Version 3', new: 'Version 4' });
   });
 
   it('changes custom texts one by one, so the other texts stay', () => {
     const config = new DiffwiseConfig({
-      customTexts: { oldVersionLabel: 'Przed', newVersionLabel: 'Po' },
+      customTexts: { oldVersionLabel: 'Before', newVersionLabel: 'After' },
     });
-    const copy = config.with({ customTexts: { newVersionLabel: 'Teraz' } });
+    const copy = config.with({ customTexts: { newVersionLabel: 'Now' } });
 
-    expect(copy.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Teraz' });
-    expect(config.customTexts).toEqual({ oldVersionLabel: 'Przed', newVersionLabel: 'Po' });
+    expect(copy.customTexts).toEqual({ oldVersionLabel: 'Before', newVersionLabel: 'Now' });
+    expect(config.customTexts).toEqual({ oldVersionLabel: 'Before', newVersionLabel: 'After' });
   });
 
   it('changes colors of changes one by one in each theme, so the other colors stay', () => {
@@ -168,7 +168,7 @@ describe('DiffwiseConfig', () => {
 
   it('takes away all custom texts and colors with null', () => {
     const config = new DiffwiseConfig({
-      customTexts: { oldVersionLabel: 'Przed' },
+      customTexts: { oldVersionLabel: 'Before' },
       diffColors: { light: { addedAccent: '#0f766e' } },
     });
     const copy = config.with({ customTexts: null, diffColors: null });
@@ -179,7 +179,7 @@ describe('DiffwiseConfig', () => {
 
   it('has no custom texts when given null, and takes them away from a config it changes', () => {
     const withoutTexts = new DiffwiseConfig({ customTexts: null });
-    const config = new DiffwiseConfig({ customTexts: { oldVersionLabel: 'Przed' } });
+    const config = new DiffwiseConfig({ customTexts: { oldVersionLabel: 'Before' } });
 
     expect(withoutTexts.customTexts).toEqual({});
     expect(config.with(withoutTexts).customTexts).toEqual({});

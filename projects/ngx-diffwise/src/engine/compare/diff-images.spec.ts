@@ -52,8 +52,8 @@ describe('diffImages', () => {
   it('describes another file in the same place', () => {
     expect(
       imageChanges(
-        '<p><img src="images/logo-2025.svg" alt="Logo"> Notatnik</p>',
-        '<p><img src="images/logo-2026.svg" alt="Logo"> Notatnik</p>',
+        '<p><img src="images/logo-2025.svg" alt="Logo"> Notebook</p>',
+        '<p><img src="images/logo-2026.svg" alt="Logo"> Notebook</p>',
       ),
     ).toEqual([
       [0, 0, [change(image(LOGO_2025, 'Logo'), image(LOGO_2026, 'Logo'), [ImageProperty.Source])]],
@@ -64,14 +64,14 @@ describe('diffImages', () => {
     expect(
       imageChanges(
         '<p>Logo: <img src="images/logo-2025.svg" alt="Logo"></p>',
-        '<p>Logo: <img src="images/logo-2025.svg" alt="Logo serwisu"></p>',
+        '<p>Logo: <img src="images/logo-2025.svg" alt="Notebook logo"></p>',
       ),
     ).toEqual([
       [
         6,
         6,
         [
-          change(image(LOGO_2025, 'Logo'), image(LOGO_2025, 'Logo serwisu'), [
+          change(image(LOGO_2025, 'Logo'), image(LOGO_2025, 'Notebook logo'), [
             ImageProperty.AltText,
           ]),
         ],
@@ -92,16 +92,16 @@ describe('diffImages', () => {
   });
 
   it('compares alternative texts in the case the options say', () => {
-    const oldHtml = '<p><img src="images/logo-2025.svg" alt="Logo serwisu"></p>';
-    const newHtml = '<p><img src="images/logo-2025.svg" alt="logo serwisu"></p>';
+    const oldHtml = '<p><img src="images/logo-2025.svg" alt="Notebook logo"></p>';
+    const newHtml = '<p><img src="images/logo-2025.svg" alt="notebook logo"></p>';
 
     expect(imageChanges(oldHtml, newHtml)).toHaveLength(1);
     expect(imageChanges(oldHtml, newHtml, IGNORE_CASE)).toEqual([]);
   });
 
   it('gives no details for an image added to or removed from a sentence', () => {
-    const withIcon = '<p><img src="a.svg"> Kliknij <img src="share.svg"> Udostępnij.</p>';
-    const withoutIcon = '<p><img src="a.svg"> Kliknij Udostępnij.</p>';
+    const withIcon = '<p><img src="a.svg"> Click <img src="share.svg"> Share.</p>';
+    const withoutIcon = '<p><img src="a.svg"> Click Share.</p>';
 
     expect(imageChanges(withIcon, withoutIcon)).toEqual([]);
     expect(imageChanges(withoutIcon, withIcon)).toEqual([]);
@@ -110,14 +110,14 @@ describe('diffImages', () => {
   it('pairs a removed and an added image only between the same unchanged words', () => {
     expect(
       imageChanges(
-        '<p><img src="a.svg"> Zdanie bez zmian. <img src="b.svg"></p>',
-        '<p><img src="c.svg"> Zdanie bez zmian.</p>',
+        '<p><img src="a.svg"> A sentence without changes. <img src="b.svg"></p>',
+        '<p><img src="c.svg"> A sentence without changes.</p>',
       ),
     ).toEqual([[0, 0, [change(image('a.svg'), image('c.svg'), [ImageProperty.Source])]]]);
     expect(
       imageChanges(
-        '<p>Zdanie bez zmian. <img src="a.svg"></p>',
-        '<p><img src="b.svg"> Zdanie bez zmian.</p>',
+        '<p>A sentence without changes. <img src="a.svg"></p>',
+        '<p><img src="b.svg"> A sentence without changes.</p>',
       ),
     ).toEqual([]);
   });
@@ -145,12 +145,12 @@ describe('diffImages', () => {
 
     expect(
       imageChanges(
-        '<p><img src="a.svg" width="10"> i <img src="b.svg" alt="Stary"></p>',
-        '<p><img src="a.svg" width="20"> i <img src="b.svg" alt="Nowy"></p>',
+        '<p><img src="a.svg" width="10"> &amp; <img src="b.svg" alt="Old"></p>',
+        '<p><img src="a.svg" width="20"> &amp; <img src="b.svg" alt="New"></p>',
       ),
     ).toEqual([
       [0, 0, [change(narrowImage, wideImage, [ImageProperty.Width])]],
-      [4, 4, [change(image('b.svg', 'Stary'), image('b.svg', 'Nowy'), [ImageProperty.AltText])]],
+      [4, 4, [change(image('b.svg', 'Old'), image('b.svg', 'New'), [ImageProperty.AltText])]],
     ]);
   });
 });

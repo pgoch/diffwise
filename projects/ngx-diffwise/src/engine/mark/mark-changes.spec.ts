@@ -96,80 +96,80 @@ function rangesOf(text: string, parts: readonly string[]): TextRange[] {
 
 describe('markChanges', () => {
   it('wraps removed text in a del marker', () => {
-    expect(mark('<p>Konto można usunąć w ustawieniach.</p>', ['usunąć'])).toBe(
-      `<p>Konto można ${removed('usunąć')} w ustawieniach.</p>`,
+    expect(mark('<p>You can delete the account in the settings.</p>', ['delete'])).toBe(
+      `<p>You can ${removed('delete')} the account in the settings.</p>`,
     );
   });
 
   it('wraps added text in an ins marker', () => {
-    expect(mark('<p>Konto można zamknąć w ustawieniach.</p>', ['zamknąć'], ADDED_TEXT_MARKER)).toBe(
-      `<p>Konto można ${added('zamknąć')} w ustawieniach.</p>`,
-    );
+    expect(
+      mark('<p>You can close the account in the settings.</p>', ['close'], ADDED_TEXT_MARKER),
+    ).toBe(`<p>You can ${added('close')} the account in the settings.</p>`);
   });
 
   it('marks two changes in one line separately', () => {
-    expect(mark('<p>Opłata wynosi 19 zł i jest pobierana z góry.</p>', ['19', 'góry'])).toBe(
-      `<p>Opłata wynosi ${removed('19')} zł i jest pobierana z ${removed('góry')}.</p>`,
+    expect(mark('<p>The fee is 19 USD and is paid at the start.</p>', ['19', 'start'])).toBe(
+      `<p>The fee is ${removed('19')} USD and is paid at the ${removed('start')}.</p>`,
     );
   });
 
   it('puts the marker inside bold text, so the bold stays', () => {
-    expect(mark('<p>Przerwa w <strong>sobotę</strong> rano</p>', ['sobotę'])).toBe(
-      `<p>Przerwa w <strong>${removed('sobotę')}</strong> rano</p>`,
+    expect(mark('<p>Downtime on <strong>Saturday</strong> morning</p>', ['Saturday'])).toBe(
+      `<p>Downtime on <strong>${removed('Saturday')}</strong> morning</p>`,
     );
   });
 
   it('puts the marker inside a link, so the link stays', () => {
-    expect(mark('<p>Zobacz <a href="/status">komunikat</a>.</p>', ['komunikat'])).toBe(
-      `<p>Zobacz <a href="/status">${removed('komunikat')}</a>.</p>`,
+    expect(mark('<p>See the <a href="/status">notice</a>.</p>', ['notice'])).toBe(
+      `<p>See the <a href="/status">${removed('notice')}</a>.</p>`,
     );
   });
 
   it('marks each part of a word split by formatting', () => {
-    expect(mark('<p>Przeczytaj regu<i>lamin</i>.</p>', ['regulamin'])).toBe(
-      `<p>Przeczytaj ${removed('regu')}<i>${removed('lamin')}</i>.</p>`,
+    expect(mark('<p>Read the ter<i>ms</i>.</p>', ['terms'])).toBe(
+      `<p>Read the ${removed('ter')}<i>${removed('ms')}</i>.</p>`,
     );
   });
 
   it('keeps the whitespace between marked words inside one marker', () => {
-    expect(mark('<p>stara \n nazwa planu</p>', ['stara nazwa'])).toBe(
-      `<p>${removed('stara \n nazwa')} planu</p>`,
+    expect(mark('<p>old \n plan name</p>', ['old plan'])).toBe(
+      `<p>${removed('old \n plan')} name</p>`,
     );
   });
 
   it('marks the space before formatting together with the word before it', () => {
-    expect(mark('<p>stara <b>nazwa</b> planu</p>', ['stara nazwa'])).toBe(
-      `<p>${removed('stara ')}<b>${removed('nazwa')}</b> planu</p>`,
+    expect(mark('<p>old <b>plan</b> name</p>', ['old plan'])).toBe(
+      `<p>${removed('old ')}<b>${removed('plan')}</b> name</p>`,
     );
   });
 
   it('leaves the space between blocks unmarked', () => {
-    expect(mark('<details><summary>Jeden</summary><p>Dwa</p></details>', ['Jeden Dwa'])).toBe(
-      `<details><summary>${removed('Jeden')}</summary><p>${removed('Dwa')}</p></details>`,
+    expect(mark('<details><summary>One</summary><p>Two</p></details>', ['One Two'])).toBe(
+      `<details><summary>${removed('One')}</summary><p>${removed('Two')}</p></details>`,
     );
   });
 
   it('marks text inside a list item and keeps its number', () => {
-    expect(mark('<ol start="3"><li>Dodaj tagi</li><li>Przypnij</li></ol>', ['tagi'])).toBe(
-      `<ol start="3"><li value="3" data-diffwise-line-item="">Dodaj ${removed('tagi')}</li></ol>`,
+    expect(mark('<ol start="3"><li>Add tags</li><li>Pin</li></ol>', ['tags'])).toBe(
+      `<ol start="3"><li value="3" data-diffwise-line-item="">Add ${removed('tags')}</li></ol>`,
     );
   });
 
   it('keeps entities and no-break spaces', () => {
-    expect(mark('<p>Rabat &lt; 20&nbsp;zł &amp; dostawa</p>', ['20 zł'])).toBe(
-      `<p>Rabat &lt; ${removed('20&nbsp;zł')} &amp; dostawa</p>`,
+    expect(mark('<p>Discount &lt; 20&nbsp;USD &amp; delivery</p>', ['20 USD'])).toBe(
+      `<p>Discount &lt; ${removed('20&nbsp;USD')} &amp; delivery</p>`,
     );
   });
 
   it('keeps text that looks like HTML escaped', () => {
-    expect(mark('<p>&lt;img src=x onerror=alert(1)&gt; tekst</p>', ['tekst'])).toBe(
-      `<p>&lt;img src=x onerror=alert(1)&gt; ${removed('tekst')}</p>`,
+    expect(mark('<p>&lt;img src=x onerror=alert(1)&gt; text</p>', ['text'])).toBe(
+      `<p>&lt;img src=x onerror=alert(1)&gt; ${removed('text')}</p>`,
     );
   });
 
   it('marks text inside a quote', () => {
-    expect(mark('<blockquote><p>Treść cytatu</p></blockquote>', ['cytatu'])).toBe(
-      `<blockquote><p>Treść ${removed('cytatu')}</p></blockquote>`,
+    expect(mark('<blockquote><p>Text of the quote</p></blockquote>', ['quote'])).toBe(
+      `<blockquote><p>Text of the ${removed('quote')}</p></blockquote>`,
     );
   });
 
@@ -178,19 +178,20 @@ describe('markChanges', () => {
   });
 
   it('leaves text unmarked where a marker would break the HTML', () => {
-    const html = '<p>Pole <textarea>stare</textarea> i rysunek <svg><text>stary</text></svg>.</p>';
+    const html =
+      '<p>Field <textarea>old</textarea> and drawing <svg><text>former</text></svg>.</p>';
 
-    expect(mark(html, ['stare', 'stary'])).toBe(lineOf(html).html);
+    expect(mark(html, ['old', 'former'])).toBe(lineOf(html).html);
   });
 
   it('leaves the HTML unmarked when parsing it again changes its text', () => {
     const codeStartingWithNewline: Line = {
       kind: LineKind.Block,
       tag: 'pre',
-      text: '\nkod',
+      text: '\nrun',
       formats: [],
       images: [],
-      html: '<pre>\nkod</pre>',
+      html: '<pre>\nrun</pre>',
       marker: null,
       checkbox: null,
       table: null,
@@ -203,18 +204,18 @@ describe('markChanges', () => {
   });
 
   it('returns the HTML as it is without ranges', () => {
-    const line = lineOf('<p>Bez zmian</p>');
+    const line = lineOf('<p>No changes</p>');
 
     expect(markChanges(line, [], REMOVED_TEXT_MARKER)).toBe(line.html);
   });
 
   it('lists the change details of a marker in its attribute', () => {
-    const line = lineOf('<p>Zobacz <b>regulamin</b>.</p>');
-    const [range] = rangesOf(line.text, ['regulamin']);
-    const marker = `<ins class="${ADDED_CLASSES}" data-diffwise-change-details="0 1">regulamin</ins>`;
+    const line = lineOf('<p>See the <b>terms</b>.</p>');
+    const [range] = rangesOf(line.text, ['terms']);
+    const marker = `<ins class="${ADDED_CLASSES}" data-diffwise-change-details="0 1">terms</ins>`;
 
     expect(markChanges(line, [{ ...range, detailIndices: [0, 1] }], ADDED_TEXT_MARKER)).toBe(
-      `<p>Zobacz <b>${marker}</b>.</p>`,
+      `<p>See the <b>${marker}</b>.</p>`,
     );
   });
 
@@ -222,8 +223,8 @@ describe('markChanges', () => {
     const icon = '<img src="images/icon-share.svg" alt="">';
     const marker = `<del class="${REMOVED_CLASSES} ${IMAGE_CLASS}">${icon}</del>`;
 
-    expect(mark(`<p>Kliknij ${icon} Udostępnij.</p>`, [IMAGE_CHARACTER])).toBe(
-      `<p>Kliknij ${marker} Udostępnij.</p>`,
+    expect(mark(`<p>Click ${icon} Share.</p>`, [IMAGE_CHARACTER])).toBe(
+      `<p>Click ${marker} Share.</p>`,
     );
   });
 
@@ -232,12 +233,8 @@ describe('markChanges', () => {
     const iconMarker = `<ins class="${ADDED_CLASSES} ${IMAGE_CLASS}">${icon}</ins>`;
 
     expect(
-      mark(
-        `<p>Kliknij ${icon} Udostępnij.</p>`,
-        [`${IMAGE_CHARACTER} Udostępnij`],
-        ADDED_TEXT_MARKER,
-      ),
-    ).toBe(`<p>Kliknij ${iconMarker} ${added('Udostępnij')}.</p>`);
+      mark(`<p>Click ${icon} Share.</p>`, [`${IMAGE_CHARACTER} Share`], ADDED_TEXT_MARKER),
+    ).toBe(`<p>Click ${iconMarker} ${added('Share')}.</p>`);
   });
 
   it('frames the picture around an image, so its sources stay with it', () => {
@@ -264,8 +261,8 @@ describe('markChanges', () => {
   });
 
   it('marks ranges given in any order', () => {
-    const line = lineOf('<p>Opłata wynosi 19 zł i jest pobierana z góry.</p>');
-    const ranges = rangesOf(line.text, ['19', 'góry']);
+    const line = lineOf('<p>The fee is 19 USD and is paid at the start.</p>');
+    const ranges = rangesOf(line.text, ['19', 'start']);
 
     expect(markChanges(line, [...ranges].reverse(), REMOVED_TEXT_MARKER)).toBe(
       markChanges(line, ranges, REMOVED_TEXT_MARKER),

@@ -47,8 +47,8 @@ const HREF_ATTRIBUTE = 'href';
 const FRAGMENT_START = '#';
 const GAP = 'gap';
 const CLICK_EVENT = 'click';
-const FOOTNOTE_HTML = '<p>Zobacz przypis<a href="#note">1</a>.</p><p id="note">Treść przypisu.</p>';
-const ONE_LINE_HTML = '<p>Zasady ogólne.</p>';
+const FOOTNOTE_HTML = '<p>See the note<a href="#note">1</a>.</p><p id="note">Text of the note.</p>';
+const ONE_LINE_HTML = '<p>General rules.</p>';
 const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
 const PAGE_DARK_CLASS = 'dark';
 const PAGE_DARK_SELECTOR = '.dark';
@@ -294,7 +294,7 @@ function newMarkersOf(element: HTMLElement) {
   `,
 })
 class TwoDiffs {
-  protected readonly html = '<h2 id="plans">Plany</h2><p><a href="#plans">Zobacz plany</a></p>';
+  protected readonly html = '<h2 id="plans">Plans</h2><p><a href="#plans">See the plans</a></p>';
 }
 
 describe('DiffwiseHtml', () => {
@@ -305,8 +305,8 @@ describe('DiffwiseHtml', () => {
   });
 
   it('shows each line in a row with its numbers, and a gap opposite added and removed lines', () => {
-    const oldHtml = '<p>Zasady ogólne.</p><p>Okres próbny.</p><p>Kontakt.</p>';
-    const newHtml = '<p>Zasady ogólne.</p><p>Kontakt.</p><p>Płatności.</p>';
+    const oldHtml = '<p>General rules.</p><p>Trial period.</p><p>Contact.</p>';
+    const newHtml = '<p>General rules.</p><p>Contact.</p><p>Payments.</p>';
 
     expect(rowsOf(render(oldHtml, newHtml).nativeElement)).toEqual([
       [LineChangeKind.Unchanged, 1, 1],
@@ -318,16 +318,16 @@ describe('DiffwiseHtml', () => {
 
   it('marks changed words inside the formatting of a changed line', () => {
     const element = render(
-      '<p>Konto można <b>usunąć</b> w ustawieniach.</p>',
-      '<p>Konto można <b>zamknąć</b> w ustawieniach.</p>',
+      '<p>You can <b>delete</b> the account in the settings.</p>',
+      '<p>You can <b>close</b> the account in the settings.</p>',
     ).nativeElement as HTMLElement;
 
-    expect(textsOf(element, `${OLD_CONTENT_SELECTOR} b ${REMOVED_SELECTOR}`)).toEqual(['usunąć']);
-    expect(textsOf(element, `${NEW_CONTENT_SELECTOR} b ${ADDED_SELECTOR}`)).toEqual(['zamknąć']);
+    expect(textsOf(element, `${OLD_CONTENT_SELECTOR} b ${REMOVED_SELECTOR}`)).toEqual(['delete']);
+    expect(textsOf(element, `${NEW_CONTENT_SELECTOR} b ${ADDED_SELECTOR}`)).toEqual(['close']);
   });
 
   it('keeps inline styles and read-only checkboxes of the content', () => {
-    const html = '<p style="color: rgb(200, 0, 0)"><input type="checkbox" checked> Gotowe</p>';
+    const html = '<p style="color: rgb(200, 0, 0)"><input type="checkbox" checked> Done</p>';
     const element = render(html, html).nativeElement as HTMLElement;
     const paragraph = element.querySelector<HTMLElement>(`${OLD_CONTENT_SELECTOR} p`);
     const checkbox = element.querySelector<HTMLInputElement>(CHECKBOX_SELECTOR);
@@ -357,9 +357,9 @@ describe('DiffwiseHtml', () => {
   });
 
   it('compares again when a version changes', () => {
-    const fixture = render('<p>Pierwsza wersja.</p>', '<p>Pierwsza wersja.</p>');
+    const fixture = render('<p>First version.</p>', '<p>First version.</p>');
 
-    fixture.componentRef.setInput(NEW_HTML_INPUT, '<p>Druga wersja.</p>');
+    fixture.componentRef.setInput(NEW_HTML_INPUT, '<p>Second version.</p>');
     fixture.detectChanges();
 
     expect(rowsOf(fixture.nativeElement)).toEqual([[LineChangeKind.Changed, 1, 1]]);
@@ -419,7 +419,7 @@ describe('DiffwiseHtml', () => {
   });
 
   it('shows the header texts of the app, or no headers', () => {
-    const versionHeaders = { old: 'Wersja 3 · 12.10.2026', new: 'Wersja 4 · 05.11.2026' };
+    const versionHeaders = { old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' };
     const withTexts = renderElement('', '', { versionHeaders });
     const withoutHeaders = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.None });
 
@@ -431,8 +431,8 @@ describe('DiffwiseHtml', () => {
   });
 
   it('ignores differences in letter case and whitespace on request', () => {
-    const oldHtml = '<p>Termin: 23:00, sala A.</p>';
-    const newHtml = '<p>Termin:23:00, Sala A.</p>';
+    const oldHtml = '<p>Deadline: 23:00, room A.</p>';
+    const newHtml = '<p>Deadline:23:00, Room A.</p>';
     const ignoring = { ignoreCase: true, ignoreWhitespace: true };
 
     expect(rowsOf(renderElement(oldHtml, newHtml))).toEqual([[LineChangeKind.Changed, 1, 1]]);
@@ -509,7 +509,7 @@ describe('DiffwiseHtml', () => {
 
     TestBed.configureTestingModule({ providers: [provideDiffwise({ showLineNumbers: false })] });
 
-    const element = renderElement('<p>Konto firmowe.</p>', '<p>Konto Firmowe.</p>', {
+    const element = renderElement('<p>Business account.</p>', '<p>Business Account.</p>', {
       config,
       ignoreCase: false,
     });
@@ -715,7 +715,7 @@ describe('DiffwiseHtml change details', () => {
   });
 
   it('shows no icon for changed text', () => {
-    const element = renderElement('<p>Zasady ogólne.</p>', '<p>Zasady szczegółowe.</p>');
+    const element = renderElement('<p>General rules.</p>', '<p>Detailed rules.</p>');
 
     expect(element.querySelector(CHANGE_DETAILS_ICON_SELECTOR)).toBeNull();
   });
