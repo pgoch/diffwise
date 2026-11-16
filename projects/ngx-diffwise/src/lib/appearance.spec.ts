@@ -6,10 +6,7 @@ const BUILTIN_FONT_FAMILY = 'system-ui, -apple-system, "Segoe UI", Roboto, Arial
 const FONT_FAMILY_PROPERTY = 'font-family';
 
 /** Classes of the default levels, which a diff has even with the default configuration. */
-const DEFAULT_LEVEL_CLASSES = [
-  'diffwise-html-diff--diff-intensity-3',
-  'diffwise-html-diff--ui-contrast-3',
-];
+const DEFAULT_LEVEL_CLASSES = ['diffwise-diff--diff-intensity-3', 'diffwise-diff--ui-contrast-3'];
 
 describe('appearanceClasses', () => {
   it('adds only the classes of the levels for the defaults', () => {
@@ -20,7 +17,7 @@ describe('appearanceClasses', () => {
 
   it('adds the class of the single column when the diff shows it', () => {
     expect(appearanceClasses(new DiffwiseConfig(), {}, DiffwiseLayout.Inline)).toEqual([
-      'diffwise-html-diff--layout-inline',
+      'diffwise-diff--layout-inline',
       ...DEFAULT_LEVEL_CLASSES,
     ]);
   });
@@ -30,10 +27,10 @@ describe('appearanceClasses', () => {
     const stacked = new DiffwiseConfig({ inlineDiffStyle: 'stacked' });
 
     expect(appearanceClasses(struckThrough, {}, DiffwiseLayout.Inline)).toContain(
-      'diffwise-html-diff--inline-diff-style-strikethrough',
+      'diffwise-diff--inline-diff-style-strikethrough',
     );
     expect(appearanceClasses(stacked, {}, DiffwiseLayout.Inline)).toContain(
-      'diffwise-html-diff--inline-diff-style-stacked',
+      'diffwise-diff--inline-diff-style-stacked',
     );
   });
 
@@ -42,7 +39,7 @@ describe('appearanceClasses', () => {
     const outline = new DiffwiseConfig({ activeChangeStyle: 'outline' });
 
     expect(appearanceClasses(indicator, {}, DiffwiseLayout.SideBySide)).toContain(
-      'diffwise-html-diff--active-change-style-indicator',
+      'diffwise-diff--active-change-style-indicator',
     );
     expect(appearanceClasses(outline, {}, DiffwiseLayout.SideBySide)).toEqual(
       DEFAULT_LEVEL_CLASSES,
@@ -73,19 +70,19 @@ describe('appearanceClasses', () => {
     });
 
     expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual([
-      'diffwise-html-diff--diff-palette-colorblind',
-      'diffwise-html-diff--highlight-style-top-bottom',
-      'diffwise-html-diff--line-number-style-background',
-      'diffwise-html-diff--line-number-alignment-bottom',
-      'diffwise-html-diff--divider-style-line',
-      'diffwise-html-diff--gap-style-empty',
-      'diffwise-html-diff--version-header-alignment-end',
-      'diffwise-html-diff--change-details-icon',
-      'diffwise-html-diff--change-details-icon-style-plain',
-      'diffwise-html-diff--tooltip-color-mode-reversed',
-      'diffwise-html-diff--tooltip-title-alignment-center',
-      'diffwise-html-diff--diff-intensity-1',
-      'diffwise-html-diff--ui-contrast-5',
+      'diffwise-diff--diff-palette-colorblind',
+      'diffwise-diff--highlight-style-top-bottom',
+      'diffwise-diff--line-number-style-background',
+      'diffwise-diff--line-number-alignment-bottom',
+      'diffwise-diff--divider-style-line',
+      'diffwise-diff--gap-style-empty',
+      'diffwise-diff--version-header-alignment-end',
+      'diffwise-diff--change-details-icon',
+      'diffwise-diff--change-details-icon-style-plain',
+      'diffwise-diff--tooltip-color-mode-reversed',
+      'diffwise-diff--tooltip-title-alignment-center',
+      'diffwise-diff--diff-intensity-1',
+      'diffwise-diff--ui-contrast-5',
     ]);
   });
 
@@ -99,9 +96,9 @@ describe('appearanceClasses', () => {
 
     expect(appearanceClasses(withoutBackgrounds, {}, DiffwiseLayout.SideBySide)).toEqual([
       ...DEFAULT_LEVEL_CLASSES,
-      'diffwise-html-diff--no-line-numbers',
-      'diffwise-html-diff--no-changed-line-highlight',
-      'diffwise-html-diff--highlight-whole-lines',
+      'diffwise-diff--no-line-numbers',
+      'diffwise-diff--no-changed-line-highlight',
+      'diffwise-diff--highlight-whole-lines',
     ]);
     expect(appearanceClasses(withBackgrounds, {}, DiffwiseLayout.SideBySide)).toEqual(
       DEFAULT_LEVEL_CLASSES,
@@ -113,7 +110,7 @@ describe('appearanceClasses', () => {
 
     expect(appearanceClasses(config, {}, DiffwiseLayout.SideBySide)).toEqual([
       ...DEFAULT_LEVEL_CLASSES,
-      'diffwise-html-diff--no-tooltip-change-highlight',
+      'diffwise-diff--no-tooltip-change-highlight',
     ]);
   });
 
@@ -122,7 +119,7 @@ describe('appearanceClasses', () => {
 
     expect(
       appearanceClasses(config, { addedAccent: '#0f766e' }, DiffwiseLayout.SideBySide),
-    ).toEqual(['diffwise-html-diff--ui-contrast-3']);
+    ).toEqual(['diffwise-diff--ui-contrast-3']);
   });
 
   it('keeps the class of the palette with colors of the app, which give the colors they set', () => {
@@ -130,8 +127,8 @@ describe('appearanceClasses', () => {
     const customColors = { addedAccent: '#0f766e' };
 
     expect(appearanceClasses(config, customColors, DiffwiseLayout.SideBySide)).toEqual([
-      'diffwise-html-diff--diff-palette-colorblind',
-      'diffwise-html-diff--ui-contrast-3',
+      'diffwise-diff--diff-palette-colorblind',
+      'diffwise-diff--ui-contrast-3',
     ]);
     expect(appearanceStyles(config, customColors, 2)).toEqual({
       '--diffwise-line-number-digits': '2',

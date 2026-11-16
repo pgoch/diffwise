@@ -116,24 +116,24 @@ const FOCUSABLE_BY_SCRIPT = '-1';
 const FOCUSABLE_IN_ORDER = '0';
 
 const TOOLTIP_ID_END = '-tooltip';
-const ROW_SELECTOR = '.diffwise-html-diff__row';
-const CONTENT_SELECTOR = '.diffwise-html-diff__content';
-const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
+const ROW_SELECTOR = '.diffwise-diff__row';
+const CONTENT_SELECTOR = '.diffwise-diff__content';
+const NEW_CONTENT_SELECTOR = '.diffwise-diff__content--new';
 
 /** Rows of the diff and bars in place of hidden lines, in the order of the view. */
 const ROW_OR_BAR_SELECTOR = `:scope > :is(${ROW_SELECTOR}, ${COLLAPSED_LINES_BAR_TAG})`;
-const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-html-diff__change-details-icon';
-const VERSION_HEADER_ICON_SELECTOR = '.diffwise-html-diff__version-header-icon';
-const DIFF_STAT_SELECTOR = '.diffwise-html-diff__diff-stat';
-const NAVIGATION_BUTTON_SELECTOR = '.diffwise-html-diff__navigation-button';
-const CHANGE_COUNTER_SELECTOR = '.diffwise-html-diff__change-counter';
-const VIEW_BUTTON_SELECTOR = '.diffwise-html-diff__view-button';
+const CHANGE_DETAILS_ICON_SELECTOR = '.diffwise-diff__change-details-icon';
+const VERSION_HEADER_ICON_SELECTOR = '.diffwise-diff__version-header-icon';
+const DIFF_STAT_SELECTOR = '.diffwise-diff__diff-stat';
+const NAVIGATION_BUTTON_SELECTOR = '.diffwise-diff__navigation-button';
+const CHANGE_COUNTER_SELECTOR = '.diffwise-diff__change-counter';
+const VIEW_BUTTON_SELECTOR = '.diffwise-diff__view-button';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const ARIA_EXPANDED_ATTRIBUTE = 'aria-expanded';
 const EXPANDED = 'true';
-const TOOLBAR_SELECTOR = ':scope > .diffwise-html-diff__toolbar';
-const ACTIVE_FIRST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-first`;
-const ACTIVE_LAST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-html-diff__row--active-last`;
+const TOOLBAR_SELECTOR = ':scope > .diffwise-diff__toolbar';
+const ACTIVE_FIRST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-diff__row--active-first`;
+const ACTIVE_LAST_ROW_SELECTOR = `:scope > ${ROW_SELECTOR}.diffwise-diff__row--active-last`;
 
 /**
  * Elements whose tooltip shows only their name: icons in place of the version headers, and the
@@ -169,8 +169,8 @@ const DESCRIBED_MARKER_SELECTOR = `[${CHANGE_DETAILS_ATTRIBUTE}]`;
  * merged line those of the new text, not of the old image or the old list marker next to it.
  */
 const FOCUSABLE_MARKER_SELECTOR = [
-  `.diffwise-html-diff__content--new ${DESCRIBED_MARKER_SELECTOR}`,
-  `.diffwise-html-diff__content--merged .diffwise-html-diff__highlight--added${DESCRIBED_MARKER_SELECTOR}`,
+  `.diffwise-diff__content--new ${DESCRIBED_MARKER_SELECTOR}`,
+  `.diffwise-diff__content--merged .diffwise-diff__highlight--added${DESCRIBED_MARKER_SELECTOR}`,
 ].join(SELECTOR_SEPARATOR);
 
 /** Diffs created so far; numbers the id prefixes. */
@@ -206,7 +206,7 @@ const MERGED_CONTENT = 'merged';
 
 /** The old copy of an unchanged line beside the new one, which screen readers skip. */
 const HIDDEN_COPY_SELECTOR =
-  '.diffwise-html-diff__row--unchanged > .diffwise-html-diff__content--old[aria-hidden]';
+  '.diffwise-diff__row--unchanged > .diffwise-diff__content--old[aria-hidden]';
 
 /** A line as the template shows it. */
 interface ShownLine {
@@ -305,12 +305,12 @@ interface ShownVersionHeaders {
   changeDetection: ChangeDetectionStrategy.OnPush,
   encapsulation: ViewEncapsulation.None,
   host: {
-    class: 'diffwise-html-diff',
+    class: 'diffwise-diff',
     role: 'region',
     '[attr.aria-label]': 'texts().diffLabel',
     '[class]': 'modifierClasses()',
-    '[class.diffwise-html-diff--dark-theme]': 'isDark()',
-    '[class.diffwise-html-diff--no-changes]': '!diffStats().hasChanges',
+    '[class.diffwise-diff--dark-theme]': 'isDark()',
+    '[class.diffwise-diff--no-changes]': '!diffStats().hasChanges',
     '[style]': 'inlineStyles()',
     '(click)': 'followInPageLink($event)',
   },

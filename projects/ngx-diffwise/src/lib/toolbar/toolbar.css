@@ -5,20 +5,20 @@
  * header.
  */
 
-:where(.diffwise-html-diff) {
+:where(.diffwise-diff) {
   --diffwise-toolbar-font-size: 0.8rem;
   --diffwise-toolbar-top: 0px;
 }
 
 /* An element that takes the keyboard focus scrolls into view below the toolbar, not under it. */
-.diffwise-html-diff :is(a[href], button, summary, input, [tabindex]) {
+.diffwise-diff :is(a[href], button, summary, input, [tabindex]) {
   scroll-margin-top: calc(
     var(--diffwise-toolbar-top) + 2.3 * var(--diffwise-toolbar-font-size) + 2rem
   );
 }
 
 /* The background comes from the contrast of the interface, a little lighter than the headers. */
-.diffwise-html-diff__toolbar {
+.diffwise-diff__toolbar {
   position: sticky;
   top: var(--diffwise-toolbar-top);
   z-index: 3;
@@ -38,44 +38,44 @@
   line-height: 1.6;
 }
 
-.diffwise-html-diff__diff-stats {
+.diffwise-diff__diff-stats {
   display: flex;
   gap: 0.8em;
   font-variant-numeric: tabular-nums;
   font-weight: 650;
 }
 
-.diffwise-html-diff__diff-stat {
+.diffwise-diff__diff-stat {
   border-radius: 3px;
   cursor: default;
 }
 
-.diffwise-html-diff__diff-stat:focus-visible {
+.diffwise-diff__diff-stat:focus-visible {
   outline: 2px solid var(--diffwise-focus);
   outline-offset: 2px;
 }
 
-.diffwise-html-diff__diff-stat--added {
+.diffwise-diff__diff-stat--added {
   color: var(--diffwise-added-accent);
 }
 
-.diffwise-html-diff__diff-stat--removed {
+.diffwise-diff__diff-stat--removed {
   color: var(--diffwise-removed-accent);
 }
 
-.diffwise-html-diff__diff-stat--changed {
+.diffwise-diff__diff-stat--changed {
   color: var(--diffwise-muted);
 }
 
 /* The only text of the toolbar when the versions are the same, in its middle. */
-.diffwise-html-diff__no-changes {
+.diffwise-diff__no-changes {
   margin-inline: auto;
   color: var(--diffwise-muted);
   font-weight: 600;
 }
 
 /* Arrows between the blocks of changes, with their counter between them, in one rounded frame. */
-.diffwise-html-diff__navigation {
+.diffwise-diff__navigation {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -85,7 +85,7 @@
   background: var(--diffwise-background);
 }
 
-.diffwise-html-diff__navigation-button {
+.diffwise-diff__navigation-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -100,23 +100,23 @@
   cursor: pointer;
 }
 
-.diffwise-html-diff__navigation-button svg {
+.diffwise-diff__navigation-button svg {
   width: 1.25em;
   height: 1.25em;
 }
 
-.diffwise-html-diff__navigation-button:hover {
+.diffwise-diff__navigation-button:hover {
   background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
 }
 
 /* The frame cuts what reaches out of it, so the focus ring stands inside. */
-.diffwise-html-diff__navigation-button:focus-visible,
-.diffwise-html-diff__change-counter:focus-visible {
+.diffwise-diff__navigation-button:focus-visible,
+.diffwise-diff__change-counter:focus-visible {
   outline: 2px solid var(--diffwise-focus);
   outline-offset: -2px;
 }
 
-.diffwise-html-diff__change-counter {
+.diffwise-diff__change-counter {
   padding: 0.15em 0.3em;
   border-radius: 3px;
   color: var(--diffwise-muted);
@@ -126,7 +126,7 @@
 }
 
 /* Tells screen readers where a step led; the counter shows the same on the screen. */
-.diffwise-html-diff__navigation [data-diffwise-announcement] {
+.diffwise-diff__navigation [data-diffwise-announcement] {
   position: absolute;
   width: 1px;
   height: 1px;

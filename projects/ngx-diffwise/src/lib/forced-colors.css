@@ -7,13 +7,13 @@
  */
 @media (forced-colors: active) {
   /* Darker colors for the light themes of contrast. */
-  :where(.diffwise-html-diff) {
+  :where(.diffwise-diff) {
     --diffwise-removed-accent: #b34700;
     --diffwise-added-accent: #0a5fd1;
   }
 
   /* A changed part has a frame: solid when added, dashed and struck through when removed. */
-  .diffwise-html-diff__highlight:not(.diffwise-html-diff__highlight--image) {
+  .diffwise-diff__highlight:not(.diffwise-diff__highlight--image) {
     outline: 2px solid var(--diffwise-added-accent);
     outline-offset: -2px;
     background: Canvas;
@@ -21,59 +21,57 @@
     forced-color-adjust: none;
   }
 
-  .diffwise-html-diff__highlight--removed:not(.diffwise-html-diff__highlight--image) {
+  .diffwise-diff__highlight--removed:not(.diffwise-diff__highlight--image) {
     outline: 2px dashed var(--diffwise-removed-accent);
     text-decoration: line-through;
   }
 
   /* What stands in a changed part takes the colors of the system again, such as a link. */
-  .diffwise-html-diff__highlight * {
+  .diffwise-diff__highlight * {
     forced-color-adjust: auto;
   }
 
-  .diffwise-html-diff__content a .diffwise-html-diff__highlight {
+  .diffwise-diff__content a .diffwise-diff__highlight {
     color: LinkText;
   }
 
-  .diffwise-html-diff__highlight--image::after {
+  .diffwise-diff__highlight--image::after {
     border-color: var(--diffwise-added-accent);
     forced-color-adjust: none;
   }
 
-  .diffwise-html-diff__highlight--removed.diffwise-html-diff__highlight--image::after {
+  .diffwise-diff__highlight--removed.diffwise-diff__highlight--image::after {
     border-color: var(--diffwise-removed-accent);
     border-style: dashed;
   }
 
   /* A changed line has a bar at its number, also with colored backgrounds of the numbers. */
-  .diffwise-html-diff:not(.diffwise-html-diff--layout-inline)
-    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-    .diffwise-html-diff__line-number {
+  .diffwise-diff:not(.diffwise-diff--layout-inline)
+    .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+    .diffwise-diff__line-number {
     border-inline-start: 3px solid var(--diffwise-added-accent);
     background: Canvas;
     color: CanvasText;
     forced-color-adjust: none;
   }
 
-  .diffwise-html-diff:not(.diffwise-html-diff--layout-inline)
-    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-    .diffwise-html-diff__line-number--old {
+  .diffwise-diff:not(.diffwise-diff--layout-inline)
+    .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+    .diffwise-diff__line-number--old {
     border-inline-start-color: var(--diffwise-removed-accent);
   }
 
-  .diffwise-html-diff__line-number * {
+  .diffwise-diff__line-number * {
     forced-color-adjust: auto;
   }
 
   /* In the single column the bar stands between the numbers, from orange to blue in a merged line. */
-  .diffwise-html-diff--layout-inline
-    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-    .diffwise-html-diff__line-number--new::before,
-  .diffwise-html-diff--layout-inline.diffwise-html-diff--no-line-numbers
-    .diffwise-html-diff__row:not(.diffwise-html-diff__row--unchanged)
-    .diffwise-html-diff__change-details-cell:not(
-      :has(.diffwise-html-diff__change-details-icon)
-    )::before {
+  .diffwise-diff--layout-inline
+    .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+    .diffwise-diff__line-number--new::before,
+  .diffwise-diff--layout-inline.diffwise-diff--no-line-numbers
+    .diffwise-diff__row:not(.diffwise-diff__row--unchanged)
+    .diffwise-diff__change-details-cell:not(:has(.diffwise-diff__change-details-icon))::before {
     position: absolute;
     top: 6px;
     bottom: 6px;
@@ -84,21 +82,21 @@
   }
 
   /* Stripes opposite an added or a removed line, in the colors of the system. */
-  .diffwise-html-diff:not(.diffwise-html-diff--gap-style-empty) .diffwise-html-diff__gap {
+  .diffwise-diff:not(.diffwise-diff--gap-style-empty) .diffwise-diff__gap {
     background: repeating-linear-gradient(135deg, CanvasText 0 1px, Canvas 1px 9px);
     forced-color-adjust: none;
   }
 
   /* Changed parts of values in the tooltip. */
-  .diffwise-html-diff__tooltip-highlight--added,
-  .diffwise-html-diff__tooltip-highlight--removed {
+  .diffwise-diff__tooltip-highlight--added,
+  .diffwise-diff__tooltip-highlight--removed {
     outline: 1px solid var(--diffwise-added-accent);
     background: Canvas;
     color: CanvasText;
     forced-color-adjust: none;
   }
 
-  .diffwise-html-diff__tooltip-highlight--removed {
+  .diffwise-diff__tooltip-highlight--removed {
     outline: 1px dashed var(--diffwise-removed-accent);
     text-decoration: line-through;
   }
@@ -106,7 +104,7 @@
 
 /* Light colors for the dark themes of contrast. */
 @media (forced-colors: active) and (prefers-color-scheme: dark) {
-  :where(.diffwise-html-diff) {
+  :where(.diffwise-diff) {
     --diffwise-removed-accent: #ffa94d;
     --diffwise-added-accent: #7cc8ff;
   }

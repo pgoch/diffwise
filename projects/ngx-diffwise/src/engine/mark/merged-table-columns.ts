@@ -12,7 +12,7 @@ const TABLE_COPY_SELECTOR = `[${TABLE_COPY_ATTRIBUTE}]`;
 const ROW_COPY_SELECTOR = `:scope > * > ${TABLE_ROW_TAG}`;
 
 /** Classes of the place of a column that the version of a row does not have. */
-const GAP_CELL_CLASSES = ['diffwise-html-diff__gap', 'diffwise-html-diff__gap--cell'];
+const GAP_CELL_CLASSES = ['diffwise-diff__gap', 'diffwise-diff__gap--cell'];
 
 /** The columns a row of a merged table shows: those of one version, or of both. */
 export const RowColumns = {

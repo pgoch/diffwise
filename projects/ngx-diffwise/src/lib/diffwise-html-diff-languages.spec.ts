@@ -8,12 +8,12 @@ import { LANGUAGE_TEXTS, type UiLanguage, languageTag } from './i18n/resolve-lan
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
-const VERSION_HEADER_SELECTOR = '.diffwise-html-diff__version-header';
+const VERSION_HEADER_SELECTOR = '.diffwise-diff__version-header';
 const DESCRIPTION_SELECTOR = '[data-diffwise-line-description]';
 const TOOLBAR_TAG = 'diffwise-diff-toolbar';
-const VIEW_BUTTON_SELECTOR = '.diffwise-html-diff__view-button';
-const GROUP_LABEL_SELECTOR = '.diffwise-html-diff__view-settings-label';
-const RESET_SELECTOR = '.diffwise-html-diff__view-settings-reset';
+const VIEW_BUTTON_SELECTOR = '.diffwise-diff__view-button';
+const GROUP_LABEL_SELECTOR = '.diffwise-diff__view-settings-label';
+const RESET_SELECTOR = '.diffwise-diff__view-settings-reset';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const LANG_ATTRIBUTE = 'lang';
 const CUSTOM_HEADER = 'Draft';

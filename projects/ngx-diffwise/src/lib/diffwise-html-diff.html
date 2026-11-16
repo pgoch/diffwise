@@ -4,7 +4,7 @@
 
 <ng-template #oldVersionIcon let-versionName>
   <span
-    class="diffwise-html-diff__version-header-icon"
+    class="diffwise-diff__version-header-icon"
     role="img"
     tabindex="0"
     [attr.aria-label]="versionName"
@@ -27,7 +27,7 @@
 
 <ng-template #newVersionIcon let-versionName>
   <span
-    class="diffwise-html-diff__version-header-icon"
+    class="diffwise-diff__version-header-icon"
     role="img"
     tabindex="0"
     [attr.aria-label]="versionName"
@@ -78,17 +78,17 @@
 @if (showsDocumentOnce()) {
   @for (row of rows(); track row.position) {
     @if (row.newLine; as line) {
-      <div class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}">
+      <div class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}">
         @if (lineNumbersShown) {
           <div
-            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+            class="diffwise-diff__line-number diffwise-diff__line-number--new"
             aria-hidden="true"
           >
-            <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+            <span class="diffwise-diff__line-number-value">{{ line.number }}</span>
           </div>
         }
         <div
-          class="diffwise-html-diff__content diffwise-html-diff__content--new"
+          class="diffwise-diff__content diffwise-diff__content--new"
           [attr.data-diffwise-table]="line.table"
           [innerHTML]="line.html"
         ></div>
@@ -99,22 +99,22 @@
   <!-- The versions are the same, and the toolbar says so; nothing else shows. -->
 } @else if (showsSingleColumn()) {
   @if (singleColumnHeader(); as header) {
-    <div class="diffwise-html-diff__version-headers" [attr.lang]="uiLanguageTag()">
+    <div class="diffwise-diff__version-headers" [attr.lang]="uiLanguageTag()">
       @if (lineNumbersShown) {
-        <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
+        <div class="diffwise-diff__version-header diffwise-diff__version-header--old">
           <ng-container
             [ngTemplateOutlet]="oldVersionIcon"
             [ngTemplateOutletContext]="{ $implicit: header.iconNames.old }"
           />
         </div>
-        <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--new">
+        <div class="diffwise-diff__version-header diffwise-diff__version-header--new">
           <ng-container
             [ngTemplateOutlet]="newVersionIcon"
             [ngTemplateOutletContext]="{ $implicit: header.iconNames.new }"
           />
         </div>
       }
-      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--inline">
+      <div class="diffwise-diff__version-header diffwise-diff__version-header--inline">
         {{ header.contentText }}
       </div>
     </div>
@@ -132,33 +132,33 @@
       @let row = item;
 
       <div
-        class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
-        [class.diffwise-html-diff__row--active]="isActiveRow(row.position, active)"
-        [class.diffwise-html-diff__row--active-first]="row.position === active?.first"
-        [class.diffwise-html-diff__row--active-last]="row.position === active?.last"
+        class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}"
+        [class.diffwise-diff__row--active]="isActiveRow(row.position, active)"
+        [class.diffwise-diff__row--active-first]="row.position === active?.first"
+        [class.diffwise-diff__row--active-last]="row.position === active?.last"
         [attr.data-diffwise-row]="row.detailsRow"
       >
         @if (lineNumbersShown) {
           <div
-            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old"
+            class="diffwise-diff__line-number diffwise-diff__line-number--old"
             aria-hidden="true"
           >
             @if (row.oldNumber !== null) {
-              <span class="diffwise-html-diff__line-number-value">{{ row.oldNumber }}</span>
+              <span class="diffwise-diff__line-number-value">{{ row.oldNumber }}</span>
             }
           </div>
           <div
-            class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+            class="diffwise-diff__line-number diffwise-diff__line-number--new"
             aria-hidden="true"
           >
             @if (row.newNumber !== null) {
-              <span class="diffwise-html-diff__line-number-value">{{ row.newNumber }}</span>
+              <span class="diffwise-diff__line-number-value">{{ row.newNumber }}</span>
             }
           </div>
         }
 
         @if (changeIconsShown && row.iconDetails.length > 0) {
-          <div class="diffwise-html-diff__change-details-cell">
+          <div class="diffwise-diff__change-details-cell">
             <diffwise-change-details-button
               [attr.lang]="uiLanguageTag()"
               [details]="row.iconDetails"
@@ -166,7 +166,7 @@
             />
           </div>
         } @else {
-          <div class="diffwise-html-diff__change-details-cell" aria-hidden="true"></div>
+          <div class="diffwise-diff__change-details-cell" aria-hidden="true"></div>
         }
 
         @if (singleColumnDescription(row); as description) {
@@ -175,7 +175,7 @@
           }}</span>
         }
         <div
-          class="diffwise-html-diff__content diffwise-html-diff__content--{{ row.content }}"
+          class="diffwise-diff__content diffwise-diff__content--{{ row.content }}"
           [attr.data-diffwise-table]="row.table"
           [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
           [innerHTML]="row.html"
@@ -185,8 +185,8 @@
   }
 } @else {
   @if (shownVersionHeaders(); as headers) {
-    <div class="diffwise-html-diff__version-headers" [attr.lang]="uiLanguageTag()">
-      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--old">
+    <div class="diffwise-diff__version-headers" [attr.lang]="uiLanguageTag()">
+      <div class="diffwise-diff__version-header diffwise-diff__version-header--old">
         @if (headers.asIcons) {
           <ng-container
             [ngTemplateOutlet]="oldVersionIcon"
@@ -196,7 +196,7 @@
           {{ headers.texts.old }}
         }
       </div>
-      <div class="diffwise-html-diff__version-header diffwise-html-diff__version-header--new">
+      <div class="diffwise-diff__version-header diffwise-diff__version-header--new">
         @if (headers.asIcons) {
           <ng-container
             [ngTemplateOutlet]="newVersionIcon"
@@ -222,19 +222,19 @@
       @let describesChanges = row.changeDetails.length > 0;
 
       <div
-        class="diffwise-html-diff__row diffwise-html-diff__row--{{ row.kind }}"
-        [class.diffwise-html-diff__row--active]="isActiveRow(row.position, active)"
-        [class.diffwise-html-diff__row--active-first]="row.position === active?.first"
-        [class.diffwise-html-diff__row--active-last]="row.position === active?.last"
+        class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}"
+        [class.diffwise-diff__row--active]="isActiveRow(row.position, active)"
+        [class.diffwise-diff__row--active-first]="row.position === active?.first"
+        [class.diffwise-diff__row--active-last]="row.position === active?.last"
         [attr.data-diffwise-row]="describesChanges ? row.sourceRow : null"
       >
         @if (row.oldLine; as line) {
           @if (lineNumbersShown) {
             <div
-              class="diffwise-html-diff__line-number diffwise-html-diff__line-number--old"
+              class="diffwise-diff__line-number diffwise-diff__line-number--old"
               aria-hidden="true"
             >
-              <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+              <span class="diffwise-diff__line-number-value">{{ line.number }}</span>
             </div>
           }
           @if (oldLineDescription(row); as description) {
@@ -243,17 +243,17 @@
             }}</span>
           }
           <div
-            class="diffwise-html-diff__content diffwise-html-diff__content--old"
+            class="diffwise-diff__content diffwise-diff__content--old"
             [attr.aria-hidden]="isHiddenCopy(row) || null"
             [attr.data-diffwise-table]="line.table"
             [innerHTML]="line.html"
           ></div>
         } @else {
-          <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
+          <div class="diffwise-diff__gap" aria-hidden="true"></div>
         }
 
         @if (changeIconsShown && describesChanges) {
-          <div class="diffwise-html-diff__divider">
+          <div class="diffwise-diff__divider">
             <diffwise-change-details-button
               [attr.lang]="uiLanguageTag()"
               [details]="row.changeDetails"
@@ -261,16 +261,16 @@
             />
           </div>
         } @else {
-          <div class="diffwise-html-diff__divider" aria-hidden="true"></div>
+          <div class="diffwise-diff__divider" aria-hidden="true"></div>
         }
 
         @if (row.newLine; as line) {
           @if (lineNumbersShown) {
             <div
-              class="diffwise-html-diff__line-number diffwise-html-diff__line-number--new"
+              class="diffwise-diff__line-number diffwise-diff__line-number--new"
               aria-hidden="true"
             >
-              <span class="diffwise-html-diff__line-number-value">{{ line.number }}</span>
+              <span class="diffwise-diff__line-number-value">{{ line.number }}</span>
             </div>
           }
           @if (newLineDescription(row); as description) {
@@ -279,12 +279,12 @@
             }}</span>
           }
           <div
-            class="diffwise-html-diff__content diffwise-html-diff__content--new"
+            class="diffwise-diff__content diffwise-diff__content--new"
             [attr.data-diffwise-table]="line.table"
             [innerHTML]="line.html"
           ></div>
         } @else {
-          <div class="diffwise-html-diff__gap" aria-hidden="true"></div>
+          <div class="diffwise-diff__gap" aria-hidden="true"></div>
         }
       </div>
     }

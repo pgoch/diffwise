@@ -1,7 +1,7 @@
 <button
   #button
   type="button"
-  class="diffwise-html-diff__view-button"
+  class="diffwise-diff__view-button"
   [attr.aria-label]="texts().viewButtonLabel"
   [attr.aria-expanded]="isOpen()"
   [attr.aria-controls]="viewSettingsId()"
@@ -27,7 +27,7 @@
 
 <div
   #viewSettings
-  class="diffwise-html-diff__view-settings"
+  class="diffwise-diff__view-settings"
   popover="auto"
   role="dialog"
   tabindex="-1"
@@ -37,19 +37,19 @@
 >
   @for (group of choiceGroups(); track group.setting) {
     <div
-      class="diffwise-html-diff__view-settings-group"
+      class="diffwise-diff__view-settings-group"
       role="group"
-      [class.diffwise-html-diff__view-settings-group--pairs]="group.isInPairs"
+      [class.diffwise-diff__view-settings-group--pairs]="group.isInPairs"
       [attr.aria-labelledby]="group.labelId"
     >
-      <div class="diffwise-html-diff__view-settings-label" [id]="group.labelId">
+      <div class="diffwise-diff__view-settings-label" [id]="group.labelId">
         {{ group.label }}
       </div>
 
       @for (choice of group.choices; track choice.value) {
         <button
           type="button"
-          class="diffwise-html-diff__view-settings-choice"
+          class="diffwise-diff__view-settings-choice"
           [attr.aria-pressed]="choice.isChosen"
           [disabled]="choice.isDisabled"
           (click)="choose(group.setting, choice.value)"
@@ -61,7 +61,7 @@
   }
 
   @if (showsHideUnchangedLines()) {
-    <label class="diffwise-html-diff__view-settings-checkbox">
+    <label class="diffwise-diff__view-settings-checkbox">
       <input
         type="checkbox"
         [checked]="config().hideUnchangedLines"
@@ -71,11 +71,7 @@
     </label>
   }
 
-  <button
-    type="button"
-    class="diffwise-html-diff__view-settings-reset"
-    (click)="settingsReset.emit()"
-  >
+  <button type="button" class="diffwise-diff__view-settings-reset" (click)="settingsReset.emit()">
     {{ texts().resetUserSettingsLabel }}
   </button>
 </div>

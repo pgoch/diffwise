@@ -85,8 +85,8 @@ import {
 const ID_PREFIX = 'diff';
 const TEMPLATE_TAG = 'template';
 const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
-const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
-const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
+const REMOVED_SELECTOR = 'del.diffwise-diff__highlight--removed';
+const ADDED_SELECTOR = 'ins.diffwise-diff__highlight--added';
 const MARKER_SELECTOR = `${REMOVED_SELECTOR}, ${ADDED_SELECTOR}`;
 const ENGLISH = 'en';
 const CHINESE = 'zh';

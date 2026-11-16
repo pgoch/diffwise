@@ -12,7 +12,7 @@ const SIZER_CONTENT_SELECTOR = `${SIZER_ROWS_SELECTOR} > * > div`;
 const ALL_ELEMENTS = '*';
 const DIFFWISE_DATA_ATTRIBUTE_START = 'data-diffwise-';
 const ARIA_HIDDEN_ATTRIBUTE = 'aria-hidden';
-const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
+const ADDED_CLASSES = 'diffwise-diff__highlight diffwise-diff__highlight--added';
 
 /** A table with more rows than the ones whose copies every line of a bigger table gets. */
 const BIG_TABLE_ROW_COUNT = 40;

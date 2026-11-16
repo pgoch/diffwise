@@ -12,11 +12,11 @@ const SIZER_ROWS_SELECTOR = `${COLUMN_SIZERS_SELECTOR} > tr`;
 const ROW_SELECTOR = '[data-diffwise-table-copy] > :not([data-diffwise-column-sizers]) > tr';
 const CAPTION_SELECTOR = 'caption';
 const COLUMN_GROUP_SELECTOR = '[data-diffwise-table-copy] > colgroup';
-const REMOVED_TEXT_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
-const ADDED_TEXT_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
-const GAP_CELL_CLASS = 'diffwise-html-diff__gap--cell';
-const WHOLE_CELL_CLASS = 'diffwise-html-diff__highlight--cell';
-const REMOVED_CLASS = 'diffwise-html-diff__highlight--removed';
+const REMOVED_TEXT_SELECTOR = 'del.diffwise-diff__highlight--removed';
+const ADDED_TEXT_SELECTOR = 'ins.diffwise-diff__highlight--added';
+const GAP_CELL_CLASS = 'diffwise-diff__gap--cell';
+const WHOLE_CELL_CLASS = 'diffwise-diff__highlight--cell';
+const REMOVED_CLASS = 'diffwise-diff__highlight--removed';
 const CONTINUED_CELL_ATTRIBUTE = 'data-diffwise-continued-cell';
 const UNKNOWN_SAMPLE = 'No sample has the name ';
 

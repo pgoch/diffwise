@@ -4,13 +4,13 @@ const SCROLL_EVENT = 'scroll';
 const TABLE_ATTRIBUTE = 'data-diffwise-table';
 
 /** The class of a diff that shows a single column. */
-const INLINE_LAYOUT_CLASS = 'diffwise-html-diff--layout-inline';
+const INLINE_LAYOUT_CLASS = 'diffwise-diff--layout-inline';
 
-const OLD_CONTENT_SELECTOR = '.diffwise-html-diff__content--old';
-const NEW_CONTENT_SELECTOR = '.diffwise-html-diff__content--new';
+const OLD_CONTENT_SELECTOR = '.diffwise-diff__content--old';
+const NEW_CONTENT_SELECTOR = '.diffwise-diff__content--new';
 
 /** The content of a merged line, such as a changed row of a table whose versions show as one. */
-const MERGED_CONTENT_SELECTOR = '.diffwise-html-diff__content--merged';
+const MERGED_CONTENT_SELECTOR = '.diffwise-diff__content--merged';
 const TABLE_LINE_SELECTOR = `:is(${OLD_CONTENT_SELECTOR}, ${NEW_CONTENT_SELECTOR}, ${MERGED_CONTENT_SELECTOR})[${TABLE_ATTRIBUTE}]`;
 
 const TABINDEX_ATTRIBUTE = 'tabindex';

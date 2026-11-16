@@ -3,12 +3,12 @@
  * buttons, one for each value of an option, a checkbox, and a button that takes the choices back.
  */
 
-.diffwise-html-diff__toolbar > diffwise-view-settings {
+.diffwise-diff__toolbar > diffwise-view-settings {
   margin-inline-start: auto;
 }
 
 /* As high as the arrows between the blocks of changes, with a frame of the same color. */
-.diffwise-html-diff__view-button {
+.diffwise-diff__view-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -24,22 +24,22 @@
   box-sizing: content-box;
 }
 
-.diffwise-html-diff__view-button svg {
+.diffwise-diff__view-button svg {
   width: 1.25em;
   height: 1.25em;
 }
 
-.diffwise-html-diff__view-button:hover,
-.diffwise-html-diff__view-button[aria-expanded='true'] {
+.diffwise-diff__view-button:hover,
+.diffwise-diff__view-button[aria-expanded='true'] {
   background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
 }
 
-.diffwise-html-diff__view-button[aria-expanded='true'] {
+.diffwise-diff__view-button[aria-expanded='true'] {
   border-color: var(--diffwise-muted);
 }
 
-.diffwise-html-diff__view-button:focus-visible,
-.diffwise-html-diff__view-settings :is(button, input):focus-visible {
+.diffwise-diff__view-button:focus-visible,
+.diffwise-diff__view-settings :is(button, input):focus-visible {
   outline: 2px solid var(--diffwise-focus);
   outline-offset: 2px;
 }
@@ -48,7 +48,7 @@
  * The settings, in the colors of the diff. They stand where the diff puts them, under their
  * button, instead of where popovers stand by default.
  */
-.diffwise-html-diff__view-settings {
+.diffwise-diff__view-settings {
   position: fixed;
   inset: auto;
   box-sizing: border-box;
@@ -70,19 +70,19 @@
 }
 
 /* The settings take the focus when they open, as a dialog; their buttons show it. */
-.diffwise-html-diff__view-settings:focus {
+.diffwise-diff__view-settings:focus {
   outline: none;
 }
 
 /* The name of an option above its buttons, which share the width. */
-.diffwise-html-diff__view-settings-group {
+.diffwise-diff__view-settings-group {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 10px;
 }
 
-.diffwise-html-diff__view-settings-label {
+.diffwise-diff__view-settings-label {
   flex-basis: 100%;
   color: var(--diffwise-muted);
   font-size: 0.85em;
@@ -91,7 +91,7 @@
   text-transform: uppercase;
 }
 
-.diffwise-html-diff__view-settings-choice {
+.diffwise-diff__view-settings-choice {
   flex: 1;
   padding: 4px 6px;
   border: 1px solid var(--diffwise-border);
@@ -104,24 +104,24 @@
   cursor: pointer;
 }
 
-.diffwise-html-diff__view-settings-choice:hover {
+.diffwise-diff__view-settings-choice:hover {
   background: color-mix(in srgb, var(--diffwise-ink) 10%, var(--diffwise-background));
 }
 
 /* The chosen value: the colors of the text and the background change places. */
-.diffwise-html-diff__view-settings-choice[aria-pressed='true'] {
+.diffwise-diff__view-settings-choice[aria-pressed='true'] {
   border-color: var(--diffwise-text);
   background: var(--diffwise-text);
   color: var(--diffwise-background);
 }
 
 /* Buttons two in a row, of the same width, such as the colors of changes. */
-.diffwise-html-diff__view-settings-group--pairs {
+.diffwise-diff__view-settings-group--pairs {
   display: grid;
   grid-template-columns: 1fr 1fr;
 }
 
-.diffwise-html-diff__view-settings-group--pairs > .diffwise-html-diff__view-settings-label {
+.diffwise-diff__view-settings-group--pairs > .diffwise-diff__view-settings-label {
   grid-column: 1 / -1;
 }
 
@@ -129,16 +129,16 @@
  * An option that does nothing now, such as the style of the single column beside two columns, or
  * a single button, such as the colors of an app that gives none.
  */
-.diffwise-html-diff__view-settings-group:not(:has(:enabled)),
-.diffwise-html-diff__view-settings-group:has(:enabled) > :disabled {
+.diffwise-diff__view-settings-group:not(:has(:enabled)),
+.diffwise-diff__view-settings-group:has(:enabled) > :disabled {
   opacity: 0.45;
 }
 
-.diffwise-html-diff__view-settings-choice:disabled {
+.diffwise-diff__view-settings-choice:disabled {
   cursor: default;
 }
 
-.diffwise-html-diff__view-settings-checkbox {
+.diffwise-diff__view-settings-checkbox {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -146,11 +146,11 @@
   cursor: pointer;
 }
 
-.diffwise-html-diff__view-settings-checkbox input {
+.diffwise-diff__view-settings-checkbox input {
   margin: 0;
 }
 
-.diffwise-html-diff__view-settings-reset {
+.diffwise-diff__view-settings-reset {
   display: block;
   width: 100%;
   margin-top: 12px;
@@ -164,6 +164,6 @@
   cursor: pointer;
 }
 
-.diffwise-html-diff__view-settings-reset:hover {
+.diffwise-diff__view-settings-reset:hover {
   background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
 }

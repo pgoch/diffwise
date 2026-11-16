@@ -32,14 +32,14 @@ import {
 } from './model';
 
 const TEMPLATE_TAG = 'template';
-const REMOVED_SELECTOR = 'del.diffwise-html-diff__highlight--removed';
-const ADDED_SELECTOR = 'ins.diffwise-html-diff__highlight--added';
+const REMOVED_SELECTOR = 'del.diffwise-diff__highlight--removed';
+const ADDED_SELECTOR = 'ins.diffwise-diff__highlight--added';
 const MARKER_SELECTOR = `${REMOVED_SELECTOR}, ${ADDED_SELECTOR}`;
 const DETAILS_MARKER_SELECTOR = '[data-diffwise-change-details]';
-const FRAMED_IMAGE_SELECTOR = '.diffwise-html-diff__highlight--image img';
-const REMOVED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--removed';
-const ADDED_CLASSES = 'diffwise-html-diff__highlight diffwise-html-diff__highlight--added';
-const IMAGE_CLASS = 'diffwise-html-diff__highlight--image';
+const FRAMED_IMAGE_SELECTOR = '.diffwise-diff__highlight--image img';
+const REMOVED_CLASSES = 'diffwise-diff__highlight diffwise-diff__highlight--removed';
+const ADDED_CLASSES = 'diffwise-diff__highlight diffwise-diff__highlight--added';
+const IMAGE_CLASS = 'diffwise-diff__highlight--image';
 const SRC_ATTRIBUTE = 'src';
 const RTL_PARAGRAPH = '<p dir="rtl">';
 const UNSAFE_HTML = /onclick|javascript:|<script/i;
@@ -54,12 +54,12 @@ const FRAGMENT_START = '#';
 const LIST_ITEM_SELECTOR = 'li, dt, dd';
 const LIST_MARKER_ATTRIBUTE = 'data-diffwise-list-marker';
 const DETAILS_ATTRIBUTE = 'data-diffwise-change-details';
-const DRAWN_MARKER_SELECTOR = '.diffwise-html-diff__highlight--list-marker';
-const CHECKBOX_MARKER_CLASS = 'diffwise-html-diff__highlight--checkbox';
+const DRAWN_MARKER_SELECTOR = '.diffwise-diff__highlight--list-marker';
+const CHECKBOX_MARKER_CLASS = 'diffwise-diff__highlight--checkbox';
 const LIST_ITEM_MARKER_SELECTOR = `${DRAWN_MARKER_SELECTOR}, .${CHECKBOX_MARKER_CLASS}`;
 const COLUMN_SIZERS_SELECTOR = '[data-diffwise-column-sizers]';
 const COPIED_ROWS_SELECTOR = `${COLUMN_SIZERS_SELECTOR} > tr`;
-const CELL_MARKER_SELECTOR = '.diffwise-html-diff__highlight--cell';
+const CELL_MARKER_SELECTOR = '.diffwise-diff__highlight--cell';
 const ROW_CELLS_SELECTOR = '[data-diffwise-table-copy] > * > tr > *';
 const IGNORE_FORMATTING: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreFormatting: true };
 
