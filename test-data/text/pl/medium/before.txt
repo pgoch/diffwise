@@ -1,0 +1,57 @@
+# Eksport z Notatnika Online
+
+Eksportuje notatki z Notatnika Online do plików Markdown, jeden plik na notatkę.
+
+## Wymagania
+
+- Node.js 20 lub nowszy
+- Konto w Notatniku Online z kluczem API
+
+## Instalacja
+
+```
+npm install --global notebook-export
+```
+
+## Użycie
+
+```
+notebook-export --key TWÓJ_KLUCZ_API --out ./notatki
+```
+
+Narzędzie tworzy osobny folder dla każdego notesu i zapisuje tagi każdej notatki w jej nagłówku.
+
+## Opcje
+
+| Opcja      | Domyślnie   | Opis                                 |
+|------------|-------------|--------------------------------------|
+| `--key`    |             | Twój klucz API, wymagany             |
+| `--out`    | `./notatki` | Folder na wyeksportowane pliki       |
+| `--format` | `md`        | Format plików: `md` albo `txt`       |
+| `--since`  |             | Tylko notatki zmienione po tej dacie |
+
+## Plik ustawień
+
+Zamiast opcji możesz zapisać ustawienia w pliku `notebook-export.json`:
+
+```json
+{
+  "key": "TWÓJ_KLUCZ_API",
+  "out": "./notatki",
+  "format": "md"
+}
+```
+
+## Limity
+
+- API przyjmuje 100 zapytań na minutę.
+- Załączniki większe niż 25 MB są pomijane.
+- Eksport notesu z 1000 notatek trwa około dziesięciu minut.
+
+## Pomoc
+
+Przeczytaj [dokumentację](https://example.com/docs/export) albo zgłoś problem na https://example.com/export/issues.
+
+## Licencja
+
+MIT

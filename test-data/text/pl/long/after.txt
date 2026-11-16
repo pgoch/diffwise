@@ -1,0 +1,106 @@
+NOTATNIK ONLINE - USŁUGA SYNCHRONIZACJI
+=======================================
+
+Notatki operacyjne, wersja 3.3
+Ostatnia zmiana: 16 marca 2026
+Właściciel: zespół platformy (platform@example.com)
+
+
+1. Wprowadzenie
+---------------
+
+Usługa synchronizacji dba o to, żeby notatki były takie same na każdym urządzeniu użytkownika. Działa w czterech regionach i trzyma kopię każdej notatki w co najmniej dwóch z nich, więc notatka jest dostępna, gdy jeden region przestanie działać. Zmiany zrobione bez internetu czekają na urządzeniu i wychodzą, gdy tylko wróci połączenie.
+
+Ten plik jest celowo zwykłym tekstem: otworzy go każdy edytor, dobrze się go czyta w terminalu, a diff dwóch wersji pokazuje każdą spację i każdy tabulator, co ma znaczenie przy ustawieniach poniżej.
+
+Spis treści:
+  1. Wprowadzenie
+  2. Plany i limity
+  3. Ustawienia synchronizacji
+  4. Lista kontrolna wydania
+  5. Znane problemy
+  6. Uwagi dla tłumaczy
+  7. Kontakt
+
+
+2. Plany i limity
+-----------------
+
+Plan        Notatki      Miejsce     Urządzenia
+Free        100          1 GB        2
+Plus        10 000       50 GB       5
+Pro         bez limitu   100 GB      bez limitu
+Team        bez limitu   1 TB        bez limitu
+
+Ceny są w EUR za miesiąc i zawierają VAT.
+Studenci dostają plan Plus za darmo na rok.
+
+
+3. Ustawienia synchronizacji
+----------------------------
+
+Poniższe ustawienia są domyślne dla nowych kont. Wcięcia pokazują, do której grupy należy każde ustawienie.
+
+synchronizacja:
+    co ile: 15 minut
+    tylko wi-fi: tak
+    w tle: tak
+    ponowienia: 3
+kopia zapasowa:
+    godzina: 02:00 UTC
+    przechowuj: 90 dni
+
+Regiony, rozdzielone tabulatorami:
+region	węzły	stan
+eu-west	12	ok
+us-east	9	ok
+ap-south	6	spowolniony
+
+
+4. Lista kontrolna wydania
+--------------------------
+
+1. Zamroź gałąź wydania.
+2. Uruchom wszystkie testy.
+3. Sprawdź tłumaczenia.
+4. Zaktualizuj listę zmian.
+5. Wdróż w regionie testowym.
+6. Wdróż we wszystkich regionach.
+
+✅ Kroki 1-4 są gotowe dla wersji 3.3. 🎉
+⏳ Wdrożenie testowe zaplanowano na środę.
+
+Nie wdrażaj w piątki.  
+
+
+5. Znane problemy
+-----------------
+
+- Notatki dłuższe niż 50 000 znaków synchronizują się powoli.
+- Niektóre edytory wklejają do tytułu tekst taki jak <strong>pogrubienie</strong> albo <script>alert("hi")</script>. Aplikacja musi pokazać taki tekst tak, jak jest, i nigdy go nie uruchamiać.
+- Tytuły z &amp; albo &lt; pokazują kod zamiast znaku w starej aplikacji na Androida.
+- Bardzo długie linki, np. https://example.com/notebooks/shared/2026/03/team-planning/very-long-note-title-that-never-ends, nie zawijają się na małych ekranach.
+
+- Na komputerze brakuje okienka emoji 🙂.
+- Wyszukiwanie pomija słowa krótsze niż trzy litery.
+
+
+6. Uwagi dla tłumaczy
+---------------------
+
+Teksty ekranów pisz krótko: muszą się zmieścić na telefonie.
+Teksty ekranu synchronizacji po chińsku (znaki uproszczone):
+  同步已完成。
+  笔记会自动同步到您的所有设备。
+  每天凌晨三点备份一次。
+Daty zapisuj tak, jak zapisuje je język ekranu.
+
+
+7. Kontakt
+----------
+
+Zespół platformy: platform@example.com
+Strona statusu: https://status.example.com
+
+
+Koniec pliku.

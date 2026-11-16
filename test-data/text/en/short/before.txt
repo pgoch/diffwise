@@ -1,0 +1,10 @@
+Maintenance on Saturday
+
+Before 22:00:
+- Tell the support team about the maintenance window.
+- Post the notice on the status page.
+- Check that backups finished.
+
+After 23:00:
+- Turn sync back on.
+- Watch the error log for one hour.
