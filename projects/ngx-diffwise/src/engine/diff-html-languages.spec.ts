@@ -75,8 +75,8 @@ import { parseHtml } from './html/parse-html';
 import { readerText } from './html/reader-text';
 import { splitLines } from './html/split-lines';
 import {
+  type Comparison,
   DEFAULT_DIFF_OPTIONS,
-  type HtmlDiff,
   LineChangeKind,
   type ViewLine,
   type ViewRow,
@@ -191,13 +191,13 @@ const LANGUAGE_SIZES = LANGUAGES.flatMap((language) =>
 );
 
 /** Diffs of the samples by language and size; each sample is compared on first use. */
-const sampleDiffs = new Map<string, HtmlDiff>();
+const sampleDiffs = new Map<string, Comparison>();
 
 /**
  * The diff of a sample with the default options. Tests share it, because comparing a long sample
  * takes most of the time of a test.
  */
-function sampleDiff(language: string, size: SampleSize): HtmlDiff {
+function sampleDiff(language: string, size: SampleSize): Comparison {
   const key = `${language}/${size}`;
   const sharedDiff = sampleDiffs.get(key);
 

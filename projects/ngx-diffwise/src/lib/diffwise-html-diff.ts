@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 
-import { type HtmlDiff, type HtmlDiffSettings, diffHtml } from '../engine';
+import { type Comparison, type ComparisonSettings, diffHtml } from '../engine';
 import { ChangeDetailsButton } from './change-details/change-details-button';
 import { ChangeTooltip } from './change-details/change-tooltip';
 import { CollapsedLinesBar } from './collapsed-lines/collapsed-lines-bar';
@@ -60,7 +60,10 @@ export class DiffwiseHtmlDiff extends DiffView {
   }));
 
   /** Compares the documents as the reader sees them: text, formatting, links, images and tables. */
-  protected override compareVersions(versions: DiffVersions, settings: HtmlDiffSettings): HtmlDiff {
+  protected override compareVersions(
+    versions: DiffVersions,
+    settings: ComparisonSettings,
+  ): Comparison {
     return diffHtml(versions.old, versions.new, settings);
   }
 }
