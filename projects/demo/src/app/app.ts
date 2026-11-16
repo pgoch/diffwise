@@ -40,19 +40,11 @@ import {
 
 import { type Choice, ChoiceButtons } from './choice-buttons';
 
-/** Languages of the sample documents; each one is a folder in `test-data/`. */
-const SampleLanguage = {
-  English: 'en',
-  Polish: 'pl',
-} as const;
-
-type SampleLanguage = (typeof SampleLanguage)[keyof typeof SampleLanguage];
-
-/** Language of the diff interface that each language of the samples brings with it. */
-const INTERFACE_LANGUAGES: Readonly<Record<SampleLanguage, DiffwiseLanguage>> = {
-  [SampleLanguage.English]: DiffwiseLanguage.EN,
-  [SampleLanguage.Polish]: DiffwiseLanguage.PL,
-};
+/**
+ * Languages of the sample documents, the same as the languages of the diff interface; each one is
+ * a folder in `test-data/`.
+ */
+type SampleLanguage = Exclude<DiffwiseLanguage, typeof DiffwiseLanguage.Auto>;
 
 /** Sizes of the sample documents; each one is a folder in a language folder. */
 const SampleSize = {
@@ -71,8 +63,8 @@ const PATH_SEPARATOR = '/';
 const HTML_EXTENSION = '.html';
 const LOAD_ERROR = 'Could not load a sample file.';
 
-/** Languages of the diff interface, each named in itself. */
-const INTERFACE_LANGUAGE_CHOICES: readonly Choice<DiffwiseLanguage>[] = [
+/** Languages of the samples and of the diff interface, each named in itself. */
+const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
   { value: DiffwiseLanguage.EN, label: 'English' },
   { value: DiffwiseLanguage.PL, label: 'Polski' },
   { value: DiffwiseLanguage.ZH, label: '中文（简体）' },
@@ -85,11 +77,6 @@ const INTERFACE_LANGUAGE_CHOICES: readonly Choice<DiffwiseLanguage>[] = [
   { value: DiffwiseLanguage.JA, label: '日本語' },
   { value: DiffwiseLanguage.DE, label: 'Deutsch' },
   { value: DiffwiseLanguage.KO, label: '한국어' },
-];
-
-const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
-  { value: SampleLanguage.English, label: 'English' },
-  { value: SampleLanguage.Polish, label: 'Polski' },
 ];
 
 const SIZE_CHOICES: readonly Choice<SampleSize>[] = [
@@ -311,7 +298,6 @@ const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
 })
 export class App {
   protected readonly languages = LANGUAGE_CHOICES;
-  protected readonly interfaceLanguages = INTERFACE_LANGUAGE_CHOICES;
   protected readonly sizes = SIZE_CHOICES;
   protected readonly colorModes = COLOR_MODE_CHOICES;
   protected readonly palettes = PALETTE_CHOICES;
@@ -339,7 +325,7 @@ export class App {
   /** Changes the global configuration while the app runs; the panel shows its values. */
   protected readonly diffwise = inject(Diffwise);
 
-  protected readonly language = signal<SampleLanguage>(SampleLanguage.English);
+  protected readonly language = signal<SampleLanguage>(DiffwiseLanguage.EN);
   protected readonly size = signal<SampleSize>(SampleSize.Short);
 
   /** The versions the diff compares; the same ones show what a diff of identical versions shows. */
@@ -481,17 +467,19 @@ export class App {
     this.diffwise.resetUserSettings();
   }
 
-  /** Switches the theme with the method of the service for each color mode. */
-  /** Shows the sample in the language, with the interface in the same language. */
-  protected chooseSampleLanguage(language: SampleLanguage): void {
+  /** Shows the sample in the chosen language, with the interface in the same language. */
+  protected chooseSampleLanguage(event: Event): void {
+    const language = selectedValueOf(event) as SampleLanguage;
+
     this.language.set(language);
-    this.interfaceLanguage.set(INTERFACE_LANGUAGES[language]);
+    this.interfaceLanguage.set(language);
   }
 
   protected chooseInterfaceLanguage(event: Event): void {
-    this.interfaceLanguage.set((event.target as HTMLSelectElement).value as DiffwiseLanguage);
+    this.interfaceLanguage.set(selectedValueOf(event) as DiffwiseLanguage);
   }
 
+  /** Switches the theme with the method of the service for each color mode. */
   protected chooseColorMode(colorMode: DiffwiseColorMode): void {
     switch (colorMode) {
       case DiffwiseColorMode.Light:
@@ -587,6 +575,11 @@ function keepDemoRemembersChoices(remembers: boolean): void {
   } catch {
     // Without localStorage the box stays only until the reload.
   }
+}
+
+/** The value of the option chosen in a list. */
+function selectedValueOf(event: Event): string {
+  return (event.target as HTMLSelectElement).value;
 }
 
 /** Path of a sample file, such as `test-data/en/short/before.html`. */
