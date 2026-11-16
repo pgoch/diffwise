@@ -14,6 +14,12 @@ const Attribute = {
 /** The only link target kept. */
 const NEW_TAB = '_blank';
 
+/** Separates the alternatives of a regular expression. */
+const ALTERNATIVES_SEPARATOR = '|';
+
+/** Joins pieces of HTML without anything between them. */
+const NO_TEXT = '';
+
 /** Keeps a page opened in a new tab from controlling the app. */
 const NEW_TAB_REL = 'noopener noreferrer';
 
@@ -69,7 +75,7 @@ const SAFE_STYLE_PATTERNS = [
   'caption-side',
 ];
 
-const SAFE_STYLE_PROPERTY = new RegExp(`^(?:${SAFE_STYLE_PATTERNS.join('|')})$`);
+const SAFE_STYLE_PROPERTY = new RegExp(`^(?:${SAFE_STYLE_PATTERNS.join(ALTERNATIVES_SEPARATOR)})$`);
 
 /** Style values that load or run something. */
 const UNSAFE_STYLE_VALUE = /url\(|expression\(/i;
@@ -128,7 +134,7 @@ function tableOfPieces(pieces: readonly string[]): string {
   return (
     startTag(PIECES_TABLE_TAG)
     + startTag(PIECES_BODY_TAG)
-    + rows.join('')
+    + rows.join(NO_TEXT)
     + endTag(PIECES_BODY_TAG)
     + endTag(PIECES_TABLE_TAG)
   );

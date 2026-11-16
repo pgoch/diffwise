@@ -47,8 +47,11 @@ const TRIGGER_GAP = 8;
 /** Least space between the tooltip and the edges of the window, in px. */
 const WINDOW_MARGIN = 8;
 
+/** Title of the tooltip before it first shows. */
+const NO_TITLE = '';
+
 /** Content before the tooltip first shows. */
-const NO_CONTENT = titleOnlyTooltip('');
+const NO_CONTENT = titleOnlyTooltip(NO_TITLE);
 
 const DETAILS_ID_END = '-details';
 const DESCRIBED_BY_ATTRIBUTE = 'aria-describedby';

@@ -136,6 +136,10 @@ const BUTTON_GAP = 6;
 /** Least space between the view settings and the edges of the window, in px. */
 const WINDOW_MARGIN = 8;
 
+/** Names of the elements in the template that the class reads. */
+const BUTTON_REFERENCE = 'button';
+const VIEW_SETTINGS_REFERENCE = 'viewSettings';
+
 /**
  * The button of the view settings in the toolbar and the settings it opens, in the top layer of the
  * page: the options the app allows the user to change, and a button that takes the choices back.
@@ -201,8 +205,9 @@ export class ViewSettings {
     this.allowed().includes(DiffwiseUserSetting.HideUnchangedLines),
   );
 
-  private readonly button = viewChild.required<ElementRef<HTMLElement>>('button');
-  private readonly viewSettings = viewChild.required<ElementRef<HTMLElement>>('viewSettings');
+  private readonly button = viewChild.required<ElementRef<HTMLElement>>(BUTTON_REFERENCE);
+  private readonly viewSettings =
+    viewChild.required<ElementRef<HTMLElement>>(VIEW_SETTINGS_REFERENCE);
 
   /** Listens to the page while the view settings are open: they follow their button. */
   private pageListeners: AbortController | null = null;
