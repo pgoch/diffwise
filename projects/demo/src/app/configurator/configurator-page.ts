@@ -8,6 +8,7 @@ import {
   inject,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { DiffwiseColorMode, DiffwiseHtml, DiffwiseLayout, DiffwiseText } from 'ngx-diffwise';
 
 import type { Choice } from '../choice';
@@ -65,7 +66,7 @@ const PREVIEW_KIND_CHOICES: readonly Choice<DiffKind>[] = [
  */
 @Component({
   selector: 'demo-configurator-page',
-  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, ResultStep, StepOptions],
+  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, NgTemplateOutlet, ResultStep, StepOptions],
   templateUrl: './configurator-page.html',
   styleUrl: './configurator-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

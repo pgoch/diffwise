@@ -49,34 +49,45 @@
   </div>
 </nav>
 
+<ng-template #stepButtons>
+  @if (hasBack()) {
+    <button type="button" class="button" (click)="goBack()">Back</button>
+  }
+  @if (hasNext()) {
+    <button type="button" class="button button--primary" (click)="goNext()">Next</button>
+  }
+</ng-template>
+
 <div class="main" [class.main--result]="showsResult()">
-  <section class="options" aria-labelledby="configurator-step-heading">
-    <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
-      {{ stepNumber() }}. {{ state.step().label }}
-    </h2>
-    <p class="step-description">{{ state.step().description }}</p>
+  <div class="pane">
+    <section class="options" aria-labelledby="configurator-step-heading">
+      <div class="step-head">
+        <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
+          {{ stepNumber() }}. {{ state.step().label }}
+        </h2>
+        <div class="step-nav">
+          <ng-container [ngTemplateOutlet]="stepButtons" />
+        </div>
+      </div>
+      <p class="step-description">{{ state.step().description }}</p>
 
-    @switch (state.step().id) {
-      @case (stepIds.General) {
-        <demo-diff-kinds-step />
-        <demo-step-options [step]="state.step()" />
+      @switch (state.step().id) {
+        @case (stepIds.General) {
+          <demo-diff-kinds-step />
+          <demo-step-options [step]="state.step()" />
+        }
+        @case (stepIds.Result) {
+          <demo-result-step (edit)="goTo($event)" (startOver)="startOver()" />
+        }
+        @default {
+          <demo-step-options [step]="state.step()" />
+        }
       }
-      @case (stepIds.Result) {
-        <demo-result-step (edit)="goTo($event)" (startOver)="startOver()" />
-      }
-      @default {
-        <demo-step-options [step]="state.step()" />
-      }
-    }
-  </section>
+    </section>
 
-  <div class="nav">
-    @if (hasBack()) {
-      <button type="button" class="button" (click)="goBack()">Back</button>
-    }
-    @if (hasNext()) {
-      <button type="button" class="button button--primary" (click)="goNext()">Next</button>
-    }
+    <div class="nav">
+      <ng-container [ngTemplateOutlet]="stepButtons" />
+    </div>
   </div>
 
   <section class="preview" aria-labelledby="configurator-preview-label" [hidden]="showsResult()">
@@ -143,28 +154,30 @@
       }
     </div>
 
-    @if (showsTextInEnglish()) {
-      <p class="sample-hint">
-        Plain text samples are in English and Polish, so the plain text preview is in English.
-      </p>
-    }
-
-    @if (sample.error()) {
-      <p role="alert">The sample could not be loaded.</p>
-    } @else if (shownSample(); as pair) {
-      @if (pair.kind === diffKinds.Text) {
-        <diffwise-text
-          [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-          [newText]="pair.newVersion"
-          [config]="previewConfig()"
-        />
-      } @else {
-        <diffwise-html
-          [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-          [newHtml]="pair.newVersion"
-          [config]="previewConfig()"
-        />
+    <div class="preview-body">
+      @if (showsTextInEnglish()) {
+        <p class="sample-hint">
+          Plain text samples are in English and Polish, so the plain text preview is in English.
+        </p>
       }
-    }
+
+      @if (sample.error()) {
+        <p role="alert">The sample could not be loaded.</p>
+      } @else if (shownSample(); as pair) {
+        @if (pair.kind === diffKinds.Text) {
+          <diffwise-text
+            [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+            [newText]="pair.newVersion"
+            [config]="previewConfig()"
+          />
+        } @else {
+          <diffwise-html
+            [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+            [newHtml]="pair.newVersion"
+            [config]="previewConfig()"
+          />
+        }
+      }
+    </div>
   </section>
 </div>

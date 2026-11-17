@@ -10,6 +10,7 @@ const CURRENT_STEP_SELECTOR = '.flow-steps [aria-current="step"]';
 const GOAL_STEP_SELECTOR = '.flow-steps .flow-step--goal';
 const HEADING_SELECTOR = '.step-heading';
 const NAV_BUTTON_SELECTOR = '.nav button';
+const HEAD_BUTTON_SELECTOR = '.step-nav button';
 const OPTION_BUTTON_SELECTOR = '.option-choice';
 const PREVIEW_BUTTON_SELECTOR = '.preview-switch button';
 const PREVIEW_LABEL_SELECTOR = '.preview-label';
@@ -161,6 +162,19 @@ describe('ConfiguratorPage', () => {
     expect(document.activeElement?.textContent?.trim()).toBe('2. Colors');
 
     await click(fixture, NAV_BUTTON_SELECTOR, BACK);
+
+    expect(headingOf(fixture)).toBe('1. General');
+  });
+
+  it('goes to the next and the previous step also from the buttons next to the heading', async () => {
+    const fixture = await render();
+
+    await click(fixture, HEAD_BUTTON_SELECTOR, NEXT);
+
+    expect(headingOf(fixture)).toBe('2. Colors');
+    expect(textsOf(fixture, HEAD_BUTTON_SELECTOR)).toEqual([BACK, NEXT]);
+
+    await click(fixture, HEAD_BUTTON_SELECTOR, BACK);
 
     expect(headingOf(fixture)).toBe('1. General');
   });
