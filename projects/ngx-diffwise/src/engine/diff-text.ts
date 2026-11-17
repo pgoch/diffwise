@@ -49,6 +49,7 @@ class TextRowBuilder {
     this.mergesChangedLines = settings.mergesChangedLines;
   }
 
+  /** The row of the view for a change of lines. */
   toRow(change: LineChange): ViewRow {
     switch (change.kind) {
       case LineChangeKind.Unchanged:
@@ -62,6 +63,7 @@ class TextRowBuilder {
     }
   }
 
+  /** The row of an unchanged line, shown in both versions. */
   private unchangedRow(oldLine: Line, newLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Unchanged,
@@ -85,16 +87,18 @@ class TextRowBuilder {
     const mergedHtml = this.mergesChangedLines
       ? mergedTextHtml({ oldLine, newLine, wordChanges })
       : null;
+    const mergedLine = mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml };
 
     return {
       kind: LineChangeKind.Changed,
       oldLine: shownOldLine,
       newLine: shownNewLine,
       changeDetails: NO_CHANGE_DETAILS,
-      mergedLine: mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml },
+      mergedLine,
     };
   }
 
+  /** The row of a removed line. */
   private removedRow(oldLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Removed,
@@ -105,6 +109,7 @@ class TextRowBuilder {
     };
   }
 
+  /** The row of an added line. */
   private addedRow(newLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Added,
@@ -115,11 +120,13 @@ class TextRowBuilder {
     };
   }
 
+  /** The next line of the old version, with its number. */
   private nextOldLine(line: Line, html: string): ViewLine {
     this.oldLineCount++;
     return { kind: line.kind, number: this.oldLineCount, html, table: line.table };
   }
 
+  /** The next line of the new version, with its number. */
   private nextNewLine(line: Line, html: string): ViewLine {
     this.newLineCount++;
     return { kind: line.kind, number: this.newLineCount, html, table: line.table };

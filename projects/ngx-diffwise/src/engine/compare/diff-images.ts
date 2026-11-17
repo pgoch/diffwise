@@ -70,6 +70,7 @@ function imagePlaces(
   }));
 }
 
+/** True when the position lies inside one of the ranges. */
 function isInsideAny(position: number, ranges: readonly TextRange[]): boolean {
   return ranges.some((range) => range.start <= position && position < range.end);
 }
@@ -113,10 +114,12 @@ function replacedPairs(
   return pairs;
 }
 
+/** The images of the places whose image did not change. */
 function unchangedImages(places: readonly ImagePlace[]): LineImage[] {
   return places.filter((place) => !place.isChanged).map((place) => place.image);
 }
 
+/** The places whose image changed. */
 function changedPlaces(places: readonly ImagePlace[]): ImagePlace[] {
   return places.filter((place) => place.isChanged);
 }
@@ -135,6 +138,7 @@ function groupByPlace(places: readonly ImagePlace[]): Map<number, LineImage[]> {
   return groups;
 }
 
+/** Orders pairs of images by the position of the old image. */
 function byOldPosition(first: ImagePair, second: ImagePair): number {
   return first.oldImage.position - second.oldImage.position;
 }

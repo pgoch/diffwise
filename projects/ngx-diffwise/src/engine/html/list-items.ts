@@ -115,7 +115,9 @@ export class ListMarkerReader {
 /** The checkbox a list item starts with, as in a task list, also inside a label; `null` without. */
 export function startCheckbox(item: Element): Element | null {
   const content = firstContentOf(item);
-  return content instanceof Element && isCheckbox(content) ? content : null;
+  const isCheckboxElement = content instanceof Element && isCheckbox(content);
+
+  return isCheckboxElement ? content : null;
 }
 
 /** State of the checkbox a list item starts with; `null` without one. */
@@ -164,6 +166,7 @@ function collectItems(parent: Element, items: Element[]): void {
   }
 }
 
+/** True when the element is an item of a list. */
 function isListItem(element: Element): boolean {
   return element.localName === LIST_ITEM_TAG;
 }
@@ -273,8 +276,9 @@ function typeStyle(element: Element): string | null {
 
   const bullets = type.toLowerCase();
   const takesBullets = tag === BULLETED_LIST_TAG || tag === LIST_ITEM_TAG;
+  const showsBullets = BULLET_TYPES.has(bullets) && takesBullets;
 
-  return BULLET_TYPES.has(bullets) && takesBullets ? bullets : null;
+  return showsBullets ? bullets : null;
 }
 
 /** The style browsers give a list: numbers, or bullets by the lists around it; `null` for others. */
@@ -326,6 +330,7 @@ function contentAt(node: Node): Text | Element | null {
   return VISIBLE_WITHOUT_TEXT_TAGS.has(node.localName) ? node : firstContentOf(node);
 }
 
+/** True when the element is a checkbox. */
 function isCheckbox(element: Element): boolean {
   const type = element.getAttribute(TYPE_ATTRIBUTE)?.toLowerCase();
   return element.localName === INPUT_TAG && type === CHECKBOX_TYPE;

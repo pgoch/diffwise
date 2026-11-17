@@ -1,4 +1,5 @@
 import type { ColumnMatch } from './align-table-columns';
+import { columnsOf, takesColumn } from './cell-columns';
 import { diffWords } from './diff-words';
 import type {
   ChangedText,
@@ -127,10 +128,12 @@ function cellGroups(
   return [...groups, ...addedGroups];
 }
 
+/** A group of cells without any cell yet. */
 function emptyGroup(): CellGroup {
   return { oldCells: [], newCells: [] };
 }
 
+/** True when the group already holds one of the new cells. */
 function sharesAny(group: CellGroup, newCells: readonly number[]): boolean {
   return newCells.some((newCell) => group.newCells.includes(newCell));
 }
@@ -143,17 +146,11 @@ function newCellsSharingColumns(
 ): number[] {
   const matchedColumns = columnsOf(oldCell).flatMap((column) => oldToNew.get(column) ?? []);
 
-  return newCells.flatMap((newCell, position) =>
-    matchedColumns.some((column) => takesColumn(newCell, column)) ? [position] : [],
-  );
-}
+  return newCells.flatMap((newCell, position) => {
+    const takesMatchedColumn = matchedColumns.some((column) => takesColumn(newCell, column));
 
-function columnsOf({ column, columnSpan }: TableCell): number[] {
-  return Array.from({ length: columnSpan }, (_, offset) => column + offset);
-}
-
-function takesColumn({ column, columnSpan }: TableCell, wanted: number): boolean {
-  return wanted >= column && wanted < column + columnSpan;
+    return takesMatchedColumn ? [position] : [];
+  });
 }
 
 /** The part of the line's text from the first of the cells to the end of the last one. */
@@ -169,10 +166,12 @@ function contentOf({ text, images }: Line, { start, end }: TextRange): LineConte
   return { text: text.slice(start, end), images: shiftedImages };
 }
 
+/** The image with its position moved back by the number of characters. */
 function imageMovedBack(image: LineImage, by: number): LineImage {
   return { ...image, position: image.position - by };
 }
 
+/** The ranges moved by the number of characters. */
 function shifted(ranges: readonly TextRange[], by: number): TextRange[] {
   return ranges.map(({ start, end }) => ({ start: start + by, end: end + by }));
 }
@@ -198,6 +197,7 @@ function textsOfCells(cells: readonly TableCell[], positions: readonly number[])
     .map(({ start, end }) => ({ start, end }));
 }
 
+/** Orders ranges by their start. */
 function byStart(first: TextRange, second: TextRange): number {
   return first.start - second.start;
 }

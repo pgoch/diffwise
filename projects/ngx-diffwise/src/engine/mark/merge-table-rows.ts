@@ -1,4 +1,5 @@
 import type { ColumnMatch, TablePair } from '../compare/align-table-columns';
+import { columnsOf, takesColumn } from '../compare/cell-columns';
 import { mapReaderText } from '../html/reader-text';
 import {
   DocumentVersion,
@@ -108,6 +109,7 @@ function tablesPairedOnce(tablePairs: readonly TablePair[]): TablePair[] {
   );
 }
 
+/** Number of times the wanted number stands among the numbers. */
 function countOf(numbers: readonly number[], wanted: number): number {
   return numbers.filter((number) => number === wanted).length;
 }
@@ -164,14 +166,20 @@ function mergedTableOf(sources: readonly TableRowSource[], pair: TablePair): Mer
     return null;
   }
 
-  const firstNewTableCopy =
-    newLines.length > 0 ? tableCopyIn(parsedContent(newLines[0].html)) : null;
+  const firstNewLine = newLines.at(0);
+  const firstNewTableCopy = firstNewLine === undefined ? null : tableCopyOfLine(firstNewLine);
   const sharesColumnGroups = columns.keepsColumns && firstNewTableCopy !== null;
   const columnGroups = sharesColumnGroups ? columnGroupsOf(firstNewTableCopy) : NO_COLUMN_GROUPS;
 
   return { pair, columns, columnGroups };
 }
 
+/** The copy of the table that a table line holds; `null` when it holds none. */
+function tableCopyOfLine({ html }: ViewLine): Element | null {
+  return tableCopyIn(parsedContent(html));
+}
+
+/** Number of columns of the row that a table line holds. */
 function columnCountOfLine({ html }: ViewLine): number {
   const row = rowCopyIn(parsedContent(html));
   return row === null ? 0 : columnCountOf(row);
@@ -204,7 +212,11 @@ function mergedTableLine(
   const content = parsedContent(line.html);
   const isLaidOut = layOutLine(content, table, version, []);
 
-  return isLaidOut ? tableLine(line, serialized(content), table) : null;
+  if (!isLaidOut) {
+    return null;
+  }
+
+  return tableLine(line, serialized(content), table);
 }
 
 /** A changed caption merged like text, or a changed row merged cell by cell. */
@@ -213,12 +225,14 @@ function mergedChangedLine(
   newLine: ViewLine,
   table: MergedTable,
 ): ViewLine | null {
-  const content =
-    newLine.kind === LineKind.TableCaption
-      ? mergedCaption(changedLine, table)
-      : mergedRow(changedLine, table);
+  const isCaption = newLine.kind === LineKind.TableCaption;
+  const content = isCaption ? mergedCaption(changedLine, table) : mergedRow(changedLine, table);
 
-  return content === null ? null : tableLine(newLine, serialized(content), table);
+  if (content === null) {
+    return null;
+  }
+
+  return tableLine(newLine, serialized(content), table);
 }
 
 /** The line in the merged table: its position is that of the new table. */
@@ -226,6 +240,7 @@ function tableLine(line: ViewLine, html: string, { pair }: MergedTable): ViewLin
   return { ...line, html, table: pair.newTable };
 }
 
+/** A changed caption merged like a line of text; `null` when it does not merge. */
 function mergedCaption({ pair }: ChangedTableLine, table: MergedTable): DocumentFragment | null {
   const html = mergeLines(pair);
 
@@ -321,22 +336,16 @@ function targetCell(
   }
 
   const newColumns = columnsOf(oldCell).flatMap((column) => columns.oldToNew.get(column) ?? []);
-  const candidates = newLine.cells.flatMap((cell, position) =>
-    newColumns.some((column) => takesColumn(cell, column)) ? [position] : [],
-  );
+  const candidates = newLine.cells.flatMap((cell, position) => {
+    const takesNewColumn = newColumns.some((column) => takesColumn(cell, column));
+
+    return takesNewColumn ? [position] : [];
+  });
   const startedBefore = candidates.filter(
     (position) => newLine.cells[position].start <= part.newPosition,
   );
 
   return startedBefore.at(-1) ?? candidates.at(0) ?? null;
-}
-
-function columnsOf({ column, columnSpan }: TableCell): number[] {
-  return Array.from({ length: columnSpan }, (_, offset) => column + offset);
-}
-
-function takesColumn({ column, columnSpan }: TableCell, wanted: number): boolean {
-  return wanted >= column && wanted < column + columnSpan;
 }
 
 /**
@@ -409,6 +418,7 @@ function oldCellsToKeep(
   return keptCells;
 }
 
+/** True when the two placed cells share a column. */
 function overlap(first: PlacedCell, second: PlacedCell): boolean {
   return first.start < second.start + second.span && second.start < first.start + first.span;
 }

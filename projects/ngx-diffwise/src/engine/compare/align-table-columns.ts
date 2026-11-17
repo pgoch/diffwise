@@ -139,10 +139,11 @@ function columnScores(
 function columnTexts(row: Line, options: DiffOptions): ColumnText[] {
   return row.cells
     .filter(({ start, end, columnSpan }) => columnSpan === 1 && end > start)
-    .map(({ start, end, column }) => ({
-      column,
-      text: comparisonText(row.text.slice(start, end), options),
-    }));
+    .map(({ start, end, column }) => {
+      const cellText = row.text.slice(start, end);
+
+      return { column, text: comparisonText(cellText, options) };
+    });
 }
 
 /**
@@ -189,10 +190,12 @@ function columnCount(cells: readonly TableCell[]): number {
   return Math.max(0, ...cells.map(({ column, columnSpan }) => column + columnSpan));
 }
 
+/** Key of the pair of tables that a changed pair of table lines belongs to. */
 function tablePairKey(oldLine: Line, newLine: Line): string {
   return JSON.stringify([oldLine.table, newLine.table]);
 }
 
+/** True when the line is a row of a table. */
 function isTableRow(line: Line): line is TableRowLine {
   return line.kind === LineKind.TableRow && line.table !== null;
 }

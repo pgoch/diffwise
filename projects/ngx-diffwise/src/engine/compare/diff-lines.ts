@@ -139,6 +139,7 @@ function comparisonFormat({ styles, values, link }: TextFormat, options: DiffOpt
   return JSON.stringify([formatting, comparedLink]);
 }
 
+/** Numbers of added, removed and changed lines among the changes. */
 function countChanges(changes: readonly LineChange[]): DiffStats {
   return {
     addedLines: countKind(changes, LineChangeKind.Added),
@@ -147,6 +148,7 @@ function countChanges(changes: readonly LineChange[]): DiffStats {
   };
 }
 
+/** Number of changes of the kind. */
 function countKind(changes: readonly LineChange[], kind: LineChangeKind): number {
   return changes.filter((change) => change.kind === kind).length;
 }

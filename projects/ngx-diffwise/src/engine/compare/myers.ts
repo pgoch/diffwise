@@ -99,7 +99,8 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
   const size = { oldLength, newLength };
   const delta = oldLength - newLength;
   const deltaIsOdd = delta % 2 !== 0;
-  const maxEdits = Math.ceil((oldLength + newLength) / 2);
+  const totalLength = oldLength + newLength;
+  const maxEdits = Math.ceil(totalLength / 2);
   const forward = new SearchFront(
     maxEdits,
     size,
@@ -122,11 +123,12 @@ function findSplitPoint<T>(oldItems: readonly T[], newItems: readonly T[], box: 
     }
 
     for (const diagonal of backward.diagonals(editCount)) {
+      const forwardDiagonal = delta - diagonal;
       const backwardX = backward.extend(diagonal, editCount);
-      const forwardX = forward.furthestX(delta - diagonal);
+      const forwardX = forward.furthestX(forwardDiagonal);
 
       if (!deltaIsOdd && meet(forwardX, backwardX, size)) {
-        return { x: forwardX, y: forwardX - (delta - diagonal) };
+        return { x: forwardX, y: forwardX - forwardDiagonal };
       }
     }
   }
@@ -208,6 +210,7 @@ class SearchFront {
   }
 }
 
+/** Number of equal items at the start of the box in both versions. */
 function commonPrefixLength<T>(oldItems: readonly T[], newItems: readonly T[], box: Box): number {
   const maxLength = Math.min(box.oldEnd - box.oldStart, box.newEnd - box.newStart);
   const itemsEqualAt = (offset: number) =>
@@ -240,18 +243,21 @@ function commonSuffixLength<T>(
   return length;
 }
 
+/** Adds equal pairs of items to the edits. */
 function addEquals(oldStart: number, newStart: number, count: number, edits: Edit[]): void {
   for (let offset = 0; offset < count; offset++) {
     edits.push({ kind: EditKind.Equal, oldIndex: oldStart + offset, newIndex: newStart + offset });
   }
 }
 
+/** Adds deleted items of the old version to the edits. */
 function addDeletes(oldStart: number, oldEnd: number, edits: Edit[]): void {
   for (let oldIndex = oldStart; oldIndex < oldEnd; oldIndex++) {
     edits.push({ kind: EditKind.Delete, oldIndex });
   }
 }
 
+/** Adds inserted items of the new version to the edits. */
 function addInserts(newStart: number, newEnd: number, edits: Edit[]): void {
   for (let newIndex = newStart; newIndex < newEnd; newIndex++) {
     edits.push({ kind: EditKind.Insert, newIndex });

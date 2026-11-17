@@ -56,6 +56,7 @@ export function listMarkerText({ style, number }: ListMarker): string | null {
   return counter === null ? null : counter + COUNTER_SUFFIX;
 }
 
+/** Text of a number in the style of a list; `null` for a style Diffwise does not draw. */
 function counterText(style: string, number: number): string | null {
   switch (style) {
     case ListStyle.Decimal:
@@ -90,9 +91,13 @@ function alphabeticText(number: number, letters: string): string {
   }
 
   let text = NO_TEXT;
+  let rest = number;
 
-  for (let rest = number; rest > 0; rest = Math.floor((rest - 1) / letters.length)) {
-    text = letters[(rest - 1) % letters.length] + text;
+  while (rest > 0) {
+    const zeroBasedRest = rest - 1;
+
+    text = letters[zeroBasedRest % letters.length] + text;
+    rest = Math.floor(zeroBasedRest / letters.length);
   }
 
   return text;

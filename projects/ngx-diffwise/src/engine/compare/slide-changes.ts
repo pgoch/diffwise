@@ -54,6 +54,7 @@ function slideGroups(version: VersionChanges, other: VersionChanges): void {
   } while (version.toNextGroup(group) && other.toNextGroup(otherGroup));
 }
 
+/** Slides one group of changed lines of a version, and the group of the other version along with it. */
 function slideGroup(
   version: VersionChanges,
   group: ChangeGroup,
@@ -90,6 +91,7 @@ function slideGroup(
   }
 }
 
+/** True when the group holds no line. */
 function isEmpty(group: ChangeGroup): boolean {
   return group.end === group.start;
 }
@@ -128,10 +130,12 @@ class VersionChanges {
     this.changed = new Array<boolean>(keys.length).fill(false);
   }
 
+  /** Number of lines of the version. */
   get length(): number {
     return this.keys.length;
   }
 
+  /** Marks the line at the position as changed. */
   markChanged(position: number): void {
     this.changed[position] = true;
   }
@@ -216,12 +220,14 @@ class VersionChanges {
     return true;
   }
 
+  /** Extends the group up over the changed lines right above it. */
   private extendUp(group: ChangeGroup): void {
     while (group.start > 0 && this.changed[group.start - 1]) {
       group.start--;
     }
   }
 
+  /** Extends the group down over the changed lines right below it. */
   private extendDown(group: ChangeGroup): void {
     while (group.end < this.length && this.changed[group.end]) {
       group.end++;

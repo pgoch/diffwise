@@ -1,5 +1,4 @@
 import {
-  TABLE_CELL_TAGS,
   TABLE_FOOTER_TAG,
   TABLE_HEADER_TAG,
   TABLE_ROW_GROUP_TAGS,
@@ -7,6 +6,7 @@ import {
 } from './html-tags';
 import type { TableCell } from '../model';
 import type { TextPiece } from './reader-text';
+import { isCell } from './table-elements';
 
 /** A cell of a table and the place it takes in the table's grid. */
 export interface GridCell {
@@ -131,14 +131,12 @@ function takePlacesBelow(takenPlaces: readonly TakenPlaces[], rowIndex: number, 
   }
 }
 
+/** The cells in the order of their columns. */
 function sortedByColumn(cells: Iterable<GridCell>): GridCell[] {
   return [...cells].sort((first, second) => first.column - second.column);
 }
 
+/** True when the element is a table row. */
 function isRow(element: Element): boolean {
   return element.localName === TABLE_ROW_TAG;
-}
-
-function isCell(element: Element): element is HTMLTableCellElement {
-  return TABLE_CELL_TAGS.has(element.localName);
 }

@@ -149,8 +149,10 @@ export function drawRemovedListMarker(
 ): void {
   const newMarker = startedItemIn(content)?.firstElementChild ?? null;
   const showsNewMarker = newMarker?.hasAttribute(LIST_MARKER_ATTRIBUTE) ?? false;
+  const drawsOldMarker =
+    newMarker !== null && showsNewMarker && oldMarker !== null && listMarkerChanged;
 
-  if (newMarker === null || !showsNewMarker || oldMarker === null || !listMarkerChanged) {
+  if (!drawsOldMarker) {
     return;
   }
 
@@ -169,8 +171,10 @@ export function drawRemovedCheckbox(
 ): void {
   const newFrame = startedItemIn(content)?.querySelector(CHECKBOX_FRAME_SELECTOR) ?? null;
   const newCheckbox = newFrame?.firstElementChild ?? null;
+  const drawsOldCheckbox =
+    newFrame !== null && newCheckbox !== null && oldState !== null && checkboxChanged;
 
-  if (newFrame === null || newCheckbox === null || oldState === null || !checkboxChanged) {
+  if (!drawsOldCheckbox) {
     return;
   }
 
@@ -334,6 +338,7 @@ function rangeSegments(
   return withEachImageOnce(segments);
 }
 
+/** Parts of the text nodes that a marked range covers. */
 function segmentsOfRange(pieces: readonly TextPiece[], range: MarkedRange): NodeSegment[] {
   const segments: NodeSegment[] = [];
   const detailIndices = range.detailIndices ?? NO_DETAILS;
@@ -405,7 +410,10 @@ function withEachImageOnce(segments: readonly NodeSegment[]): NodeSegment[] {
 /** The first segment with the change details of both, in ascending order. */
 function withDetailsOfBoth(first: NodeSegment, second: NodeSegment): NodeSegment {
   const detailIndices = [...first.detailIndices, ...second.detailIndices];
-  return { ...first, detailIndices: detailIndices.sort((one, other) => one - other) };
+
+  detailIndices.sort((one, other) => one - other);
+
+  return { ...first, detailIndices };
 }
 
 /**

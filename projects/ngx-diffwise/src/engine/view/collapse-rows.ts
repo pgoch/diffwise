@@ -106,6 +106,7 @@ function distancesToChanges(rows: readonly CollapsibleRow[]): number[] {
   return distances;
 }
 
+/** True when the row is not unchanged. */
 function isChange(row: CollapsibleRow): boolean {
   return row.kind !== LineChangeKind.Unchanged;
 }

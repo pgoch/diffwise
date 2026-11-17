@@ -140,10 +140,12 @@ function tableOfPieces(pieces: readonly string[]): string {
   );
 }
 
+/** The start tag of an element. */
 function startTag(tag: string): string {
   return `<${tag}>`;
 }
 
+/** The end tag of an element. */
 function endTag(tag: string): string {
   return `</${tag}>`;
 }
@@ -155,7 +157,8 @@ function endTag(tag: string): string {
 function cellsOfPieces(tree: Node, pieceCount: number): Element[] | null {
   const table = onlyChild(tree, PIECES_TABLE_TAG);
   const body = table === null ? null : onlyChild(table, PIECES_BODY_TAG);
-  const rows = pieceCount === 0 ? [] : Array.from(body?.childNodes ?? []);
+  const childNodes = body?.childNodes ?? [];
+  const rows = pieceCount === 0 ? [] : Array.from(childNodes);
 
   if (rows.length !== pieceCount) {
     return null;
@@ -216,6 +219,7 @@ function keepSafeStyles(element: Element): void {
   }
 }
 
+/** True when the style property only changes the look and its value loads nothing. */
 function isSafeStyle(property: string, value: string): boolean {
   return SAFE_STYLE_PROPERTY.test(property) && !UNSAFE_STYLE_VALUE.test(value);
 }

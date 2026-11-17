@@ -1,5 +1,6 @@
 import { TABLE_ROW_TAG } from '../html/html-tags';
 import { readerText } from '../html/reader-text';
+import { isCell } from '../html/table-elements';
 import { DIFFWISE_DATA_ATTRIBUTE_START, TABLE_COPY_ATTRIBUTE, type ViewLine } from '../model';
 
 const TEMPLATE_TAG = 'template';
@@ -126,6 +127,7 @@ function sizerRow(row: Element): Element {
   return copy;
 }
 
+/** Removes the attributes that only the original line may have, such as ids. */
 function removeOriginalOnlyAttributes(element: Element): void {
   for (const name of element.getAttributeNames()) {
     const isOriginalOnly =
@@ -178,14 +180,12 @@ function keepLonger(longest: Map<string, MeasuredRow>, place: string, measured: 
   }
 }
 
+/** Length of the longest word of the text. */
 function longestWordLength(text: string): number {
   return Math.max(0, ...text.split(WHITESPACE).map((word) => word.length));
 }
 
+/** True when the line is there and belongs to a table. */
 function isTableLine(line: ViewLine | null): line is TableLine {
   return line !== null && line.table !== null;
-}
-
-function isCell(element: Element): element is HTMLTableCellElement {
-  return element instanceof HTMLTableCellElement;
 }

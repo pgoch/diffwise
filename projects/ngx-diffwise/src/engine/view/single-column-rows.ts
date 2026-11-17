@@ -33,11 +33,8 @@ export function singleColumnRows(
   settings: SingleColumnSettings,
 ): SingleColumnRow[] {
   const tables = new SingleColumnTables(rows);
-  const placedRows = rows.flatMap((row, sourceRow) =>
-    settings.showsMergedLines
-      ? rowsWithMergedLine(row, sourceRow, tables)
-      : rowsOfLines(row, sourceRow, tables),
-  );
+  const rowsOfRow = settings.showsMergedLines ? rowsWithMergedLine : rowsOfLines;
+  const placedRows = rows.flatMap((row, sourceRow) => rowsOfRow(row, sourceRow, tables));
 
   return withTablePlaces(placedRows);
 }
@@ -176,6 +173,7 @@ function rowsOfLines(row: ViewRow, sourceRow: number, tables: SingleColumnTables
   return placedRows;
 }
 
+/** The number of the line; `null` without a line. */
 function numberOf(line: ViewLine | null): number | null {
   return line?.number ?? null;
 }

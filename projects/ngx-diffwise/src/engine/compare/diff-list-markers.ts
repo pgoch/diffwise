@@ -13,6 +13,7 @@ export function listItemsDiffer(oldLine: Line, newLine: Line, options: DiffOptio
 export function listMarkerChanged(oldLine: Line, newLine: Line, options: DiffOptions): boolean {
   const lookChanged =
     !options.ignoreFormatting && markerLooksDiffer(oldLine.marker, newLine.marker);
+
   return lookChanged || itemNumberChanged(oldLine, newLine);
 }
 

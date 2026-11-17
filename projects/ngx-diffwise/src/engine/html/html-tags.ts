@@ -7,7 +7,7 @@ export const HEADING_TAGS: ReadonlySet<string> = new Set(['h1', 'h2', 'h3', 'h4'
 export const PARAGRAPH_TAG = 'p';
 
 /** Blocks whose inner blocks become separate lines, such as a quote with paragraphs. */
-export const CONTAINER_TAGS: ReadonlySet<string> = new Set([
+const CONTAINER_TAGS: ReadonlySet<string> = new Set([
   'article',
   'aside',
   'blockquote',
@@ -40,7 +40,7 @@ export const MARKER_LIST_TAGS: ReadonlySet<string> = new Set([
 export const LIST_ITEM_TAG = 'li';
 
 /** Lists whose items become separate lines: lists with markers, and definition lists. */
-export const LIST_TAGS: ReadonlySet<string> = new Set([...MARKER_LIST_TAGS, 'dl']);
+const LIST_TAGS: ReadonlySet<string> = new Set([...MARKER_LIST_TAGS, 'dl']);
 
 /** Items of lists: `li`, and the terms and descriptions of a definition list. */
 export const LIST_ITEM_TAGS: ReadonlySet<string> = new Set([LIST_ITEM_TAG, 'dd', 'dt']);

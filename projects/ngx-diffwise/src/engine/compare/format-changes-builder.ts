@@ -56,6 +56,7 @@ export class FormatChangesBuilder {
     };
   }
 
+  /** The ranges of both sides and their details, after closing the open run. */
   build(): DescribedChanges {
     this.closeRun();
     return { oldRanges: this.oldRanges, newRanges: this.newRanges, details: this.details };

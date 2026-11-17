@@ -71,10 +71,12 @@ class ReaderTextBuilder {
     }
   }
 
+  /** The text of the reader and its pieces in the nodes. */
   build(): ReaderTextMap {
     return { text: this.builtText, pieces: this.builtPieces };
   }
 
+  /** Adds the text inside an element, with breaks between words where the element makes them. */
   private addElement(element: Element, keepWhitespace: boolean): void {
     const separatesWords = WORD_BREAK_TAGS.has(element.localName);
     const keepInnerWhitespace = keepWhitespace || PRESERVE_WHITESPACE_TAGS.has(element.localName);
@@ -96,6 +98,7 @@ class ReaderTextBuilder {
     }
   }
 
+  /** Adds the text of a text node, with whitespace as the reader sees it. */
   private addText(node: Text, keepWhitespace: boolean): void {
     if (keepWhitespace) {
       this.addWord(node.data.replaceAll(NO_BREAK_SPACE, SPACE), { node, offset: 0 });
@@ -125,6 +128,7 @@ class ReaderTextBuilder {
     this.spaceSource = source;
   }
 
+  /** Adds text that starts at the place in its node. */
   private addWord(word: string, source: NodePosition): void {
     if (word.length === 0) {
       return;

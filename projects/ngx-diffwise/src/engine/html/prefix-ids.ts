@@ -59,6 +59,7 @@ export function prefixIds(root: ParentNode, prefix: string): void {
   }
 }
 
+/** The value of an attribute with the prefix before each id it holds or links to. */
 function prefixedValue(element: Element, { name, value }: Attr, prefix: string): string {
   if (holdsIds(element, name)) {
     return prefixIdList(value, prefix);
@@ -84,6 +85,7 @@ function holdsIds(element: Element, attributeName: string): boolean {
   );
 }
 
+/** The start of a `url()` that links to a prefixed id in the page. */
 function urlFragmentStart(quote: string, prefix: string): string {
   return URL_FUNCTION_START + quote + FRAGMENT_START + prefix;
 }

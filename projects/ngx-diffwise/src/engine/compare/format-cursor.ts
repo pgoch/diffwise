@@ -19,6 +19,7 @@ export class FormatCursor {
     return holdsPosition ? range.format : PLAIN_FORMAT;
   }
 
+  /** True when the current range ends before the position. */
   private currentRangeEndsBefore(position: number): boolean {
     const range = this.formats.at(this.index);
     return range !== undefined && range.end <= position;

@@ -5,6 +5,7 @@ import { markedTextHtml, mergedTextHtml, textHtml } from './text-line-html';
 import { textLines } from './text-lines';
 
 const TEMPLATE_TAG = 'template';
+const ANY_ELEMENT = '*';
 const REMOVED_START = '<del class="diffwise-diff__highlight diffwise-diff__highlight--removed"';
 const ADDED_START = '<ins class="diffwise-diff__highlight diffwise-diff__highlight--added">';
 const REPLACED_ATTRIBUTE = ' data-diffwise-replaced=""';
@@ -55,7 +56,7 @@ function parsed(html: string) {
   template.innerHTML = html;
 
   const elements = Array.from(
-    template.content.querySelectorAll('*'),
+    template.content.querySelectorAll(ANY_ELEMENT),
     (element) => element.localName,
   );
 
