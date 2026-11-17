@@ -377,6 +377,7 @@ describe('StepOptions', () => {
 
     expect(element.querySelectorAll(HOW_TO_BUTTON_SELECTOR)).toHaveLength(3);
     expect(button?.getAttribute('aria-label')).toBe('How to check: Key of the choices');
+    expect(button?.title).toBe('Click to see more info');
     expect(button?.getAttribute(ARIA_EXPANDED_ATTRIBUTE)).toBe('false');
     expect(howTo?.hidden).toBe(true);
 
