@@ -8,12 +8,14 @@ import { DOCS_URL, GITHUB_URL } from './site';
 const DEMO_HASH = '#demo';
 const CONFIGURATOR_HASH = '#configurator';
 const UNKNOWN_HASH = '#unknown';
+const HOME_PAGE_SELECTOR = 'demo-home-page';
 const DEMO_PAGE_SELECTOR = 'demo-demo-page';
 const CONFIGURATOR_PAGE_SELECTOR = 'demo-configurator-page';
 const BRAND_SELECTOR = '.site-brand';
 const LINK_SELECTOR = '.site-nav a';
 const CURRENT_LINK_SELECTOR = '.site-nav [aria-current="page"]';
 const HREF_ATTRIBUTE = 'href';
+const HOME_TITLE = 'Diffwise';
 const DEMO_TITLE = 'Diffwise demo';
 const CONFIGURATOR_TITLE = 'Diffwise configurator';
 const HASH_CHANGE_EVENT = 'hashchange';
@@ -65,9 +67,21 @@ describe('App', () => {
     expect(TestBed.inject(Title).getTitle()).toBe(DEMO_TITLE);
   });
 
-  it('shows the first page without an address and for an unknown one', () => {
-    expect(render('').querySelector(DEMO_PAGE_SELECTOR)).not.toBeNull();
-    expect(render(UNKNOWN_HASH).querySelector(DEMO_PAGE_SELECTOR)).not.toBeNull();
+  it('shows the home page without an address and for an unknown one', () => {
+    expect(render('').querySelector(HOME_PAGE_SELECTOR)).not.toBeNull();
+    expect(render(UNKNOWN_HASH).querySelector(HOME_PAGE_SELECTOR)).not.toBeNull();
+    expect(TestBed.inject(Title).getTitle()).toBe(HOME_TITLE);
+  });
+
+  it('goes back home without an address, with no link marked', () => {
+    vi.spyOn(window, 'scrollTo').mockImplementation(() => undefined);
+
+    const element = render(DEMO_HASH);
+
+    follow('');
+
+    expect(element.querySelector(HOME_PAGE_SELECTOR)).not.toBeNull();
+    expect(element.querySelector(CURRENT_LINK_SELECTOR)).toBeNull();
   });
 
   it('shows the page of a new address from the top, with its title and its link marked', () => {

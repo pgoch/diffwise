@@ -1,0 +1,59 @@
+<section class="hero">
+  <div class="hero-text">
+    <p class="kicker">Angular library</p>
+    <h1 class="title">Side-by-side diffs of rendered HTML and plain text for Angular</h1>
+    <p class="lead">
+      Show what changed in a document the way readers see it: words, formatting, links, images,
+      lists and tables, side by side or in a single column.
+    </p>
+    <div class="actions">
+      <a class="button button--primary" href="#demo">Try the demo</a>
+      <a class="button" href="#configurator">Build your configuration</a>
+      <a class="button" [href]="links.github">GitHub</a>
+    </div>
+    <div class="install">
+      <span class="install-prompt" aria-hidden="true">$</span>
+      <code #command>{{ installCommand }}</code>
+      <button type="button" class="install-copy" (click)="copyInstallCommand()">
+        {{ isCopied() ? 'Copied' : 'Copy' }}
+      </button>
+    </div>
+    <p class="meta">Version {{ version }} · Angular 20 or newer · MIT license</p>
+  </div>
+
+  <div class="shot">
+    <div class="shot-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+    <diffwise-html [oldHtml]="policy.old" [newHtml]="policy.new" [config]="policy.options" />
+  </div>
+</section>
+
+<section class="section" aria-labelledby="home-entries">
+  <h2 id="home-entries" class="section-title">Start here</h2>
+  <div class="entries">
+    @for (entry of entries; track entry.title) {
+      <a class="entry" [href]="entry.href">
+        <span class="entry-title">{{ entry.title }}</span>
+        <span class="entry-text">{{ entry.text }}</span>
+        <span class="entry-more">{{ entry.more }} →</span>
+      </a>
+    }
+  </div>
+</section>
+
+<section class="section" aria-labelledby="home-features">
+  <h2 id="home-features" class="section-title">What it does</h2>
+  <ul class="features">
+    @for (feature of features; track feature.title) {
+      <li class="feature">
+        <span class="feature-title">{{ feature.title }}</span>
+        <span class="feature-text">{{ feature.text }}</span>
+      </li>
+    }
+  </ul>
+</section>
+
+<footer class="footer">
+  <span class="footer-owner">© 2026 Patryk Goch · MIT license</span>
+  <a [href]="links.github">GitHub</a>
+  <a [href]="links.issues">Report an issue</a>
+</footer>

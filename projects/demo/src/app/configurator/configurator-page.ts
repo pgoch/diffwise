@@ -8,33 +8,20 @@ import {
   inject,
   viewChild,
 } from '@angular/core';
-import {
-  DiffwiseConfig,
-  type DiffwiseConfigOptions,
-  DiffwiseHtml,
-  DiffwiseText,
-} from 'ngx-diffwise';
+import { DiffwiseHtml, DiffwiseText } from 'ngx-diffwise';
 
 import type { Choice } from '../choice';
+import { ownOptions } from '../diff-options';
 import { DiffKind, loadedSample } from '../samples';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { DiffKindsStep } from './diff-kinds-step';
 import { type ConfiguratorStep, StepId } from './steps';
 
-/**
- * Every option with its default. The preview gets them all, so the options that the demo sets in
- * the global configuration do not change it.
- */
-const DEFAULT_OPTIONS: DiffwiseConfigOptions = { ...new DiffwiseConfig() };
-
 /** Keeps the choices made in the view settings of the preview apart from those of the demo. */
 const PREVIEW_SETTINGS_KEY = 'diffwise-configurator-preview';
 
-/** The options of the preview. */
-const PREVIEW_CONFIG: DiffwiseConfigOptions = {
-  ...DEFAULT_OPTIONS,
-  userSettingsKey: PREVIEW_SETTINGS_KEY,
-};
+/** The options of the preview: every option, so those the demo sets do not change it. */
+const PREVIEW_CONFIG = ownOptions(PREVIEW_SETTINGS_KEY);
 
 /** Name of the heading of the step in the template. */
 const STEP_HEADING_REFERENCE = 'stepHeading';

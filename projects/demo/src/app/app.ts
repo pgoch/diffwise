@@ -4,10 +4,12 @@ import { Title } from '@angular/platform-browser';
 
 import { ConfiguratorPage } from './configurator/configurator-page';
 import { DemoPage } from './demo/demo-page';
+import { HomePage } from './home/home-page';
 import { DOCS_URL, GITHUB_URL, VERSION } from './site';
 
 /** Pages of the site. */
 const Page = {
+  Home: 'home',
   Demo: 'demo',
   Configurator: 'configurator',
 } as const;
@@ -23,6 +25,7 @@ interface SitePage {
 
 /** The pages of the site; the first one shows without an address and for an unknown one. */
 const SITE_PAGES: readonly SitePage[] = [
+  { page: Page.Home, hash: '', title: 'Diffwise' },
   { page: Page.Demo, hash: '#demo', title: 'Diffwise demo' },
   { page: Page.Configurator, hash: '#configurator', title: 'Diffwise configurator' },
 ];
@@ -32,7 +35,7 @@ const HASH_CHANGE_EVENT = 'hashchange';
 /** The site of Diffwise: a bar on top and one page under it, chosen by the address after `#`. */
 @Component({
   selector: 'demo-root',
-  imports: [ConfiguratorPage, DemoPage],
+  imports: [ConfiguratorPage, DemoPage, HomePage],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
