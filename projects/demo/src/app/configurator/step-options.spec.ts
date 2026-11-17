@@ -26,7 +26,7 @@ const VIEW_BUTTON_SELECTOR = '.preview .diffwise-diff__view-button';
 const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
 const INPUT_EVENT = 'input';
 const CHANGE_EVENT = 'change';
-const COLORS_STEP = 'Colors';
+const GENERAL_STEP = 'General';
 const CHANGED_WORDS = '(changed)';
 
 /** Options the preview does not take from the choices: it keeps its own key and never remembers. */
@@ -169,7 +169,7 @@ describe('StepOptions', () => {
       if (condition !== null) {
         TestBed.inject(ConfiguratorState).setOption(
           condition.option,
-          condition.value as DiffwiseConfigOptions[typeof condition.option],
+          condition.values[0] as DiffwiseConfigOptions[typeof condition.option],
         );
         await settle(fixture);
       }
@@ -207,7 +207,7 @@ describe('StepOptions', () => {
   });
 
   it('shows the preview in the chosen language', async () => {
-    const fixture = await render(StepId.Language);
+    const fixture = await render(StepId.General);
     const select = optionNamed(fixture, 'Language').querySelector<HTMLSelectElement>(
       SELECT_SELECTOR,
     );
@@ -228,7 +228,7 @@ describe('StepOptions', () => {
   });
 
   it('shows the dark theme in the preview at once', async () => {
-    const fixture = await render(StepId.Colors);
+    const fixture = await render(StepId.General);
 
     await choose(fixture, 'Theme', 'Dark');
 
@@ -289,7 +289,7 @@ describe('StepOptions', () => {
   });
 
   it('marks a changed option and its step, and takes back an option set to its default', async () => {
-    const fixture = await render(StepId.Colors);
+    const fixture = await render(StepId.General);
     const element = fixture.nativeElement as HTMLElement;
 
     await choose(fixture, 'Theme', 'Dark');
@@ -297,7 +297,7 @@ describe('StepOptions', () => {
     expect(optionNamed(fixture, 'Theme').querySelector(OPTION_DOT_SELECTOR)).not.toBeNull();
     expect(element.querySelectorAll(STEP_DOT_SELECTOR)).toHaveLength(1);
     expect(element.querySelector(STEP_DOT_SELECTOR)?.closest('button')?.textContent).toContain(
-      COLORS_STEP,
+      GENERAL_STEP,
     );
 
     await choose(fixture, 'Theme', 'Auto');
@@ -305,6 +305,40 @@ describe('StepOptions', () => {
     expect(optionNamed(fixture, 'Theme').querySelector(OPTION_DOT_SELECTOR)).toBeNull();
     expect(element.querySelectorAll(STEP_DOT_SELECTOR)).toHaveLength(0);
     expect(TestBed.inject(ConfiguratorState).options()).toEqual({});
+  });
+
+  it('gathers the diffs, the theme, the layout, the language, the toolbar and the headers first', async () => {
+    const fixture = await render(StepId.General);
+
+    expect(optionNames(fixture)).toEqual([
+      'Diffs in your app',
+      'Theme',
+      'Layout',
+      'Language',
+      'Toolbar',
+      'Headers',
+    ]);
+  });
+
+  it('disables the changes in a single column with the versions side by side', async () => {
+    const fixture = await render(StepId.General);
+    const singleColumn = () => optionNamed(fixture, 'Changes in a single column');
+
+    await choose(fixture, 'Layout', 'Side by side');
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Layout));
+    await settle(fixture);
+
+    expect(singleColumn().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe(
+      'Only with the layout Auto or Single column in the step General.',
+    );
+
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.General));
+    await settle(fixture);
+    await choose(fixture, 'Layout', 'Single column');
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Layout));
+    await settle(fixture);
+
+    expect(singleColumn().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
   });
 
   it('disables an option that works only with another one, with a note why', async () => {
@@ -323,16 +357,18 @@ describe('StepOptions', () => {
   });
 
   it('disables the header options without headers', async () => {
-    const fixture = await render(StepId.Layout);
+    const fixture = await render(StepId.General);
     const alignment = () => optionNamed(fixture, 'Header alignment');
-
-    expect(alignment().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
 
     await choose(fixture, 'Headers', 'Hidden');
 
     expect(previewConfig(fixture).showVersionHeaders).toBe(false);
+
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Layout));
+    await settle(fixture);
+
     expect(alignment().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe(
-      'Only with the headers shown.',
+      'Only with the headers shown in the step General.',
     );
     expect(alignment().querySelector<HTMLButtonElement>(CHOICE_SELECTOR)?.disabled).toBe(true);
     expect(
@@ -351,16 +387,18 @@ describe('StepOptions', () => {
   });
 
   it('disables the options of the toolbar without the toolbar', async () => {
-    const fixture = await render(StepId.Toolbar);
+    const fixture = await render(StepId.General);
     const arrows = () => optionNamed(fixture, 'Arrows between changes');
-
-    expect(arrows().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
 
     await choose(fixture, 'Toolbar', 'Hidden');
 
     expect(previewConfig(fixture).showToolbar).toBe(false);
+
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Toolbar));
+    await settle(fixture);
+
     expect(arrows().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe(
-      'Only with the toolbar shown.',
+      'Only with the toolbar shown in the step General.',
     );
     expect(
       optionNamed(fixture, 'Numbers of changes').querySelector<HTMLButtonElement>(CHOICE_SELECTOR)
@@ -417,7 +455,7 @@ describe('StepOptions', () => {
   });
 
   it('starts the choices of the view settings of the preview over after each change', async () => {
-    const fixture = await render(StepId.Colors);
+    const fixture = await render(StepId.General);
     const firstKey = previewConfig(fixture).userSettingsKey;
 
     await choose(fixture, 'Theme', 'Light');

@@ -57,8 +57,9 @@
     <p class="step-description">{{ state.step().description }}</p>
 
     @switch (state.step().id) {
-      @case (stepIds.Diffs) {
+      @case (stepIds.General) {
         <demo-diff-kinds-step />
+        <demo-step-options [step]="state.step()" />
       }
       @case (stepIds.Result) {
         <demo-result-step (edit)="goTo($event)" (startOver)="startOver()" />
@@ -88,7 +89,7 @@
           }
         </span>
         <select
-          class="preview-language"
+          class="preview-select preview-language"
           aria-label="Language of the sample"
           (change)="chooseLanguage($event)"
         >
@@ -98,6 +99,34 @@
             </option>
           }
         </select>
+        <span [title]="hasAutoTheme() ? '' : previewLists.themeNote">
+          <select
+            class="preview-select preview-theme"
+            aria-label="Theme of the preview"
+            [disabled]="!hasAutoTheme()"
+            (change)="choosePreviewTheme($event)"
+          >
+            @for (choice of previewLists.themes; track choice.value) {
+              <option [value]="choice.value" [selected]="choice.value === previewColorMode()">
+                {{ choice.label }}
+              </option>
+            }
+          </select>
+        </span>
+        <span [title]="hasAutoLayout() ? '' : previewLists.layoutNote">
+          <select
+            class="preview-select preview-layout"
+            aria-label="Layout of the preview"
+            [disabled]="!hasAutoLayout()"
+            (change)="choosePreviewLayout($event)"
+          >
+            @for (choice of previewLists.layouts; track choice.value) {
+              <option [value]="choice.value" [selected]="choice.value === previewLayout()">
+                {{ choice.label }}
+              </option>
+            }
+          </select>
+        </span>
       </span>
       @if (usesBothDiffs()) {
         <span class="preview-switch" role="group" aria-label="Diff in the preview">

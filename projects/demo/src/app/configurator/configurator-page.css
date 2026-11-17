@@ -279,11 +279,12 @@
 
 .preview-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: 6px 10px;
 }
 
-.preview-language {
+.preview-select {
   padding: 1px 4px;
   border: 1px solid var(--site-border);
   border-radius: 6px;
@@ -291,6 +292,10 @@
   color: var(--site-text);
   font: inherit;
   font-size: 12.5px;
+}
+
+.preview-select:disabled {
+  opacity: 0.55;
 }
 
 .sample-hint {

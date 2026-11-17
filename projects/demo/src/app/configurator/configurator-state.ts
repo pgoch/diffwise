@@ -1,5 +1,10 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { type DiffwiseConfigOptions, DiffwiseLanguage } from 'ngx-diffwise';
+import {
+  DiffwiseColorMode,
+  type DiffwiseConfigOptions,
+  DiffwiseLanguage,
+  DiffwiseLayout,
+} from 'ngx-diffwise';
 
 import { DEFAULT_OPTIONS } from '../diff-options';
 import {
@@ -54,6 +59,12 @@ export class ConfiguratorState {
 
   /** Language of the sample in the preview. */
   readonly sampleLanguage = signal<SampleLanguage>(DiffwiseLanguage.EN);
+
+  /** The theme of the preview while the theme of the configuration is Auto; not part of it. */
+  readonly previewColorMode = signal<DiffwiseColorMode>(DiffwiseColorMode.Auto);
+
+  /** The layout of the preview while the layout of the configuration is Auto; not part of it. */
+  readonly previewLayout = signal<DiffwiseLayout>(DiffwiseLayout.Auto);
 
   /** The diff in the preview of an app with both diffs. */
   readonly chosenPreviewKind = signal<DiffKind>(DiffKind.Html);
@@ -136,7 +147,7 @@ export class ConfiguratorState {
   });
 
   /** The chosen step. */
-  private readonly stepId = signal<StepId>(StepId.Diffs);
+  private readonly stepId = signal<StepId>(StepId.General);
 
   /** The options of the step for the diffs of the app. */
   optionsOf(step: ConfiguratorStep): readonly StepOption[] {
@@ -161,7 +172,7 @@ export class ConfiguratorState {
       return null;
     }
 
-    const works = this.valueOf(condition.option) === condition.value;
+    const works = condition.values.includes(this.valueOf(condition.option));
 
     return works ? null : condition.note;
   }
@@ -192,7 +203,7 @@ export class ConfiguratorState {
   startOver(): void {
     this.options.set({});
     this.optionsVersion.update((version) => version + 1);
-    this.stepId.set(StepId.Diffs);
+    this.stepId.set(StepId.General);
   }
 
   /** Shows the nearest working step before the one that shows, if there is one. */

@@ -25,7 +25,7 @@ import { DiffKind, LANGUAGE_CHOICES } from '../samples';
 
 /** Steps of the configurator, in the order of the sections of `docs/configuration.md`. */
 export const StepId = {
-  Diffs: 'diffs',
+  General: 'general',
   Colors: 'colors',
   Lines: 'lines',
   Layout: 'layout',
@@ -34,7 +34,7 @@ export const StepId = {
   Toolbar: 'toolbar',
   IdenticalVersions: 'identicalVersions',
   Comparison: 'comparison',
-  Language: 'language',
+  Texts: 'texts',
   ViewSettings: 'viewSettings',
   Result: 'result',
 } as const;
@@ -71,8 +71,8 @@ export type OptionKind = (typeof OptionKind)[keyof typeof OptionKind];
 /** When an option that depends on another one works, and the note that says so otherwise. */
 export interface OptionCondition {
   readonly option: OptionName;
-  /** The value of the other option with which this one works. */
-  readonly value: unknown;
+  /** The values of the other option with which this one works. */
+  readonly values: readonly unknown[];
   readonly note: string;
 }
 
@@ -154,15 +154,15 @@ const ALIGNMENTS: readonly Choice<DiffwiseAlignment>[] = [
 /** Options of the headers work only while the diff shows headers. */
 const WITH_HEADERS: OptionCondition = {
   option: 'showVersionHeaders',
-  value: true,
-  note: 'Only with the headers shown.',
+  values: [true],
+  note: 'Only with the headers shown in the step General.',
 };
 
 /** Options of the toolbar work only while the diff shows it. */
 const WITH_TOOLBAR: OptionCondition = {
   option: 'showToolbar',
-  value: true,
-  note: 'Only with the toolbar shown.',
+  values: [true],
+  note: 'Only with the toolbar shown in the step General.',
 };
 
 /** Limits of the font sizes, in rem. */
@@ -189,19 +189,61 @@ function option(
   return { ...base, ...parts } as StepOption;
 }
 
-const COLOR_OPTIONS: readonly StepOption[] = [
+const GENERAL_OPTIONS: readonly StepOption[] = [
   option({
     name: 'colorMode',
     label: 'Theme',
     description: 'Light or dark. Auto follows the system, or the dark mode of your app.',
     howTo:
-      'Choose Dark: the preview turns dark at once. Auto follows the theme of your system: switch the system between light and dark to see it change.',
+      'Choose Dark: the preview turns dark at once. Auto follows the theme of your system; to see both themes, choose one in the theme list next to Preview. While your app runs, it can switch the theme with switchToDarkMode(), switchToLightMode(), switchToAutoMode() or toggleDarkMode() of the Diffwise service.',
     choices: [
       { value: DiffwiseColorMode.Auto, label: 'Auto' },
       { value: DiffwiseColorMode.Light, label: 'Light' },
       { value: DiffwiseColorMode.Dark, label: 'Dark' },
     ],
   }),
+  option({
+    name: 'layout',
+    label: 'Layout',
+    description:
+      'The versions side by side, a single column, or Auto: one column in a narrow diff.',
+    howTo:
+      'Choose Side by side or Single column: the preview switches at once. Auto picks one by the width of the diff; to see both, choose one in the layout list next to Preview.',
+    choices: [
+      { value: DiffwiseLayout.Auto, label: 'Auto' },
+      { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
+      { value: DiffwiseLayout.Inline, label: 'Single column' },
+    ],
+  }),
+  option({
+    kind: OptionKind.List,
+    name: 'language',
+    label: 'Language',
+    description: 'The language of the interface; Auto takes it from LOCALE_ID of your app.',
+    howTo:
+      'Choose Polski: the bar above the preview, the headers and the view settings turn Polish at once. The list next to Preview changes the language of the sample, not of the interface.',
+    choices: LANGUAGES,
+  }),
+  option({
+    name: 'showToolbar',
+    label: 'Toolbar',
+    description:
+      'The bar above the diff with the arrows, the numbers of changes and the view settings.',
+    howTo:
+      'Choose Hidden: the bar above the preview disappears, and the steps Toolbar and View settings are disabled. When the versions are the same, the bar still says "No changes"; see the step Identical versions.',
+    choices: SHOWN_HIDDEN,
+  }),
+  option({
+    name: 'showVersionHeaders',
+    label: 'Headers',
+    description: 'The headers above the two versions.',
+    howTo:
+      'Choose Hidden: the headers above the versions disappear from the preview, and the options of the headers in the steps Layout and Fonts are disabled.',
+    choices: SHOWN_HIDDEN,
+  }),
+];
+
+const COLOR_OPTIONS: readonly StepOption[] = [
   option({
     kind: OptionKind.Text,
     name: 'darkModeSelector',
@@ -212,8 +254,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     field: { placeholder: '.dark' },
     enabledWhen: {
       option: 'colorMode',
-      value: DiffwiseColorMode.Auto,
-      note: 'Only with the theme Auto.',
+      values: [DiffwiseColorMode.Auto],
+      note: 'Only with the theme Auto in the step General.',
     },
   }),
   option({
@@ -265,7 +307,7 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     description:
       'Colors of changes of your app; a color left out comes from the colors of changes above.',
     howTo:
-      'Tick a color and pick another one: the preview takes it at once. The colors of the dark theme show with the theme Dark above.',
+      'Tick a color and pick another one: the preview takes it at once. The colors of the dark theme show with Dark in the theme list next to Preview.',
   }),
 ];
 
@@ -316,7 +358,7 @@ const LINE_OPTIONS: readonly StepOption[] = [
     choices: ON_OFF,
     enabledWhen: {
       option: 'highlightChangedLines',
-      value: false,
+      values: [false],
       note: 'Only without the background of changed lines.',
     },
   }),
@@ -338,7 +380,7 @@ const LINE_OPTIONS: readonly StepOption[] = [
     field: { min: 1, max: 100, step: 1, unit: 'lines' },
     enabledWhen: {
       option: 'hideUnchangedLines',
-      value: true,
+      values: [true],
       note: 'Only when unchanged lines are hidden.',
     },
   }),
@@ -346,30 +388,17 @@ const LINE_OPTIONS: readonly StepOption[] = [
 
 const LAYOUT_OPTIONS: readonly StepOption[] = [
   option({
-    name: 'layout',
-    label: 'Layout',
-    description:
-      'The versions side by side, a single column, or Auto: one column in a narrow diff.',
-    howTo:
-      'Choose Side by side or Single column: the preview switches at once. In most laptop windows the preview is narrower than 768 pixels, so Auto shows a single column there.',
-    choices: [
-      { value: DiffwiseLayout.Auto, label: 'Auto' },
-      { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
-      { value: DiffwiseLayout.Inline, label: 'Single column' },
-    ],
-  }),
-  option({
     kind: OptionKind.Number,
     name: 'layoutBreakpoint',
     label: 'Width of a narrow diff',
     description: 'The width of the diff under which Auto shows a single column.',
     howTo:
-      'With the layout Auto, write a width above that of the preview, such as 2000: the preview shows a single column. Write 300, and it shows the versions side by side.',
+      'With Auto in the layout list next to Preview, write a width above that of the preview, such as 2000: the preview shows a single column. Write 300, and it shows the versions side by side.',
     field: { min: 1, step: 1, unit: 'px' },
     enabledWhen: {
       option: 'layout',
-      value: DiffwiseLayout.Auto,
-      note: 'Only with the layout Auto.',
+      values: [DiffwiseLayout.Auto],
+      note: 'Only with the layout Auto in the step General.',
     },
   }),
   option({
@@ -378,19 +407,24 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     description:
       'Removed text right before the added text, the same struck through, or the old line above the new one.',
     howTo:
-      'Choose the layout Single column above, then switch the styles and watch a changed line in the preview.',
+      'Choose Single column in the layout list next to Preview, then switch the styles and watch a changed line.',
     choices: [
       { value: DiffwiseInlineDiffStyle.Merged, label: 'Merged' },
       { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
       { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
     ],
+    enabledWhen: {
+      option: 'layout',
+      values: [DiffwiseLayout.Auto, DiffwiseLayout.Inline],
+      note: 'Only with the layout Auto or Single column in the step General.',
+    },
   }),
   option({
     name: 'dividerStyle',
     label: 'Between the versions',
     description: 'A gray column or a thin line.',
     howTo:
-      'Choose the layout Side by side above, then Line: the gray column between the versions becomes a thin line.',
+      'Choose Side by side in the layout list next to Preview, then Line: the gray column between the versions becomes a thin line.',
     choices: [
       { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
       { value: DiffwiseDividerStyle.Line, label: 'Line' },
@@ -401,20 +435,12 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     label: 'Opposite added and removed lines',
     description: 'What fills the place opposite an added or a removed line.',
     howTo:
-      'Choose the layout Side by side above, then look opposite an added or a removed paragraph in the preview.',
+      'Choose Side by side in the layout list next to Preview, then look opposite an added or a removed paragraph.',
     choices: [
       { value: DiffwiseGapStyle.Stripes, label: 'Stripes' },
       { value: DiffwiseGapStyle.Gray, label: 'Gray' },
       { value: DiffwiseGapStyle.Empty, label: 'Empty' },
     ],
-  }),
-  option({
-    name: 'showVersionHeaders',
-    label: 'Headers',
-    description: 'The headers above the two versions.',
-    howTo:
-      'Choose Hidden: the headers above the versions disappear from the preview, and the options of the headers are disabled.',
-    choices: SHOWN_HIDDEN,
   }),
   option({
     kind: OptionKind.VersionHeaders,
@@ -554,15 +580,6 @@ const FONT_OPTIONS: readonly StepOption[] = [
 
 const TOOLBAR_OPTIONS: readonly StepOption[] = [
   option({
-    name: 'showToolbar',
-    label: 'Toolbar',
-    description:
-      'The bar above the diff with the arrows, the numbers of changes and the view settings.',
-    howTo:
-      'Choose Hidden: the bar above the preview disappears, and the step View settings is disabled. When the versions are the same, the bar still says "No changes"; see the next step.',
-    choices: SHOWN_HIDDEN,
-  }),
-  option({
     name: 'showNavigationToolbar',
     label: 'Arrows between changes',
     description: 'Arrows to the previous and the next change, with a counter, such as 2 / 3.',
@@ -646,16 +663,7 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
   }),
 ];
 
-const LANGUAGE_OPTIONS: readonly StepOption[] = [
-  option({
-    kind: OptionKind.List,
-    name: 'language',
-    label: 'Language',
-    description: 'The language of the interface; Auto takes it from LOCALE_ID of your app.',
-    howTo:
-      'Choose Polski: the bar above the preview, the headers and the view settings turn Polish at once.',
-    choices: LANGUAGES,
-  }),
+const TEXT_OPTIONS: readonly StepOption[] = [
   option({
     kind: OptionKind.Texts,
     name: 'customTexts',
@@ -698,17 +706,17 @@ const VIEW_SETTING_OPTIONS: readonly StepOption[] = [
 /** Every step, for an app with both diffs. */
 export const STEPS: readonly ConfiguratorStep[] = [
   {
-    id: StepId.Diffs,
-    label: 'Your diffs',
-    description: 'Which diffs your app shows.',
+    id: StepId.General,
+    label: 'General',
+    description: 'Your diffs and the main look: theme, layout, language, toolbar and headers.',
     diffKinds: ALL_DIFFS,
-    options: [],
+    options: GENERAL_OPTIONS,
     enabledWhen: null,
   },
   {
     id: StepId.Colors,
     label: 'Colors',
-    description: 'Theme, colors of changes and how they are marked.',
+    description: 'Colors of changes and how they are marked.',
     diffKinds: ALL_DIFFS,
     options: COLOR_OPTIONS,
     enabledWhen: null,
@@ -724,7 +732,8 @@ export const STEPS: readonly ConfiguratorStep[] = [
   {
     id: StepId.Layout,
     label: 'Layout',
-    description: 'Two columns or one, and what stands between and above the versions.',
+    description:
+      'The narrow diff, the single column, and what stands between and above the versions.',
     diffKinds: ALL_DIFFS,
     options: LAYOUT_OPTIONS,
     enabledWhen: null,
@@ -748,11 +757,10 @@ export const STEPS: readonly ConfiguratorStep[] = [
   {
     id: StepId.Toolbar,
     label: 'Toolbar',
-    description:
-      'The bar above the diff, its arrows that step through the changes, and numbers of changes.',
+    description: 'The arrows that step through the changes, and the numbers of changes.',
     diffKinds: ALL_DIFFS,
     options: TOOLBAR_OPTIONS,
-    enabledWhen: null,
+    enabledWhen: WITH_TOOLBAR,
   },
   {
     id: StepId.IdenticalVersions,
@@ -772,11 +780,11 @@ export const STEPS: readonly ConfiguratorStep[] = [
     enabledWhen: null,
   },
   {
-    id: StepId.Language,
-    label: 'Language and texts',
-    description: 'The language of the interface, and texts of your own.',
+    id: StepId.Texts,
+    label: 'Texts',
+    description: 'Texts of your own in place of those of the interface.',
     diffKinds: ALL_DIFFS,
-    options: LANGUAGE_OPTIONS,
+    options: TEXT_OPTIONS,
     enabledWhen: null,
   },
   {

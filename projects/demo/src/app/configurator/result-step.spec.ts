@@ -153,7 +153,7 @@ describe('ResultStep', () => {
     elementOf(fixture, EDIT_BUTTON_SELECTOR).click();
     await settle(fixture);
 
-    expect(textsOf(fixture, HEADING_SELECTOR)).toEqual(['2. Colors']);
+    expect(textsOf(fixture, HEADING_SELECTOR)).toEqual(['1. General']);
   });
 
   it('leaves out the options of a diff the app does not show', async () => {
@@ -179,6 +179,6 @@ describe('ResultStep', () => {
     await settle(fixture);
 
     expect(TestBed.inject(ConfiguratorState).options()).toEqual({});
-    expect(textsOf(fixture, HEADING_SELECTOR)).toEqual(['1. Your diffs']);
+    expect(textsOf(fixture, HEADING_SELECTOR)).toEqual(['1. General']);
   });
 });
