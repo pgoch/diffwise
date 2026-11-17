@@ -146,7 +146,7 @@ describe('appearanceStyles', () => {
 
   it('sets the sizes, the font and the colors of the app', () => {
     const config = new DiffwiseConfig({
-      versionHeaderFontSize: 0.9,
+      versionHeaderFontSize: 1.1,
       lineNumberFontSize: 1,
       tooltipFontSize: 0.7,
       fontFamily: 'Source Sans 3',
@@ -156,7 +156,7 @@ describe('appearanceStyles', () => {
     expect(appearanceStyles(config, colors, 3)).toEqual({
       '--diffwise-line-number-digits': '3',
       '--diffwise-line-number-font-size': '1rem',
-      '--diffwise-version-header-font-size': '0.9rem',
+      '--diffwise-version-header-font-size': '1.1rem',
       '--diffwise-tooltip-font-size': '0.7rem',
       [FONT_FAMILY_PROPERTY]: '"Source Sans 3", ' + BUILTIN_FONT_FAMILY,
       '--diffwise-removed-line': '#fbeefe',

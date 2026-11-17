@@ -3,11 +3,45 @@
   margin: 0 0 16px;
 }
 
+.option-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .option-name {
   display: flex;
   align-items: center;
   gap: 6px;
   font-weight: 600;
+}
+
+/* The button that shows how to check the option: an "i" in a circle. */
+.option-info {
+  display: inline-grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--site-border);
+  border-radius: 50%;
+  background: none;
+  color: var(--site-muted);
+  font:
+    italic 700 10px/1 Georgia,
+    serif;
+  cursor: pointer;
+}
+
+.option-info:hover {
+  border-color: var(--site-muted);
+}
+
+.option-info[aria-expanded='true'] {
+  border-color: var(--site-text);
+  background: var(--site-text);
+  color: var(--site-on-accent);
 }
 
 /* A changed option: a dot in the color of the current step. */
@@ -32,6 +66,16 @@
   margin: 2px 0 6px;
   color: var(--site-muted);
   font-size: 13px;
+}
+
+/* How to check the option, under its sentence. */
+.option-how-to {
+  margin: 0 0 8px;
+  padding: 6px 8px;
+  border-inline-start: 3px solid var(--site-accent);
+  border-radius: 0 6px 6px 0;
+  background: var(--site-subtle);
+  font-size: 12.5px;
 }
 
 .option-choices {
@@ -67,4 +111,26 @@
   margin-inline-start: 4px;
   font-size: 10.5px;
   opacity: 0.75;
+}
+
+/* An option that works only with another one: grayed out, with a note why. */
+:host(.option--disabled) .option-name,
+:host(.option--disabled) .option-description,
+:host(.option--disabled) .option-choices {
+  opacity: 0.5;
+}
+
+.option-choice:disabled {
+  cursor: default;
+}
+
+.option-choice:disabled:hover {
+  border-color: var(--site-border);
+}
+
+.option-note {
+  margin: 4px 0 0;
+  color: var(--site-muted);
+  font-size: 12.5px;
+  font-style: italic;
 }

@@ -15,13 +15,14 @@ import { ownOptions } from '../diff-options';
 import { DiffKind, loadedSample } from '../samples';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { DiffKindsStep } from './diff-kinds-step';
+import { StepOptions } from './step-options';
 import { type ConfiguratorStep, StepId } from './steps';
 
 /** Keeps the choices made in the view settings of the preview apart from those of the demo. */
 const PREVIEW_SETTINGS_KEY = 'diffwise-configurator-preview';
 
-/** The options of the preview: every option, so those the demo sets do not change it. */
-const PREVIEW_CONFIG = ownOptions(PREVIEW_SETTINGS_KEY);
+/** Puts the version of the options after the key of the preview. */
+const KEY_SEPARATOR = '-';
 
 /** Name of the heading of the step in the template. */
 const STEP_HEADING_REFERENCE = 'stepHeading';
@@ -38,7 +39,7 @@ const PREVIEW_KIND_CHOICES: readonly Choice<DiffKind>[] = [
  */
 @Component({
   selector: 'demo-configurator-page',
-  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText],
+  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, StepOptions],
   templateUrl: './configurator-page.html',
   styleUrl: './configurator-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -56,14 +57,28 @@ export class ConfiguratorPage {
   /** The diffs the preview of an app with both diffs can show. */
   protected readonly previewKinds = PREVIEW_KIND_CHOICES;
 
-  /** The options of the preview. */
-  protected readonly previewConfig = PREVIEW_CONFIG;
+  /**
+   * The options of the preview: the chosen ones over every default, so those the demo sets do not
+   * change it. The choices made in its view settings start over after each change of an option,
+   * so they do not hide the change, and they are never remembered.
+   */
+  protected readonly previewConfig = computed(() => {
+    const userSettingsKey = PREVIEW_SETTINGS_KEY + KEY_SEPARATOR + this.state.optionsVersion();
+    const options = { ...this.state.options(), rememberUserSettings: false };
+
+    return ownOptions(userSettingsKey, options);
+  });
 
   /** The goal of the configurator, the last step. */
   protected readonly resultStep = computed(() => this.state.steps().at(-1));
 
   /** The number of the step that shows, from 1. */
   protected readonly stepNumber = computed(() => this.state.stepIndex() + 1);
+
+  /** True when the preview compares the sample with itself, to show identical versions. */
+  protected readonly comparesSampleWithItself = computed(
+    () => this.state.step().id === StepId.IdenticalVersions,
+  );
 
   /** True when a step comes before the one that shows. */
   protected readonly hasBack = computed(() => this.state.stepIndex() > 0);

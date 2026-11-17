@@ -81,7 +81,7 @@
 
   /* Sizes in rem. The content keeps the font size of the app. */
   --diffwise-line-number-font-size: 0.75rem;
-  --diffwise-version-header-font-size: 0.75rem;
+  --diffwise-version-header-font-size: 0.9rem;
   --diffwise-line-number-digits: 2;
   --diffwise-line-number-width: calc(
     var(--diffwise-line-number-digits) * 0.62 * var(--diffwise-line-number-font-size) + 1.25rem
@@ -304,10 +304,15 @@
   grid-column: 5;
 }
 
-/* Icons in place of the header texts, which name them. */
+/*
+ * Icons in place of the header texts, which name them. Each stands in the middle of a box as high
+ * as a line of text, so a header with icons is as high as one with texts.
+ */
 .diffwise-diff__version-header-icon {
   display: inline-flex;
-  vertical-align: middle;
+  align-items: center;
+  height: 1lh;
+  vertical-align: top;
 }
 
 .diffwise-diff__version-header-icon svg {

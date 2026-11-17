@@ -105,6 +105,12 @@ export interface DiffwiseConfigOptions {
    */
   readonly contextLines?: number;
   /**
+   * Shows the toolbar above the diff, with the arrows between the changes, the numbers of changes
+   * and the view settings; `false` hides all of them, whatever their own options. When the versions
+   * are the same, the text that says so shows anyway. Default: `true`.
+   */
+  readonly showToolbar?: boolean;
+  /**
    * Shows arrows to the previous and the next block of changes in the toolbar above the diff, with
    * the position of the block among all of them. Default: `true`.
    */
@@ -145,7 +151,12 @@ export interface DiffwiseConfigOptions {
   readonly dividerStyle?: DiffwiseDividerStyle;
   /** What fills the gap opposite an added or removed line. Default: `DiffwiseGapStyle.Stripes`. */
   readonly gapStyle?: DiffwiseGapStyle;
-  /** Headers above the two versions, or texts of the app. Default: `DiffwiseVersionHeaders.Default`. */
+  /** Shows the headers above the two versions. Default: `true`. */
+  readonly showVersionHeaders?: boolean;
+  /**
+   * What the headers above the two versions show: their names, icons, or texts of the app.
+   * Default: `DiffwiseVersionHeaders.Default`.
+   */
   readonly versionHeaders?: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts;
   /** Place of the header texts in their columns. Default: `DiffwiseAlignment.Center`. */
   readonly versionHeaderAlignment?: DiffwiseAlignment;
@@ -160,7 +171,7 @@ export interface DiffwiseConfigOptions {
    * `DiffwiseTextFont.Monospace`.
    */
   readonly textFont?: DiffwiseTextFont;
-  /** Font size of the headers in rem, from 0.5 to 10. Default: `0.75`. */
+  /** Font size of the headers in rem, from 0.5 to 10. Default: `0.9`. */
   readonly versionHeaderFontSize?: number;
   /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
   readonly lineNumberFontSize?: number;
@@ -277,6 +288,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
   readonly contextLines: number = 3;
 
+  /** Shows the toolbar above the diff; without it, only the text that the versions are the same. */
+  readonly showToolbar: boolean = true;
+
   /** Shows arrows between the blocks of changes in the toolbar above the diff. */
   readonly showNavigationToolbar: boolean = true;
 
@@ -304,7 +318,10 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** What fills the place opposite an added or a removed line. */
   readonly gapStyle: DiffwiseGapStyle = DiffwiseGapStyle.Stripes;
 
-  /** Headers above the two versions, or texts of the app. */
+  /** Shows the headers above the two versions. */
+  readonly showVersionHeaders: boolean = true;
+
+  /** What the headers above the two versions show: their names, icons, or texts of the app. */
   readonly versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts =
     DiffwiseVersionHeaders.Default;
 
@@ -318,7 +335,7 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   readonly textFont: DiffwiseTextFont = DiffwiseTextFont.Monospace;
 
   /** Font size of the headers in rem. */
-  readonly versionHeaderFontSize: number = 0.75;
+  readonly versionHeaderFontSize: number = 0.9;
 
   /** Font size of the line numbers in rem. */
   readonly lineNumberFontSize: number = 0.75;

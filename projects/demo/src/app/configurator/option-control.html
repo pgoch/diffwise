@@ -1,21 +1,36 @@
-<div class="option-name" [id]="ids.name">
-  {{ name() }}
-  @if (isChanged()) {
-    <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
-  }
+<div class="option-head">
+  <div class="option-name" [id]="ids.name">
+    {{ name() }}
+    @if (changed()) {
+      <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
+    }
+  </div>
+  <button
+    type="button"
+    class="option-info"
+    [attr.aria-label]="howToLabel()"
+    [attr.aria-expanded]="showsHowTo()"
+    [attr.aria-controls]="ids.howTo"
+    [title]="howToLabel()"
+    (click)="toggleHowTo()"
+  >
+    i
+  </button>
 </div>
 <p class="option-description" [id]="ids.description">{{ description() }}</p>
+<p class="option-how-to" [id]="ids.howTo" [hidden]="!showsHowTo()">{{ howTo() }}</p>
 <div
   class="option-choices"
   role="group"
   [attr.aria-labelledby]="ids.name"
-  [attr.aria-describedby]="ids.description"
+  [attr.aria-describedby]="describedBy()"
 >
   @for (choice of choices(); track $index) {
     <button
       type="button"
       class="option-choice"
       [attr.aria-pressed]="choice.value === value()"
+      [disabled]="isDisabled()"
       (click)="chosen.emit(choice.value)"
     >
       {{ choice.label }}
@@ -27,3 +42,6 @@
     <ng-content />
   }
 </div>
+@if (disabledNote(); as note) {
+  <p class="option-note" [id]="ids.note">{{ note }}</p>
+}

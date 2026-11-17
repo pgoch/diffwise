@@ -43,6 +43,7 @@ const DEFAULT_OPTIONS = {
   highlightWholeLines: false,
   hideUnchangedLines: false,
   contextLines: 3,
+  showToolbar: true,
   showNavigationToolbar: true,
   activeChangeStyle: DiffwiseActiveChangeStyle.Outline,
   showDiffStats: true,
@@ -59,11 +60,12 @@ const DEFAULT_OPTIONS = {
   userSettingsKey: null,
   dividerStyle: DiffwiseDividerStyle.Column,
   gapStyle: DiffwiseGapStyle.Stripes,
+  showVersionHeaders: true,
   versionHeaders: DiffwiseVersionHeaders.Default,
   versionHeaderAlignment: DiffwiseAlignment.Center,
   fontFamily: DiffwiseFontFamily.Inherit,
   textFont: DiffwiseTextFont.Monospace,
-  versionHeaderFontSize: 0.75,
+  versionHeaderFontSize: 0.9,
   lineNumberFontSize: 0.75,
   tooltipFontSize: 0.8,
   toolbarFontSize: 0.8,
@@ -193,10 +195,10 @@ describe('DiffwiseConfig', () => {
   });
 
   it('keeps the current value when a change is invalid', () => {
-    const config = new DiffwiseConfig({ versionHeaders: DiffwiseVersionHeaders.None });
+    const config = new DiffwiseConfig({ versionHeaders: DiffwiseVersionHeaders.Icons });
 
-    expect(config.with(untyped({ versionHeaders: 'both' })).versionHeaders).toBe(
-      DiffwiseVersionHeaders.None,
+    expect(config.with(untyped({ versionHeaders: 'none' })).versionHeaders).toBe(
+      DiffwiseVersionHeaders.Icons,
     );
   });
 });

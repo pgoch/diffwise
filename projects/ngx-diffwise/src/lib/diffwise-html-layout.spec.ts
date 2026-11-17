@@ -430,7 +430,7 @@ describe('DiffwiseHtml single column', () => {
   });
 
   it('shows no headers on request', () => {
-    const options = { versionHeaders: DiffwiseVersionHeaders.None };
+    const options = { showVersionHeaders: false };
 
     expect(renderSingleColumn({ options }).querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();
   });

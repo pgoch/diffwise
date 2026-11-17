@@ -3,16 +3,30 @@
 <nav class="flow" aria-label="Steps of the configurator">
   <ol class="flow-steps">
     @for (step of state.steps(); track step.id; let index = $index) {
-      <li class="flow-item">
+      @let disabledNote = state.disabledNote(step.enabledWhen);
+
+      <li class="flow-item" [title]="disabledNote ?? ''">
         <button
           type="button"
           class="flow-step"
           [class.flow-step--goal]="step.id === stepIds.Result"
           [attr.aria-current]="step === state.step() ? 'step' : null"
+          [disabled]="disabledNote !== null"
           (click)="goTo(step)"
         >
-          <span class="flow-number">{{ index + 1 }}</span>
+          <span class="flow-number">
+            {{ index + 1 }}
+            @if (state.changedSteps().has(step.id)) {
+              <span class="flow-dot" title="Changed"></span>
+            }
+          </span>
           <span class="flow-name">{{ step.label }}</span>
+          @if (state.changedSteps().has(step.id)) {
+            <span class="hidden">(changed)</span>
+          }
+          @if (disabledNote !== null) {
+            <span class="hidden">({{ disabledNote }})</span>
+          }
         </button>
         <span class="flow-arrow" aria-hidden="true">→</span>
       </li>
@@ -46,6 +60,9 @@
       @case (stepIds.Diffs) {
         <demo-diff-kinds-step />
       }
+      @default {
+        <demo-step-options [step]="state.step()" />
+      }
     }
   </section>
 
@@ -60,7 +77,12 @@
 
   <section class="preview" aria-labelledby="configurator-preview-label">
     <div class="preview-head">
-      <span id="configurator-preview-label" class="preview-label">Preview</span>
+      <span id="configurator-preview-label" class="preview-label">
+        Preview
+        @if (comparesSampleWithItself()) {
+          · the sample compared with itself
+        }
+      </span>
       @if (usesBothDiffs()) {
         <span class="preview-switch" role="group" aria-label="Diff in the preview">
           @for (choice of previewKinds; track choice.value) {
@@ -81,15 +103,15 @@
     } @else if (shownSample(); as pair) {
       @if (pair.kind === diffKinds.Text) {
         <diffwise-text
-          [oldText]="pair.oldVersion"
+          [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
           [newText]="pair.newVersion"
-          [config]="previewConfig"
+          [config]="previewConfig()"
         />
       } @else {
         <diffwise-html
-          [oldHtml]="pair.oldVersion"
+          [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
           [newHtml]="pair.newVersion"
-          [config]="previewConfig"
+          [config]="previewConfig()"
         />
       }
     }

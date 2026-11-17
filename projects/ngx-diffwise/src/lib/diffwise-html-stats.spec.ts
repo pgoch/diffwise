@@ -240,6 +240,15 @@ describe('DiffwiseHtml toolbar', () => {
     expect(textsOf(element, TOOLBAR_SELECTOR)).toEqual(['No changes']);
   });
 
+  it('hides the whole toolbar on request, but not the text that nothing changed', () => {
+    const options = { showToolbar: false };
+    const changed = elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML, options).fixture);
+    const same = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, options).fixture);
+
+    expect(changed.querySelector(TOOLBAR_SELECTOR)).toBeNull();
+    expect(textsOf(same, TOOLBAR_SELECTOR)).toEqual(['No changes']);
+  });
+
   it('takes the class of the same versions away when a version changes', () => {
     const { fixture } = render(OLD_TERMS_HTML, OLD_TERMS_HTML);
 

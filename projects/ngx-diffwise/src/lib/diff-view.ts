@@ -372,6 +372,12 @@ export abstract class DiffView {
   readonly contextLines = input<number>();
 
   /**
+   * Shows the toolbar above the diff, which says anyway that the versions are the same; wins over
+   * `config` and the global configuration.
+   */
+  readonly showToolbar = input<boolean>();
+
+  /**
    * Shows arrows between the blocks of changes in the toolbar above the diff; wins over `config`
    * and the global configuration.
    */
@@ -419,7 +425,13 @@ export abstract class DiffView {
   /** What fills the gap opposite a line; wins over `config` and the global configuration. */
   readonly gapStyle = input<DiffwiseGapStyle>();
 
-  /** Headers above the two versions; wins over `config` and the global configuration. */
+  /** Shows the headers above the versions; wins over `config` and the global configuration. */
+  readonly showVersionHeaders = input<boolean>();
+
+  /**
+   * What the headers above the versions show: their names, icons, or texts of the app; wins over
+   * `config` and the global configuration.
+   */
   readonly versionHeaders = input<DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts>();
 
   /** Place of the header texts; wins over `config` and the global configuration. */
@@ -546,6 +558,7 @@ export abstract class DiffView {
     highlightWholeLines: this.highlightWholeLines(),
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
+    showToolbar: this.showToolbar(),
     showNavigationToolbar: this.showNavigationToolbar(),
     activeChangeStyle: this.activeChangeStyle(),
     showDiffStats: this.showDiffStats(),
@@ -555,6 +568,7 @@ export abstract class DiffView {
     userSettingsKey: this.userSettingsKey(),
     dividerStyle: this.dividerStyle(),
     gapStyle: this.gapStyle(),
+    showVersionHeaders: this.showVersionHeaders(),
     versionHeaders: this.versionHeaders(),
     versionHeaderAlignment: this.versionHeaderAlignment(),
     fontFamily: this.fontFamily(),
@@ -672,14 +686,18 @@ export abstract class DiffView {
   );
 
   /** Headers above the two versions, or `null` without headers. */
-  protected readonly shownVersionHeaders = computed(() =>
-    toShownVersionHeaders(this.effectiveConfig().versionHeaders, this.texts()),
-  );
+  protected readonly shownVersionHeaders = computed(() => {
+    const { showVersionHeaders, versionHeaders } = this.effectiveConfig();
+
+    return showVersionHeaders ? toShownVersionHeaders(versionHeaders, this.texts()) : null;
+  });
 
   /** The header of the single column, or `null` without headers. */
-  protected readonly singleColumnHeader = computed(() =>
-    toSingleColumnHeader(this.effectiveConfig().versionHeaders, this.texts()),
-  );
+  protected readonly singleColumnHeader = computed(() => {
+    const { showVersionHeaders, versionHeaders } = this.effectiveConfig();
+
+    return showVersionHeaders ? toSingleColumnHeader(versionHeaders, this.texts()) : null;
+  });
 
   /**
    * The layout shown now. The automatic layout shows a single column in a diff narrower than the
@@ -745,13 +763,14 @@ export abstract class DiffView {
 
   /**
    * True when the toolbar has something to show: the navigation, the numbers of changed lines or
-   * the view settings, or the text that the versions are the same, which shows without them too.
+   * the view settings, or the text that the versions are the same, which shows without them too,
+   * also when the app hides the toolbar.
    */
   protected readonly showsToolbar = computed(() => {
-    const { showNavigationToolbar, showDiffStats } = this.effectiveConfig();
-    const showsParts = showNavigationToolbar || showDiffStats || this.showsViewSettings();
+    const { showToolbar, showNavigationToolbar, showDiffStats } = this.effectiveConfig();
+    const hasParts = showNavigationToolbar || showDiffStats || this.showsViewSettings();
 
-    return !this.diffStats().hasChanges || showsParts;
+    return !this.diffStats().hasChanges || (showToolbar && hasParts);
   });
 
   /** Blocks of adjacent changed rows, the steps of the navigation. */
@@ -1498,18 +1517,16 @@ function areDiffOptionsEqual(first: DiffOptions, second: DiffOptions): boolean {
 }
 
 /**
- * Texts of the headers and whether icons show them; `null` without headers. Without texts of
- * the app, the texts of the interface name the versions.
+ * Texts of the headers and whether icons show them. Without texts of the app, the texts of the
+ * interface name the versions.
  */
 function toShownVersionHeaders(
   versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
   texts: UiTexts,
-): ShownVersionHeaders | null {
+): ShownVersionHeaders {
   const versionLabels = { old: texts.oldVersionLabel, new: texts.newVersionLabel };
 
   switch (versionHeaders) {
-    case DiffwiseVersionHeaders.None:
-      return null;
     case DiffwiseVersionHeaders.Default:
       return { texts: versionLabels, asIcons: false };
     case DiffwiseVersionHeaders.Icons:
@@ -1520,18 +1537,16 @@ function toShownVersionHeaders(
 }
 
 /**
- * The header of the single column; `null` without headers. Icons named by the texts of the
- * interface stand above the numbers, and the header texts of an app, joined, above the content.
+ * The header of the single column. Icons named by the texts of the interface stand above the
+ * numbers, and the header texts of an app, joined, above the content.
  */
 function toSingleColumnHeader(
   versionHeaders: DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts,
   texts: UiTexts,
-): ShownSingleColumnHeader | null {
+): ShownSingleColumnHeader {
   const iconNames = { old: texts.oldVersionLabel, new: texts.newVersionLabel };
 
   switch (versionHeaders) {
-    case DiffwiseVersionHeaders.None:
-      return null;
     case DiffwiseVersionHeaders.Default:
       return { iconNames, contentText: texts.inlineContentLabel };
     case DiffwiseVersionHeaders.Icons:

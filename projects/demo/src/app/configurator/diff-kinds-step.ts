@@ -29,16 +29,16 @@ const APP_DIFFS_CHOICES: readonly Choice<AppDiffs>[] = [
     <demo-option-control
       name="Diffs in your app"
       description="Steps and options of a diff your app does not show are left out."
+      howTo="Choose Plain text: the step Change details and the options of HTML documents disappear, and the preview shows plain text. HTML documents leaves out the options of plain text, such as Text font."
       [choices]="appDiffsChoices"
       [value]="state.appDiffs()"
       [defaultValue]="defaultAppDiffs"
-      [isConfigured]="false"
       (chosen)="state.chooseAppDiffs($event)"
     />
     <demo-option-control
       name="Sample in the preview"
       description="Only for the preview; it is not part of the configuration."
-      [isConfigured]="false"
+      howTo="Choose Long: the preview shows a sample with every kind of content, such as tables and images. The language changes the words of the sample, and the interface of the diff keeps its own language."
     >
       <label class="sample-field">
         Language

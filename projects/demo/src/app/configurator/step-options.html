@@ -1,0 +1,180 @@
+@for (option of options(); track option.name) {
+  @switch (option.kind) {
+    @case (kinds.Buttons) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [choices]="option.choices"
+        [value]="valueOf(option)"
+        [defaultValue]="defaultOf(option)"
+        [changed]="state.isChanged(option.name)"
+        [disabledNote]="disabledNote(option)"
+        (chosen)="choose(option, $event)"
+      />
+    }
+    @case (kinds.Number) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+        [disabledNote]="disabledNote(option)"
+      >
+        <input
+          type="number"
+          class="field field--number"
+          [attr.aria-label]="option.label"
+          [attr.min]="option.field?.min"
+          [attr.max]="option.field?.max"
+          [attr.step]="option.field?.step"
+          [value]="valueOf(option)"
+          [disabled]="disabledNote(option) !== null"
+          (input)="chooseNumber(option, $event)"
+        />
+        <span class="field-unit">{{ option.field?.unit }}</span>
+        <span class="field-default">default {{ defaultOf(option) }}</span>
+      </demo-option-control>
+    }
+    @case (kinds.Text) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+        [disabledNote]="disabledNote(option)"
+      >
+        <input
+          type="text"
+          class="field"
+          [attr.aria-label]="option.label"
+          [placeholder]="option.field?.placeholder ?? ''"
+          [value]="valueOf(option) ?? ''"
+          [disabled]="disabledNote(option) !== null"
+          (input)="chooseText(option, $event)"
+        />
+        <span class="field-default">empty by default</span>
+      </demo-option-control>
+    }
+    @case (kinds.List) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+      >
+        <select
+          class="field field--list"
+          [attr.aria-label]="option.label"
+          (change)="chooseFromList(option, $event)"
+        >
+          @for (choice of option.choices; track $index) {
+            <option [value]="choice.value" [selected]="choice.value === valueOf(option)">
+              {{ choice.label }}{{ choice.value === defaultOf(option) ? ' (default)' : '' }}
+            </option>
+          }
+        </select>
+      </demo-option-control>
+    }
+    @case (kinds.Font) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [choices]="choices.fonts"
+        [value]="fontChoice()"
+        [defaultValue]="choices.defaultFont"
+        [changed]="state.isChanged(option.name)"
+        (chosen)="chooseFont($event, fontName)"
+      />
+      <label class="field-row" [class.field-row--hidden]="fontChoice() !== choices.namedFont">
+        Font name
+        <input
+          #fontName
+          type="text"
+          class="field"
+          [value]="fontChoice() === choices.namedFont ? valueOf(option) : ''"
+          (input)="nameFont($event)"
+        />
+      </label>
+    }
+    @case (kinds.VersionHeaders) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [choices]="choices.headers"
+        [value]="headersChoice()"
+        [defaultValue]="choices.defaultHeaders"
+        [changed]="state.isChanged(option.name)"
+        [disabledNote]="disabledNote(option)"
+        (chosen)="chooseHeaders($event)"
+      />
+      @if (headersChoice() === choices.headerTexts) {
+        <div class="field-row">
+          <label>
+            Previous version
+            <input
+              type="text"
+              class="field"
+              [value]="headerTexts().old"
+              [disabled]="disabledNote(option) !== null"
+              (input)="writeHeaderText('old', $event)"
+            />
+          </label>
+          <label>
+            New version
+            <input
+              type="text"
+              class="field"
+              [value]="headerTexts().new"
+              [disabled]="disabledNote(option) !== null"
+              (input)="writeHeaderText('new', $event)"
+            />
+          </label>
+        </div>
+      }
+    }
+    @case (kinds.UserSettings) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+      >
+        <div class="checks">
+          @for (setting of userSettings(); track setting.value) {
+            <label class="check">
+              <input
+                type="checkbox"
+                [checked]="isAllowed(setting.value)"
+                (change)="allow(setting.value, $event)"
+              />
+              {{ setting.label }}
+            </label>
+          }
+        </div>
+      </demo-option-control>
+    }
+    @case (kinds.Colors) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+      >
+        <demo-custom-colors-editor />
+      </demo-option-control>
+    }
+    @case (kinds.Texts) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [howTo]="option.howTo"
+        [changed]="state.isChanged(option.name)"
+      >
+        <demo-custom-texts-editor />
+      </demo-option-control>
+    }
+  }
+}

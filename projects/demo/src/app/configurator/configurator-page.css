@@ -60,7 +60,18 @@
   color: var(--site-text);
 }
 
+/* A step that works only with another option, such as the view settings without the toolbar. */
+.flow-step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.flow-step:disabled:hover {
+  color: var(--site-muted);
+}
+
 .flow-number {
+  position: relative;
   display: inline-grid;
   place-items: center;
   box-sizing: border-box;
@@ -102,6 +113,18 @@
   border-color: var(--site-goal);
   background: var(--site-goal);
   color: var(--site-on-accent);
+}
+
+/* A step with changed options: a dot on the corner of its number. */
+.flow-dot {
+  position: absolute;
+  top: -2px;
+  right: -3px;
+  width: 7px;
+  height: 7px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: var(--site-accent);
 }
 
 .flow-arrow {
