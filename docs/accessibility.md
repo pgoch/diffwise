@@ -1,17 +1,17 @@
 # Accessibility
 
-This page describes version 0.6. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
+This page describes version 0.7. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
 
-Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. The text diff of version 0.6 uses the same view. Diffwise has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
+Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. The text diff of version 0.6 uses the same view, and so do the options of the text diff of version 0.7. Diffwise has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
 
 ## Keyboard
 
-- `Tab` goes through the toolbar first, then through the content in the order of the document: the icons of changes, the links of the documents, the bars of hidden lines and wide tables.
+- `Tab` goes through the toolbar first, then through the content in the order of the document: the icons of changes, the links of the documents, the bars of hidden lines and wide tables, and last the scrollbar of long lines of the text diff, while its lines do not wrap.
 - Every element with the focus has a visible outline in `--diffwise-focus`. An element that takes the focus scrolls into view below the sticky toolbar, not under it.
 - The arrows of the toolbar step between the blocks of changes and keep the focus.
 - The button of the view settings opens them; Escape closes them and puts the focus back on the button.
 - A tooltip shows when its icon gets the focus, or its marked change with `changeDetails: 'hover'`. Escape hides it.
-- A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it.
+- A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it. Long lines of the text diff that do not wrap have one stop too: the scrollbar of the new version, named "Long lines, scroll sideways", while a line is wider than its column.
 - Side by side, the old copy of an unchanged line is not in the order of `Tab`, so each link of the documents is one stop. A click on its links still works.
 
 ## Screen readers
@@ -20,7 +20,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - Before each removed, added or changed line, a screen reader hears a description that does not show on the screen, such as "Removed line 6", "Added line 6", or "Changed line 2, before" and "Changed line 2, after" side by side. A merged line of the single column is "Changed line 2". The line numbers themselves are skipped.
 - Side by side, an unchanged line is read once: screen readers skip its old copy, so each heading and link of the documents is there once.
 - Removed and added words are `<del>` and `<ins>`, which some screen readers announce as a deletion and an insertion.
-- In the text diff, the signs of changed spaces and tabs, `·` and `→`, show only on the screen: screen readers skip them, and copied text keeps plain spaces and tabs.
+- In the text diff, the signs of changed spaces and tabs, `·` and `→`, show only on the screen: screen readers skip them, and copied text keeps plain spaces and tabs. So do the signs of all spaces and tabs, with `showAllWhitespace`.
 - The rows of a table are read as lines of the diff, cell by cell, not as tables of one row each.
 - Each icon of changes is named by the title of its tooltip, such as "Link address changed", and the lines under the title describe it.
 - After a step of the navigation, screen readers hear "Change 2 of 3". The numbers of changed lines are named, such as "Added lines: 3".
@@ -57,7 +57,7 @@ The navigation scrolls smoothly over a short distance and jumps over a long one;
 
 ## Zoom and narrow screens
 
-In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either. Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
+In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either, unless your app sets `wrapLines: false` or the user unticks "Wrap lines". Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
 
 ## Font of plain text
 

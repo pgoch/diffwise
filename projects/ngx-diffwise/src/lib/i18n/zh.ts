@@ -12,6 +12,7 @@ export const CHINESE_TEXTS: UiTexts = {
   changedLineAfterLabel: '第 {number} 行，已更改，更改后',
   changedLineLabel: '第 {number} 行，已更改',
   wideTableLabel: '宽表格，可左右滚动',
+  longLinesLabel: '长行，可左右滚动',
   showHiddenLinesLabel: '显示隐藏的行：{count}',
   hiddenLinesLabel: '隐藏的行：{count}',
   addedLinesLabel: '已添加的行：{count}',
@@ -45,6 +46,8 @@ export const CHINESE_TEXTS: UiTexts = {
   monospaceTextFontLabel: '等宽',
   proportionalTextFontLabel: '常规',
   hideUnchangedLinesLabel: '隐藏未更改的行',
+  wrapLinesLabel: '自动换行',
+  showAllWhitespaceLabel: '显示所有空格和制表符',
   resetUserSettingsLabel: '恢复默认设置',
 
   formattingChangeLabel: '格式更改',

@@ -105,6 +105,16 @@ export interface DiffwiseConfigOptions {
    */
   readonly contextLines?: number;
   /**
+   * Only in the text diff: breaks a long line into rows of text. With `false`, each line stays in
+   * one row, and the lines scroll sideways together. Default: `true`.
+   */
+  readonly wrapLines?: boolean;
+  /**
+   * Only in the text diff: shows each space and tab as `·` or `→`, also outside changes, where the
+   * signs are lighter. With `false`, only changed text shows them. Default: `false`.
+   */
+  readonly showAllWhitespace?: boolean;
+  /**
    * Shows the toolbar above the diff, with the arrows between the changes, the numbers of changes
    * and the view settings; `false` hides all of them, whatever their own options. When the versions
    * are the same, the text that says so shows anyway. Default: `true`.
@@ -203,6 +213,11 @@ export interface DiffwiseConfigOptions {
   readonly tooltipTitleAlignment?: DiffwiseAlignment;
   /** Ignores differences in whitespace. Default: `false`. */
   readonly ignoreWhitespace?: boolean;
+  /**
+   * Only in the text diff: ignores blank lines added or removed, empty or of whitespace alone.
+   * Default: `false`.
+   */
+  readonly ignoreBlankLines?: boolean;
   /** Ignores differences in letter case. Default: `false`. */
   readonly ignoreCase?: boolean;
   /**
@@ -288,6 +303,12 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   /** Unchanged lines that stay shown above and below each change when unchanged lines are hidden. */
   readonly contextLines: number = 3;
 
+  /** Only in the text diff: breaks a long line into rows of text, or lets the lines scroll sideways. */
+  readonly wrapLines: boolean = true;
+
+  /** Only in the text diff: shows each space and tab as a sign, also outside changes. */
+  readonly showAllWhitespace: boolean = false;
+
   /** Shows the toolbar above the diff; without it, only the text that the versions are the same. */
   readonly showToolbar: boolean = true;
 
@@ -364,6 +385,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Ignores differences in whitespace. */
   readonly ignoreWhitespace: boolean = false;
+
+  /** Only in the text diff: ignores blank lines added or removed. */
+  readonly ignoreBlankLines: boolean = false;
 
   /** Ignores differences in letter case. */
   readonly ignoreCase: boolean = false;

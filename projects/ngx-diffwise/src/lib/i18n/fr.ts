@@ -15,6 +15,7 @@ export const FRENCH_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Ligne {number} modifiée, après',
   changedLineLabel: 'Ligne {number} modifiée',
   wideTableLabel: 'Tableau large, faites défiler horizontalement',
+  longLinesLabel: 'Lignes longues, faites défiler horizontalement',
   showHiddenLinesLabel: 'Afficher les lignes masquées\u00a0: {count}',
   hiddenLinesLabel: 'Lignes masquées\u00a0: {count}',
   addedLinesLabel: 'Lignes ajoutées\u00a0: {count}',
@@ -48,6 +49,8 @@ export const FRENCH_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Chasse fixe',
   proportionalTextFontLabel: 'Normale',
   hideUnchangedLinesLabel: 'Masquer les lignes inchangées',
+  wrapLinesLabel: 'Retour automatique à la ligne',
+  showAllWhitespaceLabel: 'Afficher tous les espaces et tabulations',
   resetUserSettingsLabel: 'Rétablir les valeurs par défaut',
 
   formattingChangeLabel: 'Mise en forme modifiée',

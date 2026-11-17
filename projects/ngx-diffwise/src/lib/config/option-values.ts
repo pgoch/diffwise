@@ -166,6 +166,10 @@ export const DiffwiseUserSetting = {
   InlineDiffStyle: 'inlineDiffStyle',
   /** Hides unchanged lines far from changes. */
   HideUnchangedLines: 'hideUnchangedLines',
+  /** Breaks long lines into rows, or lets them scroll sideways, for the text diff only. */
+  WrapLines: 'wrapLines',
+  /** Shows each space and tab as a sign, also outside changes, for the text diff only. */
+  ShowAllWhitespace: 'showAllWhitespace',
 } as const;
 
 export type DiffwiseUserSetting = (typeof DiffwiseUserSetting)[keyof typeof DiffwiseUserSetting];

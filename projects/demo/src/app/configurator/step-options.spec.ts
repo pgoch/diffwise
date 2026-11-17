@@ -157,6 +157,8 @@ describe('StepOptions', () => {
       'Whole added and removed lines',
       'Hide unchanged lines',
       'Lines around changes',
+      'Wrap lines',
+      'All spaces and tabs',
     ]);
   });
 
@@ -442,16 +444,27 @@ describe('StepOptions', () => {
 
     expect(optionNames(fixture)).not.toContain('Text font');
 
+    state.goTo(stepOf(StepId.Lines));
+    await settle(fixture);
+
+    expect(optionNames(fixture)).not.toContain('Wrap lines');
+    expect(optionNames(fixture)).not.toContain('All spaces and tabs');
+
     state.goTo(stepOf(StepId.ViewSettings));
     await settle(fixture);
 
     expect(optionNamed(fixture, 'Options for the user').textContent).not.toContain('Text font');
+    expect(optionNamed(fixture, 'Options for the user').textContent).not.toContain('Wrap lines');
 
     state.appDiffs.set(AppDiffs.Text);
     state.goTo(stepOf(StepId.Comparison));
     await settle(fixture);
 
-    expect(optionNames(fixture)).toEqual(['Ignore whitespace', 'Ignore letter case']);
+    expect(optionNames(fixture)).toEqual([
+      'Ignore whitespace',
+      'Ignore blank lines',
+      'Ignore letter case',
+    ]);
   });
 
   it('starts the choices of the view settings of the preview over after each change', async () => {

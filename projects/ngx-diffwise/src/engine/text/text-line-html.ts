@@ -35,6 +35,9 @@ const WHITESPACE_CLASS = 'diffwise-diff__whitespace';
 const SPACE_CLASS = `${WHITESPACE_CLASS}--space`;
 const TAB_CLASS = `${WHITESPACE_CLASS}--tab`;
 
+/** Turns text into HTML that shows it as it is. */
+export type TextHtml = (text: string) => string;
+
 /** An attribute of an element: its name and its value, which holds no characters to escape. */
 type Attribute = readonly [name: string, value: string];
 
@@ -67,14 +70,21 @@ export function textHtml(text: string): string {
   return text.replace(MARKUP_CHARACTERS, (character) => CHARACTER_REFERENCES[character]);
 }
 
+/** HTML of the text as it is, with each space and tab in an element that styles show as a sign. */
+export function whitespaceMarkedHtml(text: string): string {
+  return textHtml(text).replace(SPACES_AND_TABS, (character) => MARKED_WHITESPACE[character]);
+}
+
 /**
  * HTML of a line's text with the ranges in markers, such as removed text in `del`. The ranges come
- * in reading order and apart, as the comparison of words gives them.
+ * in reading order and apart, as the comparison of words gives them. Text outside the ranges gets
+ * the HTML of `unchangedHtml`.
  */
 export function markedTextHtml(
   text: string,
   ranges: readonly TextRange[],
   marker: ChangeMarker,
+  unchangedHtml: TextHtml = textHtml,
 ): string {
   const parts: string[] = [];
   let position = 0;
@@ -83,11 +93,11 @@ export function markedTextHtml(
     const unchangedText = text.slice(position, start);
     const changedText = text.slice(start, end);
 
-    parts.push(textHtml(unchangedText), changedTextHtml(changedText, marker));
+    parts.push(unchangedHtml(unchangedText), changedTextHtml(changedText, marker));
     position = end;
   }
 
-  parts.push(textHtml(text.slice(position)));
+  parts.push(unchangedHtml(text.slice(position)));
 
   return parts.join(NO_TEXT);
 }
@@ -95,9 +105,10 @@ export function markedTextHtml(
 /**
  * HTML of a changed pair as one line: the new line's text with its added text marked, and the text
  * removed from the old line, marked, where it stood. Removed text gets the same separators as in a
- * merged line of an HTML document, such as a space where the old line had one.
+ * merged line of an HTML document, such as a space where the old line had one. Unchanged text gets
+ * the HTML of `unchangedHtml`.
  */
-export function mergedTextHtml(pair: WordChangedPair): string {
+export function mergedTextHtml(pair: WordChangedPair, unchangedHtml: TextHtml = textHtml): string {
   const newText = pair.newLine.text;
   const added = pair.wordChanges.added;
   const removedParts = pair.wordChanges.removed.map((removed) => removedPart(removed, pair));
@@ -111,7 +122,7 @@ export function mergedTextHtml(pair: WordChangedPair): string {
     parts.push(...removedHere.map((part) => part.html));
 
     if (nextCut !== undefined) {
-      parts.push(pieceHtml(newText, { start: cut, end: nextCut }, added));
+      parts.push(pieceHtml(newText, { start: cut, end: nextCut }, added, unchangedHtml));
     }
   }
 
@@ -149,11 +160,16 @@ function cutPositions(
 }
 
 /** HTML of a piece of the new line's text between two cuts: marked when it is added text. */
-function pieceHtml(newText: string, piece: TextRange, added: readonly TextRange[]): string {
+function pieceHtml(
+  newText: string,
+  piece: TextRange,
+  added: readonly TextRange[],
+  unchangedHtml: TextHtml,
+): string {
   const pieceText = newText.slice(piece.start, piece.end);
   const isAdded = added.some((range) => range.start <= piece.start && piece.end <= range.end);
 
-  return isAdded ? changedTextHtml(pieceText, ADDED_TEXT_MARKER) : textHtml(pieceText);
+  return isAdded ? changedTextHtml(pieceText, ADDED_TEXT_MARKER) : unchangedHtml(pieceText);
 }
 
 /**
@@ -161,10 +177,7 @@ function pieceHtml(newText: string, piece: TextRange, added: readonly TextRange[
  * sign. Removed text that added text replaces is marked for the gap between the two.
  */
 function changedTextHtml(text: string, marker: ChangeMarker, isReplaced = false): string {
-  const content = textHtml(text).replace(
-    SPACES_AND_TABS,
-    (character) => MARKED_WHITESPACE[character],
-  );
+  const content = whitespaceMarkedHtml(text);
   const markerClasses = classAttribute(marker.classNames);
   const attributes = isReplaced ? [markerClasses, REPLACED_TEXT] : [markerClasses];
 

@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A second component compares plain text line by line, with spaces, tabs and indentation as in the text. A toolbar steps between the changes, counts them, and lets your users choose the layout, the theme and the colors of changes, such as a colorblind-friendly or a high contrast palette. The interface comes in 12 languages and works with screen readers and the keyboard.
 
-> Version 0.6, an early preview. The API may change before 1.0.
+> Version 0.7, an early preview. The API may change before 1.0.
 
 ## Installation
 
@@ -41,7 +41,7 @@ After each comparison, `(diffStatsComputed)` emits the numbers of changed lines,
 <diffwise-html [oldHtml]="previous" [newHtml]="current" (diffStatsComputed)="stats.set($event)" />
 ```
 
-Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). What the diff does for the keyboard, screen readers and contrast is in the [accessibility guide](https://github.com/pgoch/diffwise/blob/master/docs/accessibility.md). Goals, the roadmap and a demo are in the [project README](https://github.com/pgoch/diffwise#readme).
+Every option, the settings for the user, the events, the `Diffwise` service and styling with CSS are described in the [configuration guide](https://github.com/pgoch/diffwise/blob/master/docs/configuration.md). What the diff does for the keyboard, screen readers and contrast is in the [accessibility guide](https://github.com/pgoch/diffwise/blob/master/docs/accessibility.md). Goals, the roadmap, a demo and a configurator that builds your configuration step by step are in the [project README](https://github.com/pgoch/diffwise#readme).
 
 ## License
 

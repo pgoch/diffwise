@@ -26,7 +26,12 @@ function paragraphs(changedNumbers: readonly number[]): string {
 
 /** Rows of the side-by-side view of two documents, with merged lines. */
 function compare(oldHtml: string, newHtml: string): readonly ViewRow[] {
-  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX, mergesChangedLines: true };
+  const settings = {
+    options: DEFAULT_DIFF_OPTIONS,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines: true,
+    marksAllWhitespace: false,
+  };
   return diffHtml(oldHtml, newHtml, settings).rows;
 }
 

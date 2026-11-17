@@ -12,6 +12,7 @@ export const POLISH_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Zmieniona linia {number}, po',
   changedLineLabel: 'Zmieniona linia {number}',
   wideTableLabel: 'Szeroka tabela, przewiń w bok',
+  longLinesLabel: 'Długie linie, przewiń w bok',
   showHiddenLinesLabel: 'Pokaż ukryte linie: {count}',
   hiddenLinesLabel: 'Ukryte linie: {count}',
   addedLinesLabel: 'Dodane linie: {count}',
@@ -45,6 +46,8 @@ export const POLISH_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Stała szerokość',
   proportionalTextFontLabel: 'Zwykła',
   hideUnchangedLinesLabel: 'Ukryj niezmienione linie',
+  wrapLinesLabel: 'Zawijaj wiersze',
+  showAllWhitespaceLabel: 'Pokaż wszystkie spacje i tabulatory',
   resetUserSettingsLabel: 'Przywróć domyślne',
 
   formattingChangeLabel: 'Zmiana formatowania',

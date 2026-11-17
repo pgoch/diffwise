@@ -3,6 +3,7 @@ import enLongBefore from '../../../../../test-data/en/long/before.html?raw';
 import plLongAfter from '../../../../../test-data/pl/long/after.html?raw';
 import plLongBefore from '../../../../../test-data/pl/long/before.html?raw';
 import { diffHtml } from '../diff-html';
+import { diffText } from '../diff-text';
 import {
   DEFAULT_DIFF_OPTIONS,
   DocumentVersion,
@@ -32,7 +33,12 @@ const PLANS_HTML =
 
 /** Rows of the side-by-side view of two documents. */
 function sideBySideRows(oldHtml: string, newHtml: string): readonly ViewRow[] {
-  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX, mergesChangedLines: true };
+  const settings = {
+    options: DEFAULT_DIFF_OPTIONS,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines: true,
+    marksAllWhitespace: false,
+  };
   return diffHtml(oldHtml, newHtml, settings).rows;
 }
 
@@ -105,6 +111,25 @@ describe('singleColumnRows', () => {
       [LineChangeKind.Added, NEW, null, 2, 'New outro.'],
     ]);
     expect(rows[1].line.html).toBe('<p>Terms of use.</p>');
+  });
+
+  it('shows an unchanged line of one version alone under its number, such as an ignored blank line', () => {
+    const options = { ...DEFAULT_DIFF_OPTIONS, ignoreBlankLines: true };
+    const settings = {
+      options,
+      idPrefix: ID_PREFIX,
+      mergesChangedLines: true,
+      marksAllWhitespace: false,
+    };
+    const { rows } = diffText('first\n\nlast', 'first\nlast', settings);
+    const expected = [
+      [LineChangeKind.Unchanged, NEW, 1, 1, 'first'],
+      [LineChangeKind.Unchanged, OLD, 2, null, ''],
+      [LineChangeKind.Unchanged, NEW, 3, 2, 'last'],
+    ];
+
+    expect(singleColumnRows(rows, STACKED_LINES).map(rowSummary)).toEqual(expected);
+    expect(singleColumnRows(rows, MERGED_LINES).map(rowSummary)).toEqual(expected);
   });
 
   it('shows a changed pair as its old line above its new line, each under its own number', () => {

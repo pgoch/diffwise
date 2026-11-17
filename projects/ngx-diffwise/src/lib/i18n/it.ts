@@ -12,6 +12,7 @@ export const ITALIAN_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Riga {number} modificata, dopo',
   changedLineLabel: 'Riga {number} modificata',
   wideTableLabel: 'Tabella larga, scorri in orizzontale',
+  longLinesLabel: 'Righe lunghe, scorri in orizzontale',
   showHiddenLinesLabel: 'Mostra righe nascoste: {count}',
   hiddenLinesLabel: 'Righe nascoste: {count}',
   addedLinesLabel: 'Righe aggiunte: {count}',
@@ -45,6 +46,8 @@ export const ITALIAN_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Larghezza fissa',
   proportionalTextFontLabel: 'Normale',
   hideUnchangedLinesLabel: 'Nascondi righe invariate',
+  wrapLinesLabel: 'A capo automatico',
+  showAllWhitespaceLabel: 'Mostra tutti gli spazi e le tabulazioni',
   resetUserSettingsLabel: 'Ripristina predefiniti',
 
   formattingChangeLabel: 'Modifica della formattazione',

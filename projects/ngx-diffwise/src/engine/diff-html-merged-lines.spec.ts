@@ -36,7 +36,12 @@ const IGNORE_WHITESPACE_AND_CASE: DiffOptions = {
 
 /** Rows of two documents compared with merged lines. */
 function compare(oldHtml: string, newHtml: string, options = DEFAULT_DIFF_OPTIONS): ViewRow[] {
-  const settings = { options, idPrefix: ID_PREFIX, mergesChangedLines: true };
+  const settings = {
+    options,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines: true,
+    marksAllWhitespace: false,
+  };
   return [...diffHtml(oldHtml, newHtml, settings).rows];
 }
 
@@ -346,6 +351,7 @@ describe('diffHtml with merged lines', () => {
       options: DEFAULT_DIFF_OPTIONS,
       idPrefix: ID_PREFIX,
       mergesChangedLines: false,
+      marksAllWhitespace: false,
     };
     const { rows } = diffHtml(
       '<p>Reply within 24 hours.</p>',

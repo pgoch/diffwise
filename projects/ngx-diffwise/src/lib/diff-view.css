@@ -260,7 +260,8 @@
 }
 
 .diffwise-diff__version-headers,
-.diffwise-diff__row {
+.diffwise-diff__row,
+.diffwise-diff__line-scrollbars {
   display: grid;
   grid-template-columns:
     var(--diffwise-line-number-width) minmax(0, 1fr) var(--diffwise-divider-width)

@@ -12,6 +12,7 @@ export const ENGLISH_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Changed line {number}, after',
   changedLineLabel: 'Changed line {number}',
   wideTableLabel: 'Wide table, scroll sideways',
+  longLinesLabel: 'Long lines, scroll sideways',
   showHiddenLinesLabel: 'Show hidden lines: {count}',
   hiddenLinesLabel: 'Hidden lines: {count}',
   addedLinesLabel: 'Added lines: {count}',
@@ -45,6 +46,8 @@ export const ENGLISH_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Fixed width',
   proportionalTextFontLabel: 'Regular',
   hideUnchangedLinesLabel: 'Hide unchanged lines',
+  wrapLinesLabel: 'Wrap lines',
+  showAllWhitespaceLabel: 'Show all spaces and tabs',
   resetUserSettingsLabel: 'Restore defaults',
 
   formattingChangeLabel: 'Formatting change',

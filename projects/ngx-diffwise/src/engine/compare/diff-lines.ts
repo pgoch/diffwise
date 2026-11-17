@@ -140,7 +140,7 @@ function comparisonFormat({ styles, values, link }: TextFormat, options: DiffOpt
 }
 
 /** Numbers of added, removed and changed lines among the changes. */
-function countChanges(changes: readonly LineChange[]): DiffStats {
+export function countChanges(changes: readonly LineChange[]): DiffStats {
   return {
     addedLines: countKind(changes, LineChangeKind.Added),
     removedLines: countKind(changes, LineChangeKind.Removed),

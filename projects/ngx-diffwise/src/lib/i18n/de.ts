@@ -12,6 +12,7 @@ export const GERMAN_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Geänderte Zeile {number}, nachher',
   changedLineLabel: 'Geänderte Zeile {number}',
   wideTableLabel: 'Breite Tabelle, seitlich scrollen',
+  longLinesLabel: 'Lange Zeilen, seitlich scrollen',
   showHiddenLinesLabel: 'Ausgeblendete Zeilen anzeigen: {count}',
   hiddenLinesLabel: 'Ausgeblendete Zeilen: {count}',
   addedLinesLabel: 'Hinzugefügte Zeilen: {count}',
@@ -45,6 +46,8 @@ export const GERMAN_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Feste Breite',
   proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Unveränderte Zeilen ausblenden',
+  wrapLinesLabel: 'Zeilen umbrechen',
+  showAllWhitespaceLabel: 'Alle Leerzeichen und Tabs anzeigen',
   resetUserSettingsLabel: 'Standard wiederherstellen',
 
   formattingChangeLabel: 'Formatierung geändert',

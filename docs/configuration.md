@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.6. Diffwise works without any setup: every option has a default, and you set only what you want to change.
+This page describes version 0.7. Diffwise works without any setup: every option has a default, and you set only what you want to change. The configurator of the [demo app](../README.md#demo) leads you through the options step by step, with a live preview, and gives you the configuration of your choices, ready to copy.
 
 ## Two diffs
 
@@ -15,7 +15,7 @@ Diffwise has two components with the same view:
 
 Both take the same options, emit the same events, have the same methods, and share the global configuration and the choices of the user. The examples on this page use `DiffwiseHtml`; `DiffwiseText` works the same way.
 
-Plain text has no formatting, links or images, so a few options do nothing in the text diff: `changeDetails`, `changeDetailsIconStyle`, `tooltipColorMode`, `highlightTooltipChanges`, `tooltipTitleAlignment`, `tooltipFontSize`, `ignoreFormatting` and `ignoreLinkChanges`. One option, `textFont`, belongs to the text diff alone; see [Fonts](#fonts). [How it works](how-it-works.md#plain-text) describes how plain text is compared.
+Plain text has no formatting, links or images, so a few options do nothing in the text diff: `changeDetails`, `changeDetailsIconStyle`, `tooltipColorMode`, `highlightTooltipChanges`, `tooltipTitleAlignment`, `tooltipFontSize`, `ignoreFormatting` and `ignoreLinkChanges`. Four options belong to the text diff alone: `wrapLines` and `showAllWhitespace` (see [Lines](#lines)), `textFont` (see [Fonts](#fonts)) and `ignoreBlankLines` (see [Comparison](#comparison)). [How it works](how-it-works.md#plain-text) describes how plain text is compared.
 
 ## Where to set options
 
@@ -96,6 +96,8 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 | `highlightWholeLines` | `true`, `false` | `false` | Works only when `highlightChangedLines` is `false`. Then `true` marks an added or a removed line as a whole, like changed words, and `false` leaves the change to its number. In a list, it marks the item alone, so its marker and indentation stay. The cells of an added or a removed table row are marked with either value |
 | `hideUnchangedLines` | `true`, `false` | `false` | Hides unchanged lines far from changes behind a bar, such as "Show hidden lines: 12". A click on the bar shows them. Changed, added and removed lines always show |
 | `contextLines` | `1` to `100` | `3` | With `hideUnchangedLines`, the unchanged lines that stay shown above and below each change |
+| `wrapLines` | `true`, `false` | `true` | Only in the text diff: breaks a long line into several rows of text. With `false`, each line stays in one row, and the lines of both versions scroll sideways together: by the scrollbars under the versions, which stay at the bottom of the window while the diff is in view, or with `Shift` and the wheel, or a touchpad, over a line. The line numbers stay in place. The user can switch it in the view settings |
+| `showAllWhitespace` | `true`, `false` | `false` | Only in the text diff: shows each space as `·` and each tab as `→` in every line, lighter outside changed text. With `false`, only changed spaces and tabs show them. The user can switch it in the view settings |
 
 Hidden lines are not rendered at all, so a long document with few changes opens faster. A single unchanged line is never hidden, as its bar would take as much room. Lines the user has shown stay shown until the versions or the options of the comparison change, or until `hideUnchangedLines` or `contextLines` changes. With `dividerStyle: 'line'`, the bar is a small button on the line between the versions, "Hidden lines: 12".
 
@@ -168,11 +170,12 @@ The view settings have options of their own; see [Settings for the user](#settin
 | Option | Values | Default | What it does |
 |---|---|---|---|
 | `ignoreWhitespace` | `true`, `false` | `false` | Ignores differences in whitespace |
+| `ignoreBlankLines` | `true`, `false` | `false` | Only in the text diff: a blank line added or removed, empty or of spaces and tabs alone, is not a change, as with `git diff --ignore-blank-lines`. It shows in its version without the colors of a change, with the empty place opposite, as an added or a removed line has. HTML documents have no blank lines, as an empty paragraph is no line |
 | `ignoreCase` | `true`, `false` | `false` | Ignores differences in letter case |
 | `ignoreFormatting` | `true`, `false` | `false` | Ignores changes of formatting alone, such as italic → bold, another color or another heading level. It also ignores the look of list markers: bullets that became numbers, another bullet or numbering style, another level of an item, and a paragraph that became a list item or the other way around. Another item number still counts, as readers cite it, as in "see step 6" |
 | `ignoreLinkChanges` | `true`, `false` | `false` | Ignores links added, removed or pointing elsewhere around the same text |
 
-Only these options compare the versions again; the other options change only the look. Changes of images and checkboxes always count. [How it works](how-it-works.md#2-read-the-text-and-its-format) describes what counts as formatting.
+Only these options, and `showAllWhitespace`, which puts the signs into the lines, compare the versions again; the other options change only the look. Changes of images and checkboxes always count. [How it works](how-it-works.md#2-read-the-text-and-its-format) describes what counts as formatting.
 
 ### Language
 
@@ -208,13 +211,13 @@ The translations other than English and Polish have not been reviewed by native 
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
-| `allowedUserSettings` | a list of `DiffwiseUserSetting.ColorMode`, `DiffPalette`, `TextFont`, `Layout`, `InlineDiffStyle`, `HideUnchangedLines` | all six | The options the user can change in the view settings. An empty list hides their button. `TextFont` shows only in the text diff |
+| `allowedUserSettings` | a list of `DiffwiseUserSetting.ColorMode`, `DiffPalette`, `TextFont`, `Layout`, `InlineDiffStyle`, `HideUnchangedLines`, `WrapLines`, `ShowAllWhitespace` | all eight | The options the user can change in the view settings. An empty list hides their button. `TextFont`, `WrapLines` and `ShowAllWhitespace` show only in the text diff |
 | `rememberUserSettings` | `true`, `false` | `false` | Keeps the choices of the user in `localStorage`, so they stay after a reload |
 | `userSettingsKey` | a name, or `null` | `null` | The name under which diffs keep the choices of the user. `null` takes the base path of your app, such as `/` or `/admin/` |
 
 ## Settings for the user
 
-The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the theme, the colors of changes, the layout, the look of changed lines in the single column, and whether to hide unchanged lines; "Restore defaults" takes the choices back. The text diff also has the font of its lines, "Fixed width" or "Regular", between the colors of changes and the layout; the HTML diff never shows it. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
+The button with a window and a gear at the end of the toolbar opens the view settings. In them, the user chooses the theme, the colors of changes, the layout, the look of changed lines in the single column, and whether to hide unchanged lines; "Restore defaults" takes the choices back. The text diff also has the font of its lines, "Fixed width" or "Regular", between the colors of changes and the layout, and two checkboxes under the one of hidden lines: "Wrap lines" and "Show all spaces and tabs"; the HTML diff never shows them. While the diff shows two columns, the look of the single column is disabled. The view settings open under their button, in the top layer of the page. Escape closes them and puts the focus back on the button; a click elsewhere closes them too.
 
 **A choice of the user wins** over every level of your app, also over a change your app makes later. "Restore defaults" brings the options of your app back. If your app has its own theme switch, take `colorMode` out of `allowedUserSettings`, so the two do not compete:
 
@@ -324,6 +327,7 @@ A screen reader hears a short description before each removed, added or changed 
 | `changedLineBeforeLabel`, `changedLineAfterLabel` | Changed line {number}, before; Changed line {number}, after | Zmieniona linia {number}, przed; Zmieniona linia {number}, po | Before the old and the new version of a changed line, side by side |
 | `changedLineLabel` | Changed line {number} | Zmieniona linia {number} | Before a merged line of the single column |
 | `wideTableLabel` | Wide table, scroll sideways | Szeroka tabela, przewiń w bok | The name of a table wider than its column, which takes the focus to scroll |
+| `longLinesLabel` | Long lines, scroll sideways | Długie linie, przewiń w bok | The name of the scrollbar of lines of the text diff that do not wrap, which takes the focus to scroll while a line is wider than its column |
 
 ### Texts of the tooltips
 
@@ -407,6 +411,8 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `textFontLabel` | Text font | Czcionka tekstu | The name of the font of the text diff |
 | `monospaceTextFontLabel`, `proportionalTextFontLabel` | Fixed width, Regular | Stała szerokość, Zwykła | Its values |
 | `hideUnchangedLinesLabel` | Hide unchanged lines | Ukryj niezmienione linie | The checkbox of hidden lines |
+| `wrapLinesLabel` | Wrap lines | Zawijaj wiersze | The checkbox of wrapped lines of the text diff |
+| `showAllWhitespaceLabel` | Show all spaces and tabs | Pokaż wszystkie spacje i tabulatory | The checkbox of the signs of all spaces and tabs of the text diff |
 | `resetUserSettingsLabel` | Restore defaults | Przywróć domyślne | The button that takes the choices back |
 
 ## Events and methods of the diff
@@ -514,7 +520,7 @@ The component element shows the options in its classes:
 
 - An option with a value other than its default adds a class with its name and value, such as `diffwise-diff--gap-style-gray`, `diffwise-diff--highlight-style-underline`, `diffwise-diff--diff-palette-colorblind` or `diffwise-diff--text-font-proportional`. A value the user has chosen in the view settings counts too.
 - The levels always have a class, such as `diffwise-diff--diff-intensity-3` and `diffwise-diff--ui-contrast-3`. In a theme with your own colors, there is no class of the intensity.
-- `diffwise-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines` and `--no-tooltip-change-highlight` turn parts of the diff off or on.
+- `diffwise-diff--no-line-numbers`, `--no-changed-line-highlight`, `--highlight-whole-lines`, `--no-tooltip-change-highlight` and `--no-wrap-lines` turn parts of the diff off or on.
 - `diffwise-diff--dark-theme` shows the dark theme.
 - `diffwise-diff--layout-inline` shows the single column, also when `Auto` has chosen it, so the class follows the layout on the screen, not the value of the option.
 - `diffwise-diff--no-changes` says that the versions are the same, so your CSS can hide or restyle the diff then. It is a state, not an option.
@@ -538,7 +544,7 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__image-change-arrow` | The arrow between the old and the new image of a changed image in a merged line |
 | `diffwise-diff__divider` | The column between the versions |
 | `diffwise-diff__change-details-cell` | The narrow column of the icons of changes next to the content of the single column |
-| `diffwise-diff__gap` | The empty place opposite an added or a removed line |
+| `diffwise-diff__gap` | The empty place opposite an added or a removed line, or opposite a blank line that `ignoreBlankLines` leaves out of the changes |
 | `diffwise-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
 | `diffwise-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
 | `diffwise-diff__toolbar` | The toolbar above the diff |
@@ -560,7 +566,9 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__highlight--image` | A marker around a changed, added or removed image, together with `--removed` or `--added`: a frame instead of a background |
 | `diffwise-diff__highlight--list-marker` | A changed list marker that Diffwise draws in place of the browser's, together with `--removed` or `--added`: an empty `<del>` or `<ins>` at the start of the item, which shows the marker |
 | `diffwise-diff__highlight--checkbox` | A marker around a checked or cleared checkbox of a list item, together with `--removed` or `--added`: a frame instead of a background. A merged line of the single column has two: the old checkbox, then the new one |
-| `diffwise-diff__whitespace`, with `--space` or `--tab` | A space or a tab inside a marker of the text diff, which shows `·` or `→` over itself |
+| `diffwise-diff__whitespace`, with `--space` or `--tab` | A space or a tab of the text diff inside a marker, or anywhere with `showAllWhitespace`, which shows `·` or `→` over itself |
+| `diffwise-diff__line-scrollbars` | The scrollbars of lines of the text diff that do not wrap, at the bottom of the diff |
+| `diffwise-diff__line-scrollbar`, with `--old` or `--new` | The scrollbar under the content of one version; the single column shows only the one of the new version |
 | `diffwise-diff__highlight--cell` | A whole cell of an added or removed row or column, together with `diffwise-diff__highlight` and `--removed` or `--added`. The classes stand on the cell (`td` or `th`) itself |
 | `diffwise-diff__change-details-icon`, with `--formatting`, `--link`, `--image` or `--multiple` | The icon of a row with changes besides the text, in the column between the versions |
 | `diffwise-diff__change-details-count` | The number of changes on the icon of several changes |

@@ -16,7 +16,8 @@
  * The document once: one column of line numbers, since the number is the same in both versions,
  * and the content across the whole width, in either layout.
  */
-.diffwise-diff--no-changes.diffwise-diff--no-changes-view-document .diffwise-diff__row {
+.diffwise-diff--no-changes.diffwise-diff--no-changes-view-document
+  :is(.diffwise-diff__row, .diffwise-diff__line-scrollbars) {
   grid-template-columns: var(--diffwise-line-number-width) minmax(0, 1fr);
 }
 

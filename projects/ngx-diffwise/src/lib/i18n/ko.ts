@@ -12,6 +12,7 @@ export const KOREAN_TEXTS: UiTexts = {
   changedLineAfterLabel: '{number}번 줄, 변경됨, 변경 후',
   changedLineLabel: '{number}번 줄, 변경됨',
   wideTableLabel: '넓은 표, 옆으로 스크롤하세요',
+  longLinesLabel: '긴 줄, 옆으로 스크롤하세요',
   showHiddenLinesLabel: '숨겨진 줄 표시: {count}',
   hiddenLinesLabel: '숨겨진 줄: {count}',
   addedLinesLabel: '추가된 줄: {count}',
@@ -45,6 +46,8 @@ export const KOREAN_TEXTS: UiTexts = {
   monospaceTextFontLabel: '고정 폭',
   proportionalTextFontLabel: '보통',
   hideUnchangedLinesLabel: '변경되지 않은 줄 숨기기',
+  wrapLinesLabel: '줄 바꿈',
+  showAllWhitespaceLabel: '모든 공백과 탭 표시',
   resetUserSettingsLabel: '기본값으로 복원',
 
   formattingChangeLabel: '서식 변경',
