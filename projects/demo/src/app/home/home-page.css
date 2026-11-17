@@ -18,7 +18,7 @@ a {
   grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: 36px;
   align-items: center;
-  padding: 44px 32px 36px;
+  padding: 28px 32px 28px;
 }
 
 .kicker {
@@ -43,6 +43,13 @@ a {
   margin: 0 0 20px;
   color: var(--site-muted);
   font-size: 16px;
+}
+
+/* The buttons, and the install command as wide as they are together. */
+.start {
+  display: inline-grid;
+  gap: 16px;
+  max-width: 100%;
 }
 
 .actions {
@@ -73,10 +80,9 @@ a {
 }
 
 .install {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
-  margin-top: 16px;
   padding: 6px 6px 6px 12px;
   border: 1px solid var(--site-border);
   border-radius: 8px;
@@ -89,6 +95,10 @@ a {
 
 .install-prompt {
   color: var(--site-muted);
+}
+
+.install-command {
+  flex: 1;
 }
 
 .install-copy {
@@ -144,7 +154,7 @@ a {
 }
 
 .section {
-  padding: 8px 32px 36px;
+  padding: 0 32px 24px;
 }
 
 .section-title {
@@ -236,11 +246,11 @@ a {
 @media (max-width: 960px) {
   .hero {
     grid-template-columns: minmax(0, 1fr);
-    padding: 32px 16px 28px;
+    padding: 24px 16px;
   }
 
   .section {
-    padding: 8px 16px 28px;
+    padding: 0 16px 24px;
   }
 
   .entries,
