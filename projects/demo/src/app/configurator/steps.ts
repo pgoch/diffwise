@@ -221,7 +221,7 @@ const GENERAL_OPTIONS: readonly StepOption[] = [
     label: 'Language',
     description: 'The language of the interface; Auto takes it from LOCALE_ID of your app.',
     howTo:
-      'Choose Polski: the bar above the preview, the headers and the view settings turn Polish at once. The list next to Preview changes the language of the sample, not of the interface.',
+      'Choose Polski: the bar above the preview, the headers and the view settings turn Polish at once.',
     choices: LANGUAGES,
   }),
   option({

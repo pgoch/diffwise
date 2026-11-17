@@ -13,14 +13,7 @@ import { DiffwiseColorMode, DiffwiseHtml, DiffwiseLayout, DiffwiseText } from 'n
 
 import type { Choice } from '../choice';
 import { ownOptions } from '../diff-options';
-import {
-  DiffKind,
-  LANGUAGE_CHOICES,
-  type SampleLanguage,
-  TEXT_LANGUAGE_CHOICES,
-  TEXT_SAMPLE_LANGUAGES,
-  loadedSample,
-} from '../samples';
+import { DiffKind, loadedSample } from '../samples';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { DiffKindsStep } from './diff-kinds-step';
 import { ResultStep } from './result-step';
@@ -149,19 +142,6 @@ export class ConfiguratorPage {
   /** True when a step comes after the one that shows. */
   protected readonly hasNext = computed(() => this.stepNumber() < this.state.steps().length);
 
-  /** Languages of the sample: every language, or those of plain text for an app with it alone. */
-  protected readonly languages = computed(() =>
-    this.state.appDiffs() === AppDiffs.Text ? TEXT_LANGUAGE_CHOICES : LANGUAGE_CHOICES,
-  );
-
-  /** True when the preview shows plain text in English, as the chosen language has no sample. */
-  protected readonly showsTextInEnglish = computed(() => {
-    const showsText = this.state.previewKind() === DiffKind.Text;
-    const hasTextSample = TEXT_SAMPLE_LANGUAGES.includes(this.state.sampleLanguage());
-
-    return showsText && !hasTextSample;
-  });
-
   /** True when the app shows both diffs, so the preview can show either. */
   protected readonly usesBothDiffs = computed(() => this.state.appDiffs() === AppDiffs.Both);
 
@@ -206,11 +186,6 @@ export class ConfiguratorPage {
   /** Shows the preview in the chosen layout. */
   protected choosePreviewLayout(event: Event): void {
     this.state.previewLayout.set(selectedValueOf(event) as DiffwiseLayout);
-  }
-
-  /** Shows the sample in the chosen language. */
-  protected chooseLanguage(event: Event): void {
-    this.state.sampleLanguage.set(selectedValueOf(event) as SampleLanguage);
   }
 
   /** Takes back every chosen option and shows the first step. */

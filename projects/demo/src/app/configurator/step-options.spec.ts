@@ -436,7 +436,7 @@ describe('StepOptions', () => {
   it('leaves out the options of a diff the app does not show', async () => {
     const state = TestBed.inject(ConfiguratorState);
 
-    state.chooseAppDiffs(AppDiffs.Html);
+    state.appDiffs.set(AppDiffs.Html);
 
     const fixture = await render(StepId.Fonts);
 
@@ -447,7 +447,7 @@ describe('StepOptions', () => {
 
     expect(optionNamed(fixture, 'Options for the user').textContent).not.toContain('Text font');
 
-    state.chooseAppDiffs(AppDiffs.Text);
+    state.appDiffs.set(AppDiffs.Text);
     state.goTo(stepOf(StepId.Comparison));
     await settle(fixture);
 

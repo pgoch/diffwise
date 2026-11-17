@@ -1,5 +1,5 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { Diffwise, DiffwiseColorMode, DiffwiseLanguage, DiffwiseLayout } from 'ngx-diffwise';
+import { Diffwise, DiffwiseColorMode, DiffwiseLayout } from 'ngx-diffwise';
 
 import { serveSampleFiles } from '../../testing/sample-files';
 import { ConfiguratorState } from './configurator-state';
@@ -15,11 +15,10 @@ const OPTION_BUTTON_SELECTOR = '.option-choice';
 const PREVIEW_BUTTON_SELECTOR = '.preview-switch button';
 const PREVIEW_LABEL_SELECTOR = '.preview-label';
 const NO_CHANGES_SELECTOR = '.preview .diffwise-diff__no-changes';
-const LANGUAGE_SELECT_SELECTOR = '.preview-language';
+const LANGUAGE_SELECT_SELECTOR = '.preview select[aria-label="Language of the sample"]';
 const PREVIEW_THEME_SELECTOR = '.preview-theme';
 const PREVIEW_LAYOUT_SELECTOR = '.preview-layout';
 const INLINE_LAYOUT_SELECTOR = '.preview diffwise-html.diffwise-diff--layout-inline';
-const SAMPLE_HINT_SELECTOR = '.sample-hint';
 const HTML_DIFF_SELECTOR = '.preview diffwise-html';
 const TEXT_DIFF_SELECTOR = '.preview diffwise-text';
 const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
@@ -119,14 +118,6 @@ async function chooseIn(
   await settle(fixture);
 }
 
-/** Chooses the language of the sample. */
-async function chooseLanguage(
-  fixture: ComponentFixture<ConfiguratorPage>,
-  language: DiffwiseLanguage,
-): Promise<void> {
-  await chooseIn(fixture, all(fixture, LANGUAGE_SELECT_SELECTOR)[0] as HTMLSelectElement, language);
-}
-
 describe('ConfiguratorPage', () => {
   it('starts at the first step, with every step in the bar and the result as the goal', async () => {
     const fixture = await render();
@@ -218,23 +209,14 @@ describe('ConfiguratorPage', () => {
     expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/long');
   });
 
-  it('previews the long sample in the chosen language, and plain text in English when its language has none', async () => {
+  it('previews English samples only, with no list of their languages', async () => {
     const fixture = await render();
 
-    await chooseLanguage(fixture, DiffwiseLanguage.DE);
+    expect(all(fixture, LANGUAGE_SELECT_SELECTOR)).toEqual([]);
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/de/long');
-    expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
-
-    await click(fixture, PREVIEW_BUTTON_SELECTOR, TEXT_PREVIEW);
+    await click(fixture, OPTION_BUTTON_SELECTOR, PLAIN_TEXT);
 
     expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
-    expect(textOf(fixture, SAMPLE_HINT_SELECTOR)).toContain('English and Polish');
-
-    await chooseLanguage(fixture, DiffwiseLanguage.PL);
-
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/pl/long');
-    expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
   });
 
   it('compares the sample with itself in the step of identical versions', async () => {

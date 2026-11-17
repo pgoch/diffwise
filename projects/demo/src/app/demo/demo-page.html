@@ -13,7 +13,7 @@
     (chosen)="chooseDiffKind($event)"
   />
   <label class="demo-field">
-    Language
+    Sample language
     <select (change)="chooseSampleLanguage($event)">
       @for (choice of languages(); track choice.value) {
         <option [value]="choice.value" [selected]="choice.value === language()">

@@ -99,17 +99,6 @@
             · the sample compared with itself
           }
         </span>
-        <select
-          class="preview-select preview-language"
-          aria-label="Language of the sample"
-          (change)="chooseLanguage($event)"
-        >
-          @for (choice of languages(); track choice.value) {
-            <option [value]="choice.value" [selected]="choice.value === state.sampleLanguage()">
-              {{ choice.label }}
-            </option>
-          }
-        </select>
         <span [title]="hasAutoTheme() ? '' : previewLists.themeNote">
           <select
             class="preview-select preview-theme"
@@ -155,12 +144,6 @@
     </div>
 
     <div class="preview-body">
-      @if (showsTextInEnglish()) {
-        <p class="sample-hint">
-          Plain text samples are in English and Polish, so the plain text preview is in English.
-        </p>
-      }
-
       @if (sample.error()) {
         <p role="alert">The sample could not be loaded.</p>
       } @else if (shownSample(); as pair) {

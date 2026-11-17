@@ -22,7 +22,7 @@ const APP_DIFFS_CHOICES: readonly Choice<AppDiffs>[] = [
       [choices]="appDiffsChoices"
       [value]="state.appDiffs()"
       [defaultValue]="defaultAppDiffs"
-      (chosen)="state.chooseAppDiffs($event)"
+      (chosen)="state.appDiffs.set($event)"
     />
   `,
   styles: `

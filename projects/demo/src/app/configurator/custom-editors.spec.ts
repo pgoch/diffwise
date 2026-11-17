@@ -180,7 +180,7 @@ describe('CustomTextsEditor', () => {
   it('leaves out the texts of a diff the app does not show', async () => {
     const state = TestBed.inject(ConfiguratorState);
 
-    state.chooseAppDiffs(AppDiffs.Text);
+    state.appDiffs.set(AppDiffs.Text);
 
     const fixture = await render(StepId.Texts);
     const titles = textGroups(fixture).map(([title]) => title);
@@ -188,7 +188,7 @@ describe('CustomTextsEditor', () => {
     expect(titles).not.toContain('Tooltips');
     expect(titles).not.toContain('Names of formatting');
 
-    state.chooseAppDiffs(AppDiffs.Html);
+    state.appDiffs.set(AppDiffs.Html);
     await settle(fixture);
 
     const viewSettings = textGroups(fixture).find(([title]) => title === 'View settings');

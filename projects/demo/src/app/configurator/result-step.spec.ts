@@ -160,7 +160,7 @@ describe('ResultStep', () => {
     const state = TestBed.inject(ConfiguratorState);
 
     state.setOption('ignoreFormatting', true);
-    state.chooseAppDiffs(AppDiffs.Text);
+    state.appDiffs.set(AppDiffs.Text);
 
     const fixture = await renderResult();
 

@@ -7,13 +7,7 @@ import {
 } from 'ngx-diffwise';
 
 import { DEFAULT_OPTIONS } from '../diff-options';
-import {
-  DiffKind,
-  type SampleChoice,
-  type SampleLanguage,
-  SampleSize,
-  TEXT_SAMPLE_LANGUAGES,
-} from '../samples';
+import { DiffKind, type SampleChoice, type SampleLanguage, SampleSize } from '../samples';
 import {
   type ConfiguratorStep,
   type OptionCondition,
@@ -45,8 +39,8 @@ export interface ChangedOption {
   readonly option: StepOption;
 }
 
-/** Language of a plain text sample when the chosen language has none. */
-const FALLBACK_TEXT_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
+/** Language of the samples of the preview, which is that of the configurator. */
+const SAMPLE_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
 
 /**
  * The choices made in the configurator. They stay while the app runs, also on the other pages,
@@ -56,9 +50,6 @@ const FALLBACK_TEXT_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
 export class ConfiguratorState {
   /** The diffs the app shows; steps and options of the other diff are left out. */
   readonly appDiffs = signal<AppDiffs>(AppDiffs.Both);
-
-  /** Language of the sample in the preview. */
-  readonly sampleLanguage = signal<SampleLanguage>(DiffwiseLanguage.EN);
 
   /** The theme of the preview while the theme of the configuration is Auto; not part of it. */
   readonly previewColorMode = signal<DiffwiseColorMode>(DiffwiseColorMode.Auto);
@@ -96,19 +87,12 @@ export class ConfiguratorState {
     return diffKinds.includes(this.chosenPreviewKind()) ? this.chosenPreviewKind() : diffKinds[0];
   });
 
-  /**
-   * The sample in the preview: the long one, which has every kind of content. Plain text samples
-   * are in fewer languages, so a language without one gets the English one.
-   */
-  readonly sample = computed<SampleChoice>(() => {
-    const kind = this.previewKind();
-    const language = this.sampleLanguage();
-    const hasTextSample = TEXT_SAMPLE_LANGUAGES.includes(language);
-    const isFallback = kind === DiffKind.Text && !hasTextSample;
-    const sampleLanguage = isFallback ? FALLBACK_TEXT_LANGUAGE : language;
-
-    return { kind, language: sampleLanguage, size: SampleSize.Long };
-  });
+  /** The sample in the preview: the long English one, which has every kind of content. */
+  readonly sample = computed<SampleChoice>(() => ({
+    kind: this.previewKind(),
+    language: SAMPLE_LANGUAGE,
+    size: SampleSize.Long,
+  }));
 
   /** The options chosen with another value than their default, which go into the configuration. */
   readonly options = signal<DiffwiseConfigOptions>({});
@@ -218,20 +202,6 @@ export class ConfiguratorState {
     const after = this.steps().slice(this.stepIndex() + 1);
 
     this.goToFirstWorking(after);
-  }
-
-  /**
-   * Shows the steps and the preview of the diffs of an app. An app with plain text alone gets a
-   * sample in English when its language has no plain text sample.
-   */
-  chooseAppDiffs(appDiffs: AppDiffs): void {
-    const hasTextSample = TEXT_SAMPLE_LANGUAGES.includes(this.sampleLanguage());
-
-    this.appDiffs.set(appDiffs);
-
-    if (appDiffs === AppDiffs.Text && !hasTextSample) {
-      this.sampleLanguage.set(FALLBACK_TEXT_LANGUAGE);
-    }
   }
 
   /** Shows the first of the steps that works now, when there is one. */
