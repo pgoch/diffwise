@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 
 import type { Choice } from '../choice';
 
@@ -9,22 +9,28 @@ const OPTION_ID_START = 'demo-option-';
 const NAME_ID_END = '-name';
 const DESCRIPTION_ID_END = '-description';
 const NOTE_ID_END = '-note';
+const HOW_TO_ID_END = '-how-to';
+
+/** Starts the name of the button that shows how to check an option, before the option name. */
+const HOW_TO_LABEL_START = 'How to check: ';
 
 /** An option with fields of its own instead of buttons. */
 const NO_CHOICES: readonly never[] = [];
 
-/** Ids of the name, the description and the note of an option. */
+/** Ids of the name, the description, the note and the text of how to check an option. */
 interface OptionIds {
   readonly name: string;
   readonly description: string;
   readonly note: string;
+  readonly howTo: string;
 }
 
 /**
  * One option of a step: its name, one sentence about it, and a button for each value, or the
  * fields put inside it. The value that an app gets without the option is marked "default", a
  * changed option has a dot, and an option that works only with another one is disabled with a
- * note that says so.
+ * note that says so. A button "i" next to the name shows under the sentence how to check the
+ * option, and hides it again.
  */
 @Component({
   selector: 'demo-option-control',
@@ -41,6 +47,9 @@ export class OptionControl<T> {
 
   /** One sentence: what the option does. */
   readonly description = input.required<string>();
+
+  /** How to check the option: what to choose, and where its effect shows. */
+  readonly howTo = input.required<string>();
 
   /** The values, one button each, in their order; without them, the fields inside show. */
   readonly choices = input<readonly Choice<T>[]>(NO_CHOICES);
@@ -63,6 +72,12 @@ export class OptionControl<T> {
   /** Ids that name and describe the group of buttons or fields. */
   protected readonly ids = optionIds();
 
+  /** True while the text of how to check the option shows. */
+  protected readonly showsHowTo = signal(false);
+
+  /** Name of the button that shows how to check the option. */
+  protected readonly howToLabel = computed(() => HOW_TO_LABEL_START + this.name());
+
   /** True while the option does not work. */
   protected readonly isDisabled = computed(() => this.disabledNote() !== null);
 
@@ -72,6 +87,11 @@ export class OptionControl<T> {
 
     return this.isDisabled() ? `${ids.description} ${ids.note}` : ids.description;
   });
+
+  /** Shows how to check the option, or hides it. */
+  protected toggleHowTo(): void {
+    this.showsHowTo.update((shows) => !shows);
+  }
 }
 
 /** Ids of the parts of a new option. */
@@ -80,6 +100,7 @@ function optionIds(): OptionIds {
   const name = id + NAME_ID_END;
   const description = id + DESCRIPTION_ID_END;
   const note = id + NOTE_ID_END;
+  const howTo = id + HOW_TO_ID_END;
 
-  return { name, description, note };
+  return { name, description, note, howTo };
 }

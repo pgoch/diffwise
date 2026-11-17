@@ -4,6 +4,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [choices]="option.choices"
         [value]="valueOf(option)"
         [defaultValue]="defaultOf(option)"
@@ -16,6 +17,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
         [disabledNote]="disabledNote(option)"
       >
@@ -38,6 +40,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
         [disabledNote]="disabledNote(option)"
       >
@@ -57,6 +60,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
       >
         <select
@@ -76,6 +80,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [choices]="choices.fonts"
         [value]="fontChoice()"
         [defaultValue]="choices.defaultFont"
@@ -97,6 +102,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [choices]="choices.headers"
         [value]="headersChoice()"
         [defaultValue]="choices.defaultHeaders"
@@ -133,6 +139,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
       >
         <div class="checks">
@@ -153,6 +160,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
       >
         <demo-custom-colors-editor />
@@ -162,6 +170,7 @@
       <demo-option-control
         [name]="option.label"
         [description]="option.description"
+        [howTo]="option.howTo"
         [changed]="state.isChanged(option.name)"
       >
         <demo-custom-texts-editor />

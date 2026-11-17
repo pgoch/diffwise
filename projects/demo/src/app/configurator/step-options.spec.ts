@@ -12,6 +12,9 @@ const OPTION_SELECTOR = 'demo-option-control';
 const OPTION_NAME_SELECTOR = '.option-name';
 const OPTION_DOT_SELECTOR = '.option-dot';
 const OPTION_NOTE_SELECTOR = '.option-note';
+const HOW_TO_BUTTON_SELECTOR = '.option-info';
+const HOW_TO_SELECTOR = '.option-how-to';
+const ARIA_EXPANDED_ATTRIBUTE = 'aria-expanded';
 const CHOICE_SELECTOR = '.option-choice';
 const STEP_DOT_SELECTOR = '.flow-steps .flow-dot';
 const INPUT_SELECTOR = 'input';
@@ -363,6 +366,32 @@ describe('StepOptions', () => {
       optionNamed(fixture, 'Numbers of changes').querySelector<HTMLButtonElement>(CHOICE_SELECTOR)
         ?.disabled,
     ).toBe(true);
+  });
+
+  it('shows under the sentence of each option how to check it, and hides it again', async () => {
+    const fixture = await render(StepId.ViewSettings);
+    const element = fixture.nativeElement as HTMLElement;
+    const key = optionNamed(fixture, 'Key of the choices');
+    const button = key.querySelector<HTMLButtonElement>(HOW_TO_BUTTON_SELECTOR);
+    const howTo = key.querySelector<HTMLElement>(HOW_TO_SELECTOR);
+
+    expect(element.querySelectorAll(HOW_TO_BUTTON_SELECTOR)).toHaveLength(3);
+    expect(button?.getAttribute('aria-label')).toBe('How to check: Key of the choices');
+    expect(button?.getAttribute(ARIA_EXPANDED_ATTRIBUTE)).toBe('false');
+    expect(howTo?.hidden).toBe(true);
+
+    button?.click();
+    await settle(fixture);
+
+    expect(button?.getAttribute(ARIA_EXPANDED_ATTRIBUTE)).toBe('true');
+    expect(button?.getAttribute('aria-controls')).toBe(howTo?.id);
+    expect(howTo?.hidden).toBe(false);
+    expect(howTo?.textContent).toContain('The preview is a single diff, so it cannot show this.');
+
+    button?.click();
+    await settle(fixture);
+
+    expect(howTo?.hidden).toBe(true);
   });
 
   it('leaves out the options of a diff the app does not show', async () => {

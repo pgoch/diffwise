@@ -84,6 +84,8 @@ export interface StepOption {
   readonly label: string;
   /** One sentence: what the option does. */
   readonly description: string;
+  /** How to check the option: what to choose, and where its effect shows. */
+  readonly howTo: string;
   /** The diffs the option works in; an app without any of them does not see it. */
   readonly diffKinds: readonly DiffKind[];
   /** The values of buttons and lists, in their order. */
@@ -174,7 +176,7 @@ const LANGUAGES: readonly Choice<DiffwiseLanguage>[] = [
 
 /** An option with buttons, in both diffs, that always works, unless the parts say otherwise. */
 function option(
-  parts: Partial<StepOption> & Pick<StepOption, 'name' | 'label' | 'description'>,
+  parts: Partial<StepOption> & Pick<StepOption, 'name' | 'label' | 'description' | 'howTo'>,
 ): StepOption {
   const base = {
     kind: OptionKind.Buttons,
@@ -192,6 +194,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     name: 'colorMode',
     label: 'Theme',
     description: 'Light or dark. Auto follows the system, or the dark mode of your app.',
+    howTo:
+      'Choose Dark: the preview turns dark at once. Auto follows the theme of your system: switch the system between light and dark to see it change.',
     choices: [
       { value: DiffwiseColorMode.Auto, label: 'Auto' },
       { value: DiffwiseColorMode.Light, label: 'Light' },
@@ -203,6 +207,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     name: 'darkModeSelector',
     label: 'Dark mode of your app',
     description: 'A CSS selector that matches your app in its dark mode; empty follows the system.',
+    howTo:
+      'In your app, with the theme Auto, the diff turns dark inside an element that matches the selector, such as <html class="dark">. To see it here, write body: the page around the preview matches it.',
     field: { placeholder: '.dark' },
     enabledWhen: {
       option: 'colorMode',
@@ -215,6 +221,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     label: 'Colors of changes',
     description:
       'Red and green, orange and blue for colorblind readers, or high contrast without colored backgrounds.',
+    howTo:
+      'Choose Colorblind-friendly: removed text in the preview turns orange and added text blue. High contrast frames the changes instead of coloring them.',
     choices: [
       { value: DiffwisePalette.Default, label: 'Standard' },
       { value: DiffwisePalette.Colorblind, label: 'Colorblind-friendly' },
@@ -225,6 +233,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     name: 'highlightStyle',
     label: 'Changed words',
     description: 'How changed words are marked; the text never moves.',
+    howTo:
+      'Switch the styles and watch the changed words in the preview: the marks around them change, and the text stays in place.',
     choices: [
       { value: DiffwiseHighlightStyle.Outline, label: 'Outline' },
       { value: DiffwiseHighlightStyle.Background, label: 'Background' },
@@ -236,6 +246,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     name: 'diffIntensity',
     label: 'Intensity',
     description: 'How strong the colors of changes are.',
+    howTo:
+      'Choose 1, then 5, and compare the backgrounds of the changed lines and words in the preview.',
     choices: LEVELS,
   }),
   option({
@@ -243,6 +255,7 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     label: 'Contrast of the interface',
     description:
       'How much the headers, the line numbers and the column between the versions stand out.',
+    howTo: 'Choose 1, then 5, and compare the headers and the line numbers of the preview.',
     choices: LEVELS,
   }),
   option({
@@ -251,6 +264,8 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     label: 'Your own colors',
     description:
       'Colors of changes of your app; a color left out comes from the colors of changes above.',
+    howTo:
+      'Tick a color and pick another one: the preview takes it at once. The colors of the dark theme show with the theme Dark above.',
   }),
 ];
 
@@ -259,12 +274,14 @@ const LINE_OPTIONS: readonly StepOption[] = [
     name: 'showLineNumbers',
     label: 'Line numbers',
     description: 'The number of each line; each version is numbered from 1.',
+    howTo: 'Choose Hidden: the numbers before the lines disappear from the preview.',
     choices: SHOWN_HIDDEN,
   }),
   option({
     name: 'lineNumberStyle',
     label: 'Numbers of changed lines',
     description: 'A colored number with a bar, or a colored background.',
+    howTo: 'Choose Colored background and look at the numbers of the changed lines in the preview.',
     choices: [
       { value: DiffwiseLineNumberStyle.Bar, label: 'Colored bar' },
       { value: DiffwiseLineNumberStyle.Background, label: 'Colored background' },
@@ -274,6 +291,8 @@ const LINE_OPTIONS: readonly StepOption[] = [
     name: 'lineNumberAlignment',
     label: 'Numbers in their lines',
     description: 'Where a number sits next to a line of several rows.',
+    howTo:
+      'Look at a long paragraph that wraps onto several rows in the preview: its number moves to its top, its middle or its bottom.',
     choices: [
       { value: DiffwiseVerticalAlignment.Top, label: 'Top' },
       { value: DiffwiseVerticalAlignment.Middle, label: 'Middle' },
@@ -284,12 +303,16 @@ const LINE_OPTIONS: readonly StepOption[] = [
     name: 'highlightChangedLines',
     label: 'Background of changed lines',
     description: 'A light background for each changed line.',
+    howTo:
+      'Choose Off: the changed lines in the preview lose their light background, and only the changed words keep their color.',
     choices: ON_OFF,
   }),
   option({
     name: 'highlightWholeLines',
     label: 'Whole added and removed lines',
     description: 'Marks an added or a removed line as a whole, like changed words.',
+    howTo:
+      'Choose Off for the background of changed lines above, then On here: a whole added or removed paragraph in the preview gets the color of changed words.',
     choices: ON_OFF,
     enabledWhen: {
       option: 'highlightChangedLines',
@@ -301,6 +324,8 @@ const LINE_OPTIONS: readonly StepOption[] = [
     name: 'hideUnchangedLines',
     label: 'Hide unchanged lines',
     description: 'Hides unchanged lines far from changes behind a bar that shows them.',
+    howTo:
+      'Choose On: unchanged lines far from changes hide behind bars, which show them on a click. The plain text sample has such lines; the HTML samples change almost everywhere, so they hide few or none.',
     choices: ON_OFF,
   }),
   option({
@@ -308,6 +333,8 @@ const LINE_OPTIONS: readonly StepOption[] = [
     name: 'contextLines',
     label: 'Lines around changes',
     description: 'Unchanged lines that stay shown above and below each change.',
+    howTo:
+      'With unchanged lines hidden, write 1: fewer lines stay around each change, and the bars hide more. The plain text sample shows it best.',
     field: { min: 1, max: 100, step: 1, unit: 'lines' },
     enabledWhen: {
       option: 'hideUnchangedLines',
@@ -323,6 +350,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     label: 'Layout',
     description:
       'The versions side by side, a single column, or Auto: one column in a narrow diff.',
+    howTo:
+      'Choose Side by side or Single column: the preview switches at once. In most laptop windows the preview is narrower than 768 pixels, so Auto shows a single column there.',
     choices: [
       { value: DiffwiseLayout.Auto, label: 'Auto' },
       { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
@@ -334,6 +363,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     name: 'layoutBreakpoint',
     label: 'Width of a narrow diff',
     description: 'The width of the diff under which Auto shows a single column.',
+    howTo:
+      'With the layout Auto, write a width above that of the preview, such as 2000: the preview shows a single column. Write 300, and it shows the versions side by side.',
     field: { min: 1, step: 1, unit: 'px' },
     enabledWhen: {
       option: 'layout',
@@ -346,6 +377,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     label: 'Changes in a single column',
     description:
       'Removed text right before the added text, the same struck through, or the old line above the new one.',
+    howTo:
+      'Choose the layout Single column above, then switch the styles and watch a changed line in the preview.',
     choices: [
       { value: DiffwiseInlineDiffStyle.Merged, label: 'Merged' },
       { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
@@ -356,6 +389,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     name: 'dividerStyle',
     label: 'Between the versions',
     description: 'A gray column or a thin line.',
+    howTo:
+      'Choose the layout Side by side above, then Line: the gray column between the versions becomes a thin line.',
     choices: [
       { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
       { value: DiffwiseDividerStyle.Line, label: 'Line' },
@@ -365,6 +400,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     name: 'gapStyle',
     label: 'Opposite added and removed lines',
     description: 'What fills the place opposite an added or a removed line.',
+    howTo:
+      'Choose the layout Side by side above, then look opposite an added or a removed paragraph in the preview.',
     choices: [
       { value: DiffwiseGapStyle.Stripes, label: 'Stripes' },
       { value: DiffwiseGapStyle.Gray, label: 'Gray' },
@@ -375,6 +412,8 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     name: 'showVersionHeaders',
     label: 'Headers',
     description: 'The headers above the two versions.',
+    howTo:
+      'Choose Hidden: the headers above the versions disappear from the preview, and the options of the headers are disabled.',
     choices: SHOWN_HIDDEN,
   }),
   option({
@@ -382,12 +421,15 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     name: 'versionHeaders',
     label: 'Header content',
     description: 'The names of the versions, icons named by them, or texts of your app.',
+    howTo:
+      'Switch them and look above the versions in the preview. With Texts of your app, write the texts in the fields below. In a single column, the icons stand above the line numbers.',
     enabledWhen: WITH_HEADERS,
   }),
   option({
     name: 'versionHeaderAlignment',
     label: 'Header alignment',
     description: 'Where the headers sit in their columns.',
+    howTo: 'Choose Start: the headers in the preview move to the start of their columns.',
     choices: ALIGNMENTS,
     enabledWhen: WITH_HEADERS,
   }),
@@ -398,6 +440,8 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     name: 'changeDetails',
     label: 'Where details show',
     description: 'In a tooltip of the marked change, from an icon between the versions, or both.',
+    howTo:
+      'The sample has a link with a changed address. Hover over the link, then over its icon in the column next to it: the values show the details in one place or in both. The Long sample in the step Your diffs has more such changes.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
@@ -409,6 +453,8 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     name: 'changeDetailsIconStyle',
     label: 'Icons in the middle',
     description: 'A gray frame, a frame with a gradient, or a full gradient.',
+    howTo:
+      'Look at the icon of the changed link, in the column next to its line in the preview. The Long sample in the step Your diffs has more icons.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseChangeDetailsIconStyle.Plain, label: 'Gray frame' },
@@ -420,6 +466,8 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     name: 'tooltipColorMode',
     label: 'Tooltip colors',
     description: 'The colors of the diff, or those of the opposite theme.',
+    howTo:
+      'Hover over the icon of the changed link in the preview: with Reversed, the tooltip of a light diff is dark.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseTooltipColorMode.Component, label: 'Colors of the diff' },
@@ -430,6 +478,8 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     name: 'highlightTooltipChanges',
     label: 'Highlight the changed part',
     description: 'The part of a link address, a file name or an alternative text that changed.',
+    howTo:
+      'Hover over the icon of the changed link in the preview: the changed part of the address is highlighted. With Off, the tooltip shows the whole addresses alone.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -437,6 +487,8 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     name: 'tooltipTitleAlignment',
     label: 'Tooltip title',
     description: 'Where the titles of the tooltips sit.',
+    howTo:
+      'Hover over the icon of the changed link in the preview and look at the title at the top of the tooltip.',
     diffKinds: HTML_DIFF,
     choices: ALIGNMENTS,
   }),
@@ -448,11 +500,15 @@ const FONT_OPTIONS: readonly StepOption[] = [
     name: 'fontFamily',
     label: 'Font',
     description: 'The font around the diff, the font of the system, or a font your app loads.',
+    howTo:
+      'Choose Built-in, or Named font with a font installed on your computer, such as Georgia: the preview takes it at once. In your app, a named font must be one the app loads.',
   }),
   option({
     name: 'textFont',
     label: 'Text font',
     description: 'The font of the lines of plain text; fixed width keeps columns in line.',
+    howTo:
+      'In the plain text preview, choose Regular: the lines take the font of the diff instead of a font of fixed width.',
     diffKinds: TEXT_DIFF,
     choices: [
       { value: DiffwiseTextFont.Monospace, label: 'Fixed width' },
@@ -464,6 +520,7 @@ const FONT_OPTIONS: readonly StepOption[] = [
     name: 'versionHeaderFontSize',
     label: 'Header size',
     description: 'Font size of the headers, from 0.5 to 10.',
+    howTo: 'Write 1.5: the headers above the versions in the preview grow.',
     field: FONT_SIZE_FIELD,
     enabledWhen: WITH_HEADERS,
   }),
@@ -472,6 +529,7 @@ const FONT_OPTIONS: readonly StepOption[] = [
     name: 'lineNumberFontSize',
     label: 'Line number size',
     description: 'Font size of the line numbers, from 0.5 to 10; their column grows with it.',
+    howTo: 'Write 1.2: the line numbers in the preview grow, and their column with them.',
     field: FONT_SIZE_FIELD,
   }),
   option({
@@ -479,6 +537,8 @@ const FONT_OPTIONS: readonly StepOption[] = [
     name: 'tooltipFontSize',
     label: 'Tooltip size',
     description: 'Font size of the tooltips, from 0.5 to 10.',
+    howTo:
+      'Write 1.2 and hover over a number of changes above the preview, such as +3: the text of its tooltip grows.',
     field: FONT_SIZE_FIELD,
   }),
   option({
@@ -486,6 +546,8 @@ const FONT_OPTIONS: readonly StepOption[] = [
     name: 'toolbarFontSize',
     label: 'Toolbar size',
     description: 'Font size of the toolbar and the view settings, from 0.5 to 10.',
+    howTo:
+      'Write 1.2: the arrows, the numbers of changes and the button of the view settings above the preview grow.',
     field: FONT_SIZE_FIELD,
   }),
 ];
@@ -496,12 +558,16 @@ const TOOLBAR_OPTIONS: readonly StepOption[] = [
     label: 'Toolbar',
     description:
       'The bar above the diff with the arrows, the numbers of changes and the view settings.',
+    howTo:
+      'Choose Hidden: the bar above the preview disappears, and the step View settings is disabled. When the versions are the same, the bar still says "No changes"; see the next step.',
     choices: SHOWN_HIDDEN,
   }),
   option({
     name: 'showNavigationToolbar',
     label: 'Arrows between changes',
     description: 'Arrows to the previous and the next change, with a counter, such as 2 / 3.',
+    howTo:
+      'Choose Hidden: the arrows and their counter, such as – / 3, disappear from the bar above the preview.',
     choices: SHOWN_HIDDEN,
     enabledWhen: WITH_TOOLBAR,
   }),
@@ -509,6 +575,8 @@ const TOOLBAR_OPTIONS: readonly StepOption[] = [
     name: 'activeChangeStyle',
     label: 'Active change',
     description: 'How the change the arrows stepped to shows: in a frame, or with an arrow.',
+    howTo:
+      'Click the down arrow above the preview to step to the first change: it shows in a frame, or with an arrow at its line number.',
     choices: [
       { value: DiffwiseActiveChangeStyle.Outline, label: 'Outline' },
       { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
@@ -519,6 +587,8 @@ const TOOLBAR_OPTIONS: readonly StepOption[] = [
     name: 'showDiffStats',
     label: 'Numbers of changes',
     description: 'The numbers of added, removed and changed lines, such as +3 −1 ~10.',
+    howTo:
+      'Choose Hidden: the numbers of changes, such as +3 −1 ~10, disappear from the bar above the preview.',
     choices: SHOWN_HIDDEN,
     enabledWhen: WITH_TOOLBAR,
   }),
@@ -529,6 +599,8 @@ const IDENTICAL_VERSION_OPTIONS: readonly StepOption[] = [
     name: 'noChangesView',
     label: 'Identical versions',
     description: 'What stands under "No changes": nothing, the document once, or both versions.',
+    howTo:
+      'The preview in this step compares the sample with itself. Switch the values and look under "No changes".',
     choices: [
       { value: DiffwiseNoChangesView.Message, label: 'Message' },
       { value: DiffwiseNoChangesView.Document, label: 'Document once' },
@@ -542,18 +614,24 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     name: 'ignoreWhitespace',
     label: 'Ignore whitespace',
     description: 'Differences in spaces, tabs and line breaks are not changes.',
+    howTo:
+      'The plain text sample Long changes only spaces in a few lines, such as two spaces that became one. Choose it in the step Your diffs and switch the preview to Text: with On, those lines stop showing as changed.',
     choices: ON_OFF,
   }),
   option({
     name: 'ignoreCase',
     label: 'Ignore letter case',
     description: 'Differences between capital and small letters are not changes.',
+    howTo:
+      'The samples change no letter case alone, so the preview stays the same. In your app, with On, words such as "Room" and "room" are the same.',
     choices: ON_OFF,
   }),
   option({
     name: 'ignoreFormatting',
     label: 'Ignore formatting',
     description: 'Changes of formatting alone, such as italic → bold, are not changes.',
+    howTo:
+      'The HTML sample Long changes formatting alone in a few places, such as italic to bold. Choose it in the step Your diffs: with On, those changes stop showing.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -561,6 +639,8 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     name: 'ignoreLinkChanges',
     label: 'Ignore link changes',
     description: 'Links added, removed or pointing elsewhere around the same text are not changes.',
+    howTo:
+      'The sample has a link with a changed address. Choose On: the link stops showing as a change, and its icon disappears.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -572,6 +652,8 @@ const LANGUAGE_OPTIONS: readonly StepOption[] = [
     name: 'language',
     label: 'Language',
     description: 'The language of the interface; Auto takes it from LOCALE_ID of your app.',
+    howTo:
+      'Choose Polski: the bar above the preview, the headers and the view settings turn Polish at once.',
     choices: LANGUAGES,
   }),
   option({
@@ -580,6 +662,8 @@ const LANGUAGE_OPTIONS: readonly StepOption[] = [
     label: 'Your own texts',
     description:
       'Texts of the interface of your app; an empty field keeps the text of the language.',
+    howTo:
+      'Open the group Versions and the diff and write Before for oldVersionLabel: the header of the previous version in the preview says Before.',
   }),
 ];
 
@@ -589,11 +673,15 @@ const VIEW_SETTING_OPTIONS: readonly StepOption[] = [
     name: 'allowedUserSettings',
     label: 'Options for the user',
     description: 'What users can change in the view settings; none hides their button.',
+    howTo:
+      'Open the view settings with the button at the end of the bar above the preview: only the ticked options show there. With none ticked, the button disappears.',
   }),
   option({
     name: 'rememberUserSettings',
     label: 'Remember choices',
     description: 'Keeps the choices of users in localStorage, so they stay after a reload.',
+    howTo:
+      'The preview never remembers choices. In the demo, tick Remember choices, choose a theme in the view settings and reload the page: the theme stays.',
     choices: ON_OFF,
   }),
   option({
@@ -601,6 +689,8 @@ const VIEW_SETTING_OPTIONS: readonly StepOption[] = [
     name: 'userSettingsKey',
     label: 'Key of the choices',
     description: 'Diffs with one key share the choices; empty takes the base path of your app.',
+    howTo:
+      'Diffs with one key share the choices of the user, so choosing Dark in the view settings of one diff makes the others dark too. Give a diff a key of its own, such as contract-history, to keep its choices apart. The preview is a single diff, so it cannot show this.',
     field: { placeholder: 'contract-history' },
   }),
 ];

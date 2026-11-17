@@ -1,10 +1,24 @@
-<div class="option-name" [id]="ids.name">
-  {{ name() }}
-  @if (changed()) {
-    <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
-  }
+<div class="option-head">
+  <div class="option-name" [id]="ids.name">
+    {{ name() }}
+    @if (changed()) {
+      <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
+    }
+  </div>
+  <button
+    type="button"
+    class="option-info"
+    [attr.aria-label]="howToLabel()"
+    [attr.aria-expanded]="showsHowTo()"
+    [attr.aria-controls]="ids.howTo"
+    [title]="howToLabel()"
+    (click)="toggleHowTo()"
+  >
+    i
+  </button>
 </div>
 <p class="option-description" [id]="ids.description">{{ description() }}</p>
+<p class="option-how-to" [id]="ids.howTo" [hidden]="!showsHowTo()">{{ howTo() }}</p>
 <div
   class="option-choices"
   role="group"
