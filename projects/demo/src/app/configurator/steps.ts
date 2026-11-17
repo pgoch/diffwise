@@ -17,6 +17,7 @@ import {
   DiffwisePalette,
   DiffwiseTextFont,
   DiffwiseTooltipColorMode,
+  DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from 'ngx-diffwise';
 
@@ -70,7 +71,10 @@ export type OptionKind = (typeof OptionKind)[keyof typeof OptionKind];
 /** When an option that depends on another one works, and the note that says so otherwise. */
 export interface OptionCondition {
   readonly option: OptionName;
+  /** The value of the other option with which this one works, or the one without which it works. */
   readonly value: unknown;
+  /** True when the option works with every value of the other option but `value`. */
+  readonly isExcept?: boolean;
   readonly note: string;
 }
 
@@ -144,6 +148,14 @@ const ALIGNMENTS: readonly Choice<DiffwiseAlignment>[] = [
   { value: DiffwiseAlignment.Center, label: 'Center' },
   { value: DiffwiseAlignment.End, label: 'End' },
 ];
+
+/** Options of the headers work only while the diff shows headers. */
+const WITH_HEADERS: OptionCondition = {
+  option: 'versionHeaders',
+  value: DiffwiseVersionHeaders.None,
+  isExcept: true,
+  note: 'Only with headers.',
+};
 
 /** Limits of the font sizes, in rem. */
 const FONT_SIZE_FIELD: OptionField = { min: 0.5, max: 10, step: 0.05, unit: 'rem' };
@@ -364,6 +376,7 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     label: 'Header alignment',
     description: 'Where the headers sit in their columns.',
     choices: ALIGNMENTS,
+    enabledWhen: WITH_HEADERS,
   }),
 ];
 
@@ -439,6 +452,7 @@ const FONT_OPTIONS: readonly StepOption[] = [
     label: 'Header size',
     description: 'Font size of the headers, from 0.5 to 10.',
     field: FONT_SIZE_FIELD,
+    enabledWhen: WITH_HEADERS,
   }),
   option({
     kind: OptionKind.Number,

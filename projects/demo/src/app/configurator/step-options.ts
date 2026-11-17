@@ -148,7 +148,8 @@ export class StepOptions {
       return null;
     }
 
-    const works = this.state.valueOf(enabledWhen.option) === enabledWhen.value;
+    const hasValue = this.state.valueOf(enabledWhen.option) === enabledWhen.value;
+    const works = enabledWhen.isExcept ? !hasValue : hasValue;
 
     return works ? null : enabledWhen.note;
   }

@@ -158,7 +158,7 @@ describe('StepOptions', () => {
       const choice = otherChoice(option);
       const condition = option.enabledWhen;
 
-      if (condition !== null) {
+      if (condition !== null && !condition.isExcept) {
         TestBed.inject(ConfiguratorState).setOption(
           condition.option,
           condition.value as DiffwiseConfigOptions[typeof condition.option],
@@ -312,6 +312,27 @@ describe('StepOptions', () => {
 
     expect(contextLines().querySelector<HTMLInputElement>(INPUT_SELECTOR)?.disabled).toBe(false);
     expect(contextLines().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
+  });
+
+  it('disables the header options without headers', async () => {
+    const fixture = await render(StepId.Layout);
+    const alignment = () => optionNamed(fixture, 'Header alignment');
+
+    expect(alignment().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
+
+    await choose(fixture, 'Headers', 'None');
+
+    expect(alignment().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe('Only with headers.');
+    expect(alignment().querySelector<HTMLButtonElement>(CHOICE_SELECTOR)?.disabled).toBe(true);
+
+    TestBed.inject(ConfiguratorState).goTo(STEPS[5]);
+    await settle(fixture);
+
+    const size = optionNamed(fixture, 'Header size').querySelector<HTMLInputElement>(
+      INPUT_SELECTOR,
+    );
+
+    expect(size?.disabled).toBe(true);
   });
 
   it('leaves out the options of a diff the app does not show', async () => {
