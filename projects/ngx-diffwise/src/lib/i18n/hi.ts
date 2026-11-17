@@ -12,6 +12,7 @@ export const HINDI_TEXTS: UiTexts = {
   changedLineAfterLabel: 'बदली गई पंक्ति {number}, बाद में',
   changedLineLabel: 'बदली गई पंक्ति {number}',
   wideTableLabel: 'चौड़ी तालिका, बगल में स्क्रॉल करें',
+  longLinesLabel: 'लंबी पंक्तियाँ, बगल में स्क्रॉल करें',
   showHiddenLinesLabel: 'छिपी हुई पंक्तियाँ दिखाएँ: {count}',
   hiddenLinesLabel: 'छिपी हुई पंक्तियाँ: {count}',
   addedLinesLabel: 'जोड़ी गई पंक्तियाँ: {count}',
@@ -45,6 +46,8 @@ export const HINDI_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'निश्चित चौड़ाई',
   proportionalTextFontLabel: 'सामान्य',
   hideUnchangedLinesLabel: 'बिना बदली पंक्तियाँ छिपाएँ',
+  wrapLinesLabel: 'पंक्तियाँ लपेटें',
+  showAllWhitespaceLabel: 'सभी स्पेस और टैब दिखाएँ',
   resetUserSettingsLabel: 'डिफ़ॉल्ट पुनर्स्थापित करें',
 
   formattingChangeLabel: 'फ़ॉर्मैटिंग में बदलाव',

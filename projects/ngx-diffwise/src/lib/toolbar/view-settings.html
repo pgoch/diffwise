@@ -60,14 +60,14 @@
     </div>
   }
 
-  @if (showsHideUnchangedLines()) {
+  @for (checkbox of checkboxes(); track checkbox.setting) {
     <label class="diffwise-diff__view-settings-checkbox">
       <input
         type="checkbox"
-        [checked]="config().hideUnchangedLines"
-        (change)="chooseHideUnchangedLines($event)"
+        [checked]="checkbox.isChecked"
+        (change)="chooseCheckbox(checkbox.setting, $event)"
       />
-      {{ texts().hideUnchangedLinesLabel }}
+      {{ checkbox.label }}
     </label>
   }
 

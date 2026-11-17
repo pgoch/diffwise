@@ -34,6 +34,7 @@ describe('changeBlocks', () => {
       options: DEFAULT_DIFF_OPTIONS,
       idPrefix: ID_PREFIX,
       mergesChangedLines: false,
+      marksAllWhitespace: false,
     };
     const { rows } = diffHtml(paragraphs([]), paragraphs([5, 6, 30, 55]), settings);
 

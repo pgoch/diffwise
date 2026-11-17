@@ -12,6 +12,7 @@ export const SPANISH_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Línea {number} modificada, después',
   changedLineLabel: 'Línea {number} modificada',
   wideTableLabel: 'Tabla ancha, desplázate en horizontal',
+  longLinesLabel: 'Líneas largas, desplázate en horizontal',
   showHiddenLinesLabel: 'Mostrar líneas ocultas: {count}',
   hiddenLinesLabel: 'Líneas ocultas: {count}',
   addedLinesLabel: 'Líneas añadidas: {count}',
@@ -45,6 +46,8 @@ export const SPANISH_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Ancho fijo',
   proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Ocultar líneas sin cambios',
+  wrapLinesLabel: 'Ajustar líneas',
+  showAllWhitespaceLabel: 'Mostrar todos los espacios y tabulaciones',
   resetUserSettingsLabel: 'Restablecer valores predeterminados',
 
   formattingChangeLabel: 'Cambio de formato',

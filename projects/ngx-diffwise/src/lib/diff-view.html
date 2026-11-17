@@ -291,4 +291,19 @@
   }
 }
 
+@if (widestLinesText(); as widestText) {
+  <div class="diffwise-diff__line-scrollbars" [attr.lang]="uiLanguageTag()">
+    <div
+      class="diffwise-diff__line-scrollbar diffwise-diff__line-scrollbar--old"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="diffwise-diff__line-scrollbar-size">{{ widestText }}</div>
+    </div>
+    <div class="diffwise-diff__line-scrollbar diffwise-diff__line-scrollbar--new">
+      <div class="diffwise-diff__line-scrollbar-size" aria-hidden="true">{{ widestText }}</div>
+    </div>
+  </div>
+}
+
 <diffwise-change-tooltip [attr.lang]="uiLanguageTag()" [tooltipId]="tooltipId" />

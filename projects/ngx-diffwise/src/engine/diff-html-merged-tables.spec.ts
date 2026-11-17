@@ -53,7 +53,12 @@ const LONG_SAMPLES: [string, string, string][] = [
 
 /** Rows of two documents compared, with merged lines unless asked otherwise. */
 function compare(oldHtml: string, newHtml: string, mergesChangedLines = true): ViewRow[] {
-  const settings = { options: DEFAULT_DIFF_OPTIONS, idPrefix: ID_PREFIX, mergesChangedLines };
+  const settings = {
+    options: DEFAULT_DIFF_OPTIONS,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines,
+    marksAllWhitespace: false,
+  };
   return [...diffHtml(oldHtml, newHtml, settings).rows];
 }
 

@@ -32,6 +32,12 @@ type ChoiceSetting =
   | typeof DiffwiseUserSetting.Layout
   | typeof DiffwiseUserSetting.InlineDiffStyle;
 
+/** Options the view settings show as a checkbox. */
+type CheckboxSetting =
+  | typeof DiffwiseUserSetting.HideUnchangedLines
+  | typeof DiffwiseUserSetting.WrapLines
+  | typeof DiffwiseUserSetting.ShowAllWhitespace;
+
 /** A value of an option with the text of its button. */
 interface ChoiceDefinition {
   readonly value: string;
@@ -102,6 +108,26 @@ const CHOICE_GROUPS: readonly ChoiceGroupDefinition[] = [
     ],
   },
 ];
+
+/** An option the view settings show as a checkbox, with the text of its name. */
+interface CheckboxDefinition {
+  readonly setting: CheckboxSetting;
+  readonly label: keyof UiTexts;
+}
+
+/** The checkboxes, in the order the view settings show them, under the groups of buttons. */
+const CHECKBOXES: readonly CheckboxDefinition[] = [
+  { setting: DiffwiseUserSetting.HideUnchangedLines, label: 'hideUnchangedLinesLabel' },
+  { setting: DiffwiseUserSetting.WrapLines, label: 'wrapLinesLabel' },
+  { setting: DiffwiseUserSetting.ShowAllWhitespace, label: 'showAllWhitespaceLabel' },
+];
+
+/** A checkbox as the template shows it. */
+interface ShownCheckbox {
+  readonly setting: CheckboxSetting;
+  readonly label: string;
+  readonly isChecked: boolean;
+}
 
 /** A button of one value as the template shows it. */
 interface ShownChoice {
@@ -200,10 +226,19 @@ export class ViewSettings {
     return allowedGroups.map((group) => this.shownGroup(group));
   });
 
-  /** True when the user can hide unchanged lines. */
-  protected readonly showsHideUnchangedLines = computed(() =>
-    this.allowed().includes(DiffwiseUserSetting.HideUnchangedLines),
-  );
+  /** The checkboxes of the allowed options. */
+  protected readonly checkboxes = computed<readonly ShownCheckbox[]>(() => {
+    const allowed = this.allowed();
+    const texts = this.texts();
+    const config = this.config();
+    const allowedCheckboxes = CHECKBOXES.filter(({ setting }) => allowed.includes(setting));
+
+    return allowedCheckboxes.map(({ setting, label }) => ({
+      setting,
+      label: texts[label],
+      isChecked: config[setting],
+    }));
+  });
 
   private readonly button = viewChild.required<ElementRef<HTMLElement>>(BUTTON_REFERENCE);
   private readonly viewSettings =
@@ -228,10 +263,10 @@ export class ViewSettings {
     }
   }
 
-  /** Passes on the choice of the checkbox that hides unchanged lines. */
-  protected chooseHideUnchangedLines(event: Event): void {
+  /** Passes on the choice of a checkbox. */
+  protected chooseCheckbox(setting: CheckboxSetting, event: Event): void {
     const { checked } = event.target as HTMLInputElement;
-    this.settingsChange.emit({ hideUnchangedLines: checked });
+    this.settingsChange.emit({ [setting]: checked } as UserChoices);
   }
 
   /**

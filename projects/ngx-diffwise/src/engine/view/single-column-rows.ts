@@ -25,7 +25,7 @@ const NO_LINES_ABOVE: LinesAbove = { hasLine: false, hasRow: false };
 
 /**
  * Turns the rows of the side-by-side view into the rows of the single column. An unchanged line
- * shows once, under both of its numbers. A changed pair shows as its merged line, when the
+ * shows once, under both of its numbers, or under its number when only one version has it. A changed pair shows as its merged line, when the
  * settings ask for merged lines and the pair has one, or else as its old line above its new one.
  */
 export function singleColumnRows(
@@ -141,8 +141,9 @@ function rowsOfLines(row: ViewRow, sourceRow: number, tables: SingleColumnTables
   const { kind, oldLine, newLine, changeDetails } = row;
   const placedRows: PlacedRow[] = [];
   const isUnchanged = kind === LineChangeKind.Unchanged;
+  const newLineShowsBoth = isUnchanged && newLine !== null;
 
-  if (oldLine !== null && !isUnchanged) {
+  if (oldLine !== null && !newLineShowsBoth) {
     placedRows.push({
       kind,
       version: DocumentVersion.Old,

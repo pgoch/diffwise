@@ -98,7 +98,12 @@ function compare(
   newHtml: string,
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
 ): Comparison {
-  return diffHtml(oldHtml, newHtml, { options, idPrefix: ID_PREFIX, mergesChangedLines: false });
+  return diffHtml(oldHtml, newHtml, {
+    options,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines: false,
+    marksAllWhitespace: false,
+  });
 }
 
 /**

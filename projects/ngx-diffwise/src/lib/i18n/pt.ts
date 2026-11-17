@@ -12,6 +12,7 @@ export const PORTUGUESE_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Linha {number} alterada, depois',
   changedLineLabel: 'Linha {number} alterada',
   wideTableLabel: 'Tabela larga, desloque para o lado',
+  longLinesLabel: 'Linhas longas, desloque para o lado',
   showHiddenLinesLabel: 'Mostrar linhas ocultas: {count}',
   hiddenLinesLabel: 'Linhas ocultas: {count}',
   addedLinesLabel: 'Linhas adicionadas: {count}',
@@ -45,6 +46,8 @@ export const PORTUGUESE_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Largura fixa',
   proportionalTextFontLabel: 'Normal',
   hideUnchangedLinesLabel: 'Ocultar linhas sem alterações',
+  wrapLinesLabel: 'Moldar linhas',
+  showAllWhitespaceLabel: 'Mostrar todos os espaços e tabulações',
   resetUserSettingsLabel: 'Repor predefinições',
 
   formattingChangeLabel: 'Alteração de formatação',

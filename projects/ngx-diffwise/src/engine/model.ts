@@ -149,6 +149,11 @@ export interface DiffOptions {
   readonly ignoreFormatting: boolean;
   /** Ignores links added, removed or pointing elsewhere around the same text. */
   readonly ignoreLinkChanges: boolean;
+  /**
+   * Ignores blank lines of plain text added or removed: empty, or of whitespace alone. HTML
+   * documents have no blank lines, as empty paragraphs are no lines.
+   */
+  readonly ignoreBlankLines: boolean;
 }
 
 /** Default options: every difference counts. */
@@ -157,6 +162,7 @@ export const DEFAULT_DIFF_OPTIONS: DiffOptions = {
   ignoreCase: false,
   ignoreFormatting: false,
   ignoreLinkChanges: false,
+  ignoreBlankLines: false,
 };
 
 /** Ways a line can differ between the two versions. */
@@ -471,6 +477,11 @@ export interface ComparisonSettings {
   readonly idPrefix: string;
   /** Prepares the merged line of each changed pair, which takes time for every changed line. */
   readonly mergesChangedLines: boolean;
+  /**
+   * Marks each space and tab of plain text for a sign, also outside changed text, which marks
+   * them always. HTML documents show no signs.
+   */
+  readonly marksAllWhitespace: boolean;
 }
 
 /** How the single-column view shows the rows of a diff. */

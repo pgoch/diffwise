@@ -19,6 +19,7 @@ import {
   LineChangeKind,
   LineKind,
   type ViewLine,
+  type ViewRow,
 } from './model';
 
 const NO_TEXT = '';
@@ -34,6 +35,7 @@ const MARKER_ELEMENTS = new Set(['del', 'ins', 'span']);
 const LINE_END = /\r\n|\r|\n/;
 const IGNORE_WHITESPACE: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreWhitespace: true };
 const IGNORE_CASE: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreCase: true };
+const IGNORE_BLANK_LINES: DiffOptions = { ...DEFAULT_DIFF_OPTIONS, ignoreBlankLines: true };
 
 const SHORT = 'short';
 const MEDIUM = 'medium';
@@ -61,8 +63,10 @@ function compare(
   newText: string,
   options: DiffOptions = DEFAULT_DIFF_OPTIONS,
   mergesChangedLines = false,
+  marksAllWhitespace = false,
 ): Comparison {
-  return diffText(oldText, newText, { options, idPrefix: ID_PREFIX, mergesChangedLines });
+  const settings = { options, idPrefix: ID_PREFIX, mergesChangedLines, marksAllWhitespace };
+  return diffText(oldText, newText, settings);
 }
 
 /** The content a browser makes of the HTML of a line. */
@@ -236,6 +240,80 @@ describe('diffText', () => {
     });
   });
 
+  it('shows a blank line added or removed as unchanged, in its version alone, when blank lines are ignored', () => {
+    const oldText = '[sync]\ninterval = 15\n\n\nwifi-only = true\n[backup]';
+    const newText = '[sync]\ninterval = 30\n\nwifi-only = true\n \t\n[backup]';
+
+    expect(summary(oldText, newText, IGNORE_BLANK_LINES)).toEqual([
+      [LineChangeKind.Unchanged, 1, 1, '[sync]', '[sync]'],
+      [LineChangeKind.Changed, 2, 2, 'interval = 15', 'interval = 30'],
+      [LineChangeKind.Unchanged, 3, null, NO_TEXT, null],
+      [LineChangeKind.Unchanged, 4, 3, NO_TEXT, NO_TEXT],
+      [LineChangeKind.Unchanged, 5, 4, 'wifi-only = true', 'wifi-only = true'],
+      [LineChangeKind.Unchanged, null, 5, null, ' \t'],
+      [LineChangeKind.Unchanged, 6, 6, '[backup]', '[backup]'],
+    ]);
+    expect(compare(oldText, newText, IGNORE_BLANK_LINES).stats).toEqual({
+      addedLines: 0,
+      removedLines: 0,
+      changedLines: 1,
+    });
+    expect(compare(oldText, newText).stats).toEqual({
+      addedLines: 1,
+      removedLines: 1,
+      changedLines: 1,
+    });
+  });
+
+  it('finds no change in a blank line of spaces in place of an empty one when blank lines are ignored', () => {
+    const oldText = 'first\n\nlast';
+    const newText = 'first\n  \nlast';
+    const ignored = compare(oldText, newText, IGNORE_BLANK_LINES);
+
+    expect(ignored.rows.map((row) => row.kind)).toEqual([
+      LineChangeKind.Unchanged,
+      LineChangeKind.Unchanged,
+      LineChangeKind.Unchanged,
+    ]);
+    expect(ignored.stats).toEqual(NO_CHANGES);
+    expect(compare(oldText, newText).stats).toEqual({
+      addedLines: 1,
+      removedLines: 1,
+      changedLines: 0,
+    });
+  });
+
+  it('marks every space and tab, also outside changes, when the settings ask for it', () => {
+    const oldText = 'name:\tSync\nSync every hour';
+    const newText = 'name:\tSync\nSync every day';
+    const marked = compare(oldText, newText, DEFAULT_DIFF_OPTIONS, true, true).rows;
+    const unmarked = compare(oldText, newText, DEFAULT_DIFF_OPTIONS, true).rows;
+    const signsOfRow = (row: ViewRow) => [
+      signCounts(row.oldLine),
+      signCounts(row.newLine),
+      signCounts(row.mergedLine),
+    ];
+    const unmarkedSigns = unmarked.flatMap(signsOfRow);
+
+    expect(marked.map(signsOfRow)).toEqual([
+      [
+        { spaces: 0, tabs: 1 },
+        { spaces: 0, tabs: 1 },
+        { spaces: 0, tabs: 0 },
+      ],
+      [
+        { spaces: 2, tabs: 0 },
+        { spaces: 2, tabs: 0 },
+        { spaces: 2, tabs: 0 },
+      ],
+    ]);
+    expect(unmarkedSigns.every(({ spaces, tabs }) => spaces + tabs === 0)).toBe(true);
+    expect(marked.map((row) => [shownText(row.oldLine), shownText(row.newLine)])).toEqual([
+      ['name:\tSync', 'name:\tSync'],
+      ['Sync every hour', 'Sync every day'],
+    ]);
+  });
+
   it('finds no change in letter case when it is ignored', () => {
     const oldText = 'Sync settings for teams';
     const newText = 'sync settings for teams';
@@ -311,6 +389,14 @@ describe('diffText', () => {
     });
 
     expect(polish).toEqual(english);
+  });
+
+  it('counts fewer changes in the long sample when blank lines are ignored', () => {
+    expect(compare(enLongBefore, enLongAfter, IGNORE_BLANK_LINES).stats).toEqual({
+      addedLines: 8,
+      removedLines: 0,
+      changedLines: 22,
+    });
   });
 
   it('counts fewer changes in the long sample when whitespace is ignored', () => {

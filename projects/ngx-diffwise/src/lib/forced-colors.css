@@ -87,6 +87,11 @@
     forced-color-adjust: none;
   }
 
+  /* Opposite a line that the comparison ignores, no stripes: nothing changed there. */
+  .diffwise-diff .diffwise-diff__row--unchanged > .diffwise-diff__gap {
+    background: Canvas;
+  }
+
   /* Changed parts of values in the tooltip. */
   .diffwise-diff__tooltip-highlight--added,
   .diffwise-diff__tooltip-highlight--removed {

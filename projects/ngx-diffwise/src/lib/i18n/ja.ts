@@ -12,6 +12,7 @@ export const JAPANESE_TEXTS: UiTexts = {
   changedLineAfterLabel: '{number} 行目（変更後）',
   changedLineLabel: '{number} 行目（変更）',
   wideTableLabel: '幅の広い表、横にスクロールできます',
+  longLinesLabel: '長い行、横にスクロールできます',
   showHiddenLinesLabel: '非表示の行を表示：{count}',
   hiddenLinesLabel: '非表示の行：{count}',
   addedLinesLabel: '追加された行：{count}',
@@ -45,6 +46,8 @@ export const JAPANESE_TEXTS: UiTexts = {
   monospaceTextFontLabel: '等幅',
   proportionalTextFontLabel: '標準',
   hideUnchangedLinesLabel: '変更のない行を非表示',
+  wrapLinesLabel: '行を折り返す',
+  showAllWhitespaceLabel: 'すべてのスペースとタブを表示',
   resetUserSettingsLabel: '既定に戻す',
 
   formattingChangeLabel: '書式の変更',

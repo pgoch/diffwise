@@ -3,7 +3,8 @@
  * column for the icon of its changes. Separate from the main styles because of their size.
  */
 
-.diffwise-diff--layout-inline :is(.diffwise-diff__version-headers, .diffwise-diff__row) {
+.diffwise-diff--layout-inline
+  :is(.diffwise-diff__version-headers, .diffwise-diff__row, .diffwise-diff__line-scrollbars) {
   grid-template-columns:
     var(--diffwise-line-number-width) var(--diffwise-line-number-width)
     calc(2.2 * var(--diffwise-line-number-font-size)) minmax(0, 1fr);

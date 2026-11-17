@@ -12,6 +12,7 @@ export const RUSSIAN_TEXTS: UiTexts = {
   changedLineAfterLabel: 'Изменённая строка {number}, после',
   changedLineLabel: 'Изменённая строка {number}',
   wideTableLabel: 'Широкая таблица, прокрутите вбок',
+  longLinesLabel: 'Длинные строки, прокрутите вбок',
   showHiddenLinesLabel: 'Показать скрытые строки: {count}',
   hiddenLinesLabel: 'Скрытые строки: {count}',
   addedLinesLabel: 'Добавленные строки: {count}',
@@ -45,6 +46,8 @@ export const RUSSIAN_TEXTS: UiTexts = {
   monospaceTextFontLabel: 'Моноширинный',
   proportionalTextFontLabel: 'Обычный',
   hideUnchangedLinesLabel: 'Скрыть неизменённые строки',
+  wrapLinesLabel: 'Переносить строки',
+  showAllWhitespaceLabel: 'Показать все пробелы и табуляции',
   resetUserSettingsLabel: 'Сбросить настройки',
 
   formattingChangeLabel: 'Изменение форматирования',

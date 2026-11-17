@@ -4,6 +4,7 @@ import {
   ElementRef,
   Injector,
   LOCALE_ID,
+  type EffectCleanupRegisterFn,
   type Signal,
   afterNextRender,
   afterRenderEffect,
@@ -87,6 +88,7 @@ import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
+import { prepareLineScrollbars, scrollLinesTogether, widestLinesText } from './line-scroll';
 import { markWideTables, scrollTablesTogether } from './table-scroll';
 import {
   type DiffwiseUserSettings,
@@ -173,6 +175,13 @@ const FOCUSABLE_MARKER_SELECTOR = [
 
 /** Diffs created so far; numbers the id prefixes. */
 let createdDiffs = 0;
+
+/** Options of the view settings for the lines of the text diff only. */
+const TEXT_LINE_SETTINGS: readonly DiffwiseUserSetting[] = [
+  DiffwiseUserSetting.TextFont,
+  DiffwiseUserSetting.WrapLines,
+  DiffwiseUserSetting.ShowAllWhitespace,
+];
 
 /** Colors of a theme without colors of the app. */
 const NO_COLORS: ThemeDiffColors = Object.freeze({});
@@ -372,6 +381,18 @@ export abstract class DiffView {
   readonly contextLines = input<number>();
 
   /**
+   * Breaks long lines of the text diff into rows of text, or lets the lines scroll sideways; wins
+   * over `config` and the global configuration. The HTML diff does not use it.
+   */
+  readonly wrapLines = input<boolean>();
+
+  /**
+   * Shows each space and tab of the text diff as a sign, also outside changes; wins over `config`
+   * and the global configuration. The HTML diff does not use it.
+   */
+  readonly showAllWhitespace = input<boolean>();
+
+  /**
    * Shows the toolbar above the diff, which says anyway that the versions are the same; wins over
    * `config` and the global configuration.
    */
@@ -479,6 +500,12 @@ export abstract class DiffView {
   /** Ignores differences in whitespace; wins over `config` and the global configuration. */
   readonly ignoreWhitespace = input<boolean>();
 
+  /**
+   * Ignores blank lines of the text diff added or removed; wins over `config` and the global
+   * configuration. The HTML diff does not use it.
+   */
+  readonly ignoreBlankLines = input<boolean>();
+
   /** Ignores differences in letter case; wins over `config` and the global configuration. */
   readonly ignoreCase = input<boolean>();
 
@@ -558,6 +585,8 @@ export abstract class DiffView {
     highlightWholeLines: this.highlightWholeLines(),
     hideUnchangedLines: this.hideUnchangedLines(),
     contextLines: this.contextLines(),
+    wrapLines: this.wrapLines(),
+    showAllWhitespace: this.showAllWhitespace(),
     showToolbar: this.showToolbar(),
     showNavigationToolbar: this.showNavigationToolbar(),
     activeChangeStyle: this.activeChangeStyle(),
@@ -583,6 +612,7 @@ export abstract class DiffView {
     highlightTooltipChanges: this.highlightTooltipChanges(),
     tooltipTitleAlignment: this.tooltipTitleAlignment(),
     ignoreWhitespace: this.ignoreWhitespace(),
+    ignoreBlankLines: this.ignoreBlankLines(),
     ignoreCase: this.ignoreCase(),
     ignoreFormatting: this.ignoreFormatting(),
     ignoreLinkChanges: this.ignoreLinkChanges(),
@@ -596,8 +626,8 @@ export abstract class DiffView {
   );
 
   /**
-   * True when the lines are lines of plain text, whose font the user can switch in the view
-   * settings.
+   * True when the lines are lines of plain text, whose font, wrapping and signs of spaces and tabs
+   * the user can switch in the view settings.
    */
   protected readonly showsTextLines: boolean = false;
 
@@ -609,7 +639,7 @@ export abstract class DiffView {
       return allowed;
     }
 
-    return allowed.filter((setting) => setting !== DiffwiseUserSetting.TextFont);
+    return allowed.filter((setting) => !TEXT_LINE_SETTINGS.includes(setting));
   });
 
   /** Name under which the choices of the user are kept: the one of the app, or its base path. */
@@ -636,12 +666,31 @@ export abstract class DiffView {
   /** What counts as a difference; other options change without comparing the versions again. */
   private readonly diffOptions = computed<DiffOptions>(
     () => {
-      const { ignoreWhitespace, ignoreCase, ignoreFormatting, ignoreLinkChanges } =
-        this.effectiveConfig();
+      const {
+        ignoreWhitespace,
+        ignoreCase,
+        ignoreFormatting,
+        ignoreLinkChanges,
+        ignoreBlankLines,
+      } = this.effectiveConfig();
 
-      return { ignoreWhitespace, ignoreCase, ignoreFormatting, ignoreLinkChanges };
+      return {
+        ignoreWhitespace,
+        ignoreCase,
+        ignoreFormatting,
+        ignoreLinkChanges,
+        ignoreBlankLines,
+      };
     },
     { equal: areDiffOptionsEqual },
+  );
+
+  /**
+   * True when each space and tab of plain text shows a sign. The HTML of the lines then changes, so
+   * the versions are compared again, though nothing else changes.
+   */
+  private readonly marksAllWhitespace = computed(
+    () => this.showsTextLines && this.effectiveConfig().showAllWhitespace,
   );
 
   /** The dark mode marker to watch in automatic mode, or `null` when the diff follows the system. */
@@ -749,6 +798,27 @@ export abstract class DiffView {
   private readonly diff = computed(() =>
     this.mergesChangedLines() ? this.mergedComparison() : this.comparison(),
   );
+
+  /** True when the lines of plain text stay in one row of text each and scroll sideways together. */
+  protected readonly scrollsLinesSideways = computed(
+    () => this.showsTextLines && !this.effectiveConfig().wrapLines,
+  );
+
+  /**
+   * The texts of the longest lines, which give the scrollbars of the lines their length; `null`
+   * without such scrollbars: while lines wrap, or when no lines show.
+   */
+  protected readonly widestLinesText = computed(() => {
+    const showsLines = this.showsDocumentOnce() || this.showsBothVersions();
+
+    if (!this.scrollsLinesSideways() || !showsLines) {
+      return null;
+    }
+
+    const lines = this.diff().rows.flatMap((row) => [row.oldLine, row.newLine, row.mergedLine]);
+
+    return widestLinesText(lines);
+  });
 
   /** Numbers of the changed lines of the comparison. */
   protected readonly diffStats = computed(() => diffwiseDiffStats(this.diff().stats));
@@ -945,6 +1015,8 @@ export abstract class DiffView {
 
     afterRenderEffect(() => this.prepareMarkers());
     afterRenderEffect(() => this.prepareForKeyboardAndScreenReaders());
+    afterRenderEffect((onCleanup) => this.scrollLongLinesTogether(onCleanup));
+    afterRenderEffect(() => this.prepareLineScrollbars());
     this.emitStatsOfEachComparison();
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
@@ -1105,7 +1177,13 @@ export abstract class DiffView {
 
   /** Compares the versions with the options of the comparison, with merged lines or without. */
   private compare(mergesChangedLines: boolean): Comparison {
-    const settings = { options: this.diffOptions(), idPrefix: this.idPrefix, mergesChangedLines };
+    const settings = {
+      options: this.diffOptions(),
+      idPrefix: this.idPrefix,
+      mergesChangedLines,
+      marksAllWhitespace: this.marksAllWhitespace(),
+    };
+
     return this.compareVersions(this.versions(), settings);
   }
 
@@ -1117,6 +1195,7 @@ export abstract class DiffView {
     afterRenderEffect((onCleanup) => {
       this.versions();
       this.diffOptions();
+      this.marksAllWhitespace();
 
       if (this.mergesChangedLines() || !this.mayShowMergedLines()) {
         return;
@@ -1246,6 +1325,37 @@ export abstract class DiffView {
       options,
     );
     this.destroyRef.onDestroy(() => listeners.abort());
+  }
+
+  /**
+   * While the lines of plain text do not wrap, scrolls them sideways together, by their scrollbars
+   * and by the wheel or the touchpad over a line.
+   */
+  private scrollLongLinesTogether(onCleanup: EffectCleanupRegisterFn): void {
+    if (!this.scrollsLinesSideways()) {
+      return;
+    }
+
+    const listeners = new AbortController();
+
+    scrollLinesTogether(this.host.nativeElement, listeners.signal);
+    onCleanup(() => listeners.abort());
+  }
+
+  /**
+   * After each drawing of lines that scroll sideways: scrolls new scrollbars to where the lines are,
+   * and gives the scrollbar a stop of `Tab` while a line is wider than its column.
+   */
+  private prepareLineScrollbars(): void {
+    if (this.widestLinesText() === null) {
+      return;
+    }
+
+    this.width();
+    this.shownLayout();
+    this.visibleRows();
+    this.visibleSingleColumnRows();
+    prepareLineScrollbars(this.host.nativeElement, this.texts().longLinesLabel);
   }
 
   /** Scrolls the lines of each table together, as one table, until the diff is destroyed. */

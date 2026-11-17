@@ -16,7 +16,7 @@
  * The font is a little smaller than the font of the diff, as fonts of fixed width look larger.
  * The line keeps the height of a line of the diff font, so the numbers stay in line with it.
  */
-diffwise-text .diffwise-diff__content {
+diffwise-text :is(.diffwise-diff__content, .diffwise-diff__line-scrollbar-size) {
   font-family: var(--diffwise-text-font-family);
   font-size: 0.9em;
   line-height: calc(1.6 / 0.9);
@@ -25,7 +25,8 @@ diffwise-text .diffwise-diff__content {
 }
 
 /* The font of the diff, when the reader or the app switches to it. */
-diffwise-text.diffwise-diff--text-font-proportional .diffwise-diff__content {
+diffwise-text.diffwise-diff--text-font-proportional
+  :is(.diffwise-diff__content, .diffwise-diff__line-scrollbar-size) {
   font-family: inherit;
   font-size: inherit;
   line-height: inherit;
@@ -61,4 +62,81 @@ diffwise-text .diffwise-diff__content:empty::after {
 .diffwise-diff__whitespace--tab::before {
   content: '\2192';
   content: '\2192' / '';
+}
+
+/* Signs outside changed text, when every space and tab shows one, are lighter. */
+.diffwise-diff__content > .diffwise-diff__whitespace::before {
+  opacity: 0.5;
+}
+
+/*
+ * Lines that do not wrap stay in one row of text each, and scroll sideways together: each line
+ * reaches out to the left by how far the lines are scrolled, and shows only what is in its column.
+ * The tabs keep their places, as they count from the edge of the line.
+ */
+diffwise-text.diffwise-diff--no-wrap-lines .diffwise-diff__content {
+  box-sizing: border-box;
+  width: calc(100% + var(--diffwise-line-scroll, 0px));
+  margin-left: calc(-1 * var(--diffwise-line-scroll, 0px));
+  overflow-x: clip;
+  overflow-wrap: normal;
+  white-space: pre;
+  clip-path: inset(0 0 0 var(--diffwise-line-scroll, 0px));
+}
+
+/*
+ * The scrollbars of the lines, under the content of each version. While the diff is in view, they
+ * stay at the bottom of the window, as the toolbar stays at its top. Without lines wider than their
+ * column, they take no room.
+ */
+.diffwise-diff__line-scrollbars {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: var(--diffwise-background);
+}
+
+.diffwise-diff__line-scrollbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.diffwise-diff__line-scrollbar--old {
+  grid-column: 2;
+}
+
+.diffwise-diff__line-scrollbar--new {
+  grid-column: 5;
+}
+
+/* The single column and the document shown once have one scrollbar, under their content. */
+:is(
+    .diffwise-diff--layout-inline,
+    .diffwise-diff--no-changes.diffwise-diff--no-changes-view-document
+  )
+  .diffwise-diff__line-scrollbar--old {
+  display: none;
+}
+
+.diffwise-diff--layout-inline .diffwise-diff__line-scrollbar--new {
+  grid-column: 4;
+}
+
+.diffwise-diff--no-changes.diffwise-diff--no-changes-view-document
+  .diffwise-diff__line-scrollbar--new {
+  grid-column: 2;
+}
+
+/*
+ * Texts of the longest lines, in the font of the lines, unseen: as wide as the widest line with
+ * its padding, and a little room for the frames of changed text, they give the scrollbars their
+ * length. A box without height would not count for the length.
+ */
+diffwise-text .diffwise-diff__line-scrollbar-size {
+  width: max-content;
+  height: 1px;
+  padding-inline: 16px 24px;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: pre;
 }

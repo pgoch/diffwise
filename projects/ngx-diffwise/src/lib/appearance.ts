@@ -44,6 +44,7 @@ const NO_LINE_NUMBERS_CLASS = 'diffwise-diff--no-line-numbers';
 const NO_CHANGED_LINE_HIGHLIGHT_CLASS = 'diffwise-diff--no-changed-line-highlight';
 const HIGHLIGHT_WHOLE_LINES_CLASS = 'diffwise-diff--highlight-whole-lines';
 const NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS = 'diffwise-diff--no-tooltip-change-highlight';
+const NO_WRAP_LINES_CLASS = 'diffwise-diff--no-wrap-lines';
 
 const LINE_NUMBER_DIGITS_VARIABLE = '--diffwise-line-number-digits';
 const LINE_NUMBER_FONT_SIZE_VARIABLE = '--diffwise-line-number-font-size';
@@ -147,8 +148,13 @@ function levelClasses(config: DiffwiseConfig, customColors: ThemeDiffColors): st
 
 /** Modifier classes of the options that turn parts of the diff on or off. */
 function toggleClasses(config: DiffwiseConfig): string[] {
-  const { showLineNumbers, highlightChangedLines, highlightWholeLines, highlightTooltipChanges } =
-    config;
+  const {
+    showLineNumbers,
+    highlightChangedLines,
+    highlightWholeLines,
+    highlightTooltipChanges,
+    wrapLines,
+  } = config;
   const classes: string[] = [];
 
   if (!showLineNumbers) {
@@ -165,6 +171,10 @@ function toggleClasses(config: DiffwiseConfig): string[] {
 
   if (!highlightTooltipChanges) {
     classes.push(NO_TOOLTIP_CHANGE_HIGHLIGHT_CLASS);
+  }
+
+  if (!wrapLines) {
+    classes.push(NO_WRAP_LINES_CLASS);
   }
 
   return classes;

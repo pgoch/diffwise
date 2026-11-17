@@ -210,6 +210,7 @@ function sampleDiff(language: string, size: SampleSize): Comparison {
     options: DEFAULT_DIFF_OPTIONS,
     idPrefix: ID_PREFIX,
     mergesChangedLines: false,
+    marksAllWhitespace: false,
   };
   const diff = diffHtml(before, after, settings);
 

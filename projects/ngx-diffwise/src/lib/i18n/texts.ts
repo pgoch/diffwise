@@ -34,6 +34,11 @@ export interface DiffwiseCustomTexts {
   /** Names for screen readers a table wider than its column, which scrolls sideways. */
   readonly wideTableLabel?: string;
   /**
+   * Names for screen readers the scrollbar of lines of the text diff that do not wrap, while lines
+   * are wider than their column.
+   */
+  readonly longLinesLabel?: string;
+  /**
    * Text of the bar in place of hidden unchanged lines, with a gray column between the versions;
    * `{count}` stands for their number.
    */
@@ -108,6 +113,10 @@ export interface DiffwiseCustomTexts {
   readonly proportionalTextFontLabel?: string;
   /** Names the checkbox that hides unchanged lines far from changes. */
   readonly hideUnchangedLinesLabel?: string;
+  /** Names the checkbox that breaks long lines of the text diff into rows of text. */
+  readonly wrapLinesLabel?: string;
+  /** Names the checkbox that shows each space and tab of the text diff as a sign. */
+  readonly showAllWhitespaceLabel?: string;
   /** Names the button that takes back the choices of the user. */
   readonly resetUserSettingsLabel?: string;
 
