@@ -160,7 +160,7 @@ export interface DiffwiseConfigOptions {
    * `DiffwiseTextFont.Monospace`.
    */
   readonly textFont?: DiffwiseTextFont;
-  /** Font size of the headers in rem, from 0.5 to 10. Default: `0.75`. */
+  /** Font size of the headers in rem, from 0.5 to 10. Default: `0.9`. */
   readonly versionHeaderFontSize?: number;
   /** Font size of the line numbers in rem, from 0.5 to 10. Default: `0.75`. */
   readonly lineNumberFontSize?: number;
@@ -318,7 +318,7 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
   readonly textFont: DiffwiseTextFont = DiffwiseTextFont.Monospace;
 
   /** Font size of the headers in rem. */
-  readonly versionHeaderFontSize: number = 0.75;
+  readonly versionHeaderFontSize: number = 0.9;
 
   /** Font size of the line numbers in rem. */
   readonly lineNumberFontSize: number = 0.75;

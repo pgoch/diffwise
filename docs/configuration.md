@@ -135,7 +135,7 @@ A tooltip shows on hover, and when its icon or marked change gets the focus from
 |---|---|---|---|
 | `fontFamily` | `DiffwiseFontFamily.Inherit`, `Builtin`, or a font name | `Inherit` | The font of the element around the diff, the font of the system, or a font your app loads, such as `'Inter'`. The built-in font is used while yours is missing |
 | `textFont` | `DiffwiseTextFont.Monospace`, `Proportional` | `Monospace` | Only in the text diff: the font of its lines. A font of fixed width, from `--diffwise-text-font-family`, keeps indentation and columns in line; `Proportional` takes the font of the diff, as `fontFamily` sets it. The user can switch it in the view settings |
-| `versionHeaderFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the headers |
+| `versionHeaderFontSize` | `0.5` to `10`, in rem | `0.9` | Font size of the headers |
 | `lineNumberFontSize` | `0.5` to `10`, in rem | `0.75` | Font size of the line numbers. Their column and the column between the versions, with its icons, grow with it |
 | `tooltipFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the tooltips |
 | `toolbarFontSize` | `0.5` to `10`, in rem | `0.8` | Font size of the toolbar and the view settings |

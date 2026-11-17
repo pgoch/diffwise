@@ -63,7 +63,7 @@ const DEFAULT_OPTIONS = {
   versionHeaderAlignment: DiffwiseAlignment.Center,
   fontFamily: DiffwiseFontFamily.Inherit,
   textFont: DiffwiseTextFont.Monospace,
-  versionHeaderFontSize: 0.75,
+  versionHeaderFontSize: 0.9,
   lineNumberFontSize: 0.75,
   tooltipFontSize: 0.8,
   toolbarFontSize: 0.8,
