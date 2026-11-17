@@ -5,6 +5,9 @@
   </a>
   <nav class="site-nav" aria-label="Site">
     <a href="#demo" [attr.aria-current]="page() === pages.Demo ? 'page' : null">Demo</a>
+    <a href="#configurator" [attr.aria-current]="page() === pages.Configurator ? 'page' : null">
+      Configurator
+    </a>
     <a [href]="links.docs">Docs</a>
     <a [href]="links.github">GitHub</a>
   </nav>
@@ -14,5 +17,8 @@
 @switch (page()) {
   @case (pages.Demo) {
     <demo-demo-page />
+  }
+  @case (pages.Configurator) {
+    <demo-configurator-page />
   }
 }
