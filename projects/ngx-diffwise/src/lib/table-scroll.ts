@@ -3,6 +3,9 @@ const SCROLL_EVENT = 'scroll';
 /** Holds the position of a table line's table among the tables of its version. */
 const TABLE_ATTRIBUTE = 'data-diffwise-table';
 
+/** The table key of a line outside any table. */
+const NO_TABLE = '';
+
 /** The class of a diff that shows a single column. */
 const INLINE_LAYOUT_CLASS = 'diffwise-diff--layout-inline';
 
@@ -60,7 +63,7 @@ export function markWideTables(host: HTMLElement, label: string): void {
 
 /** The table of a line: in its version, or in the single column in both versions. */
 function tableKeyOf(host: HTMLElement, line: HTMLElement): string {
-  const table = line.getAttribute(TABLE_ATTRIBUTE) ?? '';
+  const table = line.getAttribute(TABLE_ATTRIBUTE) ?? NO_TABLE;
 
   if (host.classList.contains(INLINE_LAYOUT_CLASS)) {
     return table;

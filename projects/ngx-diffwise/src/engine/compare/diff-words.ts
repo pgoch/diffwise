@@ -66,11 +66,10 @@ export function diffWords(
   const { removedRuns, addedRuns, newTokensBefore } = runsBuilder.build();
   const removedRanges = changedRanges(removedRuns, oldSide);
   const addedRanges = changedRanges(addedRuns, newSide);
+  const removed = removedRanges.map((range) => removedRange(range, newTokensBefore, newSide));
+  const added = addedRanges.map(textRange);
 
-  return {
-    removed: removedRanges.map((range) => removedRange(range, newTokensBefore, newSide)),
-    added: addedRanges.map(textRange),
-  };
+  return { removed, added };
 }
 
 /** The removed text with the place in the new text where it stood: before the next new token. */
@@ -83,6 +82,7 @@ function removedRange(
   return { start, end, newPosition: nextNewToken?.start ?? newSide.text.length };
 }
 
+/** A copy of the range with its start and end alone. */
 function textRange({ start, end }: TextRange): TextRange {
   return { start, end };
 }
@@ -97,11 +97,13 @@ export function unchangedTokens(text: string, changedText: readonly TextRange[])
   );
 }
 
+/** True when the token overlaps one of the ranges. */
 function overlapsAny(token: Token, ranges: readonly TextRange[]): boolean {
   const tokenEnd = token.start + token.text.length;
   return ranges.some((range) => range.start < tokenEnd && token.start < range.end);
 }
 
+/** The text of a line as tokens, with the keys that the comparison compares. */
 function comparedText({ text, images }: LineContent, options: DiffOptions): ComparedText {
   const tokens = comparedTokens(text, options);
   const imagesByPosition = new Map(images.map((image) => [image.position, image]));
@@ -126,6 +128,7 @@ function comparedTokens(text: string, options: DiffOptions): Token[] {
   return options.ignoreWhitespace ? withoutWhitespace(tokens) : tokens;
 }
 
+/** The tokens without whitespace. */
 function withoutWhitespace(tokens: readonly Token[]): Token[] {
   return tokens.filter((token) => token.kind !== TokenKind.Whitespace);
 }
@@ -141,6 +144,7 @@ class ChangedRunsBuilder {
   private addedStart = 0;
   private addedEnd = 0;
 
+  /** Adds the next edit of the comparison of tokens. */
   add(edit: Edit): void {
     switch (edit.kind) {
       case EditKind.Delete:
@@ -159,6 +163,7 @@ class ChangedRunsBuilder {
     }
   }
 
+  /** The removed and added runs of tokens, and the new tokens before each removed run. */
   build(): ChangedRuns {
     this.closeBlock();
 
@@ -169,6 +174,7 @@ class ChangedRunsBuilder {
     };
   }
 
+  /** Starts a block of changes at the positions of both versions. */
   private startBlock(oldPosition: number, newPosition: number): void {
     this.removedStart = oldPosition;
     this.removedEnd = oldPosition;
@@ -176,6 +182,7 @@ class ChangedRunsBuilder {
     this.addedEnd = newPosition;
   }
 
+  /** Ends the open block of changes and keeps its removed and added runs. */
   private closeBlock(): void {
     const removesTokens = this.removedEnd > this.removedStart;
     const addsTokens = this.addedEnd > this.addedStart;
@@ -282,6 +289,7 @@ function edgeScore(run: TokenRun, side: ComparedText): number {
   return [start, end].filter((edge) => touchesWhitespace(side.text, edge)).length;
 }
 
+/** True when the position stands at an end of the text or next to whitespace. */
 function touchesWhitespace(text: string, position: number): boolean {
   const atEndOfText = position === 0 || position === text.length;
   const whitespaceBefore = WHITESPACE_CHARACTER.test(text.charAt(position - 1));
@@ -290,6 +298,7 @@ function touchesWhitespace(text: string, position: number): boolean {
   return atEndOfText || whitespaceBefore || whitespaceAfter;
 }
 
+/** The range of text that a run of tokens covers. */
 function textRangeOf(run: TokenRun, side: ComparedText): TextRange {
   const firstToken = side.tokens[run.start];
   const lastToken = side.tokens[run.end - 1];
@@ -309,6 +318,7 @@ function addRange(ranges: PlacedRange[], range: PlacedRange, text: string): void
   ranges.push(range);
 }
 
+/** True when only whitespace stands between the two positions. */
 function onlyWhitespaceBetween(text: string, start: number, end: number): boolean {
   return WHITESPACE_ONLY.test(text.slice(start, end));
 }

@@ -1,5 +1,6 @@
 import type { ColumnMatch } from '../compare/align-table-columns';
-import { COLUMN_GROUP_TAG, TABLE_ROW_GROUP_TAGS, TABLE_ROW_TAG } from '../html/html-tags';
+import { TABLE_ROW_TAG } from '../html/html-tags';
+import { isCell, isColumnGroup, isRowGroup } from '../html/table-elements';
 import { CONTINUED_CELL_ATTRIBUTE, DocumentVersion, TABLE_COPY_ATTRIBUTE } from '../model';
 
 const CELL_TAG = 'td';
@@ -31,7 +32,7 @@ interface MergedColumn {
 }
 
 /** A cell of a row copy and the columns of its version that it takes, from the first one. */
-export interface RowCell {
+interface RowCell {
   readonly element: Element;
   readonly column: number;
   readonly columnSpan: number;
@@ -100,6 +101,7 @@ export class MergedColumns {
     );
   }
 
+  /** Number of columns of the merged table. */
   get count(): number {
     return this.columns.length;
   }
@@ -119,7 +121,8 @@ export class MergedColumns {
     for (const { element, column, columnSpan } of cells) {
       const positions = version === DocumentVersion.Old ? this.oldPositions : this.newPositions;
       const start = positions.at(column);
-      const end = positions.at(column + columnSpan - 1);
+      const lastColumn = column + columnSpan - 1;
+      const end = positions.at(lastColumn);
       const staysWhole = start !== undefined && end !== undefined && end - start === columnSpan - 1;
 
       if (!staysWhole) {
@@ -179,7 +182,7 @@ export function rowCells(row: Element): RowCell[] {
   let column = 0;
 
   for (const element of Array.from(row.children)) {
-    if (!(element instanceof HTMLTableCellElement)) {
+    if (!isCell(element)) {
       continue;
     }
 
@@ -240,10 +243,12 @@ export function removeIds(element: Element): void {
   }
 }
 
+/** Merged columns for old columns from `start` to `end` that the new table does not have. */
 function onlyOldColumns(start: number, end: number): MergedColumn[] {
   return Array.from({ length: end - start }, (_, offset) => ({ old: start + offset, new: null }));
 }
 
+/** Merged columns for new columns from `start` to `end` that the old table does not have. */
 function onlyNewColumns(start: number, end: number): MergedColumn[] {
   return Array.from({ length: end - start }, (_, offset) => ({ old: null, new: start + offset }));
 }
@@ -311,14 +316,7 @@ function emptyCell(row: Element, place: EmptyPlace, columnSpan: number): Element
   return cell;
 }
 
+/** Orders placed cells by their first column. */
 function byStart(first: PlacedCell, second: PlacedCell): number {
   return first.start - second.start;
-}
-
-function isColumnGroup(element: Element): boolean {
-  return element.localName === COLUMN_GROUP_TAG;
-}
-
-function isRowGroup(element: Element): boolean {
-  return TABLE_ROW_GROUP_TAGS.has(element.localName);
 }

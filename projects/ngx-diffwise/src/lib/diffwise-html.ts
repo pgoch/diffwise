@@ -15,6 +15,9 @@ import { type DiffVersions, DiffView } from './diff-view';
 import { DiffToolbar } from './toolbar/diff-toolbar';
 import { ViewSettings } from './toolbar/view-settings';
 
+/** A version without any document, before the app gives one. */
+const NO_HTML = '';
+
 /**
  * Shows two versions of an HTML document with the changes marked: side by side, or in a single
  * column, which a narrow diff shows by itself.
@@ -48,10 +51,10 @@ import { ViewSettings } from './toolbar/view-settings';
 })
 export class DiffwiseHtml extends DiffView {
   /** The earlier version of the document. */
-  readonly oldHtml = input('');
+  readonly oldHtml = input(NO_HTML);
 
   /** The later version of the document. */
-  readonly newHtml = input('');
+  readonly newHtml = input(NO_HTML);
 
   /** Both documents; a new one starts a new comparison. */
   protected override readonly versions = computed<DiffVersions>(() => ({

@@ -23,6 +23,34 @@ module.exports = tseslint.config(
     },
   },
   {
+    // Code rules of the library; tests may write their inputs and expected results in place.
+    files: ['projects/ngx-diffwise/src/**/*.ts'],
+    ignores: ['**/*.spec.ts'],
+    rules: {
+      'max-classes-per-file': ['error', 1],
+      'no-nested-ternary': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "BinaryExpression[operator=/^[!=]==?$/] > Literal[value='']",
+          message: 'Check for empty text with `length === 0`.',
+        },
+        {
+          selector: 'CallExpression > Literal[raw=/^[\'"]/]',
+          message: 'Put text in a named constant.',
+        },
+        {
+          selector: 'BinaryExpression[operator=/^[!=]==?$/] > Literal[raw=/^[\'"]/]',
+          message: 'Put text in a named constant.',
+        },
+        {
+          selector: "LogicalExpression[operator='??'] > Literal[raw=/^['\"]/]",
+          message: 'Put text in a named constant.',
+        },
+      ],
+    },
+  },
+  {
     files: ['**/*.html'],
     extends: [...angular.configs.templateRecommended, ...angular.configs.templateAccessibility],
   },

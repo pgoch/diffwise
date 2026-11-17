@@ -308,6 +308,7 @@ class LineCollector {
   }
 }
 
+/** True when the node is an element that makes a block. */
 function isBlock(node: Node): node is Element {
   return node instanceof Element && BLOCK_TAGS.has(node.localName);
 }
@@ -331,23 +332,28 @@ function isContainerOfBlocks(element: Element): boolean {
   return splitsBlocks && Array.from(element.children).some(isBlock);
 }
 
+/** True when the element is a figure that holds a table. */
 function isFigureOfTable(element: Element): boolean {
   const holdsTable = Array.from(element.children).some((child) => child.localName === TABLE_TAG);
   return element.localName === FIGURE_TAG && holdsTable;
 }
 
+/** True when the element is the caption of a table or a figure. */
 function isCaption(element: Element): boolean {
   return element.localName === TABLE_CAPTION_TAG;
 }
 
+/** True when the row holds at least one cell. */
 function hasCells(row: GridRow): boolean {
   return row.cells.length > 0;
 }
 
+/** Kind and tag of the line of a caption. */
 function captionLineType(caption: Element): LineType {
   return { kind: LineKind.TableCaption, tag: caption.localName };
 }
 
+/** Kind and tag of the line of a table row. */
 function rowLineType(row: GridRow): LineType {
   return { kind: LineKind.TableRow, tag: row.element.localName };
 }
@@ -361,6 +367,7 @@ function textLineType(container: Element): LineType {
   return TEXT_OUTSIDE_BLOCKS;
 }
 
+/** Kind of the line of a block: a heading, a list item, or another block. */
 function kindOf(block: Element): LineKind {
   if (HEADING_TAGS.has(block.localName)) {
     return LineKind.Heading;

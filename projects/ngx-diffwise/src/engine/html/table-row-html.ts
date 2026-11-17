@@ -1,14 +1,10 @@
-import {
-  COLUMN_GROUP_TAG,
-  TABLE_CELL_TAGS,
-  TABLE_ROW_GROUP_TAGS,
-  TABLE_ROW_TAG,
-} from './html-tags';
+import { TABLE_ROW_TAG } from './html-tags';
 import {
   CONTINUED_CELL_ATTRIBUTE,
   DIFFWISE_DATA_ATTRIBUTE_START,
   TABLE_COPY_ATTRIBUTE,
 } from '../model';
+import { isCell, isColumnGroup, isRowGroup } from './table-elements';
 import type { GridRow } from './table-grid';
 
 const ID_ATTRIBUTE = 'id';
@@ -106,6 +102,7 @@ function continuedCell(cell: Element): Element {
   return copy;
 }
 
+/** A copy of a column group, with or without its ids. */
 function columnGroupCopy(columnGroup: Element, keepsIds: boolean): Element {
   const copy = columnGroup.cloneNode(true) as Element;
 
@@ -116,22 +113,11 @@ function columnGroupCopy(columnGroup: Element, keepsIds: boolean): Element {
   return copy;
 }
 
+/** Removes the ids of the element and the elements inside it. */
 function removeIds(element: Element): void {
   element.removeAttribute(ID_ATTRIBUTE);
 
   for (const child of element.querySelectorAll(ELEMENTS_WITH_ID_SELECTOR)) {
     child.removeAttribute(ID_ATTRIBUTE);
   }
-}
-
-function isRowGroup(element: Element): boolean {
-  return TABLE_ROW_GROUP_TAGS.has(element.localName);
-}
-
-function isColumnGroup(element: Element): boolean {
-  return element.localName === COLUMN_GROUP_TAG;
-}
-
-function isCell(element: Element): boolean {
-  return TABLE_CELL_TAGS.has(element.localName);
 }

@@ -123,14 +123,13 @@ function removedPart(removed: RemovedRange, pair: WordChangedPair): PlacedHtml {
   const bounds = { start: 0, end: pair.newLine.text.length };
   const { spaceBefore, isReplaced, spaceAfter } = removedTextSeparators(removed, pair, bounds);
   const removedText = pair.oldLine.text.slice(removed.start, removed.end);
-  const parts = [
-    spaceBefore ? SPACE : NO_TEXT,
-    changedTextHtml(removedText, REMOVED_TEXT_MARKER, isReplaced),
-    isReplaced ? HIDDEN_SPACE_HTML : NO_TEXT,
-    spaceAfter ? SPACE : NO_TEXT,
-  ];
+  const textBefore = spaceBefore ? SPACE : NO_TEXT;
+  const markedText = changedTextHtml(removedText, REMOVED_TEXT_MARKER, isReplaced);
+  const hiddenSpace = isReplaced ? HIDDEN_SPACE_HTML : NO_TEXT;
+  const textAfter = spaceAfter ? SPACE : NO_TEXT;
+  const html = [textBefore, markedText, hiddenSpace, textAfter].join(NO_TEXT);
 
-  return { position: removed.newPosition, html: parts.join(NO_TEXT) };
+  return { position: removed.newPosition, html };
 }
 
 /**
@@ -172,6 +171,7 @@ function changedTextHtml(text: string, marker: ChangeMarker, isReplaced = false)
   return elementHtml(marker.tag, attributes, content);
 }
 
+/** The `class` attribute with the class names. */
 function classAttribute(classNames: readonly string[]): Attribute {
   return [CLASS_ATTRIBUTE, classNames.join(CLASS_SEPARATOR)];
 }

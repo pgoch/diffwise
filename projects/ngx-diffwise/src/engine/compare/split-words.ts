@@ -31,6 +31,7 @@ export function splitWords(text: string): Token[] {
   }));
 }
 
+/** Kind of a segment of text: a word, whitespace, or a symbol. */
 function tokenKind(segment: string, isWordLike: boolean | undefined): TokenKind {
   if (isWordLike) {
     return TokenKind.Word;

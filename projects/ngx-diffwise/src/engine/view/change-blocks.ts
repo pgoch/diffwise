@@ -1,7 +1,7 @@
 import { LineChangeKind } from '../model';
 
 /** A row of the comparison, by how its line differs. */
-export interface ComparedRowKind {
+interface ComparedRowKind {
   readonly kind: LineChangeKind;
 }
 

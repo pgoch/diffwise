@@ -57,7 +57,7 @@ export interface ChangedPair {
 export type WordChangedPair = Pick<ChangedPair, 'oldLine' | 'newLine' | 'wordChanges'>;
 
 /** What goes around text removed from the old line, where a merged line shows it. */
-export interface RemovedTextSeparators {
+interface RemovedTextSeparators {
   /** True when a space goes before the removed text. */
   readonly spaceBefore: boolean;
   /**
@@ -85,7 +85,7 @@ export interface CopiedPart {
 }
 
 /** A place between the nodes of a parent: before `nextNode`, or last when it is `null`. */
-export interface InsertionPoint {
+interface InsertionPoint {
   readonly parent: Node;
   readonly nextNode: Node | null;
 }
@@ -159,6 +159,7 @@ export function insertCopiedPart(
   insertNodes(point, withSeparators(nodes, part, pair, bounds));
 }
 
+/** The HTML of a line as nodes that can be changed. */
 export function parsedContent(html: string): DocumentFragment {
   const template = document.createElement(TEMPLATE_TAG);
 
@@ -167,6 +168,7 @@ export function parsedContent(html: string): DocumentFragment {
   return template.content;
 }
 
+/** The HTML of the nodes of a line. */
 export function serialized(content: DocumentFragment): string {
   const template = document.createElement(TEMPLATE_TAG);
 
@@ -201,11 +203,13 @@ function oldParts(
   return [...textParts, ...imageParts];
 }
 
+/** True when one of the details of the range is a change of an image. */
 function describesImage({ detailIndices }: MarkedRange, details: readonly ChangeDetail[]): boolean {
   const indices = detailIndices ?? [];
   return indices.some((index) => details[index].kind === ChangeDetailKind.Image);
 }
 
+/** True when the inner range lies within the outer one. */
 function isInside(inner: TextRange, outer: TextRange): boolean {
   return inner.start >= outer.start && inner.end <= outer.end;
 }
@@ -221,6 +225,7 @@ function changedImagePart(imageRange: MarkedRange, newRanges: readonly MarkedRan
   return [{ ranges: [imageRange], newPosition: newImageRange.start, isChangedImage: true }];
 }
 
+/** True when the two ranges point to a detail in common. */
 function sharesDetails(first: MarkedRange, second: MarkedRange): boolean {
   const secondIndices = second.detailIndices ?? [];
   return first.detailIndices?.some((index) => secondIndices.includes(index)) ?? false;
@@ -249,6 +254,7 @@ function copiedOldParts(
   return copiedParts;
 }
 
+/** Orders removed parts from the one that stands last in the old text. */
 function fromLastOldText(first: OldPart, second: OldPart): number {
   return second.ranges[0].start - first.ranges[0].start;
 }
@@ -300,11 +306,13 @@ function partNodes(part: OldPart, oldPieces: readonly TextPiece[]): DocumentFrag
   return copyInFormatting;
 }
 
+/** True when the content holds an element that makes a block. */
 function holdsBlock(content: DocumentFragment): boolean {
   const elements = Array.from(content.querySelectorAll(ANY_ELEMENT_SELECTOR));
   return elements.some((element) => BLOCK_TAGS.has(element.localName));
 }
 
+/** Removes the ids of all elements of the content. */
 function removeIds(content: DocumentFragment): void {
   for (const element of content.querySelectorAll(ELEMENTS_WITH_ID_SELECTOR)) {
     element.removeAttribute(ID_ATTRIBUTE);
@@ -328,6 +336,7 @@ function insideInlineAncestors(content: Node, container: Node): Node {
   return wrapped;
 }
 
+/** True when the node is an element that stays in the line of text. */
 function isInlineElement(node: Node | null): node is Element {
   return node instanceof Element && !BLOCK_TAGS.has(node.localName);
 }
@@ -407,11 +416,14 @@ function parentOf(node: Node): Node {
   return node.parentNode as Node;
 }
 
+/** True when the nodes of removed text can stand at the insertion point. */
 function canHoldNodes({ parent, nextNode }: InsertionPoint): boolean {
   const nodeOfParent = nextNode ?? parent.lastChild;
 
   if (nodeOfParent === null) {
-    return canHoldMarkerIn(parent instanceof Element ? parent : null);
+    const parentElement = parent instanceof Element ? parent : null;
+
+    return canHoldMarkerIn(parentElement);
   }
 
   return canHoldMarker(nodeOfParent);
@@ -485,10 +497,12 @@ function markAsReplaced(copy: DocumentFragment): void {
   markers.item(markers.length - 1)?.toggleAttribute(REPLACED_TEXT_ATTRIBUTE, true);
 }
 
+/** True when the character at the position is whitespace. */
 function isWhitespaceAt(text: string, position: number): boolean {
   return WHITESPACE_CHARACTER.test(text.charAt(position));
 }
 
+/** A new text node with a space. */
 function spaceNode(): Text {
   return document.createTextNode(SPACE);
 }
@@ -503,6 +517,7 @@ function hiddenSpace(): HTMLElement {
   return space;
 }
 
+/** The arrow between the old and the new image of a changed image. */
 function imageChangeArrow(): HTMLElement {
   const arrow = document.createElement(SPAN_TAG);
 

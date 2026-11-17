@@ -64,10 +64,15 @@ export function diffHtml(
   const columns = alignTableColumns(changes, settings.options);
   const rowBuilder = new ViewRowBuilder(settings, columns);
   const markedRows = changes.map((change) => rowBuilder.toRow(change));
-  const mergedRows = settings.mergesChangedLines
-    ? withMergedTables(rowBuilder.tableRowSources(markedRows), columns.tablePairs())
-    : markedRows;
-  const rows = sanitizedRows(withTableColumns(mergedRows));
+  let shownRows = markedRows;
+
+  if (settings.mergesChangedLines) {
+    const tableRowSources = rowBuilder.tableRowSources(markedRows);
+
+    shownRows = withMergedTables(tableRowSources, columns.tablePairs());
+  }
+
+  const rows = sanitizedRows(withTableColumns(shownRows));
 
   return { rows, stats };
 }
@@ -100,6 +105,7 @@ class ViewRowBuilder {
     this.mergesChangedLines = settings.mergesChangedLines;
   }
 
+  /** The row of the view for a change of lines. */
   toRow(change: LineChange): ViewRow {
     switch (change.kind) {
       case LineChangeKind.Unchanged:
@@ -113,6 +119,7 @@ class ViewRowBuilder {
     }
   }
 
+  /** The row of an unchanged line, shown in both versions. */
   private unchangedRow(oldLine: Line, newLine: Line): ViewRow {
     return {
       kind: LineChangeKind.Unchanged,
@@ -150,13 +157,15 @@ class ViewRowBuilder {
     const shownNewLine = this.nextNewLine(newLine, markedNewHtml);
     const pair = { oldLine, newLine, markedNewHtml, wordChanges, describedChanges, itemMarks };
     const isInTable = oldLine.table !== null || newLine.table !== null;
-    const mergedHtml = this.mergesChangedLines && !isInTable ? mergeLines(pair) : null;
+    const mergesLine = this.mergesChangedLines && !isInTable;
+    const mergedHtml = mergesLine ? mergeLines(pair) : null;
+    const mergedLine = mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml };
     const row: ViewRow = {
       kind: LineChangeKind.Changed,
       oldLine: shownOldLine,
       newLine: shownNewLine,
       changeDetails: describedChanges.details,
-      mergedLine: mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml },
+      mergedLine,
     };
 
     if (isInTable) {
@@ -183,31 +192,39 @@ class ViewRowBuilder {
     return diffTableCells(oldLine, newLine, columns, this.options);
   }
 
+  /** The row of a removed line, marked whole. */
   private removedRow(oldLine: Line): ViewRow {
+    const markedHtml = wholeLineHtml(oldLine, REMOVED_TEXT_MARKER);
+
     return {
       kind: LineChangeKind.Removed,
-      oldLine: this.nextOldLine(oldLine, wholeLineHtml(oldLine, REMOVED_TEXT_MARKER)),
+      oldLine: this.nextOldLine(oldLine, markedHtml),
       newLine: null,
       changeDetails: NO_CHANGE_DETAILS,
       mergedLine: null,
     };
   }
 
+  /** The row of an added line, marked whole. */
   private addedRow(newLine: Line): ViewRow {
+    const markedHtml = wholeLineHtml(newLine, ADDED_TEXT_MARKER);
+
     return {
       kind: LineChangeKind.Added,
       oldLine: null,
-      newLine: this.nextNewLine(newLine, wholeLineHtml(newLine, ADDED_TEXT_MARKER)),
+      newLine: this.nextNewLine(newLine, markedHtml),
       changeDetails: NO_CHANGE_DETAILS,
       mergedLine: null,
     };
   }
 
+  /** The next line of the old version, with its number. */
   private nextOldLine(line: Line, html: string): ViewLine {
     this.oldLineCount++;
     return { kind: line.kind, number: this.oldLineCount, html, table: line.table };
   }
 
+  /** The next line of the new version, with its number. */
   private nextNewLine(line: Line, html: string): ViewLine {
     this.newLineCount++;
     return { kind: line.kind, number: this.newLineCount, html, table: line.table };
@@ -268,6 +285,7 @@ function sanitizedLine(
   return line === null || html === undefined ? null : { ...line, html };
 }
 
+/** True when the line is there. */
 function isLine(line: ViewLine | null): line is ViewLine {
   return line !== null;
 }

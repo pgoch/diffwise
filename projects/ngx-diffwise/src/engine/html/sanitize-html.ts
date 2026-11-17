@@ -14,6 +14,12 @@ const Attribute = {
 /** The only link target kept. */
 const NEW_TAB = '_blank';
 
+/** Separates the alternatives of a regular expression. */
+const ALTERNATIVES_SEPARATOR = '|';
+
+/** Joins pieces of HTML without anything between them. */
+const NO_TEXT = '';
+
 /** Keeps a page opened in a new tab from controlling the app. */
 const NEW_TAB_REL = 'noopener noreferrer';
 
@@ -69,7 +75,7 @@ const SAFE_STYLE_PATTERNS = [
   'caption-side',
 ];
 
-const SAFE_STYLE_PROPERTY = new RegExp(`^(?:${SAFE_STYLE_PATTERNS.join('|')})$`);
+const SAFE_STYLE_PROPERTY = new RegExp(`^(?:${SAFE_STYLE_PATTERNS.join(ALTERNATIVES_SEPARATOR)})$`);
 
 /** Style values that load or run something. */
 const UNSAFE_STYLE_VALUE = /url\(|expression\(/i;
@@ -128,16 +134,18 @@ function tableOfPieces(pieces: readonly string[]): string {
   return (
     startTag(PIECES_TABLE_TAG)
     + startTag(PIECES_BODY_TAG)
-    + rows.join('')
+    + rows.join(NO_TEXT)
     + endTag(PIECES_BODY_TAG)
     + endTag(PIECES_TABLE_TAG)
   );
 }
 
+/** The start tag of an element. */
 function startTag(tag: string): string {
   return `<${tag}>`;
 }
 
+/** The end tag of an element. */
 function endTag(tag: string): string {
   return `</${tag}>`;
 }
@@ -149,7 +157,8 @@ function endTag(tag: string): string {
 function cellsOfPieces(tree: Node, pieceCount: number): Element[] | null {
   const table = onlyChild(tree, PIECES_TABLE_TAG);
   const body = table === null ? null : onlyChild(table, PIECES_BODY_TAG);
-  const rows = pieceCount === 0 ? [] : Array.from(body?.childNodes ?? []);
+  const childNodes = body?.childNodes ?? [];
+  const rows = pieceCount === 0 ? [] : Array.from(childNodes);
 
   if (rows.length !== pieceCount) {
     return null;
@@ -210,6 +219,7 @@ function keepSafeStyles(element: Element): void {
   }
 }
 
+/** True when the style property only changes the look and its value loads nothing. */
 function isSafeStyle(property: string, value: string): boolean {
   return SAFE_STYLE_PROPERTY.test(property) && !UNSAFE_STYLE_VALUE.test(value);
 }

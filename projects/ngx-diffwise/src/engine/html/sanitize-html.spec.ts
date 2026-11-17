@@ -7,6 +7,7 @@ import { sanitizeHtml, sanitizeHtmlPieces } from './sanitize-html';
 import { splitLines } from './split-lines';
 
 const ID_PREFIX = 'diff';
+const STYLE_ATTRIBUTE = 'style';
 
 /** Both versions of the long samples from `test-data/`, as `[name, html]`. */
 const LONG_SAMPLES: [string, string][] = [
@@ -77,7 +78,7 @@ describe('sanitizeHtml', () => {
       '<p style="background-image: url(https://example.com/pixel.png)">Text</p>',
     ).firstElementChild as HTMLElement;
 
-    expect(paragraph.hasAttribute('style')).toBe(false);
+    expect(paragraph.hasAttribute(STYLE_ATTRIBUTE)).toBe(false);
   });
 
   it('cleans pieces of HTML together as it cleans each of them alone', () => {

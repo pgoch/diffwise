@@ -15,6 +15,9 @@ import { type DiffVersions, DiffView } from './diff-view';
 import { DiffToolbar } from './toolbar/diff-toolbar';
 import { ViewSettings } from './toolbar/view-settings';
 
+/** A version without any text, before the app gives one. */
+const NO_TEXT = '';
+
 /**
  * Shows two versions of a plain text with the changes marked, line by line: side by side, or in a
  * single column, which a narrow diff shows by itself. Spaces, tabs and indentation stay as in the
@@ -53,10 +56,10 @@ export class DiffwiseText extends DiffView {
   protected override readonly showsTextLines = true;
 
   /** The earlier version of the text. */
-  readonly oldText = input('');
+  readonly oldText = input(NO_TEXT);
 
   /** The later version of the text. */
-  readonly newText = input('');
+  readonly newText = input(NO_TEXT);
 
   /** Both texts; a new one starts a new comparison. */
   protected override readonly versions = computed<DiffVersions>(() => ({

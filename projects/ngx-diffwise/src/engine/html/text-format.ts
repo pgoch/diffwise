@@ -195,6 +195,7 @@ function applyInlineStyle(styles: Set<TextStyle>, style: CSSStyleDeclaration): v
   addStyles(styles, styleValue(style, StyleProperty.VerticalAlign), VERTICAL_ALIGN_STYLES);
 }
 
+/** Turns the style on or off in the set of styles. */
 function switchStyle(styles: Set<TextStyle>, textStyle: TextStyle, isOn: boolean): void {
   if (isOn) {
     styles.add(textStyle);
