@@ -13,6 +13,7 @@ import {
   DiffwiseChangeDetails,
   DiffwiseChangeDetailsIconStyle,
   DiffwiseColorMode,
+  type DiffwiseConfig,
   type DiffwiseConfigOptions,
   type DiffwiseDiffColors,
   type DiffwiseDiffStats,
@@ -168,8 +169,11 @@ const GAP_STYLE_CHOICES: readonly Choice<DiffwiseGapStyle>[] = [
   { value: DiffwiseGapStyle.Empty, label: 'Empty' },
 ];
 
-/** A value of the `versionHeaders` option. */
-type VersionHeaders = DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts;
+/** The header choice that hides the headers, with the option `showVersionHeaders`. */
+const NO_HEADERS = 'none';
+
+/** A choice of the headers: a value of the `versionHeaders` option, or no headers. */
+type VersionHeaders = DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts | typeof NO_HEADERS;
 
 /** Header texts that show how an app can name its versions. */
 const CUSTOM_HEADER_TEXTS: DiffwiseVersionHeaderTexts = {
@@ -181,7 +185,7 @@ const VERSION_HEADER_CHOICES: readonly Choice<VersionHeaders>[] = [
   { value: DiffwiseVersionHeaders.Default, label: 'Default' },
   { value: DiffwiseVersionHeaders.Icons, label: 'Icons' },
   { value: CUSTOM_HEADER_TEXTS, label: 'Custom texts' },
-  { value: DiffwiseVersionHeaders.None, label: 'None' },
+  { value: NO_HEADERS, label: 'None' },
 ];
 
 /** What `typeof` gives for header texts, which are an object. */
@@ -351,7 +355,7 @@ export class DemoPage {
 
   /** The chosen headers; the first choice is set in `app.config.ts`. */
   protected readonly versionHeaders = signal<VersionHeaders>(
-    versionHeadersChoiceOf(this.diffwise.config().versionHeaders),
+    versionHeadersChoiceOf(this.diffwise.config()),
   );
 
   /** The numbers of the last comparison, from the event of the diff. */
@@ -512,10 +516,15 @@ export class DemoPage {
     }
   }
 
-  /** Shows the chosen headers in the diff. */
-  protected chooseVersionHeaders(versionHeaders: VersionHeaders): void {
-    this.versionHeaders.set(versionHeaders);
-    this.update({ versionHeaders });
+  /** Shows the chosen headers in the diff, or hides them. */
+  protected chooseVersionHeaders(choice: VersionHeaders): void {
+    const options =
+      choice === NO_HEADERS
+        ? { showVersionHeaders: false }
+        : { showVersionHeaders: true, versionHeaders: choice };
+
+    this.versionHeaders.set(choice);
+    this.update(options);
   }
 
   /** Gives the example colors to the global configuration, or takes them away with `null`. */
@@ -555,8 +564,15 @@ export class DemoPage {
   }
 }
 
-/** The header choice of a value of the `versionHeaders` option; texts are the example texts. */
-function versionHeadersChoiceOf(versionHeaders: VersionHeaders): VersionHeaders {
+/** The header choice of a configuration; texts of the app are the example texts. */
+function versionHeadersChoiceOf({
+  showVersionHeaders,
+  versionHeaders,
+}: DiffwiseConfig): VersionHeaders {
+  if (!showVersionHeaders) {
+    return NO_HEADERS;
+  }
+
   return typeof versionHeaders === OBJECT_TYPE ? CUSTOM_HEADER_TEXTS : versionHeaders;
 }
 

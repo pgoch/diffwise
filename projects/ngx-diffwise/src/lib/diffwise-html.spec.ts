@@ -426,7 +426,7 @@ describe('DiffwiseHtml', () => {
   it('shows the header texts of the app, or no headers', () => {
     const versionHeaders = { old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' };
     const withTexts = renderElement('', '', { versionHeaders });
-    const withoutHeaders = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.None });
+    const withoutHeaders = renderElement('', '', { showVersionHeaders: false });
 
     expect(textsOf(withTexts, VERSION_HEADER_SELECTOR)).toEqual([
       versionHeaders.old,
@@ -496,7 +496,7 @@ describe('DiffwiseHtml', () => {
   });
 
   it('uses the global configuration, and its own options win over it', () => {
-    const globalOptions = { showLineNumbers: false, versionHeaders: DiffwiseVersionHeaders.None };
+    const globalOptions = { showLineNumbers: false, showVersionHeaders: false };
 
     TestBed.configureTestingModule({ providers: [provideDiffwise(globalOptions)] });
 
@@ -508,7 +508,7 @@ describe('DiffwiseHtml', () => {
 
   it('takes from config only the options it sets, and single inputs win over it', () => {
     const config = new DiffwiseConfig({
-      versionHeaders: DiffwiseVersionHeaders.None,
+      showVersionHeaders: false,
       ignoreCase: true,
     });
 
@@ -528,7 +528,7 @@ describe('DiffwiseHtml', () => {
     const fixture = render(ONE_LINE_HTML, ONE_LINE_HTML);
     const element = fixture.nativeElement as HTMLElement;
 
-    TestBed.inject(Diffwise).updateConfig({ versionHeaders: DiffwiseVersionHeaders.None });
+    TestBed.inject(Diffwise).updateConfig({ showVersionHeaders: false });
     fixture.detectChanges();
 
     expect(element.querySelector(VERSION_HEADERS_SELECTOR)).toBeNull();

@@ -101,6 +101,7 @@
         [value]="headersChoice()"
         [defaultValue]="choices.defaultHeaders"
         [changed]="state.isChanged(option.name)"
+        [disabledNote]="disabledNote(option)"
         (chosen)="chooseHeaders($event)"
       />
       @if (headersChoice() === choices.headerTexts) {
@@ -111,6 +112,7 @@
               type="text"
               class="field"
               [value]="headerTexts().old"
+              [disabled]="disabledNote(option) !== null"
               (input)="writeHeaderText('old', $event)"
             />
           </label>
@@ -120,6 +122,7 @@
               type="text"
               class="field"
               [value]="headerTexts().new"
+              [disabled]="disabledNote(option) !== null"
               (input)="writeHeaderText('new', $event)"
             />
           </label>

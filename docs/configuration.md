@@ -108,7 +108,8 @@ Hidden lines are not rendered at all, so a long document with few changes opens 
 | `inlineDiffStyle` | `DiffwiseInlineDiffStyle.Merged`, `Strikethrough`, `Stacked` | `Merged` | How the single column shows a changed line: one line with the removed text right before the added text that replaced it, the same with the removed text struck through, or the old line above the new one |
 | `dividerStyle` | `DiffwiseDividerStyle.Column`, `Line` | `Column` | A gray column or a thin line between the versions |
 | `gapStyle` | `DiffwiseGapStyle.Stripes`, `Gray`, `Empty` | `Stripes` | What fills the place opposite an added or a removed line: diagonal stripes, a gray background, or an empty line |
-| `versionHeaders` | `DiffwiseVersionHeaders.Default`, `Icons`, `None`, or `{ old, new }` | `Default` | Headers above the versions: "Previous version" and "New version", icons named by these texts, no headers, or your own texts, such as `{ old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' }` |
+| `showVersionHeaders` | `true`, `false` | `true` | Shows the headers above the versions. With `false`, the options of the headers change nothing |
+| `versionHeaders` | `DiffwiseVersionHeaders.Default`, `Icons`, or `{ old, new }` | `Default` | What the headers show: "Previous version" and "New version", icons named by these texts, or your own texts, such as `{ old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' }` |
 | `versionHeaderAlignment` | `DiffwiseAlignment.Start`, `Center`, `End` | `Center` | Where the headers sit in their columns. Start and end follow the direction of the text |
 
 Until the diff knows its width, `Auto` shows the versions side by side. The single column shows each line once: an unchanged line in its new version, under the numbers of both versions; a removed line under its old number; an added line under its new one. Two columns of numbers stand before the content, with "before" and "after" icons above them, named by `oldVersionLabel` and `newVersionLabel`. With `versionHeaders: 'default'`, the header above the content says "Content after changes"; with your own texts, it shows both, as in "Version 3 → Version 4". The icons of changes stand in a narrow column next to the content.
@@ -150,12 +151,13 @@ A toolbar stands above the diff and stays at the top of the nearest scrolling ar
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
+| `showToolbar` | `true`, `false` | `true` | Shows the toolbar. With `false`, the arrows, the numbers and the view settings are hidden, whatever their own options |
 | `showNavigationToolbar` | `true`, `false` | `true` | Shows the arrows to the previous and the next block of changes, and the counter between them, such as "2 / 3" |
 | `activeChangeStyle` | `DiffwiseActiveChangeStyle.Outline`, `Indicator` | `Outline` | How the block the navigation has stepped to shows: a frame around it, or an arrow at the number of its first line |
 | `showDiffStats` | `true`, `false` | `true` | Shows the numbers of added, removed and changed lines, such as "+3 −1 ~10" |
 | `noChangesView` | `DiffwiseNoChangesView.Message`, `Document`, `Diff` | `Message` | When the versions are the same, the toolbar says "No changes", and this option sets what stands under it: nothing, the document once, or both versions as usual |
 
-The view settings have options of their own; see [Settings for the user](#settings-for-the-user). Without the arrows, the numbers and the view settings, there is no toolbar, except the one that says "No changes".
+The view settings have options of their own; see [Settings for the user](#settings-for-the-user). Without the arrows, the numbers and the view settings, or with `showToolbar: false`, there is no toolbar, except the one that says "No changes".
 
 **Navigation.** A step leads to a block of adjacent changed lines, so a passage rewritten across several lines is one step. The first step down goes to the first block, and the first step up to the last one; after the last block comes the first again. The block scrolls to the middle of the window, or to its top when it is taller than the window, and the toolbar never covers it. The scroll is smooth over a short distance and a jump over a long one, and always a jump when the system asks for less motion. The focus stays on the arrow, and screen readers hear "Change 2 of 3". Before the first step, the counter shows "– / 3". When the versions or the options of the comparison change, the navigation starts again before the first step.
 

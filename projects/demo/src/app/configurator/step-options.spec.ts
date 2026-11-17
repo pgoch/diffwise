@@ -158,7 +158,7 @@ describe('StepOptions', () => {
       const choice = otherChoice(option);
       const condition = option.enabledWhen;
 
-      if (condition !== null && !condition.isExcept) {
+      if (condition !== null) {
         TestBed.inject(ConfiguratorState).setOption(
           condition.option,
           condition.value as DiffwiseConfigOptions[typeof condition.option],
@@ -232,7 +232,7 @@ describe('StepOptions', () => {
   it('shows the headers of an app, and starts with a font name', async () => {
     const fixture = await render(StepId.Layout);
 
-    await choose(fixture, 'Headers', 'Texts of your app');
+    await choose(fixture, 'Header content', 'Texts of your app');
 
     expect(previewConfig(fixture).versionHeaders).toEqual({ old: 'Version 3', new: 'Version 4' });
 
@@ -320,10 +320,17 @@ describe('StepOptions', () => {
 
     expect(alignment().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
 
-    await choose(fixture, 'Headers', 'None');
+    await choose(fixture, 'Headers', 'Hidden');
 
-    expect(alignment().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe('Only with headers.');
+    expect(previewConfig(fixture).showVersionHeaders).toBe(false);
+    expect(alignment().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe(
+      'Only with the headers shown.',
+    );
     expect(alignment().querySelector<HTMLButtonElement>(CHOICE_SELECTOR)?.disabled).toBe(true);
+    expect(
+      optionNamed(fixture, 'Header content').querySelector<HTMLButtonElement>(CHOICE_SELECTOR)
+        ?.disabled,
+    ).toBe(true);
 
     TestBed.inject(ConfiguratorState).goTo(STEPS[5]);
     await settle(fixture);

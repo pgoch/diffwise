@@ -227,10 +227,8 @@ export const DiffwiseTooltipColorMode = {
 export type DiffwiseTooltipColorMode =
   (typeof DiffwiseTooltipColorMode)[keyof typeof DiffwiseTooltipColorMode];
 
-/** Headers above the two versions; an app can also give its own texts instead. */
+/** What the headers above the two versions show; an app can also give its own texts instead. */
 export const DiffwiseVersionHeaders = {
-  /** No headers. */
-  None: 'none',
   /** "Previous version" and "New version". */
   Default: 'default',
   /** Icons for the earlier and the later version, named by the default texts. */

@@ -34,12 +34,11 @@ const FONT_CHOICES: readonly Choice<FontChoice>[] = [
 /** The font a named font starts with, until another name is written. */
 const FIRST_FONT_NAME = 'Inter';
 
-/** Headers of the header buttons: those of the interface, icons, texts of the app, or none. */
+/** Headers of the header buttons: those of the interface, icons, or texts of the app. */
 const HeadersChoice = {
   Default: DiffwiseVersionHeaders.Default,
   Icons: DiffwiseVersionHeaders.Icons,
   Texts: 'texts',
-  None: DiffwiseVersionHeaders.None,
 } as const;
 
 type HeadersChoice = (typeof HeadersChoice)[keyof typeof HeadersChoice];
@@ -48,7 +47,6 @@ const HEADERS_CHOICES: readonly Choice<HeadersChoice>[] = [
   { value: HeadersChoice.Default, label: 'Default' },
   { value: HeadersChoice.Icons, label: 'Icons' },
   { value: HeadersChoice.Texts, label: 'Texts of your app' },
-  { value: HeadersChoice.None, label: 'None' },
 ];
 
 /** The texts that the headers of an app start with, until others are written. */
@@ -148,8 +146,7 @@ export class StepOptions {
       return null;
     }
 
-    const hasValue = this.state.valueOf(enabledWhen.option) === enabledWhen.value;
-    const works = enabledWhen.isExcept ? !hasValue : hasValue;
+    const works = this.state.valueOf(enabledWhen.option) === enabledWhen.value;
 
     return works ? null : enabledWhen.note;
   }

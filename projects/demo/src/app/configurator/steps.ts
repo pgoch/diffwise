@@ -17,7 +17,6 @@ import {
   DiffwisePalette,
   DiffwiseTextFont,
   DiffwiseTooltipColorMode,
-  DiffwiseVersionHeaders,
   DiffwiseVerticalAlignment,
 } from 'ngx-diffwise';
 
@@ -71,10 +70,8 @@ export type OptionKind = (typeof OptionKind)[keyof typeof OptionKind];
 /** When an option that depends on another one works, and the note that says so otherwise. */
 export interface OptionCondition {
   readonly option: OptionName;
-  /** The value of the other option with which this one works, or the one without which it works. */
+  /** The value of the other option with which this one works. */
   readonly value: unknown;
-  /** True when the option works with every value of the other option but `value`. */
-  readonly isExcept?: boolean;
   readonly note: string;
 }
 
@@ -151,10 +148,9 @@ const ALIGNMENTS: readonly Choice<DiffwiseAlignment>[] = [
 
 /** Options of the headers work only while the diff shows headers. */
 const WITH_HEADERS: OptionCondition = {
-  option: 'versionHeaders',
-  value: DiffwiseVersionHeaders.None,
-  isExcept: true,
-  note: 'Only with headers.',
+  option: 'showVersionHeaders',
+  value: true,
+  note: 'Only with the headers shown.',
 };
 
 /** Limits of the font sizes, in rem. */
@@ -366,10 +362,17 @@ const LAYOUT_OPTIONS: readonly StepOption[] = [
     ],
   }),
   option({
+    name: 'showVersionHeaders',
+    label: 'Headers',
+    description: 'The headers above the two versions.',
+    choices: SHOWN_HIDDEN,
+  }),
+  option({
     kind: OptionKind.VersionHeaders,
     name: 'versionHeaders',
-    label: 'Headers',
-    description: 'Above the versions: their names, icons, texts of your app, or nothing.',
+    label: 'Header content',
+    description: 'The names of the versions, icons named by them, or texts of your app.',
+    enabledWhen: WITH_HEADERS,
   }),
   option({
     name: 'versionHeaderAlignment',
