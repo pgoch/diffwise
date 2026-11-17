@@ -325,7 +325,7 @@ const LINE_OPTIONS: readonly StepOption[] = [
     label: 'Hide unchanged lines',
     description: 'Hides unchanged lines far from changes behind a bar that shows them.',
     howTo:
-      'Choose On: unchanged lines far from changes hide behind bars, which show them on a click. The plain text sample has such lines; the HTML samples change almost everywhere, so they hide few or none.',
+      'Choose On: unchanged lines far from changes hide behind bars, which show them on a click. Switch the preview to Text to see them: the HTML sample changes almost everywhere, so it hides none.',
     choices: ON_OFF,
   }),
   option({
@@ -334,7 +334,7 @@ const LINE_OPTIONS: readonly StepOption[] = [
     label: 'Lines around changes',
     description: 'Unchanged lines that stay shown above and below each change.',
     howTo:
-      'With unchanged lines hidden, write 1: fewer lines stay around each change, and the bars hide more. The plain text sample shows it best.',
+      'With unchanged lines hidden, write 1: fewer lines stay around each change, and the bars hide more. Switch the preview to Text to see it.',
     field: { min: 1, max: 100, step: 1, unit: 'lines' },
     enabledWhen: {
       option: 'hideUnchangedLines',
@@ -441,7 +441,7 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     label: 'Where details show',
     description: 'In a tooltip of the marked change, from an icon between the versions, or both.',
     howTo:
-      'The sample has a link with a changed address. Hover over the link, then over its icon in the column next to it: the values show the details in one place or in both. The Long sample in the step Your diffs has more such changes.',
+      'Hover over a changed link or image in the preview, then over its icon in the column next to its line: the values show the details in one place or in both.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
@@ -454,7 +454,7 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     label: 'Icons in the middle',
     description: 'A gray frame, a frame with a gradient, or a full gradient.',
     howTo:
-      'Look at the icon of the changed link, in the column next to its line in the preview. The Long sample in the step Your diffs has more icons.',
+      'Look at the icons next to the lines with a changed link, image or formatting in the preview.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseChangeDetailsIconStyle.Plain, label: 'Gray frame' },
@@ -467,7 +467,7 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     label: 'Tooltip colors',
     description: 'The colors of the diff, or those of the opposite theme.',
     howTo:
-      'Hover over the icon of the changed link in the preview: with Reversed, the tooltip of a light diff is dark.',
+      'Hover over an icon next to a changed line in the preview: with Reversed, the tooltip of a light diff is dark.',
     diffKinds: HTML_DIFF,
     choices: [
       { value: DiffwiseTooltipColorMode.Component, label: 'Colors of the diff' },
@@ -479,7 +479,7 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     label: 'Highlight the changed part',
     description: 'The part of a link address, a file name or an alternative text that changed.',
     howTo:
-      'Hover over the icon of the changed link in the preview: the changed part of the address is highlighted. With Off, the tooltip shows the whole addresses alone.',
+      'Hover over the icon next to a changed link address in the preview: the changed part of the address is highlighted. With Off, the tooltip shows the whole addresses alone.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -488,7 +488,7 @@ const CHANGE_DETAIL_OPTIONS: readonly StepOption[] = [
     label: 'Tooltip title',
     description: 'Where the titles of the tooltips sit.',
     howTo:
-      'Hover over the icon of the changed link in the preview and look at the title at the top of the tooltip.',
+      'Hover over an icon next to a changed line in the preview and look at the title at the top of the tooltip.',
     diffKinds: HTML_DIFF,
     choices: ALIGNMENTS,
   }),
@@ -615,7 +615,7 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     label: 'Ignore whitespace',
     description: 'Differences in spaces, tabs and line breaks are not changes.',
     howTo:
-      'The plain text sample Long changes only spaces in a few lines, such as two spaces that became one. Choose it in the step Your diffs and switch the preview to Text: with On, those lines stop showing as changed.',
+      'The plain text sample changes only spaces in a few lines, such as two spaces that became one. Switch the preview to Text: with On, those lines stop showing as changed.',
     choices: ON_OFF,
   }),
   option({
@@ -631,7 +631,7 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     label: 'Ignore formatting',
     description: 'Changes of formatting alone, such as italic → bold, are not changes.',
     howTo:
-      'The HTML sample Long changes formatting alone in a few places, such as italic to bold. Choose it in the step Your diffs: with On, those changes stop showing.',
+      'The HTML sample changes formatting alone in a few places, such as italic to bold: with On, those changes stop showing.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -640,7 +640,7 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     label: 'Ignore link changes',
     description: 'Links added, removed or pointing elsewhere around the same text are not changes.',
     howTo:
-      'The sample has a link with a changed address. Choose On: the link stops showing as a change, and its icon disappears.',
+      'The HTML sample changes a link address and adds a link around existing text: with On, those changes stop showing.',
     diffKinds: HTML_DIFF,
     choices: ON_OFF,
   }),
@@ -700,7 +700,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
   {
     id: StepId.Diffs,
     label: 'Your diffs',
-    description: 'Which diffs your app shows, and a sample to preview them.',
+    description: 'Which diffs your app shows.',
     diffKinds: ALL_DIFFS,
     options: [],
     enabledWhen: null,

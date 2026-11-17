@@ -80,11 +80,24 @@
 
   <section class="preview" aria-labelledby="configurator-preview-label" [hidden]="showsResult()">
     <div class="preview-head">
-      <span id="configurator-preview-label" class="preview-label">
-        Preview
-        @if (comparesSampleWithItself()) {
-          · the sample compared with itself
-        }
+      <span class="preview-title">
+        <span id="configurator-preview-label" class="preview-label">
+          Preview
+          @if (comparesSampleWithItself()) {
+            · the sample compared with itself
+          }
+        </span>
+        <select
+          class="preview-language"
+          aria-label="Language of the sample"
+          (change)="chooseLanguage($event)"
+        >
+          @for (choice of languages(); track choice.value) {
+            <option [value]="choice.value" [selected]="choice.value === state.sampleLanguage()">
+              {{ choice.label }}
+            </option>
+          }
+        </select>
       </span>
       @if (usesBothDiffs()) {
         <span class="preview-switch" role="group" aria-label="Diff in the preview">
@@ -100,6 +113,12 @@
         </span>
       }
     </div>
+
+    @if (showsTextInEnglish()) {
+      <p class="sample-hint">
+        Plain text samples are in English and Polish, so the plain text preview is in English.
+      </p>
+    }
 
     @if (sample.error()) {
       <p role="alert">The sample could not be loaded.</p>

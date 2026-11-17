@@ -13,7 +13,7 @@ const OPTION_BUTTON_SELECTOR = '.option-choice';
 const PREVIEW_BUTTON_SELECTOR = '.preview-switch button';
 const PREVIEW_LABEL_SELECTOR = '.preview-label';
 const NO_CHANGES_SELECTOR = '.preview .diffwise-diff__no-changes';
-const LANGUAGE_SELECT_SELECTOR = '.sample-field select';
+const LANGUAGE_SELECT_SELECTOR = '.preview-language';
 const SAMPLE_HINT_SELECTOR = '.sample-hint';
 const HTML_DIFF_SELECTOR = '.preview diffwise-html';
 const TEXT_DIFF_SELECTOR = '.preview diffwise-text';
@@ -174,39 +174,40 @@ describe('ConfiguratorPage', () => {
     expect(stepNames(fixture)).not.toContain(CHANGE_DETAILS_STEP);
     expect(stepNames(fixture)).toHaveLength(11);
     expect(all(fixture, PREVIEW_BUTTON_SELECTOR)).toEqual([]);
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
     expect(all(fixture, HTML_DIFF_SELECTOR)).toEqual([]);
   });
 
   it('previews either diff of an app with both diffs', async () => {
     const fixture = await render();
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/medium');
+    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/long');
 
     await click(fixture, PREVIEW_BUTTON_SELECTOR, TEXT_PREVIEW);
 
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
 
     await click(fixture, PREVIEW_BUTTON_SELECTOR, HTML_PREVIEW);
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/medium');
+    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/long');
   });
 
-  it('previews the chosen sample, and plain text in English when its language has none', async () => {
+  it('previews the long sample in the chosen language, and plain text in English when its language has none', async () => {
     const fixture = await render();
 
     await chooseLanguage(fixture, DiffwiseLanguage.DE);
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/de/medium');
-    expect(textOf(fixture, SAMPLE_HINT_SELECTOR)).toContain('English and Polish');
+    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/de/long');
+    expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
 
     await click(fixture, PREVIEW_BUTTON_SELECTOR, TEXT_PREVIEW);
 
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
+    expect(textOf(fixture, SAMPLE_HINT_SELECTOR)).toContain('English and Polish');
 
     await chooseLanguage(fixture, DiffwiseLanguage.PL);
 
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/pl/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/pl/long');
     expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
   });
 

@@ -55,9 +55,6 @@ export class ConfiguratorState {
   /** Language of the sample in the preview. */
   readonly sampleLanguage = signal<SampleLanguage>(DiffwiseLanguage.EN);
 
-  /** Size of the sample in the preview. */
-  readonly sampleSize = signal<SampleSize>(SampleSize.Medium);
-
   /** The diff in the preview of an app with both diffs. */
   readonly chosenPreviewKind = signal<DiffKind>(DiffKind.Html);
 
@@ -88,7 +85,10 @@ export class ConfiguratorState {
     return diffKinds.includes(this.chosenPreviewKind()) ? this.chosenPreviewKind() : diffKinds[0];
   });
 
-  /** The sample in the preview; plain text samples are in fewer languages, else in English. */
+  /**
+   * The sample in the preview: the long one, which has every kind of content. Plain text samples
+   * are in fewer languages, so a language without one gets the English one.
+   */
   readonly sample = computed<SampleChoice>(() => {
     const kind = this.previewKind();
     const language = this.sampleLanguage();
@@ -96,7 +96,7 @@ export class ConfiguratorState {
     const isFallback = kind === DiffKind.Text && !hasTextSample;
     const sampleLanguage = isFallback ? FALLBACK_TEXT_LANGUAGE : language;
 
-    return { kind, language: sampleLanguage, size: this.sampleSize() };
+    return { kind, language: sampleLanguage, size: SampleSize.Long };
   });
 
   /** The options chosen with another value than their default, which go into the configuration. */
