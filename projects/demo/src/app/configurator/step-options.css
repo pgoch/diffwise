@@ -19,6 +19,10 @@
   width: 96px;
 }
 
+.field--list {
+  width: auto;
+}
+
 .field:disabled {
   background: var(--site-subtle);
 }

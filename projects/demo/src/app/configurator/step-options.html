@@ -60,7 +60,7 @@
         [changed]="state.isChanged(option.name)"
       >
         <select
-          class="field"
+          class="field field--list"
           [attr.aria-label]="option.label"
           (change)="chooseFromList(option, $event)"
         >
@@ -144,6 +144,24 @@
             </label>
           }
         </div>
+      </demo-option-control>
+    }
+    @case (kinds.Colors) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [changed]="state.isChanged(option.name)"
+      >
+        <demo-custom-colors-editor />
+      </demo-option-control>
+    }
+    @case (kinds.Texts) {
+      <demo-option-control
+        [name]="option.label"
+        [description]="option.description"
+        [changed]="state.isChanged(option.name)"
+      >
+        <demo-custom-texts-editor />
       </demo-option-control>
     }
   }

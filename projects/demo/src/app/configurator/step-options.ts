@@ -11,6 +11,8 @@ import type { Choice } from '../choice';
 import { DEFAULT_OPTIONS } from '../diff-options';
 import { DiffKind } from '../samples';
 import { ConfiguratorState } from './configurator-state';
+import { CustomColorsEditor } from './custom-colors-editor';
+import { CustomTextsEditor } from './custom-texts-editor';
 import { OptionControl } from './option-control';
 import { type ConfiguratorStep, OptionKind, type OptionName, type StepOption } from './steps';
 
@@ -70,7 +72,7 @@ const OBJECT_TYPE = 'object';
  */
 @Component({
   selector: 'demo-step-options',
-  imports: [OptionControl],
+  imports: [CustomColorsEditor, CustomTextsEditor, OptionControl],
   templateUrl: './step-options.html',
   styleUrl: './step-options.css',
   changeDetection: ChangeDetectionStrategy.OnPush,

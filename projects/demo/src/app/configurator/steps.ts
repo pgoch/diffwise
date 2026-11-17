@@ -59,6 +59,10 @@ export const OptionKind = {
   VersionHeaders: 'versionHeaders',
   /** A check box for each option the user can change. */
   UserSettings: 'userSettings',
+  /** Six colors of changes in the light and in the dark theme. */
+  Colors: 'colors',
+  /** The texts of the interface, in groups. */
+  Texts: 'texts',
 } as const;
 
 export type OptionKind = (typeof OptionKind)[keyof typeof OptionKind];
@@ -222,6 +226,13 @@ const COLOR_OPTIONS: readonly StepOption[] = [
     description:
       'How much the headers, the line numbers and the column between the versions stand out.',
     choices: LEVELS,
+  }),
+  option({
+    kind: OptionKind.Colors,
+    name: 'diffColors',
+    label: 'Your own colors',
+    description:
+      'Colors of changes of your app; a color left out comes from the colors of changes above.',
   }),
 ];
 
@@ -522,6 +533,13 @@ const LANGUAGE_OPTIONS: readonly StepOption[] = [
     label: 'Language',
     description: 'The language of the interface; Auto takes it from LOCALE_ID of your app.',
     choices: LANGUAGES,
+  }),
+  option({
+    kind: OptionKind.Texts,
+    name: 'customTexts',
+    label: 'Your own texts',
+    description:
+      'Texts of the interface of your app; an empty field keeps the text of the language.',
   }),
 ];
 

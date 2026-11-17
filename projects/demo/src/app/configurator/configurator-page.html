@@ -11,13 +11,16 @@
           [attr.aria-current]="step === state.step() ? 'step' : null"
           (click)="goTo(step)"
         >
-          <span class="flow-number">{{ index + 1 }}</span>
-          <span class="flow-name">
-            {{ step.label }}
+          <span class="flow-number">
+            {{ index + 1 }}
             @if (state.changedSteps().has(step.id)) {
-              <span class="flow-dot" title="Changed"><span class="hidden">(changed)</span></span>
+              <span class="flow-dot" title="Changed"></span>
             }
           </span>
+          <span class="flow-name">{{ step.label }}</span>
+          @if (state.changedSteps().has(step.id)) {
+            <span class="hidden">(changed)</span>
+          }
         </button>
         <span class="flow-arrow" aria-hidden="true">→</span>
       </li>
