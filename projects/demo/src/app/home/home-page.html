@@ -6,17 +6,19 @@
       Show what changed in a document the way readers see it: words, formatting, links, images,
       lists and tables, side by side or in a single column.
     </p>
-    <div class="actions">
-      <a class="button button--primary" href="#demo">Try the demo</a>
-      <a class="button" href="#configurator">Build your configuration</a>
-      <a class="button" [href]="links.github">GitHub</a>
-    </div>
-    <div class="install">
-      <span class="install-prompt" aria-hidden="true">$</span>
-      <code #command>{{ installCommand }}</code>
-      <button type="button" class="install-copy" (click)="copyInstallCommand()">
-        {{ isCopied() ? 'Copied' : 'Copy' }}
-      </button>
+    <div class="start">
+      <div class="actions">
+        <a class="button button--primary" href="#demo">Try the demo</a>
+        <a class="button" href="#configurator">Build your configuration</a>
+        <a class="button" [href]="links.issues">Report an issue</a>
+      </div>
+      <div class="install">
+        <span class="install-prompt" aria-hidden="true">$</span>
+        <code #command class="install-command">{{ installCommand }}</code>
+        <button type="button" class="install-copy" (click)="copyInstallCommand()">
+          {{ isCopied() ? 'Copied' : 'Copy' }}
+        </button>
+      </div>
     </div>
     <p class="meta">Version {{ version }} · Angular 20 or newer · MIT license</p>
   </div>
@@ -51,9 +53,3 @@
     }
   </ul>
 </section>
-
-<footer class="footer">
-  <span class="footer-owner">© 2026 Patryk Goch · MIT license</span>
-  <a [href]="links.github">GitHub</a>
-  <a [href]="links.issues">Report an issue</a>
-</footer>

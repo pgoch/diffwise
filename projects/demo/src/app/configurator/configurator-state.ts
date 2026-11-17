@@ -1,20 +1,20 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { type DiffwiseConfigOptions, DiffwiseLanguage } from 'ngx-diffwise';
+import {
+  DiffwiseColorMode,
+  type DiffwiseConfigOptions,
+  DiffwiseLanguage,
+  DiffwiseLayout,
+} from 'ngx-diffwise';
 
 import { DEFAULT_OPTIONS } from '../diff-options';
-import {
-  DiffKind,
-  type SampleChoice,
-  type SampleLanguage,
-  SampleSize,
-  TEXT_SAMPLE_LANGUAGES,
-} from '../samples';
+import { DiffKind, type SampleChoice, type SampleLanguage, SampleSize } from '../samples';
 import {
   type ConfiguratorStep,
   type OptionCondition,
   type OptionName,
   STEPS,
   StepId,
+  type StepOption,
 } from './steps';
 
 /** The diffs an app shows: one of them or both. */
@@ -33,8 +33,14 @@ const DIFF_KINDS_OF: Readonly<Record<AppDiffs, readonly DiffKind[]>> = {
   [AppDiffs.Both]: [DiffKind.Html, DiffKind.Text],
 };
 
-/** Language of a plain text sample when the chosen language has none. */
-const FALLBACK_TEXT_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
+/** A changed option with its step, for the result. */
+export interface ChangedOption {
+  readonly step: ConfiguratorStep;
+  readonly option: StepOption;
+}
+
+/** Language of the samples of the preview, which is that of the configurator. */
+const SAMPLE_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
 
 /**
  * The choices made in the configurator. They stay while the app runs, also on the other pages,
@@ -45,11 +51,11 @@ export class ConfiguratorState {
   /** The diffs the app shows; steps and options of the other diff are left out. */
   readonly appDiffs = signal<AppDiffs>(AppDiffs.Both);
 
-  /** Language of the sample in the preview. */
-  readonly sampleLanguage = signal<SampleLanguage>(DiffwiseLanguage.EN);
+  /** The theme of the preview while the theme of the configuration is Auto; not part of it. */
+  readonly previewColorMode = signal<DiffwiseColorMode>(DiffwiseColorMode.Auto);
 
-  /** Size of the sample in the preview. */
-  readonly sampleSize = signal<SampleSize>(SampleSize.Medium);
+  /** The layout of the preview while the layout of the configuration is Auto; not part of it. */
+  readonly previewLayout = signal<DiffwiseLayout>(DiffwiseLayout.Auto);
 
   /** The diff in the preview of an app with both diffs. */
   readonly chosenPreviewKind = signal<DiffKind>(DiffKind.Html);
@@ -81,16 +87,12 @@ export class ConfiguratorState {
     return diffKinds.includes(this.chosenPreviewKind()) ? this.chosenPreviewKind() : diffKinds[0];
   });
 
-  /** The sample in the preview; plain text samples are in fewer languages, else in English. */
-  readonly sample = computed<SampleChoice>(() => {
-    const kind = this.previewKind();
-    const language = this.sampleLanguage();
-    const hasTextSample = TEXT_SAMPLE_LANGUAGES.includes(language);
-    const isFallback = kind === DiffKind.Text && !hasTextSample;
-    const sampleLanguage = isFallback ? FALLBACK_TEXT_LANGUAGE : language;
-
-    return { kind, language: sampleLanguage, size: this.sampleSize() };
-  });
+  /** The sample in the preview: the long English one, which has every kind of content. */
+  readonly sample = computed<SampleChoice>(() => ({
+    kind: this.previewKind(),
+    language: SAMPLE_LANGUAGE,
+    size: SampleSize.Long,
+  }));
 
   /** The options chosen with another value than their default, which go into the configuration. */
   readonly options = signal<DiffwiseConfigOptions>({});
@@ -108,8 +110,37 @@ export class ConfiguratorState {
     return new Set(steps.map((step) => step.id));
   });
 
+  /** The changed options for the diffs of the app, with their steps, in the order of the steps. */
+  readonly changedOptions = computed<readonly ChangedOption[]>(() =>
+    this.steps().flatMap((step) =>
+      this.optionsOf(step)
+        .filter((option) => this.isChanged(option.name))
+        .map((option) => ({ step, option })),
+    ),
+  );
+
+  /**
+   * The configuration of the result: the changed options for the diffs of the app, in the order
+   * of the steps. Options of a diff the app does not show are left out, as they change nothing.
+   */
+  readonly resultOptions = computed<DiffwiseConfigOptions>(() => {
+    const options = this.options();
+    const names = this.changedOptions().map(({ option }) => option.name);
+
+    return Object.fromEntries(names.map((name) => [name, options[name]]));
+  });
+
   /** The chosen step. */
-  private readonly stepId = signal<StepId>(StepId.Diffs);
+  private readonly stepId = signal<StepId>(StepId.General);
+
+  /** The options of the step for the diffs of the app. */
+  optionsOf(step: ConfiguratorStep): readonly StepOption[] {
+    const diffKinds = this.diffKinds();
+
+    return step.options.filter((option) =>
+      option.diffKinds.some((kind) => diffKinds.includes(kind)),
+    );
+  }
 
   /** The value of the option: the chosen one, or its default. */
   valueOf<K extends OptionName>(name: K): DiffwiseConfigOptions[K] {
@@ -125,7 +156,7 @@ export class ConfiguratorState {
       return null;
     }
 
-    const works = this.valueOf(condition.option) === condition.value;
+    const works = condition.values.includes(this.valueOf(condition.option));
 
     return works ? null : condition.note;
   }
@@ -152,6 +183,13 @@ export class ConfiguratorState {
     this.stepId.set(step.id);
   }
 
+  /** Takes back every chosen option and shows the first step; the diffs and the sample stay. */
+  startOver(): void {
+    this.options.set({});
+    this.optionsVersion.update((version) => version + 1);
+    this.stepId.set(StepId.General);
+  }
+
   /** Shows the nearest working step before the one that shows, if there is one. */
   goBack(): void {
     const before = this.steps().slice(0, this.stepIndex()).reverse();
@@ -164,20 +202,6 @@ export class ConfiguratorState {
     const after = this.steps().slice(this.stepIndex() + 1);
 
     this.goToFirstWorking(after);
-  }
-
-  /**
-   * Shows the steps and the preview of the diffs of an app. An app with plain text alone gets a
-   * sample in English when its language has no plain text sample.
-   */
-  chooseAppDiffs(appDiffs: AppDiffs): void {
-    const hasTextSample = TEXT_SAMPLE_LANGUAGES.includes(this.sampleLanguage());
-
-    this.appDiffs.set(appDiffs);
-
-    if (appDiffs === AppDiffs.Text && !hasTextSample) {
-      this.sampleLanguage.set(FALLBACK_TEXT_LANGUAGE);
-    }
   }
 
   /** Shows the first of the steps that works now, when there is one. */

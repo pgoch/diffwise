@@ -8,13 +8,15 @@ import {
   inject,
   viewChild,
 } from '@angular/core';
-import { DiffwiseHtml, DiffwiseText } from 'ngx-diffwise';
+import { NgTemplateOutlet } from '@angular/common';
+import { DiffwiseColorMode, DiffwiseHtml, DiffwiseLayout, DiffwiseText } from 'ngx-diffwise';
 
 import type { Choice } from '../choice';
 import { ownOptions } from '../diff-options';
 import { DiffKind, loadedSample } from '../samples';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { DiffKindsStep } from './diff-kinds-step';
+import { ResultStep } from './result-step';
 import { StepOptions } from './step-options';
 import { type ConfiguratorStep, StepId } from './steps';
 
@@ -26,6 +28,24 @@ const KEY_SEPARATOR = '-';
 
 /** Name of the heading of the step in the template. */
 const STEP_HEADING_REFERENCE = 'stepHeading';
+
+/** The themes of the preview while the theme of the configuration is Auto. */
+const PREVIEW_THEME_CHOICES: readonly Choice<DiffwiseColorMode>[] = [
+  { value: DiffwiseColorMode.Auto, label: 'Auto theme' },
+  { value: DiffwiseColorMode.Light, label: 'Light theme' },
+  { value: DiffwiseColorMode.Dark, label: 'Dark theme' },
+];
+
+/** The layouts of the preview while the layout of the configuration is Auto. */
+const PREVIEW_LAYOUT_CHOICES: readonly Choice<DiffwiseLayout>[] = [
+  { value: DiffwiseLayout.Auto, label: 'Auto layout' },
+  { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
+  { value: DiffwiseLayout.Inline, label: 'Single column' },
+];
+
+/** Why a list of the preview does not work: the configuration sets the theme or the layout. */
+const ONLY_WITH_AUTO_THEME = 'Only with the theme Auto in the step General.';
+const ONLY_WITH_AUTO_LAYOUT = 'Only with the layout Auto in the step General.';
 
 /** The diffs the preview of an app with both diffs can show. */
 const PREVIEW_KIND_CHOICES: readonly Choice<DiffKind>[] = [
@@ -39,7 +59,7 @@ const PREVIEW_KIND_CHOICES: readonly Choice<DiffKind>[] = [
  */
 @Component({
   selector: 'demo-configurator-page',
-  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, StepOptions],
+  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, NgTemplateOutlet, ResultStep, StepOptions],
   templateUrl: './configurator-page.html',
   styleUrl: './configurator-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +77,34 @@ export class ConfiguratorPage {
   /** The diffs the preview of an app with both diffs can show. */
   protected readonly previewKinds = PREVIEW_KIND_CHOICES;
 
+  /** The themes and the layouts of the preview, and the notes of their lists. */
+  protected readonly previewLists = {
+    themes: PREVIEW_THEME_CHOICES,
+    layouts: PREVIEW_LAYOUT_CHOICES,
+    themeNote: ONLY_WITH_AUTO_THEME,
+    layoutNote: ONLY_WITH_AUTO_LAYOUT,
+  };
+
+  /** True when the theme of the configuration is Auto, so the preview can show either theme. */
+  protected readonly hasAutoTheme = computed(
+    () => this.state.valueOf('colorMode') === DiffwiseColorMode.Auto,
+  );
+
+  /** True when the layout of the configuration is Auto, so the preview can show either layout. */
+  protected readonly hasAutoLayout = computed(
+    () => this.state.valueOf('layout') === DiffwiseLayout.Auto,
+  );
+
+  /** The theme of the preview: the one of the configuration, or the one chosen for Auto. */
+  protected readonly previewColorMode = computed(() =>
+    this.hasAutoTheme() ? this.state.previewColorMode() : this.state.valueOf('colorMode'),
+  );
+
+  /** The layout of the preview: the one of the configuration, or the one chosen for Auto. */
+  protected readonly previewLayout = computed(() =>
+    this.hasAutoLayout() ? this.state.previewLayout() : this.state.valueOf('layout'),
+  );
+
   /**
    * The options of the preview: the chosen ones over every default, so those the demo sets do not
    * change it. The choices made in its view settings start over after each change of an option,
@@ -64,13 +112,21 @@ export class ConfiguratorPage {
    */
   protected readonly previewConfig = computed(() => {
     const userSettingsKey = PREVIEW_SETTINGS_KEY + KEY_SEPARATOR + this.state.optionsVersion();
-    const options = { ...this.state.options(), rememberUserSettings: false };
+    const options = {
+      ...this.state.options(),
+      colorMode: this.previewColorMode(),
+      layout: this.previewLayout(),
+      rememberUserSettings: false,
+    };
 
     return ownOptions(userSettingsKey, options);
   });
 
   /** The goal of the configurator, the last step. */
   protected readonly resultStep = computed(() => this.state.steps().at(-1));
+
+  /** True when the result shows; it takes the place of the preview too. */
+  protected readonly showsResult = computed(() => this.state.step().id === StepId.Result);
 
   /** The number of the step that shows, from 1. */
   protected readonly stepNumber = computed(() => this.state.stepIndex() + 1);
@@ -122,8 +178,29 @@ export class ConfiguratorPage {
     this.focusStep();
   }
 
+  /** Shows the preview in the chosen theme. */
+  protected choosePreviewTheme(event: Event): void {
+    this.state.previewColorMode.set(selectedValueOf(event) as DiffwiseColorMode);
+  }
+
+  /** Shows the preview in the chosen layout. */
+  protected choosePreviewLayout(event: Event): void {
+    this.state.previewLayout.set(selectedValueOf(event) as DiffwiseLayout);
+  }
+
+  /** Takes back every chosen option and shows the first step. */
+  protected startOver(): void {
+    this.state.startOver();
+    this.focusStep();
+  }
+
   /** Moves the focus to the heading of the step once it shows, as a new page would. */
   private focusStep(): void {
     afterNextRender(() => this.stepHeading().nativeElement.focus(), { injector: this.injector });
   }
+}
+
+/** The value of the option chosen in a list. */
+function selectedValueOf(event: Event): string {
+  return (event.target as HTMLSelectElement).value;
 }

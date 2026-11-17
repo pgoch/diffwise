@@ -1,7 +1,8 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { Diffwise, DiffwiseColorMode, DiffwiseLanguage } from 'ngx-diffwise';
+import { Diffwise, DiffwiseColorMode, DiffwiseLayout } from 'ngx-diffwise';
 
 import { serveSampleFiles } from '../../testing/sample-files';
+import { ConfiguratorState } from './configurator-state';
 import { ConfiguratorPage } from './configurator-page';
 
 const STEP_SELECTOR = '.flow-steps .flow-step';
@@ -9,12 +10,15 @@ const CURRENT_STEP_SELECTOR = '.flow-steps [aria-current="step"]';
 const GOAL_STEP_SELECTOR = '.flow-steps .flow-step--goal';
 const HEADING_SELECTOR = '.step-heading';
 const NAV_BUTTON_SELECTOR = '.nav button';
+const HEAD_BUTTON_SELECTOR = '.step-nav button';
 const OPTION_BUTTON_SELECTOR = '.option-choice';
 const PREVIEW_BUTTON_SELECTOR = '.preview-switch button';
 const PREVIEW_LABEL_SELECTOR = '.preview-label';
 const NO_CHANGES_SELECTOR = '.preview .diffwise-diff__no-changes';
-const LANGUAGE_SELECT_SELECTOR = '.sample-field select';
-const SAMPLE_HINT_SELECTOR = '.sample-hint';
+const LANGUAGE_SELECT_SELECTOR = '.preview select[aria-label="Language of the sample"]';
+const PREVIEW_THEME_SELECTOR = '.preview-theme';
+const PREVIEW_LAYOUT_SELECTOR = '.preview-layout';
+const INLINE_LAYOUT_SELECTOR = '.preview diffwise-html.diffwise-diff--layout-inline';
 const HTML_DIFF_SELECTOR = '.preview diffwise-html';
 const TEXT_DIFF_SELECTOR = '.preview diffwise-text';
 const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
@@ -26,6 +30,7 @@ const HTML_PREVIEW = 'HTML';
 const TEXT_PREVIEW = 'Text';
 const CHANGE_DETAILS_STEP = 'Change details';
 const RESULT_STEP = 'Result';
+const TOOLBAR_STEP = 'Toolbar';
 const VIEW_SETTINGS_STEP = 'View settings';
 const HIDDEN = 'Hidden';
 
@@ -102,14 +107,13 @@ function textOf(fixture: ComponentFixture<ConfiguratorPage>, selector: string): 
   return all(fixture, selector)[0]?.textContent ?? '';
 }
 
-/** Chooses the language of the sample. */
-async function chooseLanguage(
+/** Chooses the value in a list. */
+async function chooseIn(
   fixture: ComponentFixture<ConfiguratorPage>,
-  language: DiffwiseLanguage,
+  select: HTMLSelectElement,
+  value: string,
 ): Promise<void> {
-  const select = all(fixture, LANGUAGE_SELECT_SELECTOR)[0] as HTMLSelectElement;
-
-  select.value = language;
+  select.value = value;
   select.dispatchEvent(new Event(CHANGE_EVENT));
   await settle(fixture);
 }
@@ -119,7 +123,7 @@ describe('ConfiguratorPage', () => {
     const fixture = await render();
 
     expect(stepNames(fixture)).toEqual([
-      'Your diffs',
+      'General',
       'Colors',
       'Lines',
       'Layout',
@@ -128,13 +132,13 @@ describe('ConfiguratorPage', () => {
       'Toolbar',
       'Identical versions',
       'Comparison',
-      'Language and texts',
+      'Texts',
       'View settings',
       'Result',
     ]);
-    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['1 Your diffs']);
+    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['1 General']);
     expect(textsOf(fixture, GOAL_STEP_SELECTOR)).toEqual(['12 Result']);
-    expect(headingOf(fixture)).toBe('1. Your diffs');
+    expect(headingOf(fixture)).toBe('1. General');
     expect(textsOf(fixture, NAV_BUTTON_SELECTOR)).toEqual([NEXT]);
   });
 
@@ -150,7 +154,20 @@ describe('ConfiguratorPage', () => {
 
     await click(fixture, NAV_BUTTON_SELECTOR, BACK);
 
-    expect(headingOf(fixture)).toBe('1. Your diffs');
+    expect(headingOf(fixture)).toBe('1. General');
+  });
+
+  it('goes to the next and the previous step also from the buttons next to the heading', async () => {
+    const fixture = await render();
+
+    await click(fixture, HEAD_BUTTON_SELECTOR, NEXT);
+
+    expect(headingOf(fixture)).toBe('2. Colors');
+    expect(textsOf(fixture, HEAD_BUTTON_SELECTOR)).toEqual([BACK, NEXT]);
+
+    await click(fixture, HEAD_BUTTON_SELECTOR, BACK);
+
+    expect(headingOf(fixture)).toBe('1. General');
   });
 
   it('goes to any step from the bar; the result has no next step', async () => {
@@ -174,40 +191,32 @@ describe('ConfiguratorPage', () => {
     expect(stepNames(fixture)).not.toContain(CHANGE_DETAILS_STEP);
     expect(stepNames(fixture)).toHaveLength(11);
     expect(all(fixture, PREVIEW_BUTTON_SELECTOR)).toEqual([]);
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
     expect(all(fixture, HTML_DIFF_SELECTOR)).toEqual([]);
   });
 
   it('previews either diff of an app with both diffs', async () => {
     const fixture = await render();
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/medium');
+    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/long');
 
     await click(fixture, PREVIEW_BUTTON_SELECTOR, TEXT_PREVIEW);
 
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
 
     await click(fixture, PREVIEW_BUTTON_SELECTOR, HTML_PREVIEW);
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/medium');
+    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/en/long');
   });
 
-  it('previews the chosen sample, and plain text in English when its language has none', async () => {
+  it('previews English samples only, with no list of their languages', async () => {
     const fixture = await render();
 
-    await chooseLanguage(fixture, DiffwiseLanguage.DE);
+    expect(all(fixture, LANGUAGE_SELECT_SELECTOR)).toEqual([]);
 
-    expect(textOf(fixture, HTML_DIFF_SELECTOR)).toContain('test-data/de/medium');
-    expect(textOf(fixture, SAMPLE_HINT_SELECTOR)).toContain('English and Polish');
+    await click(fixture, OPTION_BUTTON_SELECTOR, PLAIN_TEXT);
 
-    await click(fixture, PREVIEW_BUTTON_SELECTOR, TEXT_PREVIEW);
-
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
-
-    await chooseLanguage(fixture, DiffwiseLanguage.PL);
-
-    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/pl/medium');
-    expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
+    expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/long');
   });
 
   it('compares the sample with itself in the step of identical versions', async () => {
@@ -226,27 +235,54 @@ describe('ConfiguratorPage', () => {
     expect(all(fixture, NO_CHANGES_SELECTOR)).toEqual([]);
   });
 
-  it('disables the view settings without the toolbar, and steps over them', async () => {
+  it('disables the toolbar and the view settings without the toolbar, and steps over them', async () => {
     const fixture = await render();
-    const viewSettings = () =>
-      all(fixture, STEP_SELECTOR).find((step) => step.textContent?.includes(VIEW_SETTINGS_STEP));
+    const stepNamed = (name: string) =>
+      all(fixture, STEP_SELECTOR).find((step) => step.textContent?.includes(name));
+    const isDisabled = (name: string) => (stepNamed(name) as HTMLButtonElement).disabled;
 
-    expect((viewSettings() as HTMLButtonElement).disabled).toBe(false);
+    expect([isDisabled(TOOLBAR_STEP), isDisabled(VIEW_SETTINGS_STEP)]).toEqual([false, false]);
 
-    await clickStep(fixture, 'Toolbar');
     await click(fixture, OPTION_BUTTON_SELECTOR, HIDDEN);
 
-    expect((viewSettings() as HTMLButtonElement).disabled).toBe(true);
-    expect(viewSettings()?.textContent).toContain('(Only with the toolbar shown.)');
+    expect([isDisabled(TOOLBAR_STEP), isDisabled(VIEW_SETTINGS_STEP)]).toEqual([true, true]);
+    expect(stepNamed(VIEW_SETTINGS_STEP)?.textContent).toContain(
+      '(Only with the toolbar shown in the step General.)',
+    );
 
-    await clickStep(fixture, 'Language and texts');
+    await clickStep(fixture, 'Fonts');
+    await click(fixture, NAV_BUTTON_SELECTOR, NEXT);
+
+    expect(headingOf(fixture)).toBe('8. Identical versions');
+
+    await clickStep(fixture, 'Texts');
     await click(fixture, NAV_BUTTON_SELECTOR, NEXT);
 
     expect(headingOf(fixture)).toBe('12. Result');
 
     await click(fixture, NAV_BUTTON_SELECTOR, BACK);
 
-    expect(headingOf(fixture)).toBe('10. Language and texts');
+    expect(headingOf(fixture)).toBe('10. Texts');
+  });
+
+  it('previews either theme and layout of Auto, without changing the configuration', async () => {
+    const fixture = await render();
+    const theme = all(fixture, PREVIEW_THEME_SELECTOR)[0] as HTMLSelectElement;
+    const layout = all(fixture, PREVIEW_LAYOUT_SELECTOR)[0] as HTMLSelectElement;
+
+    await chooseIn(fixture, theme, DiffwiseColorMode.Dark);
+    await chooseIn(fixture, layout, DiffwiseLayout.Inline);
+
+    expect(all(fixture, HTML_DIFF_SELECTOR)[0].classList.contains(DARK_THEME_CLASS)).toBe(true);
+    expect(all(fixture, INLINE_LAYOUT_SELECTOR)).toHaveLength(1);
+    expect(TestBed.inject(ConfiguratorState).options()).toEqual({});
+
+    await click(fixture, OPTION_BUTTON_SELECTOR, 'Light');
+
+    expect(theme.disabled).toBe(true);
+    expect(theme.value).toBe(DiffwiseColorMode.Light);
+    expect(all(fixture, HTML_DIFF_SELECTOR)[0].classList.contains(DARK_THEME_CLASS)).toBe(false);
+    expect(layout.disabled).toBe(false);
   });
 
   it('keeps the preview apart from the global configuration of the demo', async () => {

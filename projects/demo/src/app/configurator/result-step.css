@@ -1,0 +1,134 @@
+/* The code on the left, and the list of changed options next to it. */
+.result {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.form-switch {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.form-switch button {
+  padding: 4px 12px;
+  border: 1px solid var(--site-border);
+  border-radius: 6px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.form-switch button[aria-pressed='true'] {
+  border-color: var(--site-text);
+  background: var(--site-text);
+  color: var(--site-on-accent);
+}
+
+.button {
+  padding: 6px 18px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover {
+  border-color: var(--site-muted);
+}
+
+.button--primary,
+.button--primary:hover {
+  border-color: var(--site-accent);
+  background: var(--site-accent);
+  color: var(--site-on-accent);
+}
+
+.code {
+  margin: 0;
+  padding: 14px 16px;
+  overflow: auto;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: var(--site-subtle);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.code-note {
+  margin: 8px 0 0;
+  color: var(--site-muted);
+  font-size: 13px;
+}
+
+.changes-heading {
+  margin: 4px 0 8px;
+  color: var(--site-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.changes-empty {
+  margin: 0 0 14px;
+  color: var(--site-muted);
+  font-size: 13.5px;
+}
+
+.changes-list {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.change {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--site-border);
+  font-size: 13.5px;
+}
+
+.change-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.change-edit {
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--site-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.change-edit:hover {
+  text-decoration: underline;
+}
+
+/* In a narrow window: the list under the code. */
+@media (max-width: 960px) {
+  .result {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

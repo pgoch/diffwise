@@ -1,5 +1,6 @@
 :host {
-  display: block;
+  display: flex;
+  flex-direction: column;
   color: var(--site-text);
   font-size: 14px;
   line-height: 1.5;
@@ -176,27 +177,59 @@
 }
 
 /*
- * The options of the step on the left, with "Back" and "Next" under them, and the preview on the
- * right. The preview stays in view while the options scroll.
+ * The options of the step on the left, with "Back" and "Next" next to the heading and under the
+ * options, and the preview on the right. The bars on top stay, and the options and the diff of
+ * the preview scroll each on their own.
  */
 .main {
   display: grid;
-  grid-template-areas:
-    'options preview'
-    'nav preview';
+  grid-template-areas: 'pane preview';
   grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr);
-  grid-template-rows: auto 1fr;
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1;
   gap: 0 32px;
-  align-items: start;
-  padding: 22px 22px 48px;
+  min-height: 0;
+  padding: 0 22px;
 }
 
-.options {
-  grid-area: options;
+/*
+ * Each pane holds the hidden texts for screen readers too, which would else make the page itself
+ * scroll.
+ */
+.pane {
+  position: relative;
+  grid-area: pane;
+  min-height: 0;
+  overflow: auto;
+  padding: 22px 4px 40px 0;
+}
+
+/* The result takes the whole width, as it has no preview. */
+.main--result {
+  grid-template-areas: 'pane';
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin: 0 0 2px;
+}
+
+.step-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.preview[hidden] {
+  display: none;
 }
 
 .step-heading {
-  margin: 0 0 2px;
+  margin: 0;
   font-size: 19px;
   font-weight: 650;
 }
@@ -217,7 +250,6 @@
 
 .nav {
   display: flex;
-  grid-area: nav;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 8px;
@@ -247,13 +279,20 @@
   color: var(--site-on-accent);
 }
 
+/* The head of the preview stays, and the diff under it scrolls, with its toolbar on top. */
 .preview {
   --diffwise-toolbar-top: 0px;
 
-  position: sticky;
-  top: 12px;
+  display: flex;
+  flex-direction: column;
   grid-area: preview;
-  max-height: calc(100vh - 24px);
+  min-height: 0;
+  padding: 22px 0 16px;
+}
+
+.preview-body {
+  flex: 1;
+  min-height: 0;
   overflow: auto;
 }
 
@@ -263,6 +302,27 @@
   justify-content: space-between;
   gap: 8px;
   margin-bottom: 6px;
+}
+
+.preview-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.preview-select {
+  padding: 1px 4px;
+  border: 1px solid var(--site-border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--site-text);
+  font: inherit;
+  font-size: 12.5px;
+}
+
+.preview-select:disabled {
+  opacity: 0.55;
 }
 
 .preview-label {
@@ -315,13 +375,34 @@
     padding: 18px 16px 40px;
   }
 
+  .main--result {
+    grid-template-areas:
+      'options'
+      'nav';
+  }
+
+  /* The page scrolls as a whole, with the options, the preview and the buttons in turn. */
+  .pane {
+    display: contents;
+  }
+
+  .options {
+    grid-area: options;
+  }
+
+  .nav {
+    grid-area: nav;
+  }
+
   .flow {
     padding: 12px 16px 4px;
   }
 
   .preview {
-    position: static;
-    max-height: none;
+    padding: 0;
+  }
+
+  .preview-body {
     overflow: visible;
   }
 }

@@ -1,0 +1,59 @@
+<div class="result">
+  <div class="result-code">
+    <div class="code-head">
+      <span class="form-switch" role="group" aria-label="Form of the configuration">
+        @for (choice of forms; track choice.value) {
+          <button
+            type="button"
+            [attr.aria-pressed]="choice.value === form()"
+            (click)="form.set(choice.value)"
+          >
+            {{ choice.label }}
+          </button>
+        }
+      </span>
+      <button type="button" class="button button--primary" (click)="copy()">
+        {{ isCopied() ? 'Copied' : 'Copy' }}
+      </button>
+    </div>
+    <pre class="code" #codeBlock><code>{{ code() }}</code></pre>
+    <p class="code-note">
+      For one diff only, pass the object to its <code>config</code> input instead.
+    </p>
+    <p class="code-note">
+      Every option can also change while your app runs: <code>updateConfig()</code> of the
+      <code>Diffwise</code> service changes it for every diff, and an input of a diff for that diff.
+      The theme has functions of its own: <code>switchToDarkMode()</code>,
+      <code>switchToLightMode()</code>, <code>switchToAutoMode()</code> and
+      <code>toggleDarkMode()</code>.
+    </p>
+  </div>
+
+  <section class="changes" aria-labelledby="configurator-changes-heading">
+    <h3 id="configurator-changes-heading" class="changes-heading">
+      Changed options: {{ changes().length }}
+    </h3>
+    @if (changes().length === 0) {
+      <p class="changes-empty">None yet, so the configuration keeps every default.</p>
+    } @else {
+      <ul class="changes-list">
+        @for (change of changes(); track change.option.name) {
+          <li class="change">
+            <span class="change-text">
+              {{ change.option.label }}: <b>{{ change.value }}</b>
+            </span>
+            <button
+              type="button"
+              class="change-edit"
+              [attr.aria-label]="change.editLabel"
+              (click)="edit.emit(change.step)"
+            >
+              Edit
+            </button>
+          </li>
+        }
+      </ul>
+    }
+    <button type="button" class="button" (click)="startOver.emit()">Start over</button>
+  </section>
+</div>

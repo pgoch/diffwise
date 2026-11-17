@@ -109,6 +109,15 @@
   line-height: 1.6;
 }
 
+/*
+ * The diff holds what is positioned in it, such as the hidden descriptions of lines for screen
+ * readers, which would else lengthen a scrolling box around the diff, or the page. `:where()` lets
+ * any rule of the app win.
+ */
+:where(.diffwise-diff) {
+  position: relative;
+}
+
 /* Dark theme: other base colors and shares; the colors mixed from them follow. */
 :where(.diffwise-diff--dark-theme) {
   --diffwise-background: #16191f;
@@ -647,6 +656,14 @@
   color: var(--diffwise-link);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/*
+ * A checkbox in the middle of its text. The browser puts the bottom of the box on the baseline, so
+ * the box stands too high in small text. `:where()` lets any rule of the app win.
+ */
+:where(.diffwise-diff__content input[type='checkbox']) {
+  vertical-align: -0.125em;
 }
 
 /* A link in a changed part has the color of the text, which keeps its contrast on the highlight. */

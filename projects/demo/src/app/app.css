@@ -2,14 +2,36 @@
   display: block;
 }
 
-/* The bar on top of every page: the name leads to the home page, the links to the others. */
+/*
+ * The configurator fills the window under the bar in a wide window, and scrolls in its own panes,
+ * so the bar and its steps stay on top.
+ */
+@media (min-width: 961px) {
+  :host(.site--fixed) {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  :host(.site--fixed) demo-configurator-page {
+    flex: 1;
+    min-height: 0;
+  }
+}
+
+/*
+ * The bar on top of every page: the name leads to the home page, the links to the others. A line
+ * in the colors of the logo, from removed to added, sets it apart from the page.
+ */
 .site-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px 18px;
   padding: 10px 22px;
-  border-bottom: 1px solid var(--site-border);
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, var(--site-removed), var(--site-added)) 1;
+  background: var(--site-bar);
   color: var(--site-text);
   font-size: 13.5px;
   line-height: 1.5;

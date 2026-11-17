@@ -14,6 +14,9 @@ const HOW_TO_ID_END = '-how-to';
 /** Starts the name of the button that shows how to check an option, before the option name. */
 const HOW_TO_LABEL_START = 'How to check: ';
 
+/** What the button that shows how to check an option says on hover. */
+const HOW_TO_HINT = 'Click to see more info';
+
 /** An option with fields of its own instead of buttons. */
 const NO_CHOICES: readonly never[] = [];
 
@@ -77,6 +80,9 @@ export class OptionControl<T> {
 
   /** Name of the button that shows how to check the option. */
   protected readonly howToLabel = computed(() => HOW_TO_LABEL_START + this.name());
+
+  /** What the button that shows how to check the option says on hover. */
+  protected readonly howToHint = HOW_TO_HINT;
 
   /** True while the option does not work. */
   protected readonly isDisabled = computed(() => this.disabledNote() !== null);

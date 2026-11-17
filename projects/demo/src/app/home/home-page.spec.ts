@@ -1,6 +1,6 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DOCS_URL, GITHUB_URL } from '../site';
+import { DOCS_URL, ISSUES_URL } from '../site';
 import { HomePage } from './home-page';
 
 const ENTRY_SELECTOR = '.entry';
@@ -62,13 +62,13 @@ function clickCopy(fixture: ComponentFixture<HomePage>): void {
 }
 
 describe('HomePage', () => {
-  it('leads to the demo, the configurator and the documentation', () => {
+  it('leads to the demo, the configurator, the documentation and the issues', () => {
     const fixture = render();
 
     expect(linksOf(fixture, ACTION_SELECTOR)).toEqual([
       ['Try the demo', '#demo'],
       ['Build your configuration', '#configurator'],
-      ['GitHub', GITHUB_URL],
+      ['Report an issue', ISSUES_URL],
     ]);
     expect(linksOf(fixture, ENTRY_SELECTOR).map(([, href]) => href)).toEqual([
       '#demo',

@@ -149,7 +149,7 @@ describe('CustomColorsEditor', () => {
 
 describe('CustomTextsEditor', () => {
   it('groups the texts as the documentation does, with the English text as a hint', async () => {
-    const fixture = await render(StepId.Language);
+    const fixture = await render(StepId.Texts);
     const groups = textGroups(fixture);
 
     expect(groups.map(([title]) => title)).toEqual([
@@ -165,7 +165,7 @@ describe('CustomTextsEditor', () => {
   });
 
   it('gives the preview a written text, counts it, and takes back an empty one', async () => {
-    const fixture = await render(StepId.Language);
+    const fixture = await render(StepId.Texts);
 
     await type(fixture, textField(fixture, OLD_VERSION_TEXT), 'Draft');
 
@@ -180,15 +180,15 @@ describe('CustomTextsEditor', () => {
   it('leaves out the texts of a diff the app does not show', async () => {
     const state = TestBed.inject(ConfiguratorState);
 
-    state.chooseAppDiffs(AppDiffs.Text);
+    state.appDiffs.set(AppDiffs.Text);
 
-    const fixture = await render(StepId.Language);
+    const fixture = await render(StepId.Texts);
     const titles = textGroups(fixture).map(([title]) => title);
 
     expect(titles).not.toContain('Tooltips');
     expect(titles).not.toContain('Names of formatting');
 
-    state.chooseAppDiffs(AppDiffs.Html);
+    state.appDiffs.set(AppDiffs.Html);
     await settle(fixture);
 
     const viewSettings = textGroups(fixture).find(([title]) => title === 'View settings');

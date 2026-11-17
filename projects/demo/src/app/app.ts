@@ -39,6 +39,9 @@ const HASH_CHANGE_EVENT = 'hashchange';
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    '[class.site--fixed]': 'page() === pages.Configurator',
+  },
 })
 export class App {
   /** Pages of the site, for the template. */

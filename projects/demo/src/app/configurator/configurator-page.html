@@ -49,39 +49,84 @@
   </div>
 </nav>
 
-<div class="main">
-  <section class="options" aria-labelledby="configurator-step-heading">
-    <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
-      {{ stepNumber() }}. {{ state.step().label }}
-    </h2>
-    <p class="step-description">{{ state.step().description }}</p>
+<ng-template #stepButtons>
+  @if (hasBack()) {
+    <button type="button" class="button" (click)="goBack()">Back</button>
+  }
+  @if (hasNext()) {
+    <button type="button" class="button button--primary" (click)="goNext()">Next</button>
+  }
+</ng-template>
 
-    @switch (state.step().id) {
-      @case (stepIds.Diffs) {
-        <demo-diff-kinds-step />
-      }
-      @default {
-        <demo-step-options [step]="state.step()" />
-      }
-    }
-  </section>
+<div class="main" [class.main--result]="showsResult()">
+  <div class="pane">
+    <section class="options" aria-labelledby="configurator-step-heading">
+      <div class="step-head">
+        <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
+          {{ stepNumber() }}. {{ state.step().label }}
+        </h2>
+        <div class="step-nav">
+          <ng-container [ngTemplateOutlet]="stepButtons" />
+        </div>
+      </div>
+      <p class="step-description">{{ state.step().description }}</p>
 
-  <div class="nav">
-    @if (hasBack()) {
-      <button type="button" class="button" (click)="goBack()">Back</button>
-    }
-    @if (hasNext()) {
-      <button type="button" class="button button--primary" (click)="goNext()">Next</button>
-    }
+      @switch (state.step().id) {
+        @case (stepIds.General) {
+          <demo-diff-kinds-step />
+          <demo-step-options [step]="state.step()" />
+        }
+        @case (stepIds.Result) {
+          <demo-result-step (edit)="goTo($event)" (startOver)="startOver()" />
+        }
+        @default {
+          <demo-step-options [step]="state.step()" />
+        }
+      }
+    </section>
+
+    <div class="nav">
+      <ng-container [ngTemplateOutlet]="stepButtons" />
+    </div>
   </div>
 
-  <section class="preview" aria-labelledby="configurator-preview-label">
+  <section class="preview" aria-labelledby="configurator-preview-label" [hidden]="showsResult()">
     <div class="preview-head">
-      <span id="configurator-preview-label" class="preview-label">
-        Preview
-        @if (comparesSampleWithItself()) {
-          · the sample compared with itself
-        }
+      <span class="preview-title">
+        <span id="configurator-preview-label" class="preview-label">
+          Preview
+          @if (comparesSampleWithItself()) {
+            · the sample compared with itself
+          }
+        </span>
+        <span [title]="hasAutoTheme() ? '' : previewLists.themeNote">
+          <select
+            class="preview-select preview-theme"
+            aria-label="Theme of the preview"
+            [disabled]="!hasAutoTheme()"
+            (change)="choosePreviewTheme($event)"
+          >
+            @for (choice of previewLists.themes; track choice.value) {
+              <option [value]="choice.value" [selected]="choice.value === previewColorMode()">
+                {{ choice.label }}
+              </option>
+            }
+          </select>
+        </span>
+        <span [title]="hasAutoLayout() ? '' : previewLists.layoutNote">
+          <select
+            class="preview-select preview-layout"
+            aria-label="Layout of the preview"
+            [disabled]="!hasAutoLayout()"
+            (change)="choosePreviewLayout($event)"
+          >
+            @for (choice of previewLists.layouts; track choice.value) {
+              <option [value]="choice.value" [selected]="choice.value === previewLayout()">
+                {{ choice.label }}
+              </option>
+            }
+          </select>
+        </span>
       </span>
       @if (usesBothDiffs()) {
         <span class="preview-switch" role="group" aria-label="Diff in the preview">
@@ -98,22 +143,24 @@
       }
     </div>
 
-    @if (sample.error()) {
-      <p role="alert">The sample could not be loaded.</p>
-    } @else if (shownSample(); as pair) {
-      @if (pair.kind === diffKinds.Text) {
-        <diffwise-text
-          [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-          [newText]="pair.newVersion"
-          [config]="previewConfig()"
-        />
-      } @else {
-        <diffwise-html
-          [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-          [newHtml]="pair.newVersion"
-          [config]="previewConfig()"
-        />
+    <div class="preview-body">
+      @if (sample.error()) {
+        <p role="alert">The sample could not be loaded.</p>
+      } @else if (shownSample(); as pair) {
+        @if (pair.kind === diffKinds.Text) {
+          <diffwise-text
+            [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+            [newText]="pair.newVersion"
+            [config]="previewConfig()"
+          />
+        } @else {
+          <diffwise-html
+            [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+            [newHtml]="pair.newVersion"
+            [config]="previewConfig()"
+          />
+        }
       }
-    }
+    </div>
   </section>
 </div>
