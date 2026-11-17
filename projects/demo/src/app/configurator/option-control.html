@@ -1,0 +1,29 @@
+<div class="option-name" [id]="ids.name">
+  {{ name() }}
+  @if (isChanged()) {
+    <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
+  }
+</div>
+<p class="option-description" [id]="ids.description">{{ description() }}</p>
+<div
+  class="option-choices"
+  role="group"
+  [attr.aria-labelledby]="ids.name"
+  [attr.aria-describedby]="ids.description"
+>
+  @for (choice of choices(); track $index) {
+    <button
+      type="button"
+      class="option-choice"
+      [attr.aria-pressed]="choice.value === value()"
+      (click)="chosen.emit(choice.value)"
+    >
+      {{ choice.label }}
+      @if (choice.value === defaultValue()) {
+        <span class="option-default">default</span>
+      }
+    </button>
+  } @empty {
+    <ng-content />
+  }
+</div>

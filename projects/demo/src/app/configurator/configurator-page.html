@@ -1,0 +1,97 @@
+<h1 class="hidden">Diffwise configurator</h1>
+
+<nav class="flow" aria-label="Steps of the configurator">
+  <ol class="flow-steps">
+    @for (step of state.steps(); track step.id; let index = $index) {
+      <li class="flow-item">
+        <button
+          type="button"
+          class="flow-step"
+          [class.flow-step--goal]="step.id === stepIds.Result"
+          [attr.aria-current]="step === state.step() ? 'step' : null"
+          (click)="goTo(step)"
+        >
+          <span class="flow-number">{{ index + 1 }}</span>
+          <span class="flow-name">{{ step.label }}</span>
+        </button>
+        <span class="flow-arrow" aria-hidden="true">→</span>
+      </li>
+    }
+  </ol>
+
+  <div class="flow-current">
+    <span class="flow-step" aria-current="step">
+      <span class="flow-number">{{ stepNumber() }}</span>
+      <span class="flow-name">{{ state.step().label }}</span>
+    </span>
+    <span class="flow-count">of {{ state.steps().length }}</span>
+    @if (resultStep(); as result) {
+      @if (result !== state.step()) {
+        <button type="button" class="flow-goal" (click)="goTo(result)">
+          → {{ state.steps().length }} {{ result.label }}
+        </button>
+      }
+    }
+  </div>
+</nav>
+
+<div class="main">
+  <section class="options" aria-labelledby="configurator-step-heading">
+    <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
+      {{ stepNumber() }}. {{ state.step().label }}
+    </h2>
+    <p class="step-description">{{ state.step().description }}</p>
+
+    @switch (state.step().id) {
+      @case (stepIds.Diffs) {
+        <demo-diff-kinds-step />
+      }
+    }
+  </section>
+
+  <div class="nav">
+    @if (hasBack()) {
+      <button type="button" class="button" (click)="goBack()">Back</button>
+    }
+    @if (hasNext()) {
+      <button type="button" class="button button--primary" (click)="goNext()">Next</button>
+    }
+  </div>
+
+  <section class="preview" aria-labelledby="configurator-preview-label">
+    <div class="preview-head">
+      <span id="configurator-preview-label" class="preview-label">Preview</span>
+      @if (usesBothDiffs()) {
+        <span class="preview-switch" role="group" aria-label="Diff in the preview">
+          @for (choice of previewKinds; track choice.value) {
+            <button
+              type="button"
+              [attr.aria-pressed]="choice.value === state.previewKind()"
+              (click)="state.chosenPreviewKind.set(choice.value)"
+            >
+              {{ choice.label }}
+            </button>
+          }
+        </span>
+      }
+    </div>
+
+    @if (sample.error()) {
+      <p role="alert">The sample could not be loaded.</p>
+    } @else if (shownSample(); as pair) {
+      @if (pair.kind === diffKinds.Text) {
+        <diffwise-text
+          [oldText]="pair.oldVersion"
+          [newText]="pair.newVersion"
+          [config]="previewConfig"
+        />
+      } @else {
+        <diffwise-html
+          [oldHtml]="pair.oldVersion"
+          [newHtml]="pair.newVersion"
+          [config]="previewConfig"
+        />
+      }
+    }
+  </section>
+</div>

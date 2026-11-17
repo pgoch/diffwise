@@ -1,144 +1,86 @@
 :host {
-  display: grid;
-  grid-template-columns: 310px minmax(0, 1fr);
-  min-height: 100vh;
+  display: block;
 }
 
-/* The panel stays in view while the diff scrolls. */
-.demo-panel {
-  position: sticky;
-  top: 0;
-  align-self: start;
-  height: 100vh;
-  overflow: auto;
-  padding: 18px 16px 28px;
-  border-right: 1px solid #dfe3e8;
-  font-size: 14px;
+/* The bar on top of every page: the name leads to the home page, the links to the others. */
+.site-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--site-border);
+  color: var(--site-text);
+  font-size: 13.5px;
   line-height: 1.5;
 }
 
-.demo-panel h1 {
-  margin: 0;
-  font-size: 15px;
-}
-
-.demo-panel h2 {
-  margin: 18px 0 8px;
-  padding-top: 12px;
-  border-top: 1px solid #dfe3e8;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.demo-note,
-.demo-hint {
-  margin: 4px 0 12px;
-  color: #667085;
-  font-size: 12px;
-}
-
-.demo-button {
-  width: 100%;
-  margin: -4px 0 12px;
-  padding: 5px 8px;
-  border: 1px solid #dfe3e8;
-  border-radius: 6px;
-  background: #f3f5f8;
+.site-bar a {
   color: inherit;
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
+  text-decoration: none;
 }
 
-.demo-text {
-  box-sizing: border-box;
-  width: 100%;
-  margin: 0 0 4px;
-  padding: 6px 8px;
-  border: 1px solid #dfe3e8;
-  border-radius: 6px;
-  font:
-    12px/1.45 ui-monospace,
-    SFMono-Regular,
-    Consolas,
-    monospace;
-  resize: vertical;
-}
-
-.demo-error {
-  color: #b42318;
-}
-
-.demo-check {
+.site-brand {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 3px 0 8px;
-  font-size: 13px;
-  cursor: pointer;
+  margin-inline-end: auto;
+  font-size: 16px;
+  font-weight: 700;
 }
 
-.demo-check--nested {
-  margin-left: 24px;
+/* Two squares in the colors of removed and added text. */
+.site-logo {
+  display: inline-grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 20px;
+  height: 16px;
 }
 
-.demo-field {
+.site-logo span {
+  border-radius: 2px;
+  background: var(--site-removed);
+}
+
+.site-logo span + span {
+  background: var(--site-added);
+}
+
+.site-nav {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  margin: 5px 0;
-  font-size: 13px;
+  flex-wrap: wrap;
+  gap: 4px 16px;
 }
 
-.demo-field :is(input, select) {
-  width: 120px;
-  padding: 4px 6px;
-  border: 1px solid #dfe3e8;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 13px;
+.site-nav a {
+  color: var(--site-muted);
 }
 
-/*
- * The diff starts a little below the top of the page, and its toolbar sticks at the same distance
- * from the top, so it does not move when it sticks and the arrows stay under the pointer. A strip
- * in the color of the page covers the content that scrolls above the toolbar.
- */
-.demo-main {
-  --demo-toolbar-gap: 16px;
-
-  min-width: 0;
-  padding: var(--demo-toolbar-gap) 32px 80px;
+.site-nav a:hover,
+.site-nav a[aria-current='page'] {
+  color: var(--site-text);
 }
 
-.demo-main::before {
-  position: sticky;
-  top: 0;
-  z-index: 4;
-  display: block;
-  height: var(--demo-toolbar-gap);
-  margin: calc(-1 * var(--demo-toolbar-gap)) -32px 0;
-  background: Canvas;
-  content: '';
+.site-nav a[aria-current='page'] {
+  font-weight: 600;
 }
 
-.demo-diff :is(diffwise-html, diffwise-text) {
-  --diffwise-toolbar-top: var(--demo-toolbar-gap);
+.site-version {
+  padding: 1px 8px;
+  border: 1px solid var(--site-border);
+  border-radius: 999px;
+  color: var(--site-muted);
+  font-size: 11.5px;
+  white-space: nowrap;
 }
 
-/* On a narrow screen the panel goes above the diff. */
-@media (max-width: 800px) {
-  :host {
-    grid-template-columns: minmax(0, 1fr);
+@media (max-width: 560px) {
+  .site-bar {
+    padding: 10px 16px;
   }
 
-  .demo-panel {
-    position: static;
-    height: auto;
-    border-right: 0;
-    border-bottom: 1px solid #dfe3e8;
+  .site-version {
+    display: none;
   }
 }

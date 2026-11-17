@@ -7,9 +7,10 @@
     "build": "ng build ngx-diffwise && node -e \"require('fs').copyFileSync('LICENSE', 'dist/ngx-diffwise/LICENSE')\"",
     "build:demo": "ng build demo",
     "watch": "ng build ngx-diffwise --watch --configuration development",
-    "test": "npm run test:engine && npm run test:angular",
+    "test": "npm run test:engine && npm run test:angular && npm run test:demo",
     "test:engine": "vitest run",
     "test:angular": "ng test ngx-diffwise --watch=false",
+    "test:demo": "ng test demo --watch=false",
     "lint": "ng lint",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
