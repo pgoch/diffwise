@@ -160,6 +160,7 @@ export function normalizeConfig(options: unknown): DiffwiseConfigOptions {
   return validOptions;
 }
 
+/** True for the name of an option of the config. */
 function isOptionName(name: string): name is keyof DiffwiseConfigOptions {
   return Object.hasOwn(OPTION_CHECKS, name);
 }
@@ -175,18 +176,22 @@ function validCopy(name: keyof DiffwiseConfigOptions, value: unknown): unknown {
   return Object.freeze(keepValidItems(value));
 }
 
+/** True for `true` or `false`. */
 function isBoolean(value: unknown): value is boolean {
   return value === true || value === false;
 }
 
+/** True for a text. */
 function isText(value: unknown): value is string {
   return typeof value === TEXT_TYPE;
 }
 
+/** True for a number, `NaN` and infinity too. */
 function isNumber(value: unknown): value is number {
   return typeof value === NUMBER_TYPE;
 }
 
+/** True for a list. */
 function isList(value: unknown): value is readonly unknown[] {
   return Array.isArray(value);
 }
@@ -201,14 +206,17 @@ function isObjectOrNull(value: unknown): boolean {
   return value === null || isObject(value);
 }
 
+/** True for an empty text, or for a text of whitespace alone. */
 function isBlank(text: string): boolean {
   return text.trim().length === 0;
 }
 
+/** True for a value from the minimum to the maximum of the range, both included. */
 function isInRange(value: number, range: NumberRange): boolean {
   return value >= range.min && value <= range.max;
 }
 
+/** True for a value of `DiffwiseColorMode`. */
 function isColorMode(value: unknown): boolean {
   return isValueOf(DiffwiseColorMode, value);
 }
@@ -237,10 +245,12 @@ function isUserSettingsKey(value: unknown): boolean {
   return value === null || (isText(value) && !isBlank(value));
 }
 
+/** True for a value of `DiffwisePalette`. */
 function isDiffPalette(value: unknown): boolean {
   return isValueOf(DiffwisePalette, value);
 }
 
+/** True for a value of `DiffwiseHighlightStyle`. */
 function isHighlightStyle(value: unknown): boolean {
   return isValueOf(DiffwiseHighlightStyle, value);
 }
@@ -250,6 +260,7 @@ function isLevel(value: unknown): boolean {
   return isNumber(value) && Number.isInteger(value) && isInRange(value, LEVEL_RANGE);
 }
 
+/** True for a value of `DiffwiseLayout`. */
 function isLayout(value: unknown): boolean {
   return isValueOf(DiffwiseLayout, value);
 }
@@ -264,47 +275,57 @@ function isContextLines(value: unknown): boolean {
   return isNumber(value) && Number.isInteger(value) && isInRange(value, CONTEXT_LINES_RANGE);
 }
 
+/** True for a value of `DiffwiseInlineDiffStyle`. */
 function isInlineDiffStyle(value: unknown): boolean {
   return isValueOf(DiffwiseInlineDiffStyle, value);
 }
 
+/** True for a value of `DiffwiseNoChangesView`. */
 function isNoChangesView(value: unknown): boolean {
   return isValueOf(DiffwiseNoChangesView, value);
 }
 
+/** True for a value of `DiffwiseActiveChangeStyle`. */
 function isActiveChangeStyle(value: unknown): boolean {
   return isValueOf(DiffwiseActiveChangeStyle, value);
 }
 
+/** True for a value of `DiffwiseLineNumberStyle`. */
 function isLineNumberStyle(value: unknown): boolean {
   return isValueOf(DiffwiseLineNumberStyle, value);
 }
 
+/** True for a value of `DiffwiseVerticalAlignment`. */
 function isVerticalAlignment(value: unknown): boolean {
   return isValueOf(DiffwiseVerticalAlignment, value);
 }
 
+/** True for a value of `DiffwiseDividerStyle`. */
 function isDividerStyle(value: unknown): boolean {
   return isValueOf(DiffwiseDividerStyle, value);
 }
 
+/** True for a value of `DiffwiseGapStyle`. */
 function isGapStyle(value: unknown): boolean {
   return isValueOf(DiffwiseGapStyle, value);
 }
 
+/** True for a value of `DiffwiseVersionHeaders`, or for header texts of an app. */
 function isVersionHeaders(value: unknown): boolean {
   return isValueOf(DiffwiseVersionHeaders, value) || isVersionHeaderTexts(value);
 }
 
+/** True for a value of `DiffwiseAlignment`. */
 function isAlignment(value: unknown): boolean {
   return isValueOf(DiffwiseAlignment, value);
 }
 
-/** True for a font of the diff, or for the name of a font of the app, such as `Inter`. */
+/** True for a value of `DiffwiseTextFont`: a font of fixed width, or the font of the diff. */
 function isTextFont(value: unknown): boolean {
   return isValueOf(DiffwiseTextFont, value);
 }
 
+/** True for a value of `DiffwiseFontFamily`, or for the name of a font of the app. */
 function isFontFamily(value: unknown): boolean {
   return isValueOf(DiffwiseFontFamily, value) || (isText(value) && isFontName(value));
 }
@@ -319,18 +340,22 @@ function isFontSize(value: unknown): boolean {
   return isNumber(value) && isInRange(value, FONT_SIZE_RANGE);
 }
 
+/** True for a value of `DiffwiseChangeDetails`. */
 function isChangeDetails(value: unknown): boolean {
   return isValueOf(DiffwiseChangeDetails, value);
 }
 
+/** True for a value of `DiffwiseChangeDetailsIconStyle`. */
 function isChangeDetailsIconStyle(value: unknown): boolean {
   return isValueOf(DiffwiseChangeDetailsIconStyle, value);
 }
 
+/** True for a value of `DiffwiseTooltipColorMode`. */
 function isTooltipColorMode(value: unknown): boolean {
   return isValueOf(DiffwiseTooltipColorMode, value);
 }
 
+/** True for a value of `DiffwiseLanguage`. */
 function isLanguage(value: unknown): boolean {
   return isValueOf(DiffwiseLanguage, value);
 }
@@ -347,6 +372,7 @@ function isVersionHeaderTexts(value: unknown): value is DiffwiseVersionHeaderTex
   }
 
   const texts = value as Partial<Record<keyof DiffwiseVersionHeaderTexts, unknown>>;
+
   return isText(texts.old) && isText(texts.new);
 }
 
@@ -394,6 +420,7 @@ function validThemeColors(theme: string, colors: object): ThemeDiffColors {
   return validColors;
 }
 
+/** True for the name of a color of the diff. */
 function isColorName(name: string): name is keyof ThemeDiffColors {
   return Object.hasOwn(DIFF_COLOR_VARIABLES, name);
 }
@@ -443,6 +470,7 @@ function validUserSettings(settings: object): DiffwiseUserSetting[] {
   return Array.from(validSettings);
 }
 
+/** True for a value of `DiffwiseUserSetting`. */
 function isUserSetting(value: unknown): value is DiffwiseUserSetting {
   return isValueOf(DiffwiseUserSetting, value);
 }

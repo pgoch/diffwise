@@ -1,5 +1,6 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { LineChangeKind } from '../engine';
 import { type DiffwiseConfigOptions } from './config/diffwise-config';
 import {
   DiffwiseAlignment,
@@ -170,10 +171,10 @@ describe('DiffwiseText', () => {
     const element = renderElement('first\n\nthird', 'first\n\nnew line\nthird');
 
     expect(rowsOf(element)).toEqual([
-      ['unchanged', 1, 1],
-      ['unchanged', 2, 2],
-      ['added', GAP, 3],
-      ['unchanged', 3, 4],
+      [LineChangeKind.Unchanged, 1, 1],
+      [LineChangeKind.Unchanged, 2, 2],
+      [LineChangeKind.Added, GAP, 3],
+      [LineChangeKind.Unchanged, 3, 4],
     ]);
   });
 
@@ -239,9 +240,9 @@ describe('DiffwiseText', () => {
 
     expect(countOf(element, COLLAPSED_LINES_SELECTOR)).toBe(2);
     expect(rowsOf(element)).toEqual([
-      ['unchanged', 5, 5],
-      ['changed', 6, 6],
-      ['unchanged', 7, 7],
+      [LineChangeKind.Unchanged, 5, 5],
+      [LineChangeKind.Changed, 6, 6],
+      [LineChangeKind.Unchanged, 7, 7],
     ]);
   });
 
@@ -262,7 +263,9 @@ describe('DiffwiseText', () => {
     expect(emitted).toEqual([
       { addedLines: 1, removedLines: 0, changedLines: 1, hasChanges: true },
     ]);
-    expect(rowsOf(element).filter((row) => row[0] === 'changed')).toEqual([['changed', 6, 6]]);
+    expect(rowsOf(element).filter((row) => row[0] === LineChangeKind.Changed)).toEqual([
+      [LineChangeKind.Changed, 6, 6],
+    ]);
     expect(element.querySelector(ACTIVE_ROW_SELECTOR)?.textContent).toContain('changed');
   });
 
@@ -273,8 +276,8 @@ describe('DiffwiseText', () => {
     fixture.detectChanges();
 
     expect(rowsOf(fixture.nativeElement)).toEqual([
-      ['unchanged', 1, 1],
-      ['added', GAP, 2],
+      [LineChangeKind.Unchanged, 1, 1],
+      [LineChangeKind.Added, GAP, 2],
     ]);
   });
 

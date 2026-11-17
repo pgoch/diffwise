@@ -210,6 +210,7 @@ export class ChangeDescriber {
     return { title: this.multipleChangesTitle(details.length), sections };
   }
 
+  /** The lines of one change among several, under its own title. */
   private titledSection(detail: ChangeDetail): TooltipSection {
     return { title: this.changeTitle(detail), lines: this.changeLines(detail) };
   }
@@ -219,6 +220,7 @@ export class ChangeDescriber {
     return withCount(this.texts.multipleChangesLabel, count);
   }
 
+  /** Title of one change, such as "Link added". */
   private changeTitle(detail: ChangeDetail): string {
     switch (detail.kind) {
       case ChangeDetailKind.Formatting:
@@ -230,6 +232,7 @@ export class ChangeDescriber {
     }
   }
 
+  /** The lines that describe one change. */
   private changeLines(detail: ChangeDetail): TooltipLine[] {
     switch (detail.kind) {
       case ChangeDetailKind.Formatting:
@@ -295,7 +298,9 @@ export class ChangeDescriber {
   /** "text color: #c0392b → #1e7d4f" with swatches, or "text color added: #1e7d4f". */
   private valueChangeParts({ name, oldValue, newValue }: FormattingValueChange): TooltipPart[] {
     if (name === FormattingValue.HeadingLevel) {
-      return [textPart(this.blockName(oldValue) + ARROW + this.blockName(newValue))];
+      const blockChange = this.blockName(oldValue) + ARROW + this.blockName(newValue);
+
+      return [textPart(blockChange)];
     }
 
     const textNames = VALUE_TEXT_NAMES[name];
@@ -347,6 +352,7 @@ export class ChangeDescriber {
     return this.texts.headingLabel.replaceAll(LEVEL_PLACEHOLDER, headingLevel);
   }
 
+  /** Name of an alignment in the interface language; an unknown one as CSS writes it. */
   private alignmentName(alignment: string): string {
     const textName = ALIGNMENT_TEXT_NAMES.get(alignment);
     return textName === undefined ? alignment : this.texts[textName];
@@ -524,6 +530,7 @@ function sizeText({ width, height }: ImageProperties, inPixels: boolean): string
   return [width, height].map((side) => sideText(side, inPixels)).join(SIZE_SEPARATOR);
 }
 
+/** One side of the size: a dash without a size, and without `px` when both sides use it. */
 function sideText(size: string | null, inPixels: boolean): string {
   if (size === null) {
     return MISSING_VALUE;
@@ -532,6 +539,7 @@ function sideText(size: string | null, inPixels: boolean): string {
   return inPixels ? withoutPixelUnit(size) : size;
 }
 
+/** The size without its `px` unit, such as `480` of `480px`. */
 function withoutPixelUnit(size: string): string {
   return size.slice(0, -PIXEL_UNIT.length);
 }

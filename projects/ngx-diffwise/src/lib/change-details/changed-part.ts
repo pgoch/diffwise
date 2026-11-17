@@ -42,6 +42,7 @@ function sharedStartLength(first: readonly string[], second: readonly string[]):
   return length;
 }
 
+/** True when both lists have the same token at the position. */
 function sameTokenAt(
   first: readonly string[],
   second: readonly string[],
@@ -75,6 +76,7 @@ function sameTokenFromEnd(
   return first.at(-1 - positionFromEnd) === second.at(-1 - positionFromEnd);
 }
 
+/** The tokens of a value joined into its shared start, its changed part and its shared end. */
 function partsOf(tokens: readonly string[], startLength: number, endLength: number): ChangedParts {
   const changedEnd = tokens.length - endLength;
 
@@ -85,6 +87,7 @@ function partsOf(tokens: readonly string[], startLength: number, endLength: numb
   };
 }
 
+/** The text of the tokens from `start` up to `end`. */
 function joinTokens(tokens: readonly string[], start: number, end: number): string {
   return tokens.slice(start, end).join(NO_TEXT);
 }

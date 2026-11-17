@@ -4,7 +4,7 @@ const FALLBACK_DELAY = 300;
 const FUNCTION_TYPE = 'function';
 
 /** Cancels a task that has not run yet; after the task has run, it does nothing. */
-export type CancelTask = () => void;
+type CancelTask = () => void;
 
 /**
  * Runs the task once the browser has nothing else to do, or after a short delay in browsers

@@ -49,7 +49,9 @@ export class ChangeNavigation {
     });
     this.position = computed(() => {
       const position = this.activePosition();
-      return position !== null && position < this.blocks().length ? position : null;
+      const isInBlocks = position !== null && position < this.blocks().length;
+
+      return isInBlocks ? position : null;
     });
     this.activeBlock = computed(() => {
       const position = this.position();
@@ -67,6 +69,7 @@ export class ChangeNavigation {
     this.step(PREVIOUS_STEP);
   }
 
+  /** Moves the active block by the step, when there are blocks. */
   private step(step: number): void {
     const count = this.blocks().length;
 
@@ -127,12 +130,12 @@ function scrollOnce(
   const blockBottom = last.getBoundingClientRect().bottom;
   const coveredTop = toolbar === null ? 0 : coveredHeight(toolbar);
   const fitsInWindow = blockBottom - firstBox.top <= window.innerHeight - coveredTop;
+  const rowsBelowMargin = blockBottom - firstBox.bottom + PIXEL_UNIT;
+  const block = fitsInWindow ? TO_MIDDLE : TO_TOP;
 
   first.style.scrollMarginTop = coveredTop + PIXEL_UNIT;
-  first.style.scrollMarginBottom = fitsInWindow
-    ? blockBottom - firstBox.bottom + PIXEL_UNIT
-    : NO_STYLE;
-  first.scrollIntoView({ block: fitsInWindow ? TO_MIDDLE : TO_TOP, behavior });
+  first.style.scrollMarginBottom = fitsInWindow ? rowsBelowMargin : NO_STYLE;
+  first.scrollIntoView({ block, behavior });
   first.style.scrollMarginTop = NO_STYLE;
   first.style.scrollMarginBottom = NO_STYLE;
 }
@@ -155,12 +158,13 @@ function followUntilSettled(
 
   requestAnimationFrame(() => {
     const hasMoved = row.getBoundingClientRect().top !== top;
+    const nextStillFrames = hasMoved ? 0 : stillFrames + 1;
 
     if (hasMoved) {
       follow();
     }
 
-    followUntilSettled(row, follow, framesLeft - 1, hasMoved ? 0 : stillFrames + 1);
+    followUntilSettled(row, follow, framesLeft - 1, nextStillFrames);
   });
 }
 

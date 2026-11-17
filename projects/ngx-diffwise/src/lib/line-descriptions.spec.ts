@@ -5,6 +5,9 @@ import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
 
 const TABINDEX_ATTRIBUTE = 'tabindex';
 
+/** The link, the summary, the button and the text of the copy in the test, in their order. */
+const COPY_ELEMENTS_SELECTOR = 'a, summary, button, span';
+
 describe('lineDescription', () => {
   it('says that a line was removed or added, with its number', () => {
     const removed = { kind: LineChangeKind.Removed, version: DocumentVersion.Old, lineNumber: 6 };
@@ -53,7 +56,7 @@ describe('keepOutOfTabOrder', () => {
       '<p>Read the <a href="#guide">guide</a>.</p><details><summary>More</summary></details><button type="button">Go</button><span>Text</span>';
     keepOutOfTabOrder(copy);
 
-    const tabindexes = Array.from(copy.querySelectorAll('a, summary, button, span'), (element) =>
+    const tabindexes = Array.from(copy.querySelectorAll(COPY_ELEMENTS_SELECTOR), (element) =>
       element.getAttribute(TABINDEX_ATTRIBUTE),
     );
 

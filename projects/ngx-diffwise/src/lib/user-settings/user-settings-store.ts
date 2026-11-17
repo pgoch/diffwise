@@ -95,6 +95,7 @@ export class UserSettingsStore {
     this.storage.remove(key);
   }
 
+  /** The signal of the choices changed under the key, made on first use. */
   private changedChoices(key: string): WritableSignal<UserChoices | undefined> {
     let choices = this.changedChoicesByKey.get(key);
 
@@ -106,6 +107,7 @@ export class UserSettingsStore {
     return choices;
   }
 
+  /** The choices saved under the key, read from localStorage on first use. */
   private savedChoices(key: string): UserChoices {
     let choices = this.savedChoicesByKey.get(key);
 
@@ -117,6 +119,7 @@ export class UserSettingsStore {
     return choices;
   }
 
+  /** Keeps the choices as saved under the key, and writes them to localStorage. */
   private save(key: string, choices: UserChoices): void {
     this.savedChoicesByKey.set(key, choices);
     this.storage.write(key, choices);

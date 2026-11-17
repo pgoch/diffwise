@@ -228,6 +228,7 @@ export class ViewSettings {
     }
   }
 
+  /** Passes on the choice of the checkbox that hides unchanged lines. */
   protected chooseHideUnchangedLines(event: Event): void {
     const { checked } = event.target as HTMLInputElement;
     this.settingsChange.emit({ hideUnchangedLines: checked });
@@ -252,31 +253,31 @@ export class ViewSettings {
     }
   }
 
+  /** A group of choices as the view settings show it, in the language of the interface. */
   private shownGroup(group: ChoiceGroupDefinition): ShownChoiceGroup {
     const { setting, label, choices, isInPairs = false } = group;
     const texts = this.texts();
     const chosenValue = this.chosenValue(setting);
     const isGroupDisabled =
       setting === DiffwiseUserSetting.InlineDiffStyle && !this.showsSingleColumn();
+    const labelId = this.viewSettingsId() + ID_SEPARATOR + setting;
+    const shownChoices = choices.map(({ value, label: choiceLabel }) => {
+      const isChosen = value === chosenValue;
+      const isDisabled =
+        isGroupDisabled || (value === CUSTOM_COLORS_CHOICE && !this.hasCustomColors());
 
-    return {
-      setting,
-      label: texts[label],
-      labelId: this.viewSettingsId() + ID_SEPARATOR + setting,
-      choices: choices.map(({ value, label: choiceLabel }) => ({
-        value,
-        label: texts[choiceLabel],
-        isChosen: value === chosenValue,
-        isDisabled: isGroupDisabled || (value === CUSTOM_COLORS_CHOICE && !this.hasCustomColors()),
-      })),
-      isInPairs,
-    };
+      return { value, label: texts[choiceLabel], isChosen, isDisabled };
+    });
+
+    return { setting, label: texts[label], labelId, choices: shownChoices, isInPairs };
   }
 
   /** The value in effect: of the option, or the colors of the app in place of a palette. */
   private chosenValue(setting: ChoiceSetting): string {
     const isPalette = setting === DiffwiseUserSetting.DiffPalette;
-    return isPalette && this.showsCustomColors() ? CUSTOM_COLORS_CHOICE : this.config()[setting];
+    const isCustomPalette = isPalette && this.showsCustomColors();
+
+    return isCustomPalette ? CUSTOM_COLORS_CHOICE : this.config()[setting];
   }
 
   /** Places the view settings again when the page scrolls or the window changes its size. */
@@ -292,6 +293,7 @@ export class ViewSettings {
     page.defaultView?.addEventListener(RESIZE_EVENT, () => this.placeByButton(), options);
   }
 
+  /** Stops placing the view settings again when the page scrolls or the window changes size. */
   private stopFollowingButton(): void {
     this.pageListeners?.abort();
     this.pageListeners = null;
@@ -314,9 +316,12 @@ export class ViewSettings {
     const maxTop = viewport.clientHeight - height - WINDOW_MARGIN;
     const topBelow = buttonBox.bottom + BUTTON_GAP;
     const topAbove = buttonBox.top - height - BUTTON_GAP;
-    const top = topBelow <= maxTop || topAbove < WINDOW_MARGIN ? topBelow : topAbove;
+    const opensBelow = topBelow <= maxTop || topAbove < WINDOW_MARGIN;
+    const preferredTop = opensBelow ? topBelow : topAbove;
+    const left = Math.max(WINDOW_MARGIN, Math.min(alignedLeft, maxLeft));
+    const top = Math.max(WINDOW_MARGIN, Math.min(preferredTop, maxTop));
 
-    viewSettings.style.left = Math.max(WINDOW_MARGIN, Math.min(alignedLeft, maxLeft)) + PIXEL_UNIT;
-    viewSettings.style.top = Math.max(WINDOW_MARGIN, Math.min(top, maxTop)) + PIXEL_UNIT;
+    viewSettings.style.left = left + PIXEL_UNIT;
+    viewSettings.style.top = top + PIXEL_UNIT;
   }
 }

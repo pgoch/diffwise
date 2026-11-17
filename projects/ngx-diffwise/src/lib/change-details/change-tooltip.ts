@@ -99,9 +99,16 @@ export class ChangeTooltip {
   /** Id of the lines under the title; an icon named by the title points to them. */
   protected readonly detailsId = computed(() => this.tooltipId() + DETAILS_ID_END);
 
+  /** What the tooltip shows now. */
   protected readonly content = signal<TooltipContent>(NO_CONTENT);
+
+  /** Class of each kind of line, for the template. */
   protected readonly lineClasses = LINE_CLASSES;
+
+  /** Class of each highlight, for the template. */
   protected readonly highlights = HIGHLIGHT_CLASSES;
+
+  /** Kinds of parts of a line, for the template. */
   protected readonly partKinds = TooltipPartKind;
 
   private readonly element: HTMLElement = inject(ElementRef).nativeElement;
@@ -141,6 +148,7 @@ export class ChangeTooltip {
     this.placeBy(request.trigger);
   }
 
+  /** Hides the tooltip if it shows, and takes back the description it gave its trigger. */
   hide(): void {
     if (this.shown === null) {
       return;
@@ -218,6 +226,7 @@ export class ChangeTooltip {
     }
   }
 
+  /** Stops listening to the page and takes the tooltip out of the top layer. */
   private close(): void {
     this.pageListeners?.abort();
     this.pageListeners = null;
@@ -227,6 +236,7 @@ export class ChangeTooltip {
     }
   }
 
+  /** Hides the tooltip when the key is Escape. */
   private hideOnEscape(event: KeyboardEvent): void {
     if (event.key === ESCAPE_KEY) {
       this.hide();
