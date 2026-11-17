@@ -1,3 +1,15 @@
+/* Colors of the pages of the site; the diffs have their own. */
+:root {
+  --site-text: #14171c;
+  --site-muted: #5d6675;
+  --site-border: #e3e6ea;
+  --site-subtle: #f5f6f8;
+  --site-accent: #2563eb;
+  --site-on-accent: #fff;
+  --site-removed: #e8590c;
+  --site-added: #2f9e44;
+}
+
 body {
   margin: 0;
   font-family: system-ui, sans-serif;

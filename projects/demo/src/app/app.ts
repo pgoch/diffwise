@@ -1,678 +1,85 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  computed,
-  inject,
-  linkedSignal,
-  resource,
-  signal,
-  viewChild,
-} from '@angular/core';
-import {
-  Diffwise,
-  DiffwiseActiveChangeStyle,
-  DiffwiseAlignment,
-  DiffwiseChangeDetails,
-  DiffwiseChangeDetailsIconStyle,
-  DiffwiseColorMode,
-  type DiffwiseConfigOptions,
-  type DiffwiseDiffColors,
-  type DiffwiseDiffStats,
-  DiffwiseDividerStyle,
-  DiffwiseFontFamily,
-  DiffwiseGapStyle,
-  DiffwiseHighlightStyle,
-  DiffwiseHtml,
-  DiffwiseLanguage,
-  DiffwiseInlineDiffStyle,
-  DiffwiseLayout,
-  type DiffwiseLevel,
-  DiffwiseLineNumberStyle,
-  DiffwiseNoChangesView,
-  DiffwisePalette,
-  DiffwiseText,
-  DiffwiseTextFont,
-  DiffwiseTooltipColorMode,
-  DiffwiseUserSetting,
-  type DiffwiseUserSettings,
-  DiffwiseVersionHeaders,
-  type DiffwiseVersionHeaderTexts,
-  DiffwiseVerticalAlignment,
-} from 'ngx-diffwise';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 
-import { type Choice, ChoiceButtons } from './choice-buttons';
+import { DemoPage } from './demo/demo-page';
+import { DOCS_URL, GITHUB_URL, VERSION } from './site';
 
-/**
- * Languages of the sample documents, the same as the languages of the diff interface; each one is
- * a folder in `test-data/`.
- */
-type SampleLanguage = Exclude<DiffwiseLanguage, typeof DiffwiseLanguage.Auto>;
-
-/** Sizes of the sample documents; each one is a folder in a language folder. */
-const SampleSize = {
-  Short: 'short',
-  Medium: 'medium',
-  Long: 'long',
+/** Pages of the site. */
+const Page = {
+  Demo: 'demo',
 } as const;
 
-type SampleSize = (typeof SampleSize)[keyof typeof SampleSize];
+type Page = (typeof Page)[keyof typeof Page];
 
-/** Kinds of diff the demo shows; each compares its own samples. */
-const DiffKind = {
-  Html: 'html',
-  Text: 'text',
-} as const;
-
-type DiffKind = (typeof DiffKind)[keyof typeof DiffKind];
-
-const DIFF_KIND_CHOICES: readonly Choice<DiffKind>[] = [
-  { value: DiffKind.Html, label: 'HTML' },
-  { value: DiffKind.Text, label: 'Text' },
-];
-
-/** File names of the earlier and the later version of a sample. */
-const SAMPLE_FILES = ['before', 'after'];
-
-const SAMPLES_FOLDER = 'test-data';
-
-/** Folder of the plain text samples in `test-data/`. */
-const TEXT_SAMPLES_FOLDER = 'text';
-
-const PATH_SEPARATOR = '/';
-const HTML_EXTENSION = '.html';
-const TEXT_EXTENSION = '.txt';
-const LOAD_ERROR = 'Could not load a sample file.';
-
-/** Languages of the samples and of the diff interface, each named in itself. */
-const LANGUAGE_CHOICES: readonly Choice<SampleLanguage>[] = [
-  { value: DiffwiseLanguage.EN, label: 'English' },
-  { value: DiffwiseLanguage.PL, label: 'Polski' },
-  { value: DiffwiseLanguage.ZH, label: '中文（简体）' },
-  { value: DiffwiseLanguage.ES, label: 'Español' },
-  { value: DiffwiseLanguage.HI, label: 'हिन्दी' },
-  { value: DiffwiseLanguage.FR, label: 'Français' },
-  { value: DiffwiseLanguage.RU, label: 'Русский' },
-  { value: DiffwiseLanguage.PT, label: 'Português' },
-  { value: DiffwiseLanguage.IT, label: 'Italiano' },
-  { value: DiffwiseLanguage.JA, label: '日本語' },
-  { value: DiffwiseLanguage.DE, label: 'Deutsch' },
-  { value: DiffwiseLanguage.KO, label: '한국어' },
-];
-
-/** Languages of the plain text samples. */
-const TEXT_SAMPLE_LANGUAGES: readonly SampleLanguage[] = [DiffwiseLanguage.EN, DiffwiseLanguage.PL];
-
-const TEXT_LANGUAGE_CHOICES = LANGUAGE_CHOICES.filter((choice) =>
-  TEXT_SAMPLE_LANGUAGES.includes(choice.value),
-);
-
-const SIZE_CHOICES: readonly Choice<SampleSize>[] = [
-  { value: SampleSize.Short, label: 'Short' },
-  { value: SampleSize.Medium, label: 'Medium' },
-  { value: SampleSize.Long, label: 'Long' },
-];
-
-const COLOR_MODE_CHOICES: readonly Choice<DiffwiseColorMode>[] = [
-  { value: DiffwiseColorMode.Light, label: 'Light' },
-  { value: DiffwiseColorMode.Dark, label: 'Dark' },
-  { value: DiffwiseColorMode.Auto, label: 'Auto' },
-];
-
-const PALETTE_CHOICES: readonly Choice<DiffwisePalette>[] = [
-  { value: DiffwisePalette.Default, label: 'Standard' },
-  { value: DiffwisePalette.Colorblind, label: 'Colorblind-friendly' },
-  { value: DiffwisePalette.HighContrast, label: 'High contrast' },
-];
-
-const HIGHLIGHT_STYLE_CHOICES: readonly Choice<DiffwiseHighlightStyle>[] = [
-  { value: DiffwiseHighlightStyle.Outline, label: 'Outline' },
-  { value: DiffwiseHighlightStyle.Background, label: 'Background' },
-  { value: DiffwiseHighlightStyle.Underline, label: 'Underline' },
-  { value: DiffwiseHighlightStyle.TopBottom, label: 'Top and bottom' },
-];
-
-/** Levels of the intensity and the contrast, from the weakest to the strongest. */
-const LEVEL_CHOICES: readonly Choice<DiffwiseLevel>[] = [
-  { value: 1, label: '1' },
-  { value: 2, label: '2' },
-  { value: 3, label: '3' },
-  { value: 4, label: '4' },
-  { value: 5, label: '5' },
-];
-
-const LAYOUT_CHOICES: readonly Choice<DiffwiseLayout>[] = [
-  { value: DiffwiseLayout.Auto, label: 'Auto' },
-  { value: DiffwiseLayout.SideBySide, label: 'Side by side' },
-  { value: DiffwiseLayout.Inline, label: 'Single column' },
-];
-
-const INLINE_DIFF_STYLE_CHOICES: readonly Choice<DiffwiseInlineDiffStyle>[] = [
-  { value: DiffwiseInlineDiffStyle.Merged, label: 'Merged' },
-  { value: DiffwiseInlineDiffStyle.Strikethrough, label: 'Struck through' },
-  { value: DiffwiseInlineDiffStyle.Stacked, label: 'Stacked' },
-];
-
-/** The two versions of a sample, HTML documents or plain texts. */
-interface SamplePair {
-  readonly oldVersion: string;
-  readonly newVersion: string;
+/** A page with its address after `#` and the title of the browser tab. */
+interface SitePage {
+  readonly page: Page;
+  readonly hash: string;
+  readonly title: string;
 }
 
-/** Versions the demo compares: the two versions of the sample, or its old version with itself. */
-const ComparedVersions = {
-  Different: 'different',
-  Same: 'same',
-} as const;
-
-type ComparedVersions = (typeof ComparedVersions)[keyof typeof ComparedVersions];
-
-/** A pair of samples with the kind of diff that shows it. */
-interface ShownSample extends SamplePair {
-  readonly kind: DiffKind;
-}
-
-/** What chooses a sample: the kind of diff, the language and the size. */
-interface SampleChoice {
-  readonly kind: DiffKind;
-  readonly language: SampleLanguage;
-  readonly size: SampleSize;
-}
-
-const COMPARED_VERSIONS_CHOICES: readonly Choice<ComparedVersions>[] = [
-  { value: ComparedVersions.Different, label: 'Before and after' },
-  { value: ComparedVersions.Same, label: 'Before twice' },
+/** The pages of the site; the first one shows without an address and for an unknown one. */
+const SITE_PAGES: readonly SitePage[] = [
+  { page: Page.Demo, hash: '#demo', title: 'Diffwise demo' },
 ];
 
-const NO_CHANGES_VIEW_CHOICES: readonly Choice<DiffwiseNoChangesView>[] = [
-  { value: DiffwiseNoChangesView.Message, label: 'Message' },
-  { value: DiffwiseNoChangesView.Document, label: 'Document once' },
-  { value: DiffwiseNoChangesView.Diff, label: 'Diff' },
-];
+const HASH_CHANGE_EVENT = 'hashchange';
 
-/** Widths of the diff in the demo, as values of `max-width`; the automatic layout follows them. */
-const DiffWidth = {
-  Full: 'none',
-  Medium: '760px',
-  Narrow: '480px',
-} as const;
-
-type DiffWidth = (typeof DiffWidth)[keyof typeof DiffWidth];
-
-const DIFF_WIDTH_CHOICES: readonly Choice<DiffWidth>[] = [
-  { value: DiffWidth.Full, label: 'Full' },
-  { value: DiffWidth.Medium, label: '760 px' },
-  { value: DiffWidth.Narrow, label: '480 px' },
-];
-
-const ACTIVE_CHANGE_STYLE_CHOICES: readonly Choice<DiffwiseActiveChangeStyle>[] = [
-  { value: DiffwiseActiveChangeStyle.Outline, label: 'Outline' },
-  { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
-];
-
-/** Name of the localStorage entry where the demo keeps its "Remember choices" box. */
-const REMEMBER_CHOICES_ENTRY = 'diffwise-demo:remember-choices';
-
-/** Value of the entry while the box is ticked. */
-const TICKED = 'true';
-
-/** Error under the field of the choices when its text is not JSON. */
-const NOT_JSON_ERROR = 'The text is not JSON.';
-
-/** Spaces before each level of the exported choices. */
-const JSON_INDENT = 2;
-
-/** Options the user can change in the view settings of the diff, in the order they show there. */
-const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
-  { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
-  { value: DiffwiseUserSetting.DiffPalette, label: 'Colors of changes' },
-  { value: DiffwiseUserSetting.TextFont, label: 'Text font' },
-  { value: DiffwiseUserSetting.Layout, label: 'Layout' },
-  { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
-  { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
-];
-
-const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [
-  { value: DiffwiseDividerStyle.Column, label: 'Gray column' },
-  { value: DiffwiseDividerStyle.Line, label: 'Line' },
-];
-
-const GAP_STYLE_CHOICES: readonly Choice<DiffwiseGapStyle>[] = [
-  { value: DiffwiseGapStyle.Stripes, label: 'Stripes' },
-  { value: DiffwiseGapStyle.Gray, label: 'Gray' },
-  { value: DiffwiseGapStyle.Empty, label: 'Empty' },
-];
-
-/** A value of the `versionHeaders` option. */
-type VersionHeaders = DiffwiseVersionHeaders | DiffwiseVersionHeaderTexts;
-
-/** Header choices; the custom texts show how an app can name its versions. */
-const VERSION_HEADER_CHOICES: readonly Choice<VersionHeaders>[] = [
-  { value: DiffwiseVersionHeaders.Default, label: 'Default' },
-  { value: DiffwiseVersionHeaders.Icons, label: 'Icons' },
-  {
-    value: { old: 'Version 3 · 12.10.2026', new: 'Version 4 · 05.11.2026' },
-    label: 'Custom texts',
-  },
-  { value: DiffwiseVersionHeaders.None, label: 'None' },
-];
-
-const ALIGNMENT_CHOICES: readonly Choice<DiffwiseAlignment>[] = [
-  { value: DiffwiseAlignment.Start, label: 'Start' },
-  { value: DiffwiseAlignment.Center, label: 'Center' },
-  { value: DiffwiseAlignment.End, label: 'End' },
-];
-
-const LINE_NUMBER_STYLE_CHOICES: readonly Choice<DiffwiseLineNumberStyle>[] = [
-  { value: DiffwiseLineNumberStyle.Bar, label: 'Colored bar' },
-  { value: DiffwiseLineNumberStyle.Background, label: 'Colored background' },
-];
-
-const VERTICAL_ALIGNMENT_CHOICES: readonly Choice<DiffwiseVerticalAlignment>[] = [
-  { value: DiffwiseVerticalAlignment.Top, label: 'Top' },
-  { value: DiffwiseVerticalAlignment.Middle, label: 'Middle' },
-  { value: DiffwiseVerticalAlignment.Bottom, label: 'Bottom' },
-];
-
-/** Where details of changes besides text show. */
-const CHANGE_DETAILS_CHOICES: readonly Choice<DiffwiseChangeDetails>[] = [
-  { value: DiffwiseChangeDetails.Hover, label: 'Tooltip on the change' },
-  { value: DiffwiseChangeDetails.Icon, label: 'Icon in the middle' },
-  { value: DiffwiseChangeDetails.Both, label: 'Both' },
-];
-
-const CHANGE_DETAILS_ICON_STYLE_CHOICES: readonly Choice<DiffwiseChangeDetailsIconStyle>[] = [
-  { value: DiffwiseChangeDetailsIconStyle.Plain, label: 'Gray frame' },
-  { value: DiffwiseChangeDetailsIconStyle.Gradient, label: 'Gradient frame' },
-  { value: DiffwiseChangeDetailsIconStyle.Filled, label: 'Full gradient' },
-];
-
-const TOOLTIP_COLOR_MODE_CHOICES: readonly Choice<DiffwiseTooltipColorMode>[] = [
-  { value: DiffwiseTooltipColorMode.Reversed, label: 'Reversed' },
-  { value: DiffwiseTooltipColorMode.Component, label: 'Colors of the diff' },
-];
-
-/** Fonts in the panel: the one of the app, the built-in one, or a font named in the panel. */
-const FontChoice = {
-  App: 'app',
-  Builtin: 'builtin',
-  Custom: 'custom',
-} as const;
-
-type FontChoice = (typeof FontChoice)[keyof typeof FontChoice];
-
-const TEXT_FONT_CHOICES: readonly Choice<DiffwiseTextFont>[] = [
-  { value: DiffwiseTextFont.Monospace, label: 'Fixed width' },
-  { value: DiffwiseTextFont.Proportional, label: 'Regular' },
-];
-
-const FONT_CHOICES: readonly Choice<FontChoice>[] = [
-  { value: FontChoice.App, label: 'App' },
-  { value: FontChoice.Builtin, label: 'Built-in' },
-  { value: FontChoice.Custom, label: 'Custom' },
-];
-
-/** A font that comes with Windows and macOS, so the custom font shows without loading it. */
-const DEFAULT_CUSTOM_FONT = 'Georgia';
-
-/** Colors an app could give: magenta and teal. */
-const EXAMPLE_DIFF_COLORS: DiffwiseDiffColors = {
-  light: {
-    removedLine: '#fbeefe',
-    removedHighlight: '#efc0f6',
-    removedAccent: '#a21caf',
-    addedLine: '#e6f7f5',
-    addedHighlight: '#a5e2d9',
-    addedAccent: '#0f766e',
-  },
-  dark: {
-    removedLine: '#2a1730',
-    removedHighlight: '#6b2a78',
-    removedAccent: '#f0abfc',
-    addedLine: '#10251f',
-    addedHighlight: '#1f5f55',
-    addedAccent: '#5eead4',
-  },
-};
-
+/** The site of Diffwise: a bar on top and one page under it, chosen by the address after `#`. */
 @Component({
   selector: 'demo-root',
-  imports: [ChoiceButtons, DiffwiseHtml, DiffwiseText],
+  imports: [DemoPage],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
-  protected readonly diffKinds = DIFF_KIND_CHOICES;
-  protected readonly interfaceLanguages = LANGUAGE_CHOICES;
-  protected readonly diffKindValues = DiffKind;
-  protected readonly textFonts = TEXT_FONT_CHOICES;
-  protected readonly sizes = SIZE_CHOICES;
-  protected readonly colorModes = COLOR_MODE_CHOICES;
-  protected readonly palettes = PALETTE_CHOICES;
-  protected readonly highlightStyles = HIGHLIGHT_STYLE_CHOICES;
-  protected readonly levels = LEVEL_CHOICES;
-  protected readonly layouts = LAYOUT_CHOICES;
-  protected readonly inlineDiffStyles = INLINE_DIFF_STYLE_CHOICES;
-  protected readonly comparedVersionsChoices = COMPARED_VERSIONS_CHOICES;
-  protected readonly noChangesViews = NO_CHANGES_VIEW_CHOICES;
-  protected readonly diffWidths = DIFF_WIDTH_CHOICES;
-  protected readonly dividerStyles = DIVIDER_STYLE_CHOICES;
-  protected readonly activeChangeStyles = ACTIVE_CHANGE_STYLE_CHOICES;
-  protected readonly userSettings = USER_SETTING_CHOICES;
-  protected readonly gapStyles = GAP_STYLE_CHOICES;
-  protected readonly versionHeaderChoices = VERSION_HEADER_CHOICES;
-  protected readonly alignments = ALIGNMENT_CHOICES;
-  protected readonly lineNumberStyles = LINE_NUMBER_STYLE_CHOICES;
-  protected readonly verticalAlignments = VERTICAL_ALIGNMENT_CHOICES;
-  protected readonly changeDetailsChoices = CHANGE_DETAILS_CHOICES;
-  protected readonly changeDetailsIconStyles = CHANGE_DETAILS_ICON_STYLE_CHOICES;
-  protected readonly tooltipColorModes = TOOLTIP_COLOR_MODE_CHOICES;
-  protected readonly fonts = FONT_CHOICES;
-  protected readonly fontChoices = FontChoice;
+  /** Pages of the site, for the template. */
+  protected readonly pages = Page;
 
-  /** Changes the global configuration while the app runs; the panel shows its values. */
-  protected readonly diffwise = inject(Diffwise);
+  /** Links of the bar on top, for the template. */
+  protected readonly links = { docs: DOCS_URL, github: GITHUB_URL };
 
-  /** The kind of diff, which compares the HTML samples or the plain text samples. */
-  protected readonly diffKind = signal<DiffKind>(DiffKind.Html);
+  /** The version in the bar on top. */
+  protected readonly version = VERSION;
 
-  /** Languages of the samples of the kind of diff. */
-  protected readonly languages = computed(() =>
-    this.diffKind() === DiffKind.Text ? TEXT_LANGUAGE_CHOICES : LANGUAGE_CHOICES,
-  );
+  /** The page that shows. */
+  protected readonly page = signal<Page>(SITE_PAGES[0].page);
 
-  protected readonly language = signal<SampleLanguage>(DiffwiseLanguage.EN);
-  protected readonly size = signal<SampleSize>(SampleSize.Short);
-
-  /** The versions the diff compares; the same ones show what a diff of identical versions shows. */
-  protected readonly comparedVersions = signal<ComparedVersions>(ComparedVersions.Different);
-
-  /** True when the diff compares the old version of the sample with itself. */
-  protected readonly comparesSameVersions = computed(
-    () => this.comparedVersions() === ComparedVersions.Same,
-  );
-
-  /** Width of the diff, which the page narrows to show the automatic layout. */
-  protected readonly diffWidth = signal<DiffWidth>(DiffWidth.Full);
-
-  /**
-   * Language of the diff interface, set through an input of the diff: the one of the sample, until
-   * the panel chooses another.
-   */
-  protected readonly interfaceLanguage = signal<DiffwiseLanguage>(DiffwiseLanguage.EN);
-
-  /** The chosen headers; the first choice is set in `app.config.ts`. */
-  protected readonly versionHeaders = signal<VersionHeaders>(DiffwiseVersionHeaders.Default);
-
-  /** The numbers of the last comparison, from the event of the diff. */
-  protected readonly lastStats = signal<DiffwiseDiffStats | null>(null);
-
-  /** The choices of the user from the last event of the diff, as the app could keep them. */
-  protected readonly lastUserSettings = signal<DiffwiseUserSettings | null>(null);
-
-  /** The last choices of the user as text. */
-  protected readonly lastUserSettingsText = computed(() => JSON.stringify(this.lastUserSettings()));
-
-  /** The choices of the user as JSON: from "Export", or written for "Import". */
-  protected readonly choicesText = signal('');
-
-  /** Why the last import failed; `null` after an import that worked. */
-  protected readonly choicesError = signal<string | null>(null);
-
-  private readonly htmlDiff = viewChild(DiffwiseHtml);
-  private readonly textDiff = viewChild(DiffwiseText);
-
-  /** The diff of the sample, whose methods step between the blocks of changes. */
-  private readonly diff = computed(() => this.htmlDiff() ?? this.textDiff());
-
-  /** True while the global configuration has the example colors. */
-  protected readonly showsExampleColors = signal(false);
-
-  /** Name of the custom font, kept while another font is chosen. */
-  protected readonly customFontName = signal(DEFAULT_CUSTOM_FONT);
-
-  /** The chosen font, from the global configuration. */
-  protected readonly fontChoice = computed(() => fontChoiceOf(this.diffwise.config().fontFamily));
-
-  /** The selected pair of samples from `test-data/`: HTML documents or plain texts. */
-  protected readonly sample = resource({
-    params: () => ({ kind: this.diffKind(), language: this.language(), size: this.size() }),
-    loader: async ({ params, abortSignal }) => {
-      const paths = SAMPLE_FILES.map((file) => samplePath(params, file));
-      const [oldVersion, newVersion] = await Promise.all(
-        paths.map((path) => loadText(path, abortSignal)),
-      );
-
-      return { kind: params.kind, oldVersion, newVersion };
-    },
-  });
-
-  /**
-   * The last loaded sample. It stays while another one loads, so the diff stays on the page and
-   * gets the new versions, as in an app that changes the documents of a diff.
-   */
-  protected readonly shownSample = linkedSignal<ShownSample | undefined, ShownSample | undefined>({
-    source: () => (this.sample.hasValue() ? this.sample.value() : undefined),
-    computation: (pair, previous) => pair ?? previous?.value,
-  });
+  private readonly document = inject(DOCUMENT);
+  private readonly title = inject(Title);
 
   constructor() {
-    this.update({ rememberUserSettings: demoRemembersChoices() });
+    const listeners = new AbortController();
+
+    this.showPage(sitePageOf(this.document.location.hash));
+    this.document.defaultView?.addEventListener(HASH_CHANGE_EVENT, () => this.followAddress(), {
+      signal: listeners.signal,
+    });
+    inject(DestroyRef).onDestroy(() => listeners.abort());
   }
 
-  /** Changes options of the global configuration, as an app can do while it runs. */
-  protected update(changes: DiffwiseConfigOptions): void {
-    this.diffwise.updateConfig(changes);
-  }
+  /** Shows the page of the new address from the top, as a link to another page does. */
+  private followAddress(): void {
+    const sitePage = sitePageOf(this.document.location.hash);
 
-  /** Steps to the previous block of changes with the method of the diff, as an app can. */
-  protected goToPreviousChange(): void {
-    this.diff()?.goToPreviousChange();
-  }
-
-  /** Steps to the next block of changes with the method of the diff, as an app can. */
-  protected goToNextChange(): void {
-    this.diff()?.goToNextChange();
-  }
-
-  /** True when the user can change the option in the view settings of the diff. */
-  protected isAllowed(setting: DiffwiseUserSetting): boolean {
-    return this.diffwise.config().allowedUserSettings.includes(setting);
-  }
-
-  /** Lets the user change the option in the view settings of the diff, or takes it away. */
-  protected allowUserSetting(setting: DiffwiseUserSetting, allowed: boolean): void {
-    const allowedUserSettings = USER_SETTING_CHOICES.map(({ value }) => value).filter((option) =>
-      option === setting ? allowed : this.isAllowed(option),
-    );
-
-    this.update({ allowedUserSettings });
-  }
-
-  /**
-   * Lets the diff remember the choices of the user in localStorage. The demo keeps the box too,
-   * so the diff reads the choices back after a reload.
-   */
-  protected rememberChoices(remembers: boolean): void {
-    this.update({ rememberUserSettings: remembers });
-    keepDemoRemembersChoices(remembers);
-  }
-
-  /** Puts the choices of the user in the field, as an app could keep them in the account of the user. */
-  protected exportChoices(): void {
-    const settings = this.diffwise.exportUserSettings();
-
-    this.choicesText.set(JSON.stringify(settings, null, JSON_INDENT));
-    this.choicesError.set(null);
-  }
-
-  /** Gives the user the choices from the field, as an app could after the user signs in. */
-  protected importChoices(): void {
-    let settings: DiffwiseUserSettings;
-
-    try {
-      settings = JSON.parse(this.choicesText());
-    } catch {
-      this.choicesError.set(NOT_JSON_ERROR);
+    if (sitePage.page === this.page()) {
       return;
     }
 
-    this.choicesError.set(null);
-    this.diffwise.importUserSettings(settings);
+    this.showPage(sitePage);
+    this.document.defaultView?.scrollTo(0, 0);
   }
 
-  /** Takes back every choice of the user, also from localStorage. */
-  protected resetChoices(): void {
-    this.diffwise.resetUserSettings();
-  }
-
-  /**
-   * Shows the samples of the kind of diff; a language without plain text samples gives way to
-   * English. The language of the interface stays.
-   */
-  protected chooseDiffKind(kind: DiffKind): void {
-    const hasSamples = kind === DiffKind.Html || TEXT_SAMPLE_LANGUAGES.includes(this.language());
-
-    this.diffKind.set(kind);
-
-    if (!hasSamples) {
-      this.language.set(DiffwiseLanguage.EN);
-    }
-  }
-
-  /** Shows the sample in the chosen language, with the interface in the same language. */
-  protected chooseSampleLanguage(event: Event): void {
-    const language = selectedValueOf(event) as SampleLanguage;
-
-    this.language.set(language);
-    this.interfaceLanguage.set(language);
-  }
-
-  protected chooseInterfaceLanguage(event: Event): void {
-    this.interfaceLanguage.set(selectedValueOf(event) as DiffwiseLanguage);
-  }
-
-  /** Switches the theme with the method of the service for each color mode. */
-  protected chooseColorMode(colorMode: DiffwiseColorMode): void {
-    switch (colorMode) {
-      case DiffwiseColorMode.Light:
-        this.diffwise.switchToLightMode();
-        break;
-      case DiffwiseColorMode.Dark:
-        this.diffwise.switchToDarkMode();
-        break;
-      case DiffwiseColorMode.Auto:
-        this.diffwise.switchToAutoMode();
-        break;
-    }
-  }
-
-  protected chooseVersionHeaders(versionHeaders: VersionHeaders): void {
-    this.versionHeaders.set(versionHeaders);
-    this.update({ versionHeaders });
-  }
-
-  /** Gives the example colors to the global configuration, or takes them away with `null`. */
-  protected showExampleColors(shown: boolean): void {
-    this.showsExampleColors.set(shown);
-    this.update({ diffColors: shown ? EXAMPLE_DIFF_COLORS : null });
-  }
-
-  protected chooseFont(choice: FontChoice): void {
-    this.update({ fontFamily: fontFamilyOf(choice, this.customFontName()) });
-  }
-
-  /** Shows the named font at once; the diff ignores a blank name. */
-  protected nameCustomFont(event: Event): void {
-    const name = (event.target as HTMLInputElement).value;
-
-    this.customFontName.set(name);
-    this.update({ fontFamily: name });
-  }
-
-  protected textOf(event: Event): string {
-    return (event.target as HTMLTextAreaElement).value;
-  }
-
-  protected isChecked(event: Event): boolean {
-    return (event.target as HTMLInputElement).checked;
-  }
-
-  /** The number in a field; an empty field gives `NaN`, which the diff ignores. */
-  protected numberOf(event: Event): number {
-    return (event.target as HTMLInputElement).valueAsNumber;
+  /** Shows the page and its title in the browser tab. */
+  private showPage({ page, title }: SitePage): void {
+    this.page.set(page);
+    this.title.setTitle(title);
   }
 }
 
-/** The font choice that shows a value of the `fontFamily` option. */
-function fontChoiceOf(fontFamily: string): FontChoice {
-  switch (fontFamily) {
-    case DiffwiseFontFamily.Inherit:
-      return FontChoice.App;
-    case DiffwiseFontFamily.Builtin:
-      return FontChoice.Builtin;
-    default:
-      return FontChoice.Custom;
-  }
-}
-
-/** The value of the `fontFamily` option for a font choice. */
-function fontFamilyOf(choice: FontChoice, customFontName: string): string {
-  switch (choice) {
-    case FontChoice.App:
-      return DiffwiseFontFamily.Inherit;
-    case FontChoice.Builtin:
-      return DiffwiseFontFamily.Builtin;
-    case FontChoice.Custom:
-      return customFontName;
-  }
-}
-
-/** True when the "Remember choices" box was ticked before the reload. */
-function demoRemembersChoices(): boolean {
-  try {
-    return localStorage.getItem(REMEMBER_CHOICES_ENTRY) === TICKED;
-  } catch {
-    return false;
-  }
-}
-
-/** Keeps the "Remember choices" box for the next reload. */
-function keepDemoRemembersChoices(remembers: boolean): void {
-  try {
-    if (remembers) {
-      localStorage.setItem(REMEMBER_CHOICES_ENTRY, TICKED);
-    } else {
-      localStorage.removeItem(REMEMBER_CHOICES_ENTRY);
-    }
-  } catch {
-    // Without localStorage the box stays only until the reload.
-  }
-}
-
-/** The value of the option chosen in a list. */
-function selectedValueOf(event: Event): string {
-  return (event.target as HTMLSelectElement).value;
-}
-
-/**
- * Path of a sample file, such as `test-data/en/short/before.html`, or
- * `test-data/text/en/short/before.txt` for a plain text sample.
- */
-function samplePath({ kind, language, size }: SampleChoice, file: string): string {
-  const isText = kind === DiffKind.Text;
-  const folders = isText ? [SAMPLES_FOLDER, TEXT_SAMPLES_FOLDER] : [SAMPLES_FOLDER];
-  const extension = isText ? TEXT_EXTENSION : HTML_EXTENSION;
-
-  return [...folders, language, size, file + extension].join(PATH_SEPARATOR);
-}
-
-async function loadText(path: string, abortSignal: AbortSignal): Promise<string> {
-  const response = await fetch(path, { signal: abortSignal });
-
-  if (!response.ok) {
-    throw new Error(LOAD_ERROR, { cause: response });
-  }
-
-  return response.text();
+/** The page of an address after `#`; the first page for an empty or unknown one. */
+function sitePageOf(hash: string): SitePage {
+  return SITE_PAGES.find((sitePage) => sitePage.hash === hash) ?? SITE_PAGES[0];
 }

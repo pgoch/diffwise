@@ -1,0 +1,452 @@
+<aside class="demo-panel" aria-label="Options of the diff">
+  <h1>Diffwise demo</h1>
+  <p class="demo-note">
+    The options change the global configuration while the app runs. Only the language goes through
+    an input of the diff.
+  </p>
+
+  <h2>Sample</h2>
+  <demo-choice-buttons
+    label="Diff"
+    [choices]="choices.diffKinds"
+    [value]="diffKind()"
+    (chosen)="chooseDiffKind($event)"
+  />
+  <label class="demo-field">
+    Language
+    <select (change)="chooseSampleLanguage($event)">
+      @for (choice of languages(); track choice.value) {
+        <option [value]="choice.value" [selected]="choice.value === language()">
+          {{ choice.label }}
+        </option>
+      }
+    </select>
+  </label>
+  <label class="demo-field">
+    Interface language
+    <select (change)="chooseInterfaceLanguage($event)">
+      @for (choice of choices.interfaceLanguages; track choice.value) {
+        <option [value]="choice.value" [selected]="choice.value === interfaceLanguage()">
+          {{ choice.label }}
+        </option>
+      }
+    </select>
+  </label>
+  <p class="demo-hint">The language of the sample sets it too.</p>
+  <demo-choice-buttons
+    label="Size"
+    [choices]="choices.sizes"
+    [value]="size()"
+    (chosen)="size.set($event)"
+  />
+  <demo-choice-buttons
+    label="Versions"
+    [choices]="choices.comparedVersions"
+    [value]="comparedVersions()"
+    (chosen)="comparedVersions.set($event)"
+  />
+
+  <h2>Colors</h2>
+  <demo-choice-buttons
+    label="Theme"
+    [choices]="choices.colorModes"
+    [value]="diffwise.config().colorMode"
+    (chosen)="chooseColorMode($event)"
+  />
+  <button type="button" class="demo-button" (click)="diffwise.toggleDarkMode()">
+    Toggle dark mode
+  </button>
+  <demo-choice-buttons
+    label="Palette"
+    [choices]="choices.palettes"
+    [value]="diffwise.config().diffPalette"
+    (chosen)="update({ diffPalette: $event })"
+  />
+  <demo-choice-buttons
+    label="Changed words"
+    [choices]="choices.highlightStyles"
+    [value]="diffwise.config().highlightStyle"
+    (chosen)="update({ highlightStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Intensity"
+    [choices]="choices.levels"
+    [value]="diffwise.config().diffIntensity"
+    (chosen)="update({ diffIntensity: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="showsExampleColors()"
+      (change)="showExampleColors(isChecked($event))"
+    />
+    Custom colors (example)
+  </label>
+  <p class="demo-hint">Custom colors replace the intensity.</p>
+
+  <h2>Contrast</h2>
+  <demo-choice-buttons
+    label="Contrast of the interface"
+    [choices]="choices.levels"
+    [value]="diffwise.config().uiContrast"
+    (chosen)="update({ uiContrast: $event })"
+  />
+
+  <h2>Layout</h2>
+  <demo-choice-buttons
+    label="Layout"
+    [choices]="choices.layouts"
+    [value]="diffwise.config().layout"
+    (chosen)="update({ layout: $event })"
+  />
+  <demo-choice-buttons
+    label="Width"
+    [choices]="choices.diffWidths"
+    [value]="diffWidth()"
+    (chosen)="diffWidth.set($event)"
+  />
+  <p class="demo-hint">The automatic layout shows a single column in a diff under 768 px.</p>
+  <demo-choice-buttons
+    label="Changes in a single column"
+    [choices]="choices.inlineDiffStyles"
+    [value]="diffwise.config().inlineDiffStyle"
+    (chosen)="update({ inlineDiffStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Between the versions"
+    [choices]="choices.dividerStyles"
+    [value]="diffwise.config().dividerStyle"
+    (chosen)="update({ dividerStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Opposite added and removed lines"
+    [choices]="choices.gapStyles"
+    [value]="diffwise.config().gapStyle"
+    (chosen)="update({ gapStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Headers"
+    [choices]="choices.versionHeaders"
+    [value]="versionHeaders()"
+    (chosen)="chooseVersionHeaders($event)"
+  />
+  <demo-choice-buttons
+    label="Header alignment"
+    [choices]="choices.alignments"
+    [value]="diffwise.config().versionHeaderAlignment"
+    (chosen)="update({ versionHeaderAlignment: $event })"
+  />
+
+  <h2>Lines</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showLineNumbers"
+      (change)="update({ showLineNumbers: isChecked($event) })"
+    />
+    Line numbers
+  </label>
+  <demo-choice-buttons
+    label="Numbers of changed lines"
+    [choices]="choices.lineNumberStyles"
+    [value]="diffwise.config().lineNumberStyle"
+    (chosen)="update({ lineNumberStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Numbers in their lines"
+    [choices]="choices.verticalAlignments"
+    [value]="diffwise.config().lineNumberAlignment"
+    (chosen)="update({ lineNumberAlignment: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().highlightChangedLines"
+      (change)="update({ highlightChangedLines: isChecked($event) })"
+    />
+    Background of changed lines
+  </label>
+  @if (!diffwise.config().highlightChangedLines) {
+    <label class="demo-check demo-check--nested">
+      <input
+        type="checkbox"
+        [checked]="diffwise.config().highlightWholeLines"
+        (change)="update({ highlightWholeLines: isChecked($event) })"
+      />
+      Highlight whole added and removed lines
+    </label>
+  }
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().hideUnchangedLines"
+      (change)="update({ hideUnchangedLines: isChecked($event) })"
+    />
+    Hide unchanged lines
+  </label>
+  <label class="demo-field">
+    Context lines
+    <input
+      type="number"
+      min="1"
+      max="100"
+      step="1"
+      [value]="diffwise.config().contextLines"
+      (change)="update({ contextLines: numberOf($event) })"
+    />
+  </label>
+  <p class="demo-hint">
+    Unchanged lines shown around each change, from 1 to 100; the diff ignores other numbers.
+  </p>
+
+  <h2>Change details</h2>
+  <demo-choice-buttons
+    label="Where details show"
+    [choices]="choices.changeDetails"
+    [value]="diffwise.config().changeDetails"
+    (chosen)="update({ changeDetails: $event })"
+  />
+  <demo-choice-buttons
+    label="Icons in the middle"
+    [choices]="choices.changeDetailsIconStyles"
+    [value]="diffwise.config().changeDetailsIconStyle"
+    (chosen)="update({ changeDetailsIconStyle: $event })"
+  />
+  <demo-choice-buttons
+    label="Tooltip colors"
+    [choices]="choices.tooltipColorModes"
+    [value]="diffwise.config().tooltipColorMode"
+    (chosen)="update({ tooltipColorMode: $event })"
+  />
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().highlightTooltipChanges"
+      (change)="update({ highlightTooltipChanges: isChecked($event) })"
+    />
+    Highlight the changed part
+  </label>
+  <p class="demo-hint">The changed part of a link address, a file name or an alternative text.</p>
+  <demo-choice-buttons
+    label="Tooltip title"
+    [choices]="choices.alignments"
+    [value]="diffwise.config().tooltipTitleAlignment"
+    (chosen)="update({ tooltipTitleAlignment: $event })"
+  />
+
+  <h2>Fonts</h2>
+  <demo-choice-buttons
+    label="Font"
+    [choices]="choices.fonts"
+    [value]="fontChoice()"
+    (chosen)="chooseFont($event)"
+  />
+  <demo-choice-buttons
+    label="Text font"
+    [choices]="choices.textFonts"
+    [value]="diffwise.config().textFont"
+    (chosen)="update({ textFont: $event })"
+  />
+  <p class="demo-hint">Only the text diff has a text font.</p>
+  @if (fontChoice() === fontChoices.Custom) {
+    <label class="demo-field">
+      Font name
+      <input type="text" [value]="customFontName()" (input)="nameCustomFont($event)" />
+    </label>
+  }
+  <label class="demo-field">
+    Header size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().versionHeaderFontSize"
+      (change)="update({ versionHeaderFontSize: numberOf($event) })"
+    />
+  </label>
+  <label class="demo-field">
+    Line number size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().lineNumberFontSize"
+      (change)="update({ lineNumberFontSize: numberOf($event) })"
+    />
+  </label>
+  <label class="demo-field">
+    Tooltip size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().tooltipFontSize"
+      (change)="update({ tooltipFontSize: numberOf($event) })"
+    />
+  </label>
+  <label class="demo-field">
+    Toolbar size (rem)
+    <input
+      type="number"
+      min="0.5"
+      max="10"
+      step="0.05"
+      [value]="diffwise.config().toolbarFontSize"
+      (change)="update({ toolbarFontSize: numberOf($event) })"
+    />
+  </label>
+  <p class="demo-hint">From 0.5 to 10; the diff ignores other sizes.</p>
+
+  <h2>Navigation</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showNavigationToolbar"
+      (change)="update({ showNavigationToolbar: isChecked($event) })"
+    />
+    Arrows in the toolbar
+  </label>
+  <demo-choice-buttons
+    label="Active change"
+    [choices]="choices.activeChangeStyles"
+    [value]="diffwise.config().activeChangeStyle"
+    (chosen)="update({ activeChangeStyle: $event })"
+  />
+  <button type="button" class="demo-button" (click)="goToPreviousChange()">Previous change</button>
+  <button type="button" class="demo-button" (click)="goToNextChange()">Next change</button>
+  <p class="demo-hint">The buttons call the methods of the diff, also without the arrows.</p>
+
+  <h2>Statistics</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showDiffStats"
+      (change)="update({ showDiffStats: isChecked($event) })"
+    />
+    Numbers in the toolbar
+  </label>
+  <demo-choice-buttons
+    label="Identical versions"
+    [choices]="choices.noChangesViews"
+    [value]="diffwise.config().noChangesView"
+    (chosen)="update({ noChangesView: $event })"
+  />
+  <p class="demo-hint">What shows under “No changes”; choose “Before twice” to see it.</p>
+  @if (lastStats(); as stats) {
+    <p class="demo-hint" aria-live="polite">
+      From the last comparison: +{{ stats.addedLines }} −{{ stats.removedLines }} ~{{
+        stats.changedLines
+      }}, {{ stats.hasChanges ? 'with changes' : 'no changes' }}.
+    </p>
+  }
+
+  <h2>View settings</h2>
+  <p class="demo-hint">What the user can change with the button at the end of the toolbar.</p>
+  @for (setting of choices.userSettings; track setting.value) {
+    <label class="demo-check">
+      <input
+        type="checkbox"
+        [checked]="isAllowed(setting.value)"
+        (change)="allowUserSetting(setting.value, isChecked($event))"
+      />
+      {{ setting.label }}
+    </label>
+  }
+  <p class="demo-hint">
+    A choice in the view settings wins over this panel; “Restore defaults” brings the panel back.
+  </p>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().rememberUserSettings"
+      (change)="rememberChoices(isChecked($event))"
+    />
+    Remember choices
+  </label>
+  <p class="demo-hint">Keeps the choices in localStorage, so they stay after a reload.</p>
+  <button type="button" class="demo-button" (click)="exportChoices()">Export choices</button>
+  <button type="button" class="demo-button" (click)="importChoices()">Import choices</button>
+  <button type="button" class="demo-button" (click)="resetChoices()">Reset choices</button>
+  <textarea
+    class="demo-text"
+    rows="5"
+    aria-label="Choices of the user as JSON"
+    [value]="choicesText()"
+    (input)="choicesText.set(textOf($event))"
+  ></textarea>
+  @if (choicesError(); as error) {
+    <p class="demo-hint demo-error" role="alert">{{ error }}</p>
+  }
+  <p class="demo-hint">
+    “Export” writes the choices here, as an app could keep them in the account of the user. “Import”
+    gives this text back to the user. “Reset” takes all choices back, also from localStorage.
+  </p>
+  @if (lastUserSettings()) {
+    <p class="demo-hint" aria-live="polite">
+      From the last choice: <code>{{ lastUserSettingsText() }}</code>
+    </p>
+  }
+
+  <h2>Comparison</h2>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreWhitespace"
+      (change)="update({ ignoreWhitespace: isChecked($event) })"
+    />
+    Ignore whitespace
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreCase"
+      (change)="update({ ignoreCase: isChecked($event) })"
+    />
+    Ignore letter case
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreFormatting"
+      (change)="update({ ignoreFormatting: isChecked($event) })"
+    />
+    Ignore formatting
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().ignoreLinkChanges"
+      (change)="update({ ignoreLinkChanges: isChecked($event) })"
+    />
+    Ignore link changes
+  </label>
+</aside>
+
+<main class="demo-main">
+  @if (sample.error()) {
+    <p role="alert">The sample could not be loaded.</p>
+  } @else if (shownSample(); as pair) {
+    <div class="demo-diff" [style.max-width]="diffWidth()">
+      @if (pair.kind === diffKinds.Text) {
+        <diffwise-text
+          [oldText]="pair.oldVersion"
+          [newText]="comparesSameVersions() ? pair.oldVersion : pair.newVersion"
+          [language]="interfaceLanguage()"
+          (diffStatsComputed)="lastStats.set($event)"
+          (userSettingsChange)="lastUserSettings.set($event)"
+        />
+      } @else {
+        <diffwise-html
+          [oldHtml]="pair.oldVersion"
+          [newHtml]="comparesSameVersions() ? pair.oldVersion : pair.newVersion"
+          [language]="interfaceLanguage()"
+          (diffStatsComputed)="lastStats.set($event)"
+          (userSettingsChange)="lastUserSettings.set($event)"
+        />
+      }
+    </div>
+  }
+</main>

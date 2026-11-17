@@ -1,10 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
-/** A choice of a group of buttons, such as a value of an option. */
-export interface Choice<T> {
-  readonly value: T;
-  readonly label: string;
-}
+import type { Choice } from '../choice';
 
 /** Buttons for the choices of one option; the button of the current value is pressed. */
 @Component({
@@ -78,6 +74,7 @@ export class ChoiceButtons<T> {
   /** Name of the group, above the buttons. */
   readonly label = input.required<string>();
 
+  /** The choices, one button each, in their order. */
   readonly choices = input.required<readonly Choice<T>[]>();
 
   /** The current value; its button is pressed. */
