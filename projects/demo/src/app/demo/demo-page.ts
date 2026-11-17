@@ -156,6 +156,8 @@ const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
   { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
   { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
+  { value: DiffwiseUserSetting.WrapLines, label: 'Wrap lines' },
+  { value: DiffwiseUserSetting.ShowAllWhitespace, label: 'Show all spaces and tabs' },
 ];
 
 const DIVIDER_STYLE_CHOICES: readonly Choice<DiffwiseDividerStyle>[] = [

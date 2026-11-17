@@ -198,6 +198,23 @@
   <p class="demo-hint">
     Unchanged lines shown around each change, from 1 to 100; the diff ignores other numbers.
   </p>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().wrapLines"
+      (change)="update({ wrapLines: isChecked($event) })"
+    />
+    Wrap lines
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
+      [checked]="diffwise.config().showAllWhitespace"
+      (change)="update({ showAllWhitespace: isChecked($event) })"
+    />
+    Show all spaces and tabs
+  </label>
+  <p class="demo-hint">Only the text diff wraps its lines and shows all spaces and tabs.</p>
 
   <h2>Change details</h2>
   <demo-choice-buttons
@@ -402,6 +419,14 @@
   <label class="demo-check">
     <input
       type="checkbox"
+      [checked]="diffwise.config().ignoreBlankLines"
+      (change)="update({ ignoreBlankLines: isChecked($event) })"
+    />
+    Ignore blank lines
+  </label>
+  <label class="demo-check">
+    <input
+      type="checkbox"
       [checked]="diffwise.config().ignoreCase"
       (change)="update({ ignoreCase: isChecked($event) })"
     />
@@ -423,6 +448,7 @@
     />
     Ignore link changes
   </label>
+  <p class="demo-hint">Only the text diff has blank lines to ignore.</p>
 </aside>
 
 <main class="demo-main">

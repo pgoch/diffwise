@@ -384,6 +384,24 @@ const LINE_OPTIONS: readonly StepOption[] = [
       note: 'Only when unchanged lines are hidden.',
     },
   }),
+  option({
+    name: 'wrapLines',
+    label: 'Wrap lines',
+    description: 'Breaks long lines of plain text into rows; Off lets them scroll sideways.',
+    howTo:
+      'Switch the preview to Text and choose Off: each line stays in one row, and the scrollbar under each version scrolls the long lines of both together. Shift with the wheel, or a touchpad over a line, scrolls them too.',
+    diffKinds: TEXT_DIFF,
+    choices: ON_OFF,
+  }),
+  option({
+    name: 'showAllWhitespace',
+    label: 'All spaces and tabs',
+    description: 'Shows each space and tab of plain text as · or →, also outside changes.',
+    howTo:
+      'Switch the preview to Text and choose On: every space shows a dot and every tab an arrow, lighter outside changed text. With Off, only changed spaces and tabs show them.',
+    diffKinds: TEXT_DIFF,
+    choices: ON_OFF,
+  }),
 ];
 
 const LAYOUT_OPTIONS: readonly StepOption[] = [
@@ -633,6 +651,15 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     description: 'Differences in spaces, tabs and line breaks are not changes.',
     howTo:
       'The plain text sample changes only spaces in a few lines, such as two spaces that became one. Switch the preview to Text: with On, those lines stop showing as changed.',
+    choices: ON_OFF,
+  }),
+  option({
+    name: 'ignoreBlankLines',
+    label: 'Ignore blank lines',
+    description: 'Blank lines added or removed in plain text are not changes.',
+    howTo:
+      'The plain text sample adds five blank lines and removes two. Switch the preview to Text: with On, they show as unchanged lines, without stripes opposite, and the toolbar counts +8 −0 instead of +13 −2.',
+    diffKinds: TEXT_DIFF,
     choices: ON_OFF,
   }),
   option({

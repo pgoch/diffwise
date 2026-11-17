@@ -46,6 +46,7 @@ export const CUSTOM_TEXT_GROUPS: readonly CustomTextGroup[] = [
       { name: 'changedLineAfterLabel', english: 'Changed line {number}, after' },
       { name: 'changedLineLabel', english: 'Changed line {number}' },
       { name: 'wideTableLabel', english: 'Wide table, scroll sideways' },
+      { name: 'longLinesLabel', english: 'Long lines, scroll sideways', diffKinds: TEXT_DIFF },
     ],
   },
   {
@@ -178,6 +179,12 @@ export const CUSTOM_TEXT_GROUPS: readonly CustomTextGroup[] = [
       { name: 'monospaceTextFontLabel', english: 'Fixed width', diffKinds: TEXT_DIFF },
       { name: 'proportionalTextFontLabel', english: 'Regular', diffKinds: TEXT_DIFF },
       { name: 'hideUnchangedLinesLabel', english: 'Hide unchanged lines' },
+      { name: 'wrapLinesLabel', english: 'Wrap lines', diffKinds: TEXT_DIFF },
+      {
+        name: 'showAllWhitespaceLabel',
+        english: 'Show all spaces and tabs',
+        diffKinds: TEXT_DIFF,
+      },
       { name: 'resetUserSettingsLabel', english: 'Restore defaults' },
     ],
   },

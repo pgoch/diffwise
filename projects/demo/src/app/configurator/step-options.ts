@@ -60,6 +60,15 @@ export const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.Layout, label: 'Layout' },
   { value: DiffwiseUserSetting.InlineDiffStyle, label: 'Changes in a single column' },
   { value: DiffwiseUserSetting.HideUnchangedLines, label: 'Hide unchanged lines' },
+  { value: DiffwiseUserSetting.WrapLines, label: 'Wrap lines' },
+  { value: DiffwiseUserSetting.ShowAllWhitespace, label: 'Show all spaces and tabs' },
+];
+
+/** Options of the view settings that only the text diff shows. */
+const TEXT_USER_SETTINGS: readonly DiffwiseUserSetting[] = [
+  DiffwiseUserSetting.TextFont,
+  DiffwiseUserSetting.WrapLines,
+  DiffwiseUserSetting.ShowAllWhitespace,
 ];
 
 const OBJECT_TYPE = 'object';
@@ -98,12 +107,15 @@ export class StepOptions {
   /** The options of the step for the diffs of the app. */
   protected readonly options = computed(() => this.state.optionsOf(this.step()));
 
-  /** The options the user can change, without the text font in an app without plain text. */
+  /**
+   * The options the user can change, without those of plain text, such as the text font, in an
+   * app without plain text.
+   */
   protected readonly userSettings = computed(() => {
     const showsText = this.state.diffKinds().includes(DiffKind.Text);
 
     return USER_SETTING_CHOICES.filter(
-      ({ value }) => showsText || value !== DiffwiseUserSetting.TextFont,
+      ({ value }) => showsText || !TEXT_USER_SETTINGS.includes(value),
     );
   });
 
