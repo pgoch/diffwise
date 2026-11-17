@@ -6,7 +6,7 @@ import { DEFAULT_OPTIONS } from '../diff-options';
 import { serveSampleFiles } from '../../testing/sample-files';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { ConfiguratorPage } from './configurator-page';
-import { OptionKind, STEPS, StepId, type StepOption } from './steps';
+import { type ConfiguratorStep, OptionKind, STEPS, StepId, type StepOption } from './steps';
 
 const OPTION_SELECTOR = 'demo-option-control';
 const OPTION_NAME_SELECTOR = '.option-name';
@@ -33,16 +33,21 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+/** The step with the id. */
+function stepOf(stepId: StepId): ConfiguratorStep {
+  const step = STEPS.find(({ id }) => id === stepId);
+
+  if (step === undefined) {
+    throw new Error(`No step ${stepId}`);
+  }
+
+  return step;
+}
+
 /** Renders the configurator at the step. */
 async function render(stepId: StepId): Promise<ComponentFixture<ConfiguratorPage>> {
   serveSampleFiles();
-
-  const state = TestBed.inject(ConfiguratorState);
-  const step = STEPS.find(({ id }) => id === stepId);
-
-  if (step !== undefined) {
-    state.goTo(step);
-  }
+  TestBed.inject(ConfiguratorState).goTo(stepOf(stepId));
 
   const fixture = TestBed.createComponent(ConfiguratorPage);
 
@@ -187,7 +192,7 @@ describe('StepOptions', () => {
 
     expect(previewConfig(fixture).versionHeaderFontSize).toBe(1.25);
 
-    TestBed.inject(ConfiguratorState).goTo(STEPS[1]);
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Colors));
     await settle(fixture);
     await write(fixture, 'Dark mode of your app', ' .dark ');
 
@@ -236,7 +241,7 @@ describe('StepOptions', () => {
 
     expect(previewConfig(fixture).versionHeaders).toEqual({ old: 'Version 3', new: 'Version 4' });
 
-    TestBed.inject(ConfiguratorState).goTo(STEPS[5]);
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Fonts));
     await settle(fixture);
     await choose(fixture, 'Font', 'Named font');
 
@@ -332,7 +337,7 @@ describe('StepOptions', () => {
         ?.disabled,
     ).toBe(true);
 
-    TestBed.inject(ConfiguratorState).goTo(STEPS[5]);
+    TestBed.inject(ConfiguratorState).goTo(stepOf(StepId.Fonts));
     await settle(fixture);
 
     const size = optionNamed(fixture, 'Header size').querySelector<HTMLInputElement>(
@@ -340,6 +345,24 @@ describe('StepOptions', () => {
     );
 
     expect(size?.disabled).toBe(true);
+  });
+
+  it('disables the options of the toolbar without the toolbar', async () => {
+    const fixture = await render(StepId.Toolbar);
+    const arrows = () => optionNamed(fixture, 'Arrows between changes');
+
+    expect(arrows().querySelector(OPTION_NOTE_SELECTOR)).toBeNull();
+
+    await choose(fixture, 'Toolbar', 'Hidden');
+
+    expect(previewConfig(fixture).showToolbar).toBe(false);
+    expect(arrows().querySelector(OPTION_NOTE_SELECTOR)?.textContent).toBe(
+      'Only with the toolbar shown.',
+    );
+    expect(
+      optionNamed(fixture, 'Numbers of changes').querySelector<HTMLButtonElement>(CHOICE_SELECTOR)
+        ?.disabled,
+    ).toBe(true);
   });
 
   it('leaves out the options of a diff the app does not show', async () => {
@@ -351,13 +374,13 @@ describe('StepOptions', () => {
 
     expect(optionNames(fixture)).not.toContain('Text font');
 
-    state.goTo(STEPS[9]);
+    state.goTo(stepOf(StepId.ViewSettings));
     await settle(fixture);
 
     expect(optionNamed(fixture, 'Options for the user').textContent).not.toContain('Text font');
 
     state.chooseAppDiffs(AppDiffs.Text);
-    state.goTo(STEPS[7]);
+    state.goTo(stepOf(StepId.Comparison));
     await settle(fixture);
 
     expect(optionNames(fixture)).toEqual(['Ignore whitespace', 'Ignore letter case']);

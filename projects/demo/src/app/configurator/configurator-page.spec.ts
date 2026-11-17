@@ -11,6 +11,8 @@ const HEADING_SELECTOR = '.step-heading';
 const NAV_BUTTON_SELECTOR = '.nav button';
 const OPTION_BUTTON_SELECTOR = '.option-choice';
 const PREVIEW_BUTTON_SELECTOR = '.preview-switch button';
+const PREVIEW_LABEL_SELECTOR = '.preview-label';
+const NO_CHANGES_SELECTOR = '.preview .diffwise-diff__no-changes';
 const LANGUAGE_SELECT_SELECTOR = '.sample-field select';
 const SAMPLE_HINT_SELECTOR = '.sample-hint';
 const HTML_DIFF_SELECTOR = '.preview diffwise-html';
@@ -24,6 +26,8 @@ const HTML_PREVIEW = 'HTML';
 const TEXT_PREVIEW = 'Text';
 const CHANGE_DETAILS_STEP = 'Change details';
 const RESULT_STEP = 'Result';
+const VIEW_SETTINGS_STEP = 'View settings';
+const HIDDEN = 'Hidden';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -122,13 +126,14 @@ describe('ConfiguratorPage', () => {
       'Change details',
       'Fonts',
       'Toolbar',
+      'Identical versions',
       'Comparison',
       'Language and texts',
       'View settings',
       'Result',
     ]);
     expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['1 Your diffs']);
-    expect(textsOf(fixture, GOAL_STEP_SELECTOR)).toEqual(['11 Result']);
+    expect(textsOf(fixture, GOAL_STEP_SELECTOR)).toEqual(['12 Result']);
     expect(headingOf(fixture)).toBe('1. Your diffs');
     expect(textsOf(fixture, NAV_BUTTON_SELECTOR)).toEqual([NEXT]);
   });
@@ -153,7 +158,7 @@ describe('ConfiguratorPage', () => {
 
     await clickStep(fixture, RESULT_STEP);
 
-    expect(headingOf(fixture)).toBe('11. Result');
+    expect(headingOf(fixture)).toBe('12. Result');
     expect(textsOf(fixture, NAV_BUTTON_SELECTOR)).toEqual([BACK]);
 
     await clickStep(fixture, 'Fonts');
@@ -167,7 +172,7 @@ describe('ConfiguratorPage', () => {
     await click(fixture, OPTION_BUTTON_SELECTOR, PLAIN_TEXT);
 
     expect(stepNames(fixture)).not.toContain(CHANGE_DETAILS_STEP);
-    expect(stepNames(fixture)).toHaveLength(10);
+    expect(stepNames(fixture)).toHaveLength(11);
     expect(all(fixture, PREVIEW_BUTTON_SELECTOR)).toEqual([]);
     expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/en/medium');
     expect(all(fixture, HTML_DIFF_SELECTOR)).toEqual([]);
@@ -203,6 +208,45 @@ describe('ConfiguratorPage', () => {
 
     expect(textOf(fixture, TEXT_DIFF_SELECTOR)).toContain('test-data/text/pl/medium');
     expect(all(fixture, SAMPLE_HINT_SELECTOR)).toEqual([]);
+  });
+
+  it('compares the sample with itself in the step of identical versions', async () => {
+    const fixture = await render();
+
+    await clickStep(fixture, 'Identical versions');
+
+    expect(textsOf(fixture, PREVIEW_LABEL_SELECTOR)).toEqual([
+      'Preview · the sample compared with itself',
+    ]);
+    expect(textsOf(fixture, NO_CHANGES_SELECTOR)).toEqual(['No changes']);
+
+    await clickStep(fixture, 'Comparison');
+
+    expect(textsOf(fixture, PREVIEW_LABEL_SELECTOR)).toEqual(['Preview']);
+    expect(all(fixture, NO_CHANGES_SELECTOR)).toEqual([]);
+  });
+
+  it('disables the view settings without the toolbar, and steps over them', async () => {
+    const fixture = await render();
+    const viewSettings = () =>
+      all(fixture, STEP_SELECTOR).find((step) => step.textContent?.includes(VIEW_SETTINGS_STEP));
+
+    expect((viewSettings() as HTMLButtonElement).disabled).toBe(false);
+
+    await clickStep(fixture, 'Toolbar');
+    await click(fixture, OPTION_BUTTON_SELECTOR, HIDDEN);
+
+    expect((viewSettings() as HTMLButtonElement).disabled).toBe(true);
+    expect(viewSettings()?.textContent).toContain('(Only with the toolbar shown.)');
+
+    await clickStep(fixture, 'Language and texts');
+    await click(fixture, NAV_BUTTON_SELECTOR, NEXT);
+
+    expect(headingOf(fixture)).toBe('12. Result');
+
+    await click(fixture, NAV_BUTTON_SELECTOR, BACK);
+
+    expect(headingOf(fixture)).toBe('10. Language and texts');
   });
 
   it('keeps the preview apart from the global configuration of the demo', async () => {

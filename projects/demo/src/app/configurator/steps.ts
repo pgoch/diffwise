@@ -32,6 +32,7 @@ export const StepId = {
   ChangeDetails: 'changeDetails',
   Fonts: 'fonts',
   Toolbar: 'toolbar',
+  IdenticalVersions: 'identicalVersions',
   Comparison: 'comparison',
   Language: 'language',
   ViewSettings: 'viewSettings',
@@ -113,6 +114,8 @@ export interface ConfiguratorStep {
   readonly diffKinds: readonly DiffKind[];
   /** The options of the step, in their order. */
   readonly options: readonly StepOption[];
+  /** When the step works; `null` for a step that always does. */
+  readonly enabledWhen: OptionCondition | null;
 }
 
 /** Both diffs. */
@@ -151,6 +154,13 @@ const WITH_HEADERS: OptionCondition = {
   option: 'showVersionHeaders',
   value: true,
   note: 'Only with the headers shown.',
+};
+
+/** Options of the toolbar work only while the diff shows it. */
+const WITH_TOOLBAR: OptionCondition = {
+  option: 'showToolbar',
+  value: true,
+  note: 'Only with the toolbar shown.',
 };
 
 /** Limits of the font sizes, in rem. */
@@ -482,10 +492,18 @@ const FONT_OPTIONS: readonly StepOption[] = [
 
 const TOOLBAR_OPTIONS: readonly StepOption[] = [
   option({
+    name: 'showToolbar',
+    label: 'Toolbar',
+    description:
+      'The bar above the diff with the arrows, the numbers of changes and the view settings.',
+    choices: SHOWN_HIDDEN,
+  }),
+  option({
     name: 'showNavigationToolbar',
     label: 'Arrows between changes',
     description: 'Arrows to the previous and the next change, with a counter, such as 2 / 3.',
     choices: SHOWN_HIDDEN,
+    enabledWhen: WITH_TOOLBAR,
   }),
   option({
     name: 'activeChangeStyle',
@@ -495,13 +513,18 @@ const TOOLBAR_OPTIONS: readonly StepOption[] = [
       { value: DiffwiseActiveChangeStyle.Outline, label: 'Outline' },
       { value: DiffwiseActiveChangeStyle.Indicator, label: 'Indicator' },
     ],
+    enabledWhen: WITH_TOOLBAR,
   }),
   option({
     name: 'showDiffStats',
     label: 'Numbers of changes',
     description: 'The numbers of added, removed and changed lines, such as +3 −1 ~10.',
     choices: SHOWN_HIDDEN,
+    enabledWhen: WITH_TOOLBAR,
   }),
+];
+
+const IDENTICAL_VERSION_OPTIONS: readonly StepOption[] = [
   option({
     name: 'noChangesView',
     label: 'Identical versions',
@@ -590,6 +613,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'Which diffs your app shows, and a sample to preview them.',
     diffKinds: ALL_DIFFS,
     options: [],
+    enabledWhen: null,
   },
   {
     id: StepId.Colors,
@@ -597,6 +621,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'Theme, colors of changes and how they are marked.',
     diffKinds: ALL_DIFFS,
     options: COLOR_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Lines,
@@ -604,6 +629,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'Line numbers, the background of changed lines, and hiding unchanged lines.',
     diffKinds: ALL_DIFFS,
     options: LINE_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Layout,
@@ -611,6 +637,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'Two columns or one, and what stands between and above the versions.',
     diffKinds: ALL_DIFFS,
     options: LAYOUT_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.ChangeDetails,
@@ -618,6 +645,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'Tooltips and icons of changes besides the text.',
     diffKinds: HTML_DIFF,
     options: CHANGE_DETAIL_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Fonts,
@@ -625,14 +653,25 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'The font of the diff and the sizes of its parts.',
     diffKinds: ALL_DIFFS,
     options: FONT_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Toolbar,
     label: 'Toolbar',
     description:
-      'Arrows that step through the changes, numbers of changes, and identical versions.',
+      'The bar above the diff, its arrows that step through the changes, and numbers of changes.',
     diffKinds: ALL_DIFFS,
     options: TOOLBAR_OPTIONS,
+    enabledWhen: null,
+  },
+  {
+    id: StepId.IdenticalVersions,
+    label: 'Identical versions',
+    description:
+      'What the diff shows when the versions are the same. The preview compares the sample with itself here.',
+    diffKinds: ALL_DIFFS,
+    options: IDENTICAL_VERSION_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Comparison,
@@ -640,6 +679,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'What the comparison ignores, such as whitespace or letter case.',
     diffKinds: ALL_DIFFS,
     options: COMPARISON_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.Language,
@@ -647,6 +687,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'The language of the interface, and texts of your own.',
     diffKinds: ALL_DIFFS,
     options: LANGUAGE_OPTIONS,
+    enabledWhen: null,
   },
   {
     id: StepId.ViewSettings,
@@ -654,6 +695,7 @@ export const STEPS: readonly ConfiguratorStep[] = [
     description: 'What users can change themselves, and whether their choices stay after a reload.',
     diffKinds: ALL_DIFFS,
     options: VIEW_SETTING_OPTIONS,
+    enabledWhen: WITH_TOOLBAR,
   },
   {
     id: StepId.Result,
@@ -662,5 +704,6 @@ export const STEPS: readonly ConfiguratorStep[] = [
       'Copy the configuration into app.config.ts of your app. Options with their defaults are left out.',
     diffKinds: ALL_DIFFS,
     options: [],
+    enabledWhen: null,
   },
 ];

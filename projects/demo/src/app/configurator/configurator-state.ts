@@ -9,7 +9,13 @@ import {
   SampleSize,
   TEXT_SAMPLE_LANGUAGES,
 } from '../samples';
-import { type ConfiguratorStep, type OptionName, STEPS, StepId } from './steps';
+import {
+  type ConfiguratorStep,
+  type OptionCondition,
+  type OptionName,
+  STEPS,
+  StepId,
+} from './steps';
 
 /** The diffs an app shows: one of them or both. */
 export const AppDiffs = {
@@ -110,6 +116,20 @@ export class ConfiguratorState {
     return this.options()[name] ?? DEFAULT_OPTIONS[name];
   }
 
+  /**
+   * Why an option or a step does not work now, as another option has another value; `null` when
+   * it works.
+   */
+  disabledNote(condition: OptionCondition | null): string | null {
+    if (condition === null) {
+      return null;
+    }
+
+    const works = this.valueOf(condition.option) === condition.value;
+
+    return works ? null : condition.note;
+  }
+
   /** True when the option has another value than its default. */
   isChanged(name: OptionName): boolean {
     return Object.hasOwn(this.options(), name);
@@ -132,14 +152,18 @@ export class ConfiguratorState {
     this.stepId.set(step.id);
   }
 
-  /** Shows the step before the one that shows, if there is one. */
+  /** Shows the nearest working step before the one that shows, if there is one. */
   goBack(): void {
-    this.goToIndex(this.stepIndex() - 1);
+    const before = this.steps().slice(0, this.stepIndex()).reverse();
+
+    this.goToFirstWorking(before);
   }
 
-  /** Shows the step after the one that shows, if there is one. */
+  /** Shows the nearest working step after the one that shows, if there is one. */
   goNext(): void {
-    this.goToIndex(this.stepIndex() + 1);
+    const after = this.steps().slice(this.stepIndex() + 1);
+
+    this.goToFirstWorking(after);
   }
 
   /**
@@ -156,12 +180,11 @@ export class ConfiguratorState {
     }
   }
 
-  /** Shows the step at the position, when there is one. */
-  private goToIndex(index: number): void {
-    const step = this.steps().at(index);
-    const isInSteps = index >= 0 && step !== undefined;
+  /** Shows the first of the steps that works now, when there is one. */
+  private goToFirstWorking(steps: readonly ConfiguratorStep[]): void {
+    const step = steps.find(({ enabledWhen }) => this.disabledNote(enabledWhen) === null);
 
-    if (isInSteps) {
+    if (step !== undefined) {
       this.goTo(step);
     }
   }

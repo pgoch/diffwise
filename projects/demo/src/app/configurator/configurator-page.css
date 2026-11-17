@@ -60,6 +60,16 @@
   color: var(--site-text);
 }
 
+/* A step that works only with another option, such as the view settings without the toolbar. */
+.flow-step:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.flow-step:disabled:hover {
+  color: var(--site-muted);
+}
+
 .flow-number {
   position: relative;
   display: inline-grid;

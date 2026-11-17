@@ -142,13 +142,7 @@ export class StepOptions {
 
   /** Why the option does not work now, as its other option has another value; `null` if it works. */
   protected disabledNote({ enabledWhen }: StepOption): string | null {
-    if (enabledWhen === null) {
-      return null;
-    }
-
-    const works = this.state.valueOf(enabledWhen.option) === enabledWhen.value;
-
-    return works ? null : enabledWhen.note;
+    return this.state.disabledNote(enabledWhen);
   }
 
   /** Chooses the value of a button or of a list. */

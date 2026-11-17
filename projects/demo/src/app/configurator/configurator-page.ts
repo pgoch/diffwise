@@ -75,6 +75,11 @@ export class ConfiguratorPage {
   /** The number of the step that shows, from 1. */
   protected readonly stepNumber = computed(() => this.state.stepIndex() + 1);
 
+  /** True when the preview compares the sample with itself, to show identical versions. */
+  protected readonly comparesSampleWithItself = computed(
+    () => this.state.step().id === StepId.IdenticalVersions,
+  );
+
   /** True when a step comes before the one that shows. */
   protected readonly hasBack = computed(() => this.state.stepIndex() > 0);
 
