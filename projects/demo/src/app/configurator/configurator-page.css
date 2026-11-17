@@ -195,6 +195,18 @@
   grid-area: options;
 }
 
+/* The result takes the whole width, as it has no preview. */
+.main--result {
+  grid-template-areas:
+    'options'
+    'nav';
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.preview[hidden] {
+  display: none;
+}
+
 .step-heading {
   margin: 0 0 2px;
   font-size: 19px;

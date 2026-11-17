@@ -49,7 +49,7 @@
   </div>
 </nav>
 
-<div class="main">
+<div class="main" [class.main--result]="showsResult()">
   <section class="options" aria-labelledby="configurator-step-heading">
     <h2 id="configurator-step-heading" class="step-heading" tabindex="-1" #stepHeading>
       {{ stepNumber() }}. {{ state.step().label }}
@@ -59,6 +59,9 @@
     @switch (state.step().id) {
       @case (stepIds.Diffs) {
         <demo-diff-kinds-step />
+      }
+      @case (stepIds.Result) {
+        <demo-result-step (edit)="goTo($event)" (startOver)="startOver()" />
       }
       @default {
         <demo-step-options [step]="state.step()" />
@@ -75,7 +78,7 @@
     }
   </div>
 
-  <section class="preview" aria-labelledby="configurator-preview-label">
+  <section class="preview" aria-labelledby="configurator-preview-label" [hidden]="showsResult()">
     <div class="preview-head">
       <span id="configurator-preview-label" class="preview-label">
         Preview

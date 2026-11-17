@@ -15,6 +15,7 @@ import {
   type OptionName,
   STEPS,
   StepId,
+  type StepOption,
 } from './steps';
 
 /** The diffs an app shows: one of them or both. */
@@ -32,6 +33,12 @@ const DIFF_KINDS_OF: Readonly<Record<AppDiffs, readonly DiffKind[]>> = {
   [AppDiffs.Text]: [DiffKind.Text],
   [AppDiffs.Both]: [DiffKind.Html, DiffKind.Text],
 };
+
+/** A changed option with its step, for the result. */
+export interface ChangedOption {
+  readonly step: ConfiguratorStep;
+  readonly option: StepOption;
+}
 
 /** Language of a plain text sample when the chosen language has none. */
 const FALLBACK_TEXT_LANGUAGE: SampleLanguage = DiffwiseLanguage.EN;
@@ -108,8 +115,37 @@ export class ConfiguratorState {
     return new Set(steps.map((step) => step.id));
   });
 
+  /** The changed options for the diffs of the app, with their steps, in the order of the steps. */
+  readonly changedOptions = computed<readonly ChangedOption[]>(() =>
+    this.steps().flatMap((step) =>
+      this.optionsOf(step)
+        .filter((option) => this.isChanged(option.name))
+        .map((option) => ({ step, option })),
+    ),
+  );
+
+  /**
+   * The configuration of the result: the changed options for the diffs of the app, in the order
+   * of the steps. Options of a diff the app does not show are left out, as they change nothing.
+   */
+  readonly resultOptions = computed<DiffwiseConfigOptions>(() => {
+    const options = this.options();
+    const names = this.changedOptions().map(({ option }) => option.name);
+
+    return Object.fromEntries(names.map((name) => [name, options[name]]));
+  });
+
   /** The chosen step. */
   private readonly stepId = signal<StepId>(StepId.Diffs);
+
+  /** The options of the step for the diffs of the app. */
+  optionsOf(step: ConfiguratorStep): readonly StepOption[] {
+    const diffKinds = this.diffKinds();
+
+    return step.options.filter((option) =>
+      option.diffKinds.some((kind) => diffKinds.includes(kind)),
+    );
+  }
 
   /** The value of the option: the chosen one, or its default. */
   valueOf<K extends OptionName>(name: K): DiffwiseConfigOptions[K] {
@@ -150,6 +186,13 @@ export class ConfiguratorState {
   /** Shows the step. */
   goTo(step: ConfiguratorStep): void {
     this.stepId.set(step.id);
+  }
+
+  /** Takes back every chosen option and shows the first step; the diffs and the sample stay. */
+  startOver(): void {
+    this.options.set({});
+    this.optionsVersion.update((version) => version + 1);
+    this.stepId.set(StepId.Diffs);
   }
 
   /** Shows the nearest working step before the one that shows, if there is one. */

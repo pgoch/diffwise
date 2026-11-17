@@ -15,6 +15,7 @@ import { ownOptions } from '../diff-options';
 import { DiffKind, loadedSample } from '../samples';
 import { AppDiffs, ConfiguratorState } from './configurator-state';
 import { DiffKindsStep } from './diff-kinds-step';
+import { ResultStep } from './result-step';
 import { StepOptions } from './step-options';
 import { type ConfiguratorStep, StepId } from './steps';
 
@@ -39,7 +40,7 @@ const PREVIEW_KIND_CHOICES: readonly Choice<DiffKind>[] = [
  */
 @Component({
   selector: 'demo-configurator-page',
-  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, StepOptions],
+  imports: [DiffKindsStep, DiffwiseHtml, DiffwiseText, ResultStep, StepOptions],
   templateUrl: './configurator-page.html',
   styleUrl: './configurator-page.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,6 +72,9 @@ export class ConfiguratorPage {
 
   /** The goal of the configurator, the last step. */
   protected readonly resultStep = computed(() => this.state.steps().at(-1));
+
+  /** True when the result shows; it takes the place of the preview too. */
+  protected readonly showsResult = computed(() => this.state.step().id === StepId.Result);
 
   /** The number of the step that shows, from 1. */
   protected readonly stepNumber = computed(() => this.state.stepIndex() + 1);
@@ -119,6 +123,12 @@ export class ConfiguratorPage {
   /** Shows the step after. */
   protected goNext(): void {
     this.state.goNext();
+    this.focusStep();
+  }
+
+  /** Takes back every chosen option and shows the first step. */
+  protected startOver(): void {
+    this.state.startOver();
     this.focusStep();
   }
 

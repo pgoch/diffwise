@@ -25,7 +25,7 @@ const FontChoice = {
 
 type FontChoice = (typeof FontChoice)[keyof typeof FontChoice];
 
-const FONT_CHOICES: readonly Choice<FontChoice>[] = [
+export const FONT_CHOICES: readonly Choice<FontChoice>[] = [
   { value: FontChoice.Inherit, label: 'Font of your app' },
   { value: FontChoice.Builtin, label: 'Built-in' },
   { value: FontChoice.Named, label: 'Named font' },
@@ -43,7 +43,7 @@ const HeadersChoice = {
 
 type HeadersChoice = (typeof HeadersChoice)[keyof typeof HeadersChoice];
 
-const HEADERS_CHOICES: readonly Choice<HeadersChoice>[] = [
+export const HEADERS_CHOICES: readonly Choice<HeadersChoice>[] = [
   { value: HeadersChoice.Default, label: 'Default' },
   { value: HeadersChoice.Icons, label: 'Icons' },
   { value: HeadersChoice.Texts, label: 'Texts of your app' },
@@ -53,7 +53,7 @@ const HEADERS_CHOICES: readonly Choice<HeadersChoice>[] = [
 const FIRST_HEADER_TEXTS: DiffwiseVersionHeaderTexts = { old: 'Version 3', new: 'Version 4' };
 
 /** The options the user can change in the view settings, in their order there. */
-const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
+export const USER_SETTING_CHOICES: readonly Choice<DiffwiseUserSetting>[] = [
   { value: DiffwiseUserSetting.ColorMode, label: 'Theme' },
   { value: DiffwiseUserSetting.DiffPalette, label: 'Colors of changes' },
   { value: DiffwiseUserSetting.TextFont, label: 'Text font' },
@@ -96,13 +96,7 @@ export class StepOptions {
   };
 
   /** The options of the step for the diffs of the app. */
-  protected readonly options = computed(() => {
-    const diffKinds = this.state.diffKinds();
-
-    return this.step().options.filter((option) =>
-      option.diffKinds.some((kind) => diffKinds.includes(kind)),
-    );
-  });
+  protected readonly options = computed(() => this.state.optionsOf(this.step()));
 
   /** The options the user can change, without the text font in an app without plain text. */
   protected readonly userSettings = computed(() => {
