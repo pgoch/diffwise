@@ -500,7 +500,7 @@ Version 0.5 changed a few defaults for contrast: `--diffwise-muted` is `#626975`
 
 The options `diffColors`, `lineNumberFontSize`, `versionHeaderFontSize`, `tooltipFontSize` and `toolbarFontSize` set their variables on the component element. An option your app sets wins over a variable in your CSS; the variable applies while the option has its default.
 
-The tooltip and the view settings show in the top layer of the page, so no `overflow` of your app cuts them, but they stay inside the component element, and the variables reach them. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
+The component element has `position: relative`, so the descriptions of lines it keeps for screen readers stay inside it, also in a scrolling box of your app; any `position` your app gives the element wins. The tooltip and the view settings show in the top layer of the page, so no `overflow` of your app cuts them, but they stay inside the component element, and the variables reach them. `tooltipColorMode: 'reversed'` changes the tooltip variables, as the dark theme does. To change the reversed colors, use its class:
 
 ```css
 diffwise-html.diffwise-diff--tooltip-color-mode-reversed {
