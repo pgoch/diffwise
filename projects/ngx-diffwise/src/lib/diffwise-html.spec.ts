@@ -89,6 +89,11 @@ const ICON_ONLY_CLASS = 'diffwise-diff--change-details-icon';
 const DESCRIBED_BY_ATTRIBUTE = 'aria-describedby';
 const TABINDEX_ATTRIBUTE = 'tabindex';
 const TITLE_ATTRIBUTE = 'title';
+const OLD_VERSION_NAME = 'Previous version';
+const NEW_VERSION_NAME = 'New version';
+const FORMATTING_CHANGE_TITLE = 'Formatting change';
+const LINK_CHANGE_TITLE = 'Link address changed';
+const IMAGE_CHANGE_TITLE = 'Image changed';
 const IN_TAB_ORDER = '0';
 const MOUSEOVER_EVENT = 'mouseover';
 const MOUSEOUT_EVENT = 'mouseout';
@@ -301,7 +306,7 @@ describe('DiffwiseHtml', () => {
   it('shows the headers of both versions', () => {
     const element = render('', '').nativeElement as HTMLElement;
 
-    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Previous version', 'New version']);
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual([OLD_VERSION_NAME, NEW_VERSION_NAME]);
   });
 
   it('shows each line in a row with its numbers, and a gap opposite added and removed lines', () => {
@@ -414,7 +419,7 @@ describe('DiffwiseHtml', () => {
   it('shows icons named by the default header texts', () => {
     const element = renderElement('', '', { versionHeaders: DiffwiseVersionHeaders.Icons });
 
-    expect(iconNamesOf(element)).toEqual(['Previous version', 'New version']);
+    expect(iconNamesOf(element)).toEqual([OLD_VERSION_NAME, NEW_VERSION_NAME]);
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['', '']);
   });
 
@@ -619,7 +624,7 @@ describe('DiffwiseHtml', () => {
 
     const element = renderElement('', '', { customTexts: null });
 
-    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(['Previous version', 'New version']);
+    expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual([OLD_VERSION_NAME, NEW_VERSION_NAME]);
   });
 
   it('shows options of the appearance as modifier classes, next to its own class', () => {
@@ -691,9 +696,9 @@ describe('DiffwiseHtml', () => {
 describe('DiffwiseHtml change details', () => {
   it('shows an icon between the versions for a change besides text, named by its kind', () => {
     const versions = [
-      [ITALIC_HTML, BOLD_HTML, 'formatting', 'Formatting change'],
-      [OLD_LINK_HTML, NEW_LINK_HTML, 'link', 'Link address changed'],
-      [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', 'Image changed'],
+      [ITALIC_HTML, BOLD_HTML, 'formatting', FORMATTING_CHANGE_TITLE],
+      [OLD_LINK_HTML, NEW_LINK_HTML, 'link', LINK_CHANGE_TITLE],
+      [OLD_IMAGE_HTML, NEW_IMAGE_HTML, 'image', IMAGE_CHANGE_TITLE],
     ];
 
     for (const [oldHtml, newHtml, iconKind, name] of versions) {
@@ -736,7 +741,7 @@ describe('DiffwiseHtml change details', () => {
 
     expect(isTooltipShown(element)).toBe(true);
     expect(tooltipLinesOf(element)).toEqual([
-      'Link address changed',
+      LINK_CHANGE_TITLE,
       'Before https://example.com/terms-2025',
       'After https://example.com/terms-2026',
     ]);
@@ -750,7 +755,7 @@ describe('DiffwiseHtml change details', () => {
     pointTo(iconOf(element));
 
     expect(tooltipLinesOf(element)).toEqual([
-      'Link address changed',
+      LINK_CHANGE_TITLE,
       'Before https://example.com/terms-2025',
       'After https://example.com/terms-2026',
     ]);
@@ -765,10 +770,10 @@ describe('DiffwiseHtml change details', () => {
 
     expect(tooltipLinesOf(element)).toEqual([
       'Formatting changes: 2',
-      'Link address changed',
+      LINK_CHANGE_TITLE,
       'Before https://example.com/a',
       'After https://example.com/b',
-      'Formatting change',
+      FORMATTING_CHANGE_TITLE,
       'bold added',
     ]);
   });
@@ -783,7 +788,7 @@ describe('DiffwiseHtml change details', () => {
     const description = element.querySelector(ID_SELECTOR_START + descriptionId);
 
     expect(description?.textContent).toContain('https://example.com/terms-2025');
-    expect(description?.textContent).not.toContain('Link address changed');
+    expect(description?.textContent).not.toContain(LINK_CHANGE_TITLE);
   });
 
   it('marks a changed list marker and a checked checkbox with no icon and no tooltip', () => {
@@ -855,7 +860,7 @@ describe('DiffwiseHtml change details', () => {
 
     pointTo(boldMarker);
 
-    expect(tooltipLinesOf(element)).toEqual(['Formatting change', 'bold added']);
+    expect(tooltipLinesOf(element)).toEqual([FORMATTING_CHANGE_TITLE, 'bold added']);
     expect(boldMarker.getAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(tooltipOf(element).id);
     expect(boldMarker.hasAttribute(TABINDEX_ATTRIBUTE)).toBe(false);
   });
@@ -889,7 +894,7 @@ describe('DiffwiseHtml change details', () => {
     focusFromKeyboard(markers[1]);
 
     expect(isTooltipShown(element)).toBe(true);
-    expect(tooltipLinesOf(element)[0]).toBe('Link address changed');
+    expect(tooltipLinesOf(element)[0]).toBe(LINK_CHANGE_TITLE);
   });
 
   it('shows the texts of the tooltips in the language of the interface, and custom texts', () => {
@@ -914,12 +919,12 @@ describe('DiffwiseHtml change details', () => {
 
     pointTo(oldIcon);
 
-    expect(tooltipLinesOf(element)).toEqual(['Previous version']);
+    expect(tooltipLinesOf(element)).toEqual([OLD_VERSION_NAME]);
     expect(oldIcon.hasAttribute(DESCRIBED_BY_ATTRIBUTE)).toBe(false);
 
     focusFromKeyboard(newIcon);
 
-    expect(tooltipLinesOf(element)).toEqual(['New version']);
+    expect(tooltipLinesOf(element)).toEqual([NEW_VERSION_NAME]);
     expect(newIcon.getAttribute(TABINDEX_ATTRIBUTE)).toBe(IN_TAB_ORDER);
     expect(newIcon.hasAttribute(TITLE_ATTRIBUTE)).toBe(false);
   });

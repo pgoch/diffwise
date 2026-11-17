@@ -54,6 +54,7 @@ const DESCRIBED_MARKER_SELECTOR = '[data-diffwise-change-details]';
 const TOOLTIP_SELECTOR = '.diffwise-diff__tooltip';
 const TOOLTIP_TITLE_SELECTOR = '.diffwise-diff__tooltip-title';
 const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+const FORMATTING_CHANGE_TITLE = 'Formatting change';
 const TABINDEX_ATTRIBUTE = 'tabindex';
 const TABLE_ATTRIBUTE = 'data-diffwise-table';
 const TABLE_NEIGHBORS_ATTRIBUTE = 'data-diffwise-table-neighbors';
@@ -456,11 +457,11 @@ describe('DiffwiseHtml single column', () => {
     const icon = element.querySelector(CHANGE_DETAILS_ICON_SELECTOR) as HTMLElement;
 
     expect(rowsWithIcons(element)).toEqual([false, false, true]);
-    expect(icon.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Formatting change');
+    expect(icon.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe(FORMATTING_CHANGE_TITLE);
 
     pointTo(icon);
 
-    expect(tooltipTitleOf(element)).toBe('Formatting change');
+    expect(tooltipTitleOf(element)).toBe(FORMATTING_CHANGE_TITLE);
   });
 
   it('shows the details of a marked change on hover in both lines of a changed pair', () => {
@@ -470,11 +471,11 @@ describe('DiffwiseHtml single column', () => {
 
     pointTo(oldMarker as Element);
 
-    expect(tooltipTitleOf(element)).toBe('Formatting change');
+    expect(tooltipTitleOf(element)).toBe(FORMATTING_CHANGE_TITLE);
 
     pointTo(newMarker as Element);
 
-    expect(tooltipTitleOf(element)).toBe('Formatting change');
+    expect(tooltipTitleOf(element)).toBe(FORMATTING_CHANGE_TITLE);
   });
 
   it('shows no icons when only marked changes show the details, which take the focus then', async () => {
@@ -618,11 +619,11 @@ describe('DiffwiseHtml merged lines', () => {
 
     pointTo(icon);
 
-    expect(tooltipTitleOf(element)).toBe('Formatting change');
+    expect(tooltipTitleOf(element)).toBe(FORMATTING_CHANGE_TITLE);
 
     pointTo(marker as Element);
 
-    expect(tooltipTitleOf(element)).toBe('Formatting change');
+    expect(tooltipTitleOf(element)).toBe(FORMATTING_CHANGE_TITLE);
   });
 
   it('lets the marked changes of a merged line take the focus when no icons show their details', async () => {

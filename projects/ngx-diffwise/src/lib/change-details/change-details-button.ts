@@ -10,7 +10,7 @@ import { type ChangeDetail, ChangeDetailKind } from '../../engine';
 import type { ChangeDescriber } from './change-texts';
 
 /** Icons of the button: one for each kind of change, and one for several changes. */
-export const ChangeIconKind = {
+const ChangeIconKind = {
   Formatting: 'formatting',
   Link: 'link',
   Image: 'image',
@@ -18,7 +18,7 @@ export const ChangeIconKind = {
   Multiple: 'multiple',
 } as const;
 
-export type ChangeIconKind = (typeof ChangeIconKind)[keyof typeof ChangeIconKind];
+type ChangeIconKind = (typeof ChangeIconKind)[keyof typeof ChangeIconKind];
 
 /** The icon of each kind of change; it also names the icon's modifier class. */
 const DETAIL_ICONS: Readonly<Record<ChangeDetailKind, ChangeIconKind>> = {
@@ -41,6 +41,7 @@ export class ChangeDetailsButton {
   /** Describes the changes in the language of the interface. */
   readonly describer = input.required<ChangeDescriber>();
 
+  /** Kinds of icons, for the template. */
   protected readonly iconKinds = ChangeIconKind;
 
   /** The icon of the one change, or the icon of several changes. */
@@ -50,6 +51,7 @@ export class ChangeDetailsButton {
   protected readonly label = computed(() => this.describer().title(this.details()));
 }
 
+/** The icon of the kind of the one change, or the icon of several changes. */
 function iconOf(details: readonly ChangeDetail[]): ChangeIconKind {
   return details.length === 1 ? DETAIL_ICONS[details[0].kind] : ChangeIconKind.Multiple;
 }

@@ -89,5 +89,6 @@ function isUserSettings(value: unknown): value is AnyUserSettings {
   }
 
   const { settings } = value as Partial<Record<keyof AnyUserSettings, unknown>>;
+
   return isObject(settings);
 }

@@ -2,7 +2,7 @@ import { DocumentVersion, LineChangeKind } from '../engine';
 import { type UiTexts, withLineNumber } from './i18n/texts';
 
 /** A line of the view as its description needs it. */
-export interface DescribedLine {
+interface DescribedLine {
   readonly kind: LineChangeKind;
   /** The version the line comes from; `null` for a merged line, with the text of both versions. */
   readonly version: DocumentVersion | null;
@@ -39,6 +39,7 @@ export function keepOutOfTabOrder(copy: Element): void {
   }
 }
 
+/** The description of a line without its number; `null` for an unchanged line. */
 function descriptionText({ kind, version }: DescribedLine, texts: UiTexts): string | null {
   switch (kind) {
     case LineChangeKind.Removed:
@@ -52,6 +53,7 @@ function descriptionText({ kind, version }: DescribedLine, texts: UiTexts): stri
   }
 }
 
+/** The description of a changed line: of its old or new version, or of a merged line. */
 function changedLineText(version: DocumentVersion | null, texts: UiTexts): string {
   if (version === null) {
     return texts.changedLineLabel;

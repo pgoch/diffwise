@@ -51,6 +51,19 @@ const TOGGLE_EVENT = 'toggle';
 const OPEN_STATE = 'open';
 const CLOSED_STATE = 'closed';
 
+/** Labels of choices in English, by which the tests choose them and check which are chosen. */
+const AUTO_CHOICE = 'Auto';
+const LIGHT_CHOICE = 'Light';
+const DARK_CHOICE = 'Dark';
+const STANDARD_CHOICE = 'Standard';
+const COLORBLIND_CHOICE = 'Colorblind-friendly';
+const HIGH_CONTRAST_CHOICE = 'High contrast';
+const CUSTOM_CHOICE = 'Custom';
+const SIDE_BY_SIDE_CHOICE = 'Side by side';
+const SINGLE_COLUMN_CHOICE = 'Single column';
+const MERGED_CHOICE = 'Merged';
+const STACKED_CHOICE = 'Stacked';
+
 /** Thirty paragraphs with one change, in paragraph 15; lines far from it can hide. */
 const OLD_HTML = paragraphs(null);
 const NEW_HTML = paragraphs(15);
@@ -218,7 +231,7 @@ describe('DiffwiseHtml view settings', () => {
       'Struck through',
       'Stacked',
     ]);
-    expect(chosenOf(element)).toEqual(['Light', 'Standard', 'Auto', 'Merged']);
+    expect(chosenOf(element)).toEqual([LIGHT_CHOICE, STANDARD_CHOICE, AUTO_CHOICE, MERGED_CHOICE]);
     expect(textsOf(element, CHECKBOX_SELECTOR)).toEqual(['Hide unchanged lines']);
     expect(textsOf(element, RESET_SELECTOR)).toEqual(['Restore defaults']);
 
@@ -232,21 +245,26 @@ describe('DiffwiseHtml view settings', () => {
     const fixture = render({ colorMode: DiffwiseColorMode.Light });
     const element = elementOf(fixture);
 
-    choose(fixture, 'Dark');
+    choose(fixture, DARK_CHOICE);
     expect(element.classList).toContain(DARK_THEME_CLASS);
 
-    choose(fixture, 'Colorblind-friendly');
+    choose(fixture, COLORBLIND_CHOICE);
     expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
 
-    choose(fixture, 'Single column');
+    choose(fixture, SINGLE_COLUMN_CHOICE);
     expect(element.classList).toContain(INLINE_LAYOUT_CLASS);
 
-    choose(fixture, 'Stacked');
+    choose(fixture, STACKED_CHOICE);
     expect(element.classList).toContain(STACKED_CLASS);
 
     toggleHiddenLines(fixture);
     expect(element.querySelectorAll(COLLAPSED_LINES_SELECTOR)).toHaveLength(2);
-    expect(chosenOf(element)).toEqual(['Dark', 'Colorblind-friendly', 'Single column', 'Stacked']);
+    expect(chosenOf(element)).toEqual([
+      DARK_CHOICE,
+      COLORBLIND_CHOICE,
+      SINGLE_COLUMN_CHOICE,
+      STACKED_CHOICE,
+    ]);
   });
 
   it('lets a choice of the colors of changes win over the palette of the app', () => {
@@ -254,12 +272,12 @@ describe('DiffwiseHtml view settings', () => {
     const element = elementOf(fixture);
 
     expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
-    expect(chosenOf(element)).toContain('Colorblind-friendly');
+    expect(chosenOf(element)).toContain(COLORBLIND_CHOICE);
 
-    choose(fixture, 'Standard');
+    choose(fixture, STANDARD_CHOICE);
 
     expect(element.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
-    expect(chosenOf(element)).toContain('Standard');
+    expect(chosenOf(element)).toContain(STANDARD_CHOICE);
   });
 
   it('shows the colors of changes two in a row, and the high contrast palette', () => {
@@ -272,10 +290,10 @@ describe('DiffwiseHtml view settings', () => {
       'Colors of changes',
     );
 
-    choose(fixture, 'High contrast');
+    choose(fixture, HIGH_CONTRAST_CHOICE);
 
     expect(element.classList).toContain(HIGH_CONTRAST_PALETTE_CLASS);
-    expect(chosenOf(element)).toContain('High contrast');
+    expect(chosenOf(element)).toContain(HIGH_CONTRAST_CHOICE);
   });
 
   it('disables the custom colors when the app gives none for the theme shown', () => {
@@ -285,14 +303,14 @@ describe('DiffwiseHtml view settings', () => {
     });
     const element = elementOf(fixture);
 
-    expect(choiceOf(element, 'Custom').disabled).toBe(true);
-    expect(choiceOf(element, 'Standard').disabled).toBe(false);
-    expect(chosenOf(element)).toContain('Standard');
+    expect(choiceOf(element, CUSTOM_CHOICE).disabled).toBe(true);
+    expect(choiceOf(element, STANDARD_CHOICE).disabled).toBe(false);
+    expect(chosenOf(element)).toContain(STANDARD_CHOICE);
 
-    choose(fixture, 'Dark');
+    choose(fixture, DARK_CHOICE);
 
-    expect(choiceOf(element, 'Custom').disabled).toBe(false);
-    expect(chosenOf(element)).toEqual(['Dark', 'Custom', 'Auto', 'Merged']);
+    expect(choiceOf(element, CUSTOM_CHOICE).disabled).toBe(false);
+    expect(chosenOf(element)).toEqual([DARK_CHOICE, CUSTOM_CHOICE, AUTO_CHOICE, MERGED_CHOICE]);
   });
 
   it('chooses the colors of the app, until the user chooses a palette, and back', () => {
@@ -304,20 +322,20 @@ describe('DiffwiseHtml view settings', () => {
     const emitted = emittedBy(fixture);
     const accent = () => element.style.getPropertyValue(ADDED_ACCENT_VARIABLE);
 
-    expect(chosenOf(element)).toContain('Custom');
-    expect(chosenOf(element)).not.toContain('Colorblind-friendly');
+    expect(chosenOf(element)).toContain(CUSTOM_CHOICE);
+    expect(chosenOf(element)).not.toContain(COLORBLIND_CHOICE);
     expect(accent()).toBe(APP_ACCENT);
 
-    choose(fixture, 'High contrast');
+    choose(fixture, HIGH_CONTRAST_CHOICE);
 
     expect(element.classList).toContain(HIGH_CONTRAST_PALETTE_CLASS);
-    expect(chosenOf(element)).not.toContain('Custom');
+    expect(chosenOf(element)).not.toContain(CUSTOM_CHOICE);
     expect(accent()).toBe('');
 
-    choose(fixture, 'Custom');
+    choose(fixture, CUSTOM_CHOICE);
 
     expect(element.classList).toContain(COLORBLIND_PALETTE_CLASS);
-    expect(chosenOf(element)).toContain('Custom');
+    expect(chosenOf(element)).toContain(CUSTOM_CHOICE);
     expect(accent()).toBe(APP_ACCENT);
     expect(emitted.map(({ settings }) => settings)).toEqual([
       { diffPalette: DiffwisePalette.HighContrast },
@@ -326,7 +344,7 @@ describe('DiffwiseHtml view settings', () => {
   });
 
   it('keeps the colors of the app when the user cannot choose the colors of changes', () => {
-    choose(render(), 'Standard');
+    choose(render(), STANDARD_CHOICE);
 
     const element = elementOf(
       render({
@@ -344,8 +362,8 @@ describe('DiffwiseHtml view settings', () => {
     const fixture = render({ layout: DiffwiseLayout.SideBySide });
     const element = elementOf(fixture);
 
-    choose(fixture, 'Single column');
-    choose(fixture, 'Light');
+    choose(fixture, SINGLE_COLUMN_CHOICE);
+    choose(fixture, LIGHT_CHOICE);
     fixture.componentRef.setInput(LAYOUT_INPUT, DiffwiseLayout.SideBySide);
     TestBed.inject(Diffwise).updateConfig({ colorMode: DiffwiseColorMode.Dark });
     fixture.detectChanges();
@@ -361,9 +379,9 @@ describe('DiffwiseHtml view settings', () => {
     });
     const element = elementOf(fixture);
 
-    choose(fixture, 'Single column');
-    choose(fixture, 'Light');
-    choose(fixture, 'Colorblind-friendly');
+    choose(fixture, SINGLE_COLUMN_CHOICE);
+    choose(fixture, LIGHT_CHOICE);
+    choose(fixture, COLORBLIND_CHOICE);
     toggleHiddenLines(fixture);
     restoreDefaults(fixture);
 
@@ -371,14 +389,19 @@ describe('DiffwiseHtml view settings', () => {
     expect(element.classList).toContain(DARK_THEME_CLASS);
     expect(element.classList).not.toContain(COLORBLIND_PALETTE_CLASS);
     expect(element.querySelector(COLLAPSED_LINES_SELECTOR)).toBeNull();
-    expect(chosenOf(element)).toEqual(['Dark', 'Standard', 'Side by side', 'Merged']);
+    expect(chosenOf(element)).toEqual([
+      DARK_CHOICE,
+      STANDARD_CHOICE,
+      SIDE_BY_SIDE_CHOICE,
+      MERGED_CHOICE,
+    ]);
   });
 
   it('shows only the options the app allows, and a choice of another option does nothing there', () => {
     const fixture = render({ colorMode: DiffwiseColorMode.Light });
     const element = elementOf(fixture);
 
-    choose(fixture, 'Dark');
+    choose(fixture, DARK_CHOICE);
     fixture.componentRef.setInput(ALLOWED_USER_SETTINGS_INPUT, [
       DiffwiseUserSetting.Layout,
       DiffwiseUserSetting.HideUnchangedLines,
@@ -430,15 +453,15 @@ describe('DiffwiseHtml view settings', () => {
   it('disables the changes in a single column while the diff shows two columns, chosen by any layout', () => {
     const fixture = render();
     const element = elementOf(fixture);
-    const stackedIsDisabled = () => choiceOf(element, 'Stacked').disabled;
+    const stackedIsDisabled = () => choiceOf(element, STACKED_CHOICE).disabled;
 
     expect(stackedIsDisabled()).toBe(true);
-    expect(choiceOf(element, 'Single column').disabled).toBe(false);
+    expect(choiceOf(element, SINGLE_COLUMN_CHOICE).disabled).toBe(false);
 
-    choose(fixture, 'Single column');
+    choose(fixture, SINGLE_COLUMN_CHOICE);
     expect(stackedIsDisabled()).toBe(false);
 
-    choose(fixture, 'Side by side');
+    choose(fixture, SIDE_BY_SIDE_CHOICE);
     expect(stackedIsDisabled()).toBe(true);
   });
 
@@ -446,7 +469,7 @@ describe('DiffwiseHtml view settings', () => {
     const first = render();
     const second = render();
 
-    choose(first, 'Single column');
+    choose(first, SINGLE_COLUMN_CHOICE);
     second.detectChanges();
 
     expect(elementOf(second).classList).toContain(INLINE_LAYOUT_CLASS);
@@ -527,8 +550,8 @@ describe('DiffwiseHtml choices of the user', () => {
     const fixture = render();
     const emitted = emittedBy(fixture);
 
-    choose(fixture, 'Single column');
-    choose(fixture, 'Dark');
+    choose(fixture, SINGLE_COLUMN_CHOICE);
+    choose(fixture, DARK_CHOICE);
     toggleHiddenLines(fixture);
     restoreDefaults(fixture);
 
@@ -568,9 +591,9 @@ describe('DiffwiseHtml choices of the user', () => {
     const emittedByFirst = emittedBy(first);
     const emittedBySecond = emittedBy(second);
 
-    choose(first, 'Single column');
+    choose(first, SINGLE_COLUMN_CHOICE);
     second.detectChanges();
-    choose(second, 'Light');
+    choose(second, LIGHT_CHOICE);
 
     expect(emittedByFirst).toEqual([{ version: 1, settings: { layout: DiffwiseLayout.Inline } }]);
     expect(emittedBySecond).toEqual([

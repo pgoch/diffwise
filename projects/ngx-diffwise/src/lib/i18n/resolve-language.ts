@@ -101,11 +101,14 @@ function hasPortugueseRegion(subtags: readonly string[]): boolean {
 /** The region among the parts of a locale after its language, after the script if there is one. */
 function regionOf(subtags: readonly string[]): string | null {
   const [first, second] = subtags;
-  const candidate = first !== undefined && SCRIPT_SUBTAG.test(first) ? second : first;
+  const startsWithScript = first !== undefined && SCRIPT_SUBTAG.test(first);
+  const candidate = startsWithScript ? second : first;
+  const isRegion = candidate !== undefined && REGION_SUBTAG.test(candidate);
 
-  return candidate !== undefined && REGION_SUBTAG.test(candidate) ? candidate : null;
+  return isRegion ? candidate : null;
 }
 
+/** True for a language that the interface has texts in. */
 function isUiLanguage(language: string): language is UiLanguage {
   return Object.hasOwn(LANGUAGE_TEXTS, language);
 }

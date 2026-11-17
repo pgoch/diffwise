@@ -177,5 +177,6 @@ function cssFontFamily(fontFamily: string): string {
   }
 
   const quotedName = FONT_NAME_QUOTE + fontFamily.trim() + FONT_NAME_QUOTE;
+
   return [quotedName, BUILTIN_FONT_FAMILY].join(FONT_LIST_SEPARATOR);
 }

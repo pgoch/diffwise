@@ -1079,6 +1079,7 @@ export abstract class DiffView {
     return collapseRows(rows, settings);
   }
 
+  /** Tells the app the choices of the user, as they are stored now. */
   private emitUserSettings(): void {
     this.userSettingsChange.emit(userSettingsOf(this.storedChoices()));
   }
@@ -1236,6 +1237,7 @@ export abstract class DiffView {
     this.destroyRef.onDestroy(() => listeners.abort());
   }
 
+  /** What a screen reader says before a line of one side; `null` without a line. */
   private sideBySideDescription(
     kind: LineChangeKind,
     version: DocumentVersion,
@@ -1268,6 +1270,7 @@ export abstract class DiffView {
     markWideTables(host, wideTableLabel);
   }
 
+  /** Shows the tooltip of the trigger under the pointer, unless it shows already. */
   private showTooltipOnHover({ target }: MouseEvent): void {
     const trigger = this.triggerOf(target);
 
@@ -1285,6 +1288,7 @@ export abstract class DiffView {
     }
   }
 
+  /** Shows the tooltip of the trigger, when it has anything to show. */
   private showTooltip(trigger: HTMLElement, byFocus: boolean): void {
     const request = this.tooltipRequest(trigger, byFocus);
 
@@ -1362,6 +1366,7 @@ export abstract class DiffView {
     return this.diff().rows.at(Number(position)) ?? null;
   }
 
+  /** A row of the two columns, with its lines as the template shows them. */
   private shownRow(
     { kind, oldLine, newLine, changeDetails }: ViewRow,
     sourceRow: number,
@@ -1376,6 +1381,7 @@ export abstract class DiffView {
     };
   }
 
+  /** A line as the template shows it, with safe HTML; `null` without a line. */
   private shownLine(line: ViewLine | null): ShownLine | null {
     if (line === null) {
       return null;
@@ -1471,6 +1477,7 @@ function triggerDescriptionOf(trigger: Element, content: TooltipContent): Trigge
   return content.sections.length > 0 ? TriggerDescription.Details : TriggerDescription.None;
 }
 
+/** True when the row has changes besides text. */
 function hasChangeDetails(row: ViewRow): boolean {
   return row.changeDetails.length > 0;
 }
@@ -1529,9 +1536,11 @@ function toSingleColumnHeader(
       return { iconNames, contentText: texts.inlineContentLabel };
     case DiffwiseVersionHeaders.Icons:
       return { iconNames, contentText: NO_TEXT };
-    default:
-      return { iconNames, contentText: versionHeaders.old + VERSION_ARROW + versionHeaders.new };
   }
+
+  const contentText = versionHeaders.old + VERSION_ARROW + versionHeaders.new;
+
+  return { iconNames, contentText };
 }
 
 /** The words that say what stands around a table line in its table; `null` without any. */

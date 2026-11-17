@@ -95,7 +95,9 @@ export class DiffToolbar {
   /** The counter, such as "2 / 3", or "– / 3" before the first step. */
   protected readonly counterText = computed(() => {
     const { current, total } = this.navigation() ?? NO_NAVIGATION;
-    return (current === null ? NO_POSITION : String(current)) + COUNTER_SEPARATOR + total;
+    const currentText = current === null ? NO_POSITION : String(current);
+
+    return currentText + COUNTER_SEPARATOR + total;
   });
 
   /** Names the counter and titles its tooltip: "Change 2 of 3", or "Changes: 3" before. */
@@ -115,6 +117,10 @@ export class DiffToolbar {
   });
 }
 
+/** A count of lines with its sign, such as "+3", and its label with the number. */
 function shownStat(kind: DiffStatKind, sign: string, count: number, label: string): ShownDiffStat {
-  return { kind, text: sign + count, label: withCount(label, count) };
+  const text = sign + count;
+  const countLabel = withCount(label, count);
+
+  return { kind, text, label: countLabel };
 }

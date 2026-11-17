@@ -60,6 +60,7 @@ export interface TooltipContent {
   readonly sections: readonly TooltipSection[];
 }
 
+/** A part of a tooltip line, highlighted or not. */
 export function tooltipPart(
   kind: TooltipPartKind,
   text: string,
@@ -68,10 +69,12 @@ export function tooltipPart(
   return { kind, text, highlight };
 }
 
+/** A part of plain text, not highlighted. */
 export function textPart(text: string): TooltipPart {
   return tooltipPart(TooltipPartKind.Text, text);
 }
 
+/** A part in a code font, such as an address, not highlighted. */
 export function codePart(text: string): TooltipPart {
   return tooltipPart(TooltipPartKind.Code, text);
 }
@@ -81,14 +84,17 @@ export function colorPart(color: string): TooltipPart {
   return { kind: TooltipPartKind.Color, text: color, highlight: null };
 }
 
+/** A line that heads the lines after it, such as "alternative text". */
 export function subtitleLine(text: string): TooltipLine {
   return { kind: TooltipLineKind.Subtitle, label: null, parts: [textPart(text)] };
 }
 
+/** A line that describes a change, such as "italic → bold". */
 export function descriptionLine(parts: readonly TooltipPart[]): TooltipLine {
   return { kind: TooltipLineKind.Description, label: null, parts };
 }
 
+/** A value with its label, such as an old address after "Before". */
 export function rowLine(label: string, parts: readonly TooltipPart[]): TooltipLine {
   return { kind: TooltipLineKind.Row, label, parts };
 }
