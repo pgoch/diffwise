@@ -32,13 +32,11 @@ const APP_DIFFS_CHOICES: readonly Choice<AppDiffs>[] = [
       [choices]="appDiffsChoices"
       [value]="state.appDiffs()"
       [defaultValue]="defaultAppDiffs"
-      [isConfigured]="false"
       (chosen)="state.chooseAppDiffs($event)"
     />
     <demo-option-control
       name="Sample in the preview"
       description="Only for the preview; it is not part of the configuration."
-      [isConfigured]="false"
     >
       <label class="sample-field">
         Language

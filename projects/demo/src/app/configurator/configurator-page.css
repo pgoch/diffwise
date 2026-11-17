@@ -104,6 +104,21 @@
   color: var(--site-on-accent);
 }
 
+.flow-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* A step with changed options. */
+.flow-dot {
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--site-accent);
+}
+
 .flow-arrow {
   flex: none;
   padding: 0 2px;

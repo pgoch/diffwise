@@ -54,9 +54,11 @@ function all(fixture: ComponentFixture<ConfiguratorPage>, selector: string): HTM
   return Array.from(element.querySelectorAll<HTMLElement>(selector));
 }
 
-/** The trimmed texts of the elements of the selector. */
+/** The texts of the elements of the selector, with whitespace as single spaces. */
 function textsOf(fixture: ComponentFixture<ConfiguratorPage>, selector: string): string[] {
-  return all(fixture, selector).map((element) => element.textContent?.trim() ?? '');
+  return all(fixture, selector).map(
+    (element) => element.textContent?.replace(/\s+/g, ' ').trim() ?? '',
+  );
 }
 
 /** The names of the steps in the bar. */
@@ -125,8 +127,8 @@ describe('ConfiguratorPage', () => {
       'View settings',
       'Result',
     ]);
-    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['1Your diffs']);
-    expect(textsOf(fixture, GOAL_STEP_SELECTOR)).toEqual(['11Result']);
+    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['1 Your diffs']);
+    expect(textsOf(fixture, GOAL_STEP_SELECTOR)).toEqual(['11 Result']);
     expect(headingOf(fixture)).toBe('1. Your diffs');
     expect(textsOf(fixture, NAV_BUTTON_SELECTOR)).toEqual([NEXT]);
   });
@@ -137,7 +139,7 @@ describe('ConfiguratorPage', () => {
     await click(fixture, NAV_BUTTON_SELECTOR, NEXT);
 
     expect(headingOf(fixture)).toBe('2. Colors');
-    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['2Colors']);
+    expect(textsOf(fixture, CURRENT_STEP_SELECTOR)).toEqual(['2 Colors']);
     expect(textsOf(fixture, NAV_BUTTON_SELECTOR)).toEqual([BACK, NEXT]);
     expect(document.activeElement?.textContent?.trim()).toBe('2. Colors');
 

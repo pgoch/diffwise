@@ -12,7 +12,12 @@
           (click)="goTo(step)"
         >
           <span class="flow-number">{{ index + 1 }}</span>
-          <span class="flow-name">{{ step.label }}</span>
+          <span class="flow-name">
+            {{ step.label }}
+            @if (state.changedSteps().has(step.id)) {
+              <span class="flow-dot" title="Changed"><span class="hidden">(changed)</span></span>
+            }
+          </span>
         </button>
         <span class="flow-arrow" aria-hidden="true">→</span>
       </li>
@@ -45,6 +50,9 @@
     @switch (state.step().id) {
       @case (stepIds.Diffs) {
         <demo-diff-kinds-step />
+      }
+      @default {
+        <demo-step-options [step]="state.step()" />
       }
     }
   </section>
@@ -83,13 +91,13 @@
         <diffwise-text
           [oldText]="pair.oldVersion"
           [newText]="pair.newVersion"
-          [config]="previewConfig"
+          [config]="previewConfig()"
         />
       } @else {
         <diffwise-html
           [oldHtml]="pair.oldVersion"
           [newHtml]="pair.newVersion"
-          [config]="previewConfig"
+          [config]="previewConfig()"
         />
       }
     }

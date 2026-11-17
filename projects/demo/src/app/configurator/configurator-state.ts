@@ -1,6 +1,7 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { DiffwiseLanguage } from 'ngx-diffwise';
+import { type DiffwiseConfigOptions, DiffwiseLanguage } from 'ngx-diffwise';
 
+import { DEFAULT_OPTIONS } from '../diff-options';
 import {
   DiffKind,
   type SampleChoice,
@@ -8,7 +9,7 @@ import {
   SampleSize,
   TEXT_SAMPLE_LANGUAGES,
 } from '../samples';
-import { type ConfiguratorStep, STEPS, StepId } from './steps';
+import { type ConfiguratorStep, type OptionName, STEPS, StepId } from './steps';
 
 /** The diffs an app shows: one of them or both. */
 export const AppDiffs = {
@@ -85,8 +86,46 @@ export class ConfiguratorState {
     return { kind, language: sampleLanguage, size: this.sampleSize() };
   });
 
+  /** The options chosen with another value than their default, which go into the configuration. */
+  readonly options = signal<DiffwiseConfigOptions>({});
+
+  /** Grows with each change of an option. */
+  readonly optionsVersion = signal(0);
+
+  /** The steps with options chosen in them. */
+  readonly changedSteps = computed(() => {
+    const changed = Object.keys(this.options());
+    const steps = STEPS.filter((step) =>
+      step.options.some((option) => changed.includes(option.name)),
+    );
+
+    return new Set(steps.map((step) => step.id));
+  });
+
   /** The chosen step. */
   private readonly stepId = signal<StepId>(StepId.Diffs);
+
+  /** The value of the option: the chosen one, or its default. */
+  valueOf<K extends OptionName>(name: K): DiffwiseConfigOptions[K] {
+    return this.options()[name] ?? DEFAULT_OPTIONS[name];
+  }
+
+  /** True when the option has another value than its default. */
+  isChanged(name: OptionName): boolean {
+    return Object.hasOwn(this.options(), name);
+  }
+
+  /** Chooses the value of the option; its default takes the option out of the configuration. */
+  setOption<K extends OptionName>(name: K, value: DiffwiseConfigOptions[K]): void {
+    const isDefault = sameValues(value, DEFAULT_OPTIONS[name]);
+
+    this.options.update((options) => {
+      const others = withoutOption(options, name);
+
+      return isDefault ? others : { ...others, [name]: value };
+    });
+    this.optionsVersion.update((version) => version + 1);
+  }
 
   /** Shows the step. */
   goTo(step: ConfiguratorStep): void {
@@ -126,4 +165,16 @@ export class ConfiguratorState {
       this.goTo(step);
     }
   }
+}
+
+/** True when two values of an option are the same, also lists and objects with the same items. */
+function sameValues(first: unknown, second: unknown): boolean {
+  return JSON.stringify(first) === JSON.stringify(second);
+}
+
+/** The options without one of them. */
+function withoutOption(options: DiffwiseConfigOptions, name: OptionName): DiffwiseConfigOptions {
+  const others = Object.entries(options).filter(([key]) => key !== name);
+
+  return Object.fromEntries(others);
 }

@@ -1,6 +1,6 @@
 <div class="option-name" [id]="ids.name">
   {{ name() }}
-  @if (isChanged()) {
+  @if (changed()) {
     <span class="option-dot" title="Changed"><span class="option-hidden">(changed)</span></span>
   }
 </div>
@@ -9,13 +9,14 @@
   class="option-choices"
   role="group"
   [attr.aria-labelledby]="ids.name"
-  [attr.aria-describedby]="ids.description"
+  [attr.aria-describedby]="describedBy()"
 >
   @for (choice of choices(); track $index) {
     <button
       type="button"
       class="option-choice"
       [attr.aria-pressed]="choice.value === value()"
+      [disabled]="isDisabled()"
       (click)="chosen.emit(choice.value)"
     >
       {{ choice.label }}
@@ -27,3 +28,6 @@
     <ng-content />
   }
 </div>
+@if (disabledNote(); as note) {
+  <p class="option-note" [id]="ids.note">{{ note }}</p>
+}

@@ -14,14 +14,21 @@
   <span class="site-version">v{{ version }}</span>
 </header>
 
+<!-- Each page loads when it first shows, so the site starts with the bar alone. -->
 @switch (page()) {
   @case (pages.Home) {
-    <demo-home-page />
+    @defer (on immediate) {
+      <demo-home-page />
+    }
   }
   @case (pages.Demo) {
-    <demo-demo-page />
+    @defer (on immediate) {
+      <demo-demo-page />
+    }
   }
   @case (pages.Configurator) {
-    <demo-configurator-page />
+    @defer (on immediate) {
+      <demo-configurator-page />
+    }
   }
 }
