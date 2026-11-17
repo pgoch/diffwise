@@ -10,7 +10,7 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## What it will show
 
-Version 0.6 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. It also compares plain text line by line. The rest comes with the releases in the [roadmap](roadmap.md).
+Version 0.7 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. It also compares plain text line by line. The rest comes with the releases in the [roadmap](roadmap.md).
 
 | Change | How it is shown |
 |---|---|
@@ -24,11 +24,11 @@ Version 0.6 shows changes of the text, the formatting, the links and the images 
 | Checkbox in a task list | Framed like an image when checked or cleared, with no icon or tooltip; the single column shows the old checkbox before the new one |
 | Table | Each row is a line, and the rows look like one table. New rows and columns are marked whole; otherwise only the changed words in cells. Unchanged cells keep their colors |
 | Added or removed paragraph, list item or table row | Shown on one side, with an empty space on the other |
-| Plain text | Each line of the text is a line of the diff, with its spaces, tabs and indentation. Changed words are marked as in documents, and changed spaces and tabs show as `·` and `→` |
+| Plain text | Each line of the text is a line of the diff, with its spaces, tabs and indentation. Changed words are marked as in documents, and changed spaces and tabs show as `·` and `→`, or every space and tab, on request. Long lines wrap, or stay in one row and scroll sideways together. A blank line added or removed can be left out of the changes |
 
 ## Display and configuration
 
-Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user, version 0.5 adds the colorblind-friendly and the high contrast palettes, the interface in 12 languages and support for screen readers and the high contrast mode of Windows, and version 0.6 adds the text diff, with a font of fixed width that users can switch; see [Configuration](configuration.md). The whole scope, with what is planned:
+Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user, version 0.5 adds the colorblind-friendly and the high contrast palettes, the interface in 12 languages and support for screen readers and the high contrast mode of Windows, version 0.6 adds the text diff, with a font of fixed width that users can switch, and version 0.7 adds lines of plain text that scroll sideways, signs of all spaces and tabs, ignored blank lines, options to hide the whole toolbar and the headers, and a configurator in the demo app; see [Configuration](configuration.md). The whole scope, with what is planned:
 
 - **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
 - **Colors:** light, dark and automatic color modes, a colorblind-friendly and a high contrast palette, which users can also choose themselves, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
@@ -37,9 +37,9 @@ Version 0.1 has the side-by-side layout, the color modes, the intensity and cont
 - **Change details:** for changes to links, images and formatting, a tooltip on the element, an icon between the two sides, or both. Tooltips use the component's colors or those of the opposite theme, and highlight the changed part of an address. Changes of formatting or links alone can be ignored.
 - **Fonts:** the font is inherited from your application by default; you can switch to the built-in system font or name your own. Sizes of column headers, line numbers, tooltips and the toolbar are set in rem. The text diff shows its lines in a font of fixed width, or in the font of the diff.
 - **Line numbers:** numbers of changed lines get a colored bar or a colored background. The column is only as wide as the largest number needs; numbers and icons can sit at the top, middle or bottom of a line.
-- **Reading aids:** optional line numbers, collapsing of unchanged lines, navigation between groups of neighboring changes and change statistics.
-- **Toolbar:** navigation between changes, change statistics and settings for end users, all shown by default. The application can hide any part of it or limit the settings users see.
-- **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides.
+- **Reading aids:** optional line numbers, collapsing of unchanged lines, navigation between groups of neighboring changes and change statistics. In plain text, long lines can scroll sideways instead of wrapping, and every space and tab can show its sign.
+- **Toolbar:** navigation between changes, change statistics and settings for end users, all shown by default. The application can hide any part of it, or the whole toolbar, and limit the settings users see.
+- **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides. A configurator in the demo app builds the global defaults step by step, with a live preview.
 - **Languages:** interface texts in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, chosen by your app or taken from its locale.
 
 Other optional features are turned off by default.
