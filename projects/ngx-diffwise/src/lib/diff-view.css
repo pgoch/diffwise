@@ -649,6 +649,14 @@
   text-underline-offset: 2px;
 }
 
+/*
+ * A checkbox in the middle of its text. The browser puts the bottom of the box on the baseline, so
+ * the box stands too high in small text. `:where()` lets any rule of the app win.
+ */
+:where(.diffwise-diff__content input[type='checkbox']) {
+  vertical-align: -0.125em;
+}
+
 /* A link in a changed part has the color of the text, which keeps its contrast on the highlight. */
 .diffwise-diff__content .diffwise-diff__highlight a,
 .diffwise-diff__content a .diffwise-diff__highlight {
