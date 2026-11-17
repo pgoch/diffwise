@@ -170,7 +170,7 @@ The view settings have options of their own; see [Settings for the user](#settin
 | Option | Values | Default | What it does |
 |---|---|---|---|
 | `ignoreWhitespace` | `true`, `false` | `false` | Ignores differences in whitespace |
-| `ignoreBlankLines` | `true`, `false` | `false` | Only in the text diff: a blank line added or removed, empty or of spaces and tabs alone, is not a change, as with `git diff --ignore-blank-lines`. It shows as an unchanged line of its version, and the place opposite looks like a line without text. HTML documents have no blank lines, as an empty paragraph is no line |
+| `ignoreBlankLines` | `true`, `false` | `false` | Only in the text diff: a blank line added or removed, empty or of spaces and tabs alone, is not a change, as with `git diff --ignore-blank-lines`. It shows in its version without the colors of a change, with the empty place opposite, as an added or a removed line has. HTML documents have no blank lines, as an empty paragraph is no line |
 | `ignoreCase` | `true`, `false` | `false` | Ignores differences in letter case |
 | `ignoreFormatting` | `true`, `false` | `false` | Ignores changes of formatting alone, such as italic → bold, another color or another heading level. It also ignores the look of list markers: bullets that became numbers, another bullet or numbering style, another level of an item, and a paragraph that became a list item or the other way around. Another item number still counts, as readers cite it, as in "see step 6" |
 | `ignoreLinkChanges` | `true`, `false` | `false` | Ignores links added, removed or pointing elsewhere around the same text |
@@ -544,7 +544,7 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__image-change-arrow` | The arrow between the old and the new image of a changed image in a merged line |
 | `diffwise-diff__divider` | The column between the versions |
 | `diffwise-diff__change-details-cell` | The narrow column of the icons of changes next to the content of the single column |
-| `diffwise-diff__gap` | The empty place opposite an added or a removed line, or opposite a blank line that `ignoreBlankLines` leaves out of the changes, where it looks like a line without text |
+| `diffwise-diff__gap` | The empty place opposite an added or a removed line, or opposite a blank line that `ignoreBlankLines` leaves out of the changes |
 | `diffwise-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
 | `diffwise-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
 | `diffwise-diff__toolbar` | The toolbar above the diff |

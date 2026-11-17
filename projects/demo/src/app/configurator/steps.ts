@@ -658,7 +658,7 @@ const COMPARISON_OPTIONS: readonly StepOption[] = [
     label: 'Ignore blank lines',
     description: 'Blank lines added or removed in plain text are not changes.',
     howTo:
-      'The plain text sample adds five blank lines and removes two. Switch the preview to Text: with On, they show as unchanged lines, without stripes opposite, and the toolbar counts +8 −0 instead of +13 −2.',
+      'The plain text sample adds five blank lines and removes two. Switch the preview to Text: with On, they lose the colors of a change, and the toolbar counts +8 −0 instead of +13 −2.',
     diffKinds: TEXT_DIFF,
     choices: ON_OFF,
   }),

@@ -520,18 +520,6 @@
   background: var(--diffwise-gap-gray);
 }
 
-/*
- * Opposite a line that the comparison ignores, such as a blank line of the text diff, the place
- * looks like a line without text in every style of gaps: nothing changed there.
- */
-.diffwise-diff .diffwise-diff__row--unchanged > .diffwise-diff__gap {
-  background: linear-gradient(
-    to right,
-    var(--diffwise-line-number-background) var(--diffwise-line-number-width),
-    var(--diffwise-background) 0
-  );
-}
-
 /* An empty gap looks like a line without text: the column of the numbers keeps its background. */
 .diffwise-diff--gap-style-empty .diffwise-diff__gap {
   background: linear-gradient(
