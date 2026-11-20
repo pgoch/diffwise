@@ -60,7 +60,7 @@ The navigation scrolls smoothly over a short distance and jumps over a long one;
 
 ## Zoom and narrow screens
 
-In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either, unless your app sets `wrapLines: false` or the user unticks "Wrap lines". Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
+In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either, unless your app sets `wrapLines: false` or the user unticks "Wrap lines". Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings. In a window lower than 30em, as at a zoom of 400%, the toolbar does not stick to the top: it scrolls with the diff, so it does not take a large part of the window from the rows.
 
 ## Font of plain text
 

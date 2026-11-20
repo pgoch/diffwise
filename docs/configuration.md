@@ -152,7 +152,7 @@ The lines of the text diff keep the spaces, tabs and indentation of the text, an
 
 ### Toolbar
 
-A toolbar stands above the diff and stays at the top of the nearest scrolling area while the page scrolls. It has arrows between the changes with a counter, the numbers of changed lines, and at its end the button of the view settings. In a narrow diff, its parts wrap to a second line.
+A toolbar stands above the diff and stays at the top of the nearest scrolling area while the page scrolls. In a window lower than 30em, such as at a zoom of 400%, it scrolls with the diff instead, so the rows get the whole window. It has arrows between the changes with a counter, the numbers of changed lines, and at its end the button of the view settings. In a narrow diff, its parts wrap to a second line.
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
