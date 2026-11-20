@@ -87,12 +87,7 @@ import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import type { ToolbarNavigation } from './toolbar/diff-toolbar';
 import { interfaceLanguageOf, languageTag } from './i18n/resolve-language';
-import {
-  type DiffwiseCustomTexts,
-  type DiffwiseLanguagePack,
-  type UiTexts,
-  withCount,
-} from './i18n/texts';
+import type { DiffwiseCustomTexts, DiffwiseLanguagePack, UiTexts } from './i18n/texts';
 import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
@@ -1057,11 +1052,6 @@ export abstract class DiffView {
     const showsRows = this.showsDocumentOnce() || this.showsBothVersions();
     return this.hasTurn() && showsRows && this.isLargeDocument() && !this.rowsRequested();
   });
-
-  /** The number of lines of the longer version, in the panel of a large document. */
-  protected readonly documentLinesText = computed(() =>
-    withCount(this.texts().documentLinesLabel, this.documentLineCount()),
-  );
 
   /** Rows and bars of the view shown now; none when it shows only a message or a panel. */
   private readonly shownItemCount = computed(() => {

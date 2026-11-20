@@ -102,7 +102,7 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 
 Hidden lines are not rendered at all, so a long document with few changes opens faster. A single unchanged line is never hidden, as its bar would take as much room. Lines the user has shown stay shown until the versions or the options of the comparison change, or until `hideUnchangedLines` or `contextLines` changes. With `dividerStyle: 'line'`, the bar is a small button on the line between the versions, "Hidden lines: 12".
 
-**Large documents.** Drawing tens of thousands of lines takes seconds. From `largeDocumentLines` lines of the longer version, the diff still compares the versions at once, so the toolbar shows the numbers of changes and `(diffStatsComputed)` emits them, but in place of the rows it shows "Large document", the number of lines, such as "Lines: 52340", and the button "Show the comparison". The button draws the rows in parts, as after each comparison, and the focus moves to the diff, since the button goes. A step of the navigation draws them too. New versions show the panel again; other options keep the rows. Until the rows show, the find of the browser does not see them, and printing prints the panel.
+**Large documents.** Drawing tens of thousands of lines takes seconds. From `largeDocumentLines` lines of the longer version, the diff still compares the versions at once, so the toolbar shows the numbers of changes and `(diffStatsComputed)` emits them, but in place of the rows it shows the sentence "The document is too large to load without confirmation." and the button "Show the comparison", where the version headers stand: in the middle, unless `versionHeaderAlignment` says otherwise. The button draws the rows in parts, as after each comparison, and the focus moves to the diff, since the button goes. A step of the navigation draws them too. New versions show the panel again; other options keep the rows. Until the rows show, the find of the browser does not see them, and printing prints the panel.
 
 ### Layout
 
@@ -407,8 +407,7 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 
 | Text | English | Polish | Where it shows |
 |---|---|---|---|
-| `largeDocumentLabel` | Large document | Duży dokument | The title of the panel in place of the rows, from `largeDocumentLines` lines |
-| `documentLinesLabel` | Lines: {count} | Linie: {count} | The lines of the longer version in that panel; `{count}` stands for their number |
+| `largeDocumentLabel` | The document is too large to load without confirmation. | Dokument jest zbyt duży, żeby go wczytać bez potwierdzenia. | The sentence of the panel in place of the rows, from `largeDocumentLines` lines |
 | `showComparisonLabel` | Show the comparison | Pokaż porównanie | The button of the panel, which draws the rows |
 
 ### Texts of the toolbar
@@ -575,8 +574,7 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
 | `diffwise-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
 | `diffwise-diff__large-document` | The panel in place of the rows of a large document |
-| `diffwise-diff__large-document-title` | Its title, "Large document" |
-| `diffwise-diff__large-document-lines` | The number of its lines, such as "Lines: 52340" |
+| `diffwise-diff__large-document-title` | Its sentence, "The document is too large to load without confirmation." |
 | `diffwise-diff__large-document-button` | The button "Show the comparison" |
 | `diffwise-diff__toolbar` | The toolbar above the diff |
 | `diffwise-diff__navigation` | The arrows with the counter |

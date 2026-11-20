@@ -26,7 +26,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - Each icon of changes is named by the title of its tooltip, such as "Link address changed", and the lines under the title describe it.
 - After a step of the navigation, screen readers hear "Change 2 of 3". The numbers of changed lines are named, such as "Added lines: 3".
 - The view settings are a dialog named "View settings", with a named group for each option; the chosen value is a pressed button.
-- While the diff draws its rows in parts, and while it waits for its turn among the diffs of a page, screen readers hear that it is busy (`aria-busy`). A large document that waits for the button is not busy: its panel says "Large document" and the number of its lines.
+- While the diff draws its rows in parts, and while it waits for its turn among the diffs of a page, screen readers hear that it is busy (`aria-busy`). A large document that waits for the button is not busy: its panel says "The document is too large to load without confirmation."
 - The texts of the interface carry the tag of their language in `lang`, so they are pronounced in that language on a page in another one. The documents keep the language of your page.
 
 The descriptions are texts of the interface, so they come in each of its languages and can be changed with `customTexts`; see [Texts for screen readers](configuration.md#texts-for-screen-readers).

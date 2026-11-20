@@ -18,7 +18,6 @@ const ACTIVE_ROW_SELECTOR = '.diffwise-diff__row--active';
 const DIFF_STAT_SELECTOR = '.diffwise-diff__diff-stat';
 const PANEL_SELECTOR = '.diffwise-diff__large-document';
 const TITLE_SELECTOR = '.diffwise-diff__large-document-title';
-const LINES_SELECTOR = '.diffwise-diff__large-document-lines';
 const BUTTON_SELECTOR = '.diffwise-diff__large-document-button';
 const ARIA_BUSY_ATTRIBUTE = 'aria-busy';
 const LANG_ATTRIBUTE = 'lang';
@@ -94,15 +93,17 @@ function showRows(fixture: ComponentFixture<DiffwiseHtml | DiffwiseText>): void 
 }
 
 describe('DiffwiseHtml large documents', () => {
-  it('shows a panel with the number of lines and a button in place of the rows', async () => {
+  it('shows a panel with a sentence and a button in place of the rows', async () => {
     const fixture = render();
 
     await fixture.whenStable();
 
     expect(rowCountOf(fixture)).toBe(0);
-    expect(textOf(fixture, TITLE_SELECTOR)).toBe('Large document');
-    expect(textOf(fixture, LINES_SELECTOR)).toBe(`Lines: ${PARAGRAPH_COUNT}`);
+    expect(textOf(fixture, TITLE_SELECTOR)).toBe(
+      'The document is too large to load without confirmation.',
+    );
     expect(textOf(fixture, BUTTON_SELECTOR)).toBe('Show the comparison');
+    expect(elementOf(fixture).querySelector(PANEL_SELECTOR)?.children.length).toBe(2);
   });
 
   it('shows and emits the numbers of changes before the rows, and is not busy', async () => {
@@ -177,7 +178,7 @@ describe('DiffwiseHtml large documents', () => {
     const atLimit = render({ largeDocumentLines: 25 }, shorter, longer);
     const belowLimit = render({ largeDocumentLines: 26 }, shorter, longer);
 
-    expect(textOf(atLimit, LINES_SELECTOR)).toBe('Lines: 25');
+    expect(elementOf(atLimit).querySelector(PANEL_SELECTOR)).not.toBeNull();
     expect(elementOf(belowLimit).querySelector(PANEL_SELECTOR)).toBeNull();
     expect(rowCountOf(belowLimit)).toBe(25);
   });
@@ -205,8 +206,9 @@ describe('DiffwiseHtml large documents', () => {
 
     const fixture = render({ language: DiffwiseLanguage.PL });
 
-    expect(textOf(fixture, TITLE_SELECTOR)).toBe('Duży dokument');
-    expect(textOf(fixture, LINES_SELECTOR)).toBe(`Linie: ${PARAGRAPH_COUNT}`);
+    expect(textOf(fixture, TITLE_SELECTOR)).toBe(
+      'Dokument jest zbyt duży, żeby go wczytać bez potwierdzenia.',
+    );
     expect(textOf(fixture, BUTTON_SELECTOR)).toBe('Pokaż porównanie');
     expect(elementOf(fixture).querySelector(PANEL_SELECTOR)?.getAttribute(LANG_ATTRIBUTE)).toBe(
       'pl',
@@ -238,6 +240,6 @@ describe('DiffwiseText large documents', () => {
     fixture.detectChanges();
 
     expect(rowCountOf(fixture)).toBe(0);
-    expect(textOf(fixture, LINES_SELECTOR)).toBe(`Lines: ${PARAGRAPH_COUNT}`);
+    expect(elementOf(fixture).querySelector(PANEL_SELECTOR)).not.toBeNull();
   });
 });
