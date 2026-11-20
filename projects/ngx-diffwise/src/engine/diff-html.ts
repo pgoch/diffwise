@@ -257,13 +257,13 @@ function withTableColumns(rows: readonly ViewRow[]): ViewRow[] {
 }
 
 /**
- * The rows with the HTML of their lines sanitized again, because marking changes and adding
- * columns edit it. The sanitizer cleans the lines of all rows in one run.
+ * The rows with the HTML of the lines that the diff edits sanitized again, because marking
+ * changes, merging lines and adding columns edit it. An unchanged line outside tables is a part
+ * of the sanitized version with prefixed ids only, so it keeps its HTML. The sanitizer cleans the
+ * edited lines of all rows in one run.
  */
 function sanitizedRows(rows: readonly ViewRow[]): ViewRow[] {
-  const lines = rows.flatMap(({ oldLine, newLine, mergedLine }) =>
-    [oldLine, newLine, mergedLine].filter(isLine),
-  );
+  const lines = rows.flatMap(editedLines);
   const sanitizedHtml = sanitizeHtmlPieces(lines.map((line) => line.html));
   const sanitizedLines = new Map(lines.map((line, position) => [line, sanitizedHtml[position]]));
   const sanitized = (line: ViewLine | null) => sanitizedLine(line, sanitizedLines);
@@ -276,13 +276,35 @@ function sanitizedRows(rows: readonly ViewRow[]): ViewRow[] {
   }));
 }
 
-/** The line with its sanitized HTML; `null` for no line. */
+/**
+ * Lines of the row that the diff edits: every line of a changed, removed or added row, every
+ * merged line and every line of a table, which gets the columns of its table.
+ */
+function editedLines(row: ViewRow): ViewLine[] {
+  if (isUnchangedOutsideTables(row)) {
+    return [row.mergedLine].filter(isLine);
+  }
+
+  return [row.oldLine, row.newLine, row.mergedLine].filter(isLine);
+}
+
+/** True for an unchanged row whose two lines are not lines of a table. */
+function isUnchangedOutsideTables({ kind, oldLine, newLine }: ViewRow): boolean {
+  return kind === LineChangeKind.Unchanged && oldLine?.table === null && newLine?.table === null;
+}
+
+/** The line with its sanitized HTML; a line that was not sanitized again stays as it is. */
 function sanitizedLine(
   line: ViewLine | null,
   sanitizedLines: ReadonlyMap<ViewLine, string>,
 ): ViewLine | null {
-  const html = line === null ? undefined : sanitizedLines.get(line);
-  return line === null || html === undefined ? null : { ...line, html };
+  if (line === null) {
+    return null;
+  }
+
+  const html = sanitizedLines.get(line);
+
+  return html === undefined ? line : { ...line, html };
 }
 
 /** True when the line is there. */

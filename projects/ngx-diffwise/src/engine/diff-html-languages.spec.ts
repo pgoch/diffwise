@@ -73,6 +73,7 @@ import zhShortBefore from '../../../../test-data/zh/short/before.html?raw';
 import { diffHtml } from './diff-html';
 import { parseHtml } from './html/parse-html';
 import { readerText } from './html/reader-text';
+import { sanitizeHtmlPieces } from './html/sanitize-html';
 import { splitLines } from './html/split-lines';
 import {
   type Comparison,
@@ -190,6 +191,11 @@ const LANGUAGE_SIZES = LANGUAGES.flatMap((language) =>
   SIZES.map((size): [string, SampleSize] => [language, size]),
 );
 
+/** Each sample, the English ones too, as `[language, size]`. */
+const ALL_LANGUAGE_SIZES = [ENGLISH, ...LANGUAGES].flatMap((language) =>
+  SIZES.map((size): [string, SampleSize] => [language, size]),
+);
+
 /** Diffs of the samples by language and size; each sample is compared on first use. */
 const sampleDiffs = new Map<string, Comparison>();
 
@@ -226,6 +232,11 @@ function sampleOf(language: string, size: SampleSize): Sample {
 /** A row as `[kind, old number, new number]`; a missing line is `null`. */
 function rowShape({ kind, oldLine, newLine }: ViewRow) {
   return [kind, oldLine?.number ?? null, newLine?.number ?? null];
+}
+
+/** True for an unchanged row whose two lines are not lines of a table. */
+function isUnchangedOutsideTables({ kind, oldLine, newLine }: ViewRow): boolean {
+  return kind === LineChangeKind.Unchanged && oldLine?.table === null && newLine?.table === null;
 }
 
 /** A row as `[old number, new number, kinds of details]`. */
@@ -342,6 +353,19 @@ describe('diffHtml with the samples in every language', () => {
 
     expect([...markedKinds]).toEqual([LineChangeKind.Changed]);
   });
+
+  it.each(ALL_LANGUAGE_SIZES)(
+    'needs no second cleaning of the unchanged lines outside tables of %s %s',
+    (language, size) => {
+      const unchangedHtml = sampleDiff(language, size)
+        .rows.filter(isUnchangedOutsideTables)
+        .flatMap(({ oldLine, newLine }) => [oldLine?.html, newLine?.html])
+        .filter((html) => html !== undefined);
+
+      expect(unchangedHtml.length).toBeGreaterThan(0);
+      expect(sanitizeHtmlPieces(unchangedHtml)).toEqual(unchangedHtml);
+    },
+  );
 
   it.each(LANGUAGE_SIZES)('never splits a letter from its marks in %s %s', (language, size) => {
     const markers = sampleDiff(language, size).rows.flatMap(({ oldLine, newLine }) => [
