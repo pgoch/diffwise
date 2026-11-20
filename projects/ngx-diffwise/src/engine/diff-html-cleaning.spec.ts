@@ -165,6 +165,21 @@ describe('diffHtml cleaning the lines again', () => {
     expect(texts).not.toContain(FIRST_TEXT);
   });
 
+  it('keeps the text of a customized built-in element in a line it cleans again', () => {
+    const added = '<p is="my-paragraph">An added paragraph.</p>';
+    const table =
+      '<table><tbody><tr><td><span is="my-span">A cell.</span></td></tr></tbody></table>';
+    const { rows } = diffHtml(
+      `${table}<p>${FIRST_TEXT}</p>`,
+      `${table}<p>${FIRST_TEXT}</p>${added}`,
+      settingsOf(false),
+    );
+    const newTexts = rows.map(({ newLine }) => textOf(newLine?.html ?? NO_TEXT));
+
+    expect(newTexts).toContain('An added paragraph.');
+    expect(newTexts.some((text) => text.includes('A cell.'))).toBe(true);
+  });
+
   it.each(ATTACKS)('needs no second cleaning of unchanged lines with $name', ({ html }) => {
     const [before, after] = versionsAround(html);
 
