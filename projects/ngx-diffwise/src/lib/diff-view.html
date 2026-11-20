@@ -90,6 +90,7 @@
         <div
           class="diffwise-diff__content diffwise-diff__content--new"
           [attr.data-diffwise-table]="line.table"
+          [attr.data-diffwise-columns]="line.columns"
           [innerHTML]="line.html"
         ></div>
       </div>
@@ -177,6 +178,7 @@
         <div
           class="diffwise-diff__content diffwise-diff__content--{{ row.content }}"
           [attr.data-diffwise-table]="row.table"
+          [attr.data-diffwise-columns]="row.columns"
           [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
           [innerHTML]="row.html"
         ></div>
@@ -246,6 +248,7 @@
             class="diffwise-diff__content diffwise-diff__content--old"
             [attr.aria-hidden]="isHiddenCopy(row) || null"
             [attr.data-diffwise-table]="line.table"
+            [attr.data-diffwise-columns]="line.columns"
             [innerHTML]="line.html"
           ></div>
         } @else {
@@ -281,6 +284,7 @@
           <div
             class="diffwise-diff__content diffwise-diff__content--new"
             [attr.data-diffwise-table]="line.table"
+            [attr.data-diffwise-columns]="line.columns"
             [innerHTML]="line.html"
           ></div>
         } @else {

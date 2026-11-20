@@ -66,6 +66,12 @@ const NEW = 'new';
 const MERGED = 'merged';
 const REQUEST_IDLE_CALLBACK = 'requestIdleCallback';
 const CANCEL_IDLE_CALLBACK = 'cancelIdleCallback';
+const COLUMNS_ATTRIBUTE = 'data-diffwise-columns';
+const COLUMNS_LINE_SELECTOR = `[${COLUMNS_ATTRIBUTE}]`;
+const OLD_FIRST_TABLE_KEY = 'old-0';
+const NEW_FIRST_TABLE_KEY = 'new-0';
+const MERGED_FIRST_TABLE_KEY = 'merged-0';
+const NO_KEY = '';
 const PARSE_FROM_STRING = 'parseFromString';
 
 /** Marks each piece of HTML that the sanitizer cleans together with others, such as merged lines. */
@@ -203,6 +209,13 @@ function renderSingleColumn(diff: RenderedDiff = {}): HTMLElement {
 function renderMergedLines(diff: RenderedDiff = {}): HTMLElement {
   const options = { inlineDiffStyle: DiffwiseInlineDiffStyle.Merged, ...diff.options };
   return renderSingleColumn({ ...diff, options });
+}
+
+/** The keys of the lines that share the columns of a table, each once, in the order of the view. */
+function columnKeysOf(element: HTMLElement): string[] {
+  const lines = element.querySelectorAll(COLUMNS_LINE_SELECTOR);
+
+  return [...new Set(Array.from(lines, (line) => line.getAttribute(COLUMNS_ATTRIBUTE) ?? NO_KEY))];
 }
 
 /** Resizes the diff as the browser does: the observer reports it, and the diff shows it. */
@@ -687,6 +700,24 @@ describe('DiffwiseHtml merged lines', () => {
     mergedRow.dispatchEvent(new Event(SCROLL_EVENT));
 
     expect(lines.map((line) => line.scrollLeft)).toEqual([80, 80, 80, 80]);
+  });
+});
+
+describe('DiffwiseHtml table columns', () => {
+  it('marks the lines of each table with the key of the lines that share its columns: those of a version, or merged ones', () => {
+    const sideBySide = render({
+      oldHtml: OLD_PRICES_HTML,
+      newHtml: NEW_PRICES_HTML,
+      options: { layout: DiffwiseLayout.SideBySide },
+    }).nativeElement;
+    const merged = renderMergedLines({ oldHtml: OLD_PRICES_HTML, newHtml: NEW_PRICES_HTML });
+
+    expect(columnKeysOf(sideBySide)).toEqual([OLD_FIRST_TABLE_KEY, NEW_FIRST_TABLE_KEY]);
+    expect(columnKeysOf(merged)).toEqual([
+      MERGED_FIRST_TABLE_KEY,
+      OLD_FIRST_TABLE_KEY,
+      NEW_FIRST_TABLE_KEY,
+    ]);
   });
 });
 

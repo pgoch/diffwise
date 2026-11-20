@@ -91,6 +91,7 @@ import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
 import { ChangeNavigation, scrollRowsIntoView } from './navigation/change-navigation';
 import { prepareLineScrollbars, scrollLinesTogether, widestLinesText } from './line-scroll';
+import { columnSizersHtmlOf, sizeTableColumns } from './table-columns';
 import { markWideTables, scrollTablesTogether } from './table-scroll';
 import {
   type DiffwiseUserSettings,
@@ -229,6 +230,12 @@ const MERGED_CONTENT = 'merged';
 const HIDDEN_COPY_SELECTOR =
   '.diffwise-diff__row--unchanged > .diffwise-diff__content--old[aria-hidden]';
 
+/** Stands between the lines and the table of a key of table lines: `old-0`. */
+const COLUMNS_KEY_SEPARATOR = '-';
+
+/** The lines whose tables share columns: the lines of one version, or the merged lines. */
+type TableLines = DocumentVersion | typeof MERGED_CONTENT;
+
 /** A line as the template shows it. */
 interface ShownLine {
   readonly number: number;
@@ -236,6 +243,8 @@ interface ShownLine {
   readonly html: SafeHtml;
   /** Position of the line's table among the tables of its version; `null` outside tables. */
   readonly table: number | null;
+  /** Key of the lines that share the columns of the line's table; `null` outside tables. */
+  readonly columns: string | null;
 }
 
 /** A row as the template shows it. */
@@ -272,6 +281,8 @@ interface ShownSingleColumnRow {
   readonly table: number | null;
   /** What stands around a table line in its table; `null` for a line with nothing around. */
   readonly tableNeighbors: string | null;
+  /** Key of the lines that share the columns of the line's table; `null` outside tables. */
+  readonly columns: string | null;
 }
 
 /** The header of the single column as the template shows it. */
@@ -993,6 +1004,12 @@ export abstract class DiffView {
   protected readonly isDrawing = computed(() => this.drawnRowCount() < this.shownItemCount());
 
   /**
+   * The hidden copies of rows of each table, by the key of the lines that share its columns, for
+   * the lines of a table drawn without the line that holds them, such as behind hidden lines.
+   */
+  private readonly columnSizers = computed(() => columnSizersByKey(this.diff().rows));
+
+  /**
    * The rows of the active block in the layout shown now; `null` before the first step. In the
    * single column, the lines of a changed pair can be two rows.
    */
@@ -1081,6 +1098,7 @@ export abstract class DiffView {
 
     afterRenderEffect((onCleanup) => this.drawNextRows(onCleanup));
     afterRenderEffect(() => this.prepareMarkers());
+    afterRenderEffect(() => this.sizeColumnsOfTableLines());
     afterRenderEffect(() => this.prepareForKeyboardAndScreenReaders());
     afterRenderEffect((onCleanup) => this.scrollLongLinesTogether(onCleanup));
     afterRenderEffect(() => this.prepareLineScrollbars());
@@ -1289,6 +1307,7 @@ export abstract class DiffView {
 
     this.drawAllRows();
     this.changeDetector.detectChanges();
+    this.sizeColumnsOfTableLines();
   }
 
   /** The rows with bars in place of unchanged lines far from changes, when the diff hides them. */
@@ -1524,6 +1543,20 @@ export abstract class DiffView {
   }
 
   /**
+   * After each drawing of the rows, also of each part, and after each change of width: gives the
+   * lines of each table the columns of the whole table.
+   */
+  private sizeColumnsOfTableLines(): void {
+    this.width();
+    this.shownLayout();
+    this.visibleRows();
+    this.visibleSingleColumnRows();
+    this.drawnRowCount();
+
+    sizeTableColumns(this.host.nativeElement, (key) => this.columnSizers().get(key) ?? null);
+  }
+
+  /**
    * After each drawing of the rows, also of each part: keeps the copies that screen readers skip
    * out of the order of `Tab`, and gives each table wider than its column one named stop of `Tab`.
    */
@@ -1649,19 +1682,24 @@ export abstract class DiffView {
       kind,
       sourceRow,
       position: sourceRow,
-      oldLine: this.shownLine(oldLine),
-      newLine: this.shownLine(newLine),
+      oldLine: this.shownLine(oldLine, DocumentVersion.Old),
+      newLine: this.shownLine(newLine, DocumentVersion.New),
       changeDetails,
     };
   }
 
-  /** A line as the template shows it, with safe HTML; `null` without a line. */
-  private shownLine(line: ViewLine | null): ShownLine | null {
+  /** A line of a version as the template shows it, with safe HTML; `null` without a line. */
+  private shownLine(line: ViewLine | null, version: DocumentVersion): ShownLine | null {
     if (line === null) {
       return null;
     }
 
-    return { number: line.number, html: this.safeHtml(line), table: line.table };
+    return {
+      number: line.number,
+      html: this.safeHtml(line),
+      table: line.table,
+      columns: columnsKeyOf(version, line.table),
+    };
   }
 
   /**
@@ -1673,10 +1711,11 @@ export abstract class DiffView {
     const { changeDetails, tablePlace } = row;
     const describesChanges = changeDetails.length > 0;
     const showsIcon = describesChanges && version === DocumentVersion.New;
+    const content = isMerged ? MERGED_CONTENT : version;
 
     return {
       kind,
-      content: isMerged ? MERGED_CONTENT : version,
+      content,
       html: this.safeHtml(line),
       oldNumber,
       newNumber,
@@ -1686,6 +1725,7 @@ export abstract class DiffView {
       iconDetails: showsIcon ? changeDetails : NO_CHANGE_DETAILS,
       table: tablePlace?.table ?? null,
       tableNeighbors: tableNeighborsOf(tablePlace),
+      columns: columnsKeyOf(content, line.table),
     };
   }
 
@@ -1704,6 +1744,46 @@ export abstract class DiffView {
 
     return Array.from(targets).find((target) => isLinkTarget(target, fragment)) ?? null;
   }
+}
+
+/**
+ * The key of the lines that share the columns of a table, such as `old-0`; `null` outside tables.
+ * The lines of each version of a table share them, and so do its merged lines.
+ */
+function columnsKeyOf(lines: TableLines, table: number | null): string | null {
+  return table === null ? null : lines + COLUMNS_KEY_SEPARATOR + table;
+}
+
+/**
+ * The hidden copies of rows that give the lines of each table its columns, by the key of these
+ * lines, from the line of each table that holds them.
+ */
+function columnSizersByKey(rows: readonly ViewRow[]): Map<string, string> {
+  const sizersByKey = new Map<string, string>();
+
+  for (const { oldLine, newLine, mergedLine } of rows) {
+    const keyedLines: [TableLines, ViewLine | null][] = [
+      [DocumentVersion.Old, oldLine],
+      [DocumentVersion.New, newLine],
+      [MERGED_CONTENT, mergedLine],
+    ];
+
+    for (const [lines, line] of keyedLines) {
+      const key = line === null ? null : columnsKeyOf(lines, line.table);
+
+      if (line === null || key === null || sizersByKey.has(key)) {
+        continue;
+      }
+
+      const sizersHtml = columnSizersHtmlOf(line.html);
+
+      if (sizersHtml !== null) {
+        sizersByKey.set(key, sizersHtml);
+      }
+    }
+  }
+
+  return sizersByKey;
 }
 
 /** The first `count` items, or the list itself when it has no more. */

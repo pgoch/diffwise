@@ -26,6 +26,12 @@ const MAX_ROWS_COPIED_WHOLE = 30;
 /** A line of a table. */
 type TableLine = ViewLine & { readonly table: number };
 
+/** The hidden copies of rows of each table, and the lines that carry them. */
+interface ColumnSizers {
+  readonly sizersOfTables: ReadonlyMap<number, string>;
+  readonly sizedLines: ReadonlySet<TableLine>;
+}
+
 /** A row and the length of some text of it. */
 interface MeasuredRow {
   readonly row: Element;
@@ -33,30 +39,50 @@ interface MeasuredRow {
 }
 
 /**
- * Gives each table line the columns of its whole table. Hidden copies of the rows of the table on
- * the same side, with their marks, make the browser lay out the line's row like the whole table.
- * Takes the lines of one version in order, with `null` for gaps.
+ * Gives the lines of each table the columns of the whole table. Hidden copies of the rows of the
+ * table on the same side, with their marks, make the browser lay out a line's row like the whole
+ * table. The first line of each table with a row gets them, and the view gives the other lines of
+ * the table the widths of its columns; each line of a caption gets them too, since the columns
+ * widen a caption like the table. Takes the lines of one version in order, with `null` for gaps.
  */
 export function addTableColumns(lines: readonly (ViewLine | null)[]): (ViewLine | null)[] {
-  const sizersOfTables = columnSizersOfTables(lines.filter(isTableLine));
-  return lines.map((line) => withColumnSizers(line, sizersOfTables));
+  const { sizersOfTables, sizedLines } = columnSizersOfTables(lines.filter(isTableLine));
+
+  return lines.map((line) =>
+    isTableLine(line) && sizedLines.has(line) ? withColumnSizers(line, sizersOfTables) : line,
+  );
 }
 
-/** HTML of the hidden copies of rows for each table, by the position of the table. */
-function columnSizersOfTables(lines: readonly TableLine[]): Map<number, string> {
+/**
+ * HTML of the hidden copies of rows for each table, by the position of the table, and the lines
+ * that carry them: the first line with a row of each table, and every line of a caption.
+ */
+function columnSizersOfTables(lines: readonly TableLine[]): ColumnSizers {
   const rowsOfTables = new Map<number, Element[]>();
+  const sizedLines = new Set<TableLine>();
 
   for (const line of lines) {
     const row = rowOf(line.html);
     const rows = rowsOfTables.get(line.table) ?? [];
 
-    if (row !== null) {
-      rows.push(row);
-      rowsOfTables.set(line.table, rows);
+    if (row === null) {
+      sizedLines.add(line);
+      continue;
     }
+
+    if (rows.length === 0) {
+      sizedLines.add(line);
+    }
+
+    rows.push(row);
+    rowsOfTables.set(line.table, rows);
   }
 
-  return new Map([...rowsOfTables].map(([table, rows]) => [table, columnSizersHtml(rows)]));
+  const sizersOfTables = new Map(
+    [...rowsOfTables].map(([table, rows]) => [table, columnSizersHtml(rows)]),
+  );
+
+  return { sizersOfTables, sizedLines };
 }
 
 /** The line with the copies of its table's rows at the end of its table copy. */
