@@ -319,6 +319,25 @@ describe('normalizeConfig', () => {
     expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
   });
 
+  it('keeps a whole number of lines of a large document from 0, and warns about others', () => {
+    const invalidOptions = [
+      { largeDocumentLines: -1 },
+      { largeDocumentLines: 2.5 },
+      { largeDocumentLines: '20000' },
+      { largeDocumentLines: Number.POSITIVE_INFINITY },
+    ];
+
+    expect(normalizeConfig({ largeDocumentLines: 0 })).toEqual({ largeDocumentLines: 0 });
+    expect(normalizeConfig({ largeDocumentLines: 500 })).toEqual({ largeDocumentLines: 500 });
+    expect(console.warn).not.toHaveBeenCalled();
+
+    for (const options of invalidOptions) {
+      expect(normalizeConfig(options)).toEqual({});
+    }
+
+    expect(console.warn).toHaveBeenCalledTimes(invalidOptions.length);
+  });
+
   it('keeps hidden unchanged lines and a whole number of context lines from 1 to 100', () => {
     expect(normalizeConfig({ hideUnchangedLines: true, contextLines: 1 })).toEqual({
       hideUnchangedLines: true,

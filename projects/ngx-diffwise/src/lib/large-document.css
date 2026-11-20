@@ -1,0 +1,43 @@
+/*
+ * The panel in place of the rows of a large document, under the toolbar with the numbers of
+ * changes: its title, the number of lines of the longer version, and a button that shows the rows.
+ * It stands on the background of the diff, not on the stripes of its empty places.
+ */
+
+.diffwise-diff__large-document {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 18px 20px;
+  background: var(--diffwise-background);
+  color: var(--diffwise-text);
+}
+
+.diffwise-diff__large-document-title,
+.diffwise-diff__large-document-lines {
+  margin: 0;
+}
+
+.diffwise-diff__large-document-title {
+  font-weight: 650;
+}
+
+/* Framed as the button of the view settings, with room for its text. */
+.diffwise-diff__large-document-button {
+  padding: 0.35em 0.9em;
+  border: 1px solid var(--diffwise-border);
+  border-radius: 0.55em;
+  background: var(--diffwise-background);
+  color: var(--diffwise-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.diffwise-diff__large-document-button:hover {
+  background: color-mix(in srgb, var(--diffwise-ink) 7%, var(--diffwise-background));
+}
+
+.diffwise-diff__large-document-button:focus-visible {
+  outline: 2px solid var(--diffwise-focus);
+  outline-offset: 2px;
+}

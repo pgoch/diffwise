@@ -43,6 +43,7 @@ const NO_HTML = '';
     './toolbar/view-settings.css',
     './navigation/active-change.css',
     './no-changes.css',
+    './large-document.css',
     './high-contrast.css',
     './forced-colors.css',
   ],

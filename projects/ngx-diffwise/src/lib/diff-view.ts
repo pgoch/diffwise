@@ -87,7 +87,12 @@ import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import type { ToolbarNavigation } from './toolbar/diff-toolbar';
 import { interfaceLanguageOf, languageTag } from './i18n/resolve-language';
-import type { DiffwiseCustomTexts, DiffwiseLanguagePack, UiTexts } from './i18n/texts';
+import {
+  type DiffwiseCustomTexts,
+  type DiffwiseLanguagePack,
+  type UiTexts,
+  withCount,
+} from './i18n/texts';
 import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
@@ -434,6 +439,12 @@ export abstract class DiffView {
   readonly showAllWhitespace = input<boolean>();
 
   /**
+   * From this number of lines of the longer version, the diff shows a button in place of the rows,
+   * which draws them; `0` turns it off. Wins over `config` and the global configuration.
+   */
+  readonly largeDocumentLines = input<number>();
+
+  /**
    * Shows the toolbar above the diff, which says anyway that the versions are the same; wins over
    * `config` and the global configuration.
    */
@@ -639,6 +650,7 @@ export abstract class DiffView {
     contextLines: this.contextLines(),
     wrapLines: this.wrapLines(),
     showAllWhitespace: this.showAllWhitespace(),
+    largeDocumentLines: this.largeDocumentLines(),
     showToolbar: this.showToolbar(),
     showNavigationToolbar: this.showNavigationToolbar(),
     activeChangeStyle: this.activeChangeStyle(),
@@ -870,7 +882,7 @@ export abstract class DiffView {
   protected readonly widestLinesText = computed(() => {
     const showsLines = this.showsDocumentOnce() || this.showsBothVersions();
 
-    if (!this.scrollsLinesSideways() || !showsLines) {
+    if (!this.scrollsLinesSideways() || !showsLines || this.waitsForRowsRequest()) {
       return null;
     }
 
@@ -1022,8 +1034,41 @@ export abstract class DiffView {
     firstItems(this.visibleSingleColumnRows(), this.drawnRowCount()),
   );
 
-  /** Rows and bars of the view shown now; none when it shows only a message. */
+  /** Lines of the longer version, which tell whether the document is large. */
+  private readonly documentLineCount = computed(() => longerVersionLineCount(this.comparison()));
+
+  /** True when the longer version has at least as many lines as `largeDocumentLines`, from 1. */
+  private readonly isLargeDocument = computed(() => {
+    const { largeDocumentLines } = this.effectiveConfig();
+    return largeDocumentLines > 0 && this.documentLineCount() >= largeDocumentLines;
+  });
+
+  /** True once the user asks for the rows of a large document; new versions wait again. */
+  private readonly rowsRequested = linkedSignal<unknown, boolean>({
+    source: () => this.versions(),
+    computation: () => false,
+  });
+
+  /**
+   * True while a large document shows a panel in place of its rows, until the user asks for them;
+   * the toolbar and the numbers of changes show anyway. A view without rows needs no panel.
+   */
+  protected readonly waitsForRowsRequest = computed(() => {
+    const showsRows = this.showsDocumentOnce() || this.showsBothVersions();
+    return this.hasTurn() && showsRows && this.isLargeDocument() && !this.rowsRequested();
+  });
+
+  /** The number of lines of the longer version, in the panel of a large document. */
+  protected readonly documentLinesText = computed(() =>
+    withCount(this.texts().documentLinesLabel, this.documentLineCount()),
+  );
+
+  /** Rows and bars of the view shown now; none when it shows only a message or a panel. */
   private readonly shownItemCount = computed(() => {
+    if (this.waitsForRowsRequest()) {
+      return 0;
+    }
+
     if (this.showsDocumentOnce()) {
       return this.rows().length;
     }
@@ -1324,9 +1369,24 @@ export abstract class DiffView {
     });
   }
 
-  /** Draws every row not drawn yet, such as before a step of the navigation. */
+  /**
+   * Draws every row not drawn yet, such as before a step of the navigation; a large document shows
+   * its rows then too.
+   */
   private drawAllRows(): void {
+    this.rowsRequested.set(true);
     this.drawnRowCount.set(ALL_ROWS);
+  }
+
+  /**
+   * Shows the rows of a large document in place of its panel, in parts as after a comparison. The
+   * button goes with the panel, so the focus moves to the diff, where screen readers continue.
+   */
+  protected showRowsOfLargeDocument(): void {
+    this.rowsRequested.set(true);
+    afterNextRender(() => focusWithoutScrolling(this.host.nativeElement), {
+      injector: this.injector,
+    });
   }
 
   /**
@@ -1414,7 +1474,7 @@ export abstract class DiffView {
       this.diffOptions();
       this.marksAllWhitespace();
 
-      if (this.isDrawing()) {
+      if (this.isDrawing() || this.waitsForRowsRequest()) {
         return;
       }
 
@@ -1853,6 +1913,19 @@ function columnSizersByKey(rows: readonly ViewRow[]): Map<string, string> {
 /** The first `count` items, or the list itself when it has no more. */
 function firstItems<Item>(items: readonly Item[], count: number): readonly Item[] {
   return count >= items.length ? items : items.slice(0, count);
+}
+
+/** Lines of the longer version of a comparison: rows with a line of that version. */
+function longerVersionLineCount(comparison: Comparison): number {
+  let oldLineCount = 0;
+  let newLineCount = 0;
+
+  for (const row of comparison.rows) {
+    oldLineCount += row.oldLine === null ? 0 : 1;
+    newLineCount += row.newLine === null ? 0 : 1;
+  }
+
+  return Math.max(oldLineCount, newLineCount);
 }
 
 /** An id prefix that no other diff on the page uses, such as `diffwise-1`. */

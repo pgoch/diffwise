@@ -44,6 +44,7 @@ const NO_TEXT = '';
     './toolbar/view-settings.css',
     './navigation/active-change.css',
     './no-changes.css',
+    './large-document.css',
     './high-contrast.css',
     './forced-colors.css',
     './text-lines.css',

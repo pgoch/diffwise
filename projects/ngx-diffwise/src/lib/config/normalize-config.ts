@@ -93,6 +93,7 @@ const OPTION_CHECKS: Readonly<Record<keyof DiffwiseConfigOptions, (value: unknow
   contextLines: isContextLines,
   wrapLines: isBoolean,
   showAllWhitespace: isBoolean,
+  largeDocumentLines: isLineCount,
   showToolbar: isBoolean,
   showNavigationToolbar: isBoolean,
   activeChangeStyle: isActiveChangeStyle,
@@ -278,6 +279,11 @@ function isLayoutBreakpoint(value: unknown): boolean {
 /** True for a number of lines around a change: a whole number from 1 to 100. */
 function isContextLines(value: unknown): boolean {
   return isNumber(value) && Number.isInteger(value) && isInRange(value, CONTEXT_LINES_RANGE);
+}
+
+/** True for a number of lines of a document: a whole number from 0. */
+function isLineCount(value: unknown): boolean {
+  return isNumber(value) && Number.isInteger(value) && value >= 0;
 }
 
 /** True for a value of `DiffwiseInlineDiffStyle`. */

@@ -58,6 +58,12 @@ export interface DiffwiseCustomTexts {
   readonly changedLinesLabel?: string;
   /** The only text of the toolbar when the versions are the same. */
   readonly noChangesLabel?: string;
+  /** Titles the panel in place of the rows of a large document, until the user asks for them. */
+  readonly largeDocumentLabel?: string;
+  /** Names the lines of the longer version in the panel of a large document; `{count}` is their number. */
+  readonly documentLinesLabel?: string;
+  /** The button of the panel of a large document, which shows the rows. */
+  readonly showComparisonLabel?: string;
   /** Names the arrow to the previous block of changes and titles its tooltip. */
   readonly previousChangeLabel?: string;
   /** Names the arrow to the next block of changes and titles its tooltip. */

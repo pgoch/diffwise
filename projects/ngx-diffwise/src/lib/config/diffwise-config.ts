@@ -115,6 +115,12 @@ export interface DiffwiseConfigOptions {
    */
   readonly showAllWhitespace?: boolean;
   /**
+   * From this number of lines of the longer version, the diff shows the numbers of changes and a
+   * button in place of the rows, and draws the rows when the user asks for them; `0` turns it off.
+   * A whole number from 0. Default: `20000`.
+   */
+  readonly largeDocumentLines?: number;
+  /**
    * Shows the toolbar above the diff, with the arrows between the changes, the numbers of changes
    * and the view settings; `false` hides all of them, whatever their own options. When the versions
    * are the same, the text that says so shows anyway. Default: `true`.
@@ -311,6 +317,9 @@ export class DiffwiseConfig implements Required<DiffwiseConfigOptions> {
 
   /** Only in the text diff: shows each space and tab as a sign, also outside changes. */
   readonly showAllWhitespace: boolean = false;
+
+  /** From this number of lines of the longer version, the rows show when the user asks for them. */
+  readonly largeDocumentLines: number = 20000;
 
   /** Shows the toolbar above the diff; without it, only the text that the versions are the same. */
   readonly showToolbar: boolean = true;
