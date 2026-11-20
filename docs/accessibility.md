@@ -13,7 +13,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - A tooltip shows when its icon gets the focus, or its marked change with `changeDetails: 'hover'`. Escape hides it.
 - A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it. Long lines of the text diff that do not wrap have one stop too: the scrollbar of the new version, named "Long lines, scroll sideways", while a line is wider than its column.
 - Side by side, the old copy of an unchanged line is not in the order of `Tab`, so each link of the documents is one stop. A click on its links still works.
-- A large document shows the button "Show the comparison" in place of its rows. The button goes with the panel, so the focus moves to the diff, and `Tab` goes on into the rows.
+- A large document shows the button "Show the comparison" in place of its rows. The button goes with the panel, so the focus moves to the start of the diff, and `Tab` goes on through the toolbar, when the diff shows one, into the rows.
 
 ## Screen readers
 
