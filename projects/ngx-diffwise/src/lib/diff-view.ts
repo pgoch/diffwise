@@ -803,13 +803,14 @@ export abstract class DiffView {
   });
 
   /** The versions compared without merged lines, again whenever either of them changes. */
-  private readonly comparison = computed(() => this.compare(false));
+  private readonly comparison = computed(() => this.compare());
 
   /**
-   * The versions compared with merged lines. Before the diff shows them, it prepares this
-   * comparison while the browser is idle, so the first single column does not wait for it.
+   * The same comparison with merged lines, which the comparison makes from what it keeps, without
+   * comparing the versions again. Before the diff shows them, it prepares them while the browser is
+   * idle, so the first single column does not wait for them.
    */
-  private readonly mergedComparison = computed(() => this.compare(true));
+  private readonly mergedComparison = computed(() => this.comparison().withMergedLines());
 
   /** The comparison the diff shows: with merged lines from the first time it needs them. */
   private readonly diff = computed(() =>
@@ -1308,12 +1309,15 @@ export abstract class DiffView {
     this.userSettingsChange.emit(userSettingsOf(this.storedChoices()));
   }
 
-  /** Compares the versions with the options of the comparison, with merged lines or without. */
-  private compare(mergesChangedLines: boolean): Comparison {
+  /**
+   * Compares the versions with the options of the comparison, without merged lines, which the
+   * comparison can add later.
+   */
+  private compare(): Comparison {
     const settings = {
       options: this.diffOptions(),
       idPrefix: this.idPrefix,
-      mergesChangedLines,
+      mergesChangedLines: false,
       marksAllWhitespace: this.marksAllWhitespace(),
     };
 
@@ -1321,9 +1325,9 @@ export abstract class DiffView {
   }
 
   /**
-   * While the diff shows no merged lines, compares the versions with merged lines once the browser
-   * is idle, after each new comparison and after every row is drawn, so the comparison does not
-   * hold up the parts still to draw. A diff that cannot show merged lines prepares nothing.
+   * While the diff shows no merged lines, makes them once the browser is idle, after each new
+   * comparison and after every row is drawn, so the work does not hold up the parts still to draw.
+   * A diff that cannot show merged lines prepares nothing.
    */
   private prepareMergedLinesWhenIdle(): void {
     afterRenderEffect((onCleanup) => {

@@ -467,6 +467,11 @@ export interface SingleColumnRow {
 export interface Comparison {
   readonly rows: readonly ViewRow[];
   readonly stats: DiffStats;
+  /**
+   * The same comparison with the merged lines of the single column, made from what this one keeps,
+   * without comparing the versions again; a comparison that has them gives itself.
+   */
+  readonly withMergedLines: () => Comparison;
 }
 
 /** How two versions are compared and prepared for the view. */
@@ -475,7 +480,10 @@ export interface ComparisonSettings {
   readonly options: DiffOptions;
   /** Starts every id in the shown HTML; each diff on a page needs its own. */
   readonly idPrefix: string;
-  /** Prepares the merged line of each changed pair, which takes time for every changed line. */
+  /**
+   * Gives the comparison with its merged lines at once. Merging takes time for every changed line,
+   * so a comparison without them can add them later (`withMergedLines`).
+   */
   readonly mergesChangedLines: boolean;
   /**
    * Marks each space and tab of plain text for a sign, also outside changed text, which marks

@@ -212,17 +212,21 @@ function sampleDiff(language: string, size: SampleSize): Comparison {
   }
 
   const { before, after } = sampleOf(language, size);
-  const settings = {
-    options: DEFAULT_DIFF_OPTIONS,
-    idPrefix: ID_PREFIX,
-    mergesChangedLines: false,
-    marksAllWhitespace: false,
-  };
-  const diff = diffHtml(before, after, settings);
+  const diff = diffHtml(before, after, sampleSettings(false));
 
   sampleDiffs.set(key, diff);
 
   return diff;
+}
+
+/** Settings of a comparison of a sample with the default options. */
+function sampleSettings(mergesChangedLines: boolean) {
+  return {
+    options: DEFAULT_DIFF_OPTIONS,
+    idPrefix: ID_PREFIX,
+    mergesChangedLines,
+    marksAllWhitespace: false,
+  };
 }
 
 function sampleOf(language: string, size: SampleSize): Sample {
@@ -364,6 +368,18 @@ describe('diffHtml with the samples in every language', () => {
 
       expect(unchangedHtml.length).toBeGreaterThan(0);
       expect(sanitizeHtmlPieces(unchangedHtml)).toEqual(unchangedHtml);
+    },
+  );
+
+  it.each(ALL_LANGUAGE_SIZES)(
+    'adds the same merged lines later as at once to %s %s',
+    (language, size) => {
+      const { before, after } = sampleOf(language, size);
+      const later = sampleDiff(language, size).withMergedLines();
+      const atOnce = diffHtml(before, after, sampleSettings(true));
+
+      expect(later.rows).toEqual(atOnce.rows);
+      expect(later.rows.some((row) => row.mergedLine !== null)).toBe(true);
     },
   );
 

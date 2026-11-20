@@ -672,7 +672,11 @@ describe('diffHtml', () => {
   });
 
   it('gives no rows for two empty documents', () => {
-    expect(compare('', '')).toEqual({ rows: [], stats: NO_CHANGES });
+    expect(compare('', '')).toEqual({
+      rows: [],
+      stats: NO_CHANGES,
+      withMergedLines: expect.any(Function),
+    });
   });
 
   it('gives the ids of each version a prefix of their own', () => {
@@ -790,6 +794,7 @@ describe('diffHtml', () => {
         },
       ],
       stats: { ...NO_CHANGES, changedLines: 1 },
+      withMergedLines: expect.any(Function),
     });
   });
 

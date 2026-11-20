@@ -68,6 +68,9 @@ const REQUEST_IDLE_CALLBACK = 'requestIdleCallback';
 const CANCEL_IDLE_CALLBACK = 'cancelIdleCallback';
 const PARSE_FROM_STRING = 'parseFromString';
 
+/** Marks each piece of HTML that the sanitizer cleans together with others, such as merged lines. */
+const SANITIZED_PIECE_ATTRIBUTE = 'data-diffwise-sanitized-piece';
+
 /** One line removed, one unchanged, one changed and one added. */
 const OLD_TERMS_HTML = '<p>Old intro.</p><p>Terms of use.</p><p>Reply within 24 hours.</p>';
 const NEW_TERMS_HTML = '<p>Terms of use.</p><p>Reply within 48 hours.</p><p>New outro.</p>';
@@ -688,15 +691,21 @@ describe('DiffwiseHtml merged lines', () => {
 });
 
 describe('DiffwiseHtml merged lines prepared ahead', () => {
-  it('compares the versions with merged lines while the browser is idle, so the first single column compares nothing', async () => {
+  it('makes the merged lines while the browser is idle, without comparing the versions again', async () => {
     const fixture = render({ options: { layout: DiffwiseLayout.SideBySide } });
-    const parse = vi.spyOn(DOMParser.prototype, PARSE_FROM_STRING);
 
     await fixture.whenStable();
+
+    const parse = vi.spyOn(DOMParser.prototype, PARSE_FROM_STRING);
+
     expect(idleTasks.size).toBe(1);
 
     runIdleTasks();
-    expect(parse).toHaveBeenCalled();
+
+    const parsedHtml = parse.mock.calls.map(([html]) => String(html));
+
+    expect(parsedHtml.length).toBeGreaterThan(0);
+    expect(parsedHtml.every((html) => html.includes(SANITIZED_PIECE_ATTRIBUTE))).toBe(true);
 
     parse.mockClear();
     fixture.componentRef.setInput(LAYOUT_INPUT, DiffwiseLayout.Inline);

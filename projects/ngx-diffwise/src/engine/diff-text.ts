@@ -1,6 +1,8 @@
 import { countChanges, diffLines } from './compare/diff-lines';
 import { diffWords } from './compare/diff-words';
 import { ADDED_TEXT_MARKER, REMOVED_TEXT_MARKER } from './mark/mark-changes';
+import type { WordChangedPair } from './mark/merge-lines';
+import { comparisonWithMergedLines } from './merged-comparison';
 import {
   type ChangeDetail,
   type Comparison,
@@ -33,10 +35,11 @@ const BLANK_TEXT = /^\s*$/;
 /**
  * Compares two versions of plain text line by line and returns the rows of the side-by-side view
  * with change counts. Lines and words are compared as in HTML documents, and spaces and tabs stay
- * as in the text. The text never becomes HTML, so a tag in it shows as plain characters. When the
- * settings ask for it, each changed pair gets its merged line too, for the single-column view. When
- * the options ignore blank lines, blank lines are compared as empty ones, and a blank line added or
- * removed is an unchanged line of its version alone, which the numbers of changes leave out.
+ * as in the text. The text never becomes HTML, so a tag in it shows as plain characters. The
+ * comparison keeps what merging needs, so each changed pair can get its merged line of the
+ * single-column view later; when the settings ask for them, they come at once. When the options
+ * ignore blank lines, blank lines are compared as empty ones, and a blank line added or removed is
+ * an unchanged line of its version alone, which the numbers of changes leave out.
  */
 export function diffText(
   oldText: string,
@@ -48,31 +51,40 @@ export function diffText(
   const oldLines = comparedLines(textLines(oldText, unchangedHtml), options);
   const newLines = comparedLines(textLines(newText, unchangedHtml), options);
   const lineDiff = diffLines(oldLines, newLines, options);
-  const rowBuilder = new TextRowBuilder(settings, unchangedHtml);
+  const rowBuilder = new TextRowBuilder(options, unchangedHtml);
   const rows = lineDiff.changes.map((change) => rowBuilder.toRow(change));
   const stats = options.ignoreBlankLines
     ? statsWithoutBlankLines(lineDiff.changes)
     : lineDiff.stats;
+  const mergedComparison = () =>
+    comparisonWithMergedLines(
+      rows.map((row) => rowBuilder.withMergedPair(row)),
+      stats,
+    );
 
-  return { rows, stats };
+  if (settings.mergesChangedLines) {
+    return mergedComparison();
+  }
+
+  return { rows, stats, withMergedLines: mergedComparison };
 }
 
-/** Turns line changes of plain text into view rows and numbers the lines of each version from 1. */
+/**
+ * Turns line changes of plain text into view rows and numbers the lines of each version from 1. It
+ * keeps what merging needs for the rows of changed pairs, so merged lines can come later.
+ */
 class TextRowBuilder {
   private oldLineCount = 0;
   private newLineCount = 0;
 
-  private readonly options: DiffOptions;
-  private readonly mergesChangedLines: boolean;
+  /** What merging needs for each row of a changed pair. */
+  private readonly changedPairs = new Map<ViewRow, WordChangedPair>();
 
-  /** HTML of unchanged text in a changed line. */
-  private readonly unchangedHtml: TextHtml;
-
-  constructor(settings: ComparisonSettings, unchangedHtml: TextHtml) {
-    this.options = settings.options;
-    this.mergesChangedLines = settings.mergesChangedLines;
-    this.unchangedHtml = unchangedHtml;
-  }
+  constructor(
+    private readonly options: DiffOptions,
+    /** HTML of unchanged text in a changed line. */
+    private readonly unchangedHtml: TextHtml,
+  ) {}
 
   /** The row of the view for a change of lines. */
   toRow(change: LineChange): ViewRow {
@@ -104,28 +116,37 @@ class TextRowBuilder {
   }
 
   /**
-   * A row of a changed pair: removed text marked in the old line and added text in the new one. The
-   * pair also becomes one merged line, when the diff merges lines.
+   * A row of a changed pair: removed text marked in the old line and added text in the new one.
+   * What merging the pair needs is kept for the row.
    */
   private changedRow(oldLine: Line, newLine: Line): ViewRow {
     const wordChanges = diffWords(oldLine, newLine, this.options);
     const { removed, added } = wordChanges;
     const oldHtml = markedTextHtml(oldLine.text, removed, REMOVED_TEXT_MARKER, this.unchangedHtml);
     const newHtml = markedTextHtml(newLine.text, added, ADDED_TEXT_MARKER, this.unchangedHtml);
-    const shownOldLine = this.nextOldLine(oldLine, oldHtml);
-    const shownNewLine = this.nextNewLine(newLine, newHtml);
-    const mergedHtml = this.mergesChangedLines
-      ? mergedTextHtml({ oldLine, newLine, wordChanges }, this.unchangedHtml)
-      : null;
-    const mergedLine = mergedHtml === null ? null : { ...shownNewLine, html: mergedHtml };
-
-    return {
+    const row: ViewRow = {
       kind: LineChangeKind.Changed,
-      oldLine: shownOldLine,
-      newLine: shownNewLine,
+      oldLine: this.nextOldLine(oldLine, oldHtml),
+      newLine: this.nextNewLine(newLine, newHtml),
       changeDetails: NO_CHANGE_DETAILS,
-      mergedLine,
+      mergedLine: null,
     };
+
+    this.changedPairs.set(row, { oldLine, newLine, wordChanges });
+
+    return row;
+  }
+
+  /** The row with the merged line of its changed pair; other rows stay as they are. */
+  withMergedPair(row: ViewRow): ViewRow {
+    const pair = this.changedPairs.get(row);
+    const mergedHtml = pair === undefined ? null : mergedTextHtml(pair, this.unchangedHtml);
+
+    if (mergedHtml === null || row.newLine === null) {
+      return row;
+    }
+
+    return { ...row, mergedLine: { ...row.newLine, html: mergedHtml } };
   }
 
   /** The row of a blank line added or removed, which the comparison ignores: unchanged, alone. */

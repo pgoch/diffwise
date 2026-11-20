@@ -161,7 +161,11 @@ describe('diffText', () => {
   });
 
   it('finds no rows in two empty texts', () => {
-    expect(compare('', '')).toEqual({ rows: [], stats: NO_CHANGES });
+    expect(compare('', '')).toEqual({
+      rows: [],
+      stats: NO_CHANGES,
+      withMergedLines: expect.any(Function),
+    });
   });
 
   it('pairs a line with a changed word as a changed line and marks only the word', () => {
@@ -361,6 +365,17 @@ describe('diffText', () => {
     'counts the changes of the $language $size sample',
     ({ size, before, after }) => {
       expect(compare(before, after).stats).toEqual(SAMPLE_STATS[size]);
+    },
+  );
+
+  it.each(SAMPLES)(
+    'adds the same merged lines later as at once to the $language $size sample',
+    ({ before, after }) => {
+      const later = compare(before, after).withMergedLines();
+      const atOnce = compare(before, after, DEFAULT_DIFF_OPTIONS, true);
+
+      expect(later.rows).toEqual(atOnce.rows);
+      expect(later.rows.some((row) => row.mergedLine !== null)).toBe(true);
     },
   );
 
