@@ -10,7 +10,7 @@ Applications that keep versions of rich text: content management systems, contra
 
 ## What it will show
 
-Version 0.8 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. It also compares plain text line by line. The rest comes with the releases in the [roadmap](roadmap.md).
+Version 0.9 shows changes of the text, the formatting, the links and the images in paragraphs, headings, list items and table rows, and changes of list markers and checkboxes, side by side or in a single column. It also compares plain text line by line. The rest comes with the releases in the [roadmap](roadmap.md).
 
 | Change | How it is shown |
 |---|---|
@@ -28,7 +28,7 @@ Version 0.8 shows changes of the text, the formatting, the links and the images 
 
 ## Display and configuration
 
-Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user, version 0.5 adds the colorblind-friendly and the high contrast palettes, the interface in 12 languages and support for screen readers and the high contrast mode of Windows, version 0.6 adds the text diff, with a font of fixed width that users can switch, version 0.7 adds lines of plain text that scroll sideways, signs of all spaces and tabs, ignored blank lines, options to hide the whole toolbar and the headers, and a configurator in the demo app, and version 0.8 makes long documents and pages with many diffs open sooner, shows very large documents on request, and makes the bundle smaller; see [Configuration](configuration.md). The whole scope, with what is planned:
+Version 0.1 has the side-by-side layout, the color modes, the intensity and contrast scales, the marking styles, the fonts, the line numbers and the three levels of configuration, with the interface in English and Polish. Version 0.2 adds the details of changes besides the text, with their icons and tooltips, version 0.3 adds lists and tables, version 0.4 adds the single column, hidden unchanged lines and the toolbar with navigation, statistics and settings for the user, version 0.5 adds the colorblind-friendly and the high contrast palettes, the interface in 12 languages and support for screen readers and the high contrast mode of Windows, version 0.6 adds the text diff, with a font of fixed width that users can switch, version 0.7 adds lines of plain text that scroll sideways, signs of all spaces and tabs, ignored blank lines, options to hide the whole toolbar and the headers, and a configurator in the demo app, version 0.8 makes long documents and pages with many diffs open sooner, shows very large documents on request, and makes the bundle smaller, and version 0.9 brings the fixes of the final tests and the first release on npm; see [Configuration](configuration.md). The whole scope, with what is planned:
 
 - **Layouts:** side by side, single column, or automatic, based on the component's width. The single column shows a merged line, optionally with deleted text struck through, or the old line above the new one; small "before" and "after" icons label its two line-number columns.
 - **Colors:** light, dark and automatic color modes, a colorblind-friendly and a high contrast palette, which users can also choose themselves, and an intensity scale (1–5) for changed lines and changed words together. You can also supply your own colors.
@@ -40,7 +40,7 @@ Version 0.1 has the side-by-side layout, the color modes, the intensity and cont
 - **Reading aids:** optional line numbers, collapsing of unchanged lines, navigation between groups of neighboring changes and change statistics. In plain text, long lines can scroll sideways instead of wrapping, and every space and tab can show its sign.
 - **Long documents:** the first rows show soon and the rest draw in parts, and the diffs of a page draw one by one, the visible ones first. A document of many lines, 20 000 by default, shows its numbers of changes at once and its rows when the user asks for them.
 - **Toolbar:** navigation between changes, change statistics and settings for end users, all shown by default. The application can hide any part of it, or the whole toolbar, and limit the settings users see.
-- **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides. A configurator in the demo app builds the global defaults step by step, with a live preview.
+- **Three levels of configuration:** global defaults, runtime changes (for example, switching to dark mode with a single call) and per-component overrides. The [configurator](https://pgoch.github.io/diffwise/#configurator) of the demo app builds the global defaults step by step, with a live preview.
 - **Languages:** interface texts in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, chosen by your app or taken from its locale. English is always there; your app adds the others it uses.
 
 Other optional features are turned off by default.
@@ -52,7 +52,7 @@ Other optional features are turned off by default.
 
 ## Requirements
 
-Angular 20 or newer. Planned browser support: current versions of Chrome, Edge, Firefox and Safari. Diffwise runs in the browser; server-side rendering is not supported yet.
+Angular 20 or newer. Tested in current versions of Chrome and Edge. Diffwise runs in the browser; server-side rendering is not supported yet.
 
 ## License
 

@@ -1,6 +1,6 @@
 # Accessibility
 
-This page describes version 0.8. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
+This page describes version 0.9. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
 
 Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. The text diff of version 0.6 uses the same view, and so do the options of the text diff of version 0.7. Diffwise has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
 

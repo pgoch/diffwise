@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.8. Diffwise works without any setup: every option has a default, and you set only what you want to change. The configurator of the [demo app](../README.md#demo) leads you through the options step by step, with a live preview, and gives you the configuration of your choices, ready to copy.
+This page describes version 0.9. Diffwise works without any setup: every option has a default, and you set only what you want to change. The [configurator](https://pgoch.github.io/diffwise/#configurator) of the demo app leads you through the options step by step, with a live preview, and gives you the configuration of your choices, ready to copy.
 
 ## Two diffs
 

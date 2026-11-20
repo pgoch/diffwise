@@ -4,7 +4,7 @@
 
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup. A second component does the same for plain text.
 
-> **Status: version 0.8, an early preview.** It is not on npm yet; the first release is planned with version 0.9. The API may change before 1.0.
+> **Status: version 0.9, an early preview, on npm as [`ngx-diffwise`](https://www.npmjs.com/package/ngx-diffwise).** The API may change before 1.0.
 
 ## Why Diffwise?
 
@@ -19,7 +19,7 @@ Diffwise fills that gap:
 - You can use it anywhere you have access to the HTML of both versions, whatever editor or system produced it.
 - It is designed to be highly configurable, so you can adapt it to your own needs: colors, marking styles, layout, line numbers and the controls your users see.
 
-## What 0.8 does
+## What 0.9 does
 
 - Shows two versions side by side, one row per paragraph, heading, list item or table row, with line numbers.
 - Compares plain text line by line with a second component, `<diffwise-text>`, in the same views and with the same options. Spaces, tabs and indentation stay as in the text, changed spaces and tabs show as `·` and `→`, and the lines have a font of fixed width, which users can switch to the regular font. Long lines can stay in one row and scroll sideways together, every space and tab can show its sign, and blank lines added or removed can be left out of the changes.
@@ -43,7 +43,7 @@ Diffwise fills that gap:
 - Options to ignore whitespace, blank lines, letter case, formatting or link changes.
 - Configuration on three levels: global defaults, changes while the app runs, and inputs of each diff.
 
-A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: with version 0.9, final tests and the first release on npm.
+A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: with version 1.0, tests with screen readers, a stable API and complete documentation.
 
 ## Installation
 
@@ -140,13 +140,13 @@ export class PolicyHistory {
 
 ## Demo
 
-The demo app has three pages:
+The demo app runs at https://pgoch.github.io/diffwise/ and has three pages:
 
 - **Home:** what Diffwise is, a picture of a diff, and the way to the other pages.
 - **Demo:** sample documents in the 12 languages of the interface and plain texts in English and Polish, with a panel for every option.
 - **Configurator:** leads you step by step through the options, with a live preview of the diff, from the main options to the view settings of your users. Each option says what it does and how to see it. The last step gives the configuration of your choices, ready to copy into `app.config.ts`, as a plain object or as a `new DiffwiseConfig(…)`, with only the options that differ from the defaults.
 
-To run it, clone the repository and start it with a Node.js version that Angular 20 supports, such as 22 or 24:
+To run it on your computer, clone the repository and start it with a Node.js version that Angular 20 supports, such as 22 or 24:
 
 ```bash
 git clone https://github.com/pgoch/diffwise.git
