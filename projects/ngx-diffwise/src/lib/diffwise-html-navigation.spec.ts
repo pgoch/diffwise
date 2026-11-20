@@ -7,7 +7,9 @@ import {
   DiffwiseLanguage,
   DiffwiseLayout,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -304,6 +306,8 @@ describe('DiffwiseHtml navigation', () => {
   });
 
   it('names the arrows and the counter in the language of the interface', async () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const fixture = render({ language: DiffwiseLanguage.PL });
     const element = elementOf(fixture);
     const names = [PREVIOUS_BUTTON_SELECTOR, NEXT_BUTTON_SELECTOR].map((selector) =>

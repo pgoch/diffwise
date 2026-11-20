@@ -8,8 +8,10 @@ import {
   DiffwisePalette,
   DiffwiseUserSetting,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { Diffwise } from './diffwise';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 import type { DiffwiseUserSettings } from './user-settings/user-settings';
 
 const OLD_HTML_INPUT = 'oldHtml';
@@ -515,6 +517,8 @@ describe('DiffwiseHtml view settings', () => {
   });
 
   it('names the button and the options in Polish', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = elementOf(render({ language: DiffwiseLanguage.PL }));
 
     expect(viewButtonOf(element)?.getAttribute(ARIA_LABEL_ATTRIBUTE)).toBe('Widok');

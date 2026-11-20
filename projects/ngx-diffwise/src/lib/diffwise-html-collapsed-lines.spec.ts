@@ -7,7 +7,9 @@ import {
   DiffwiseLayout,
   DiffwiseNoChangesView,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -251,6 +253,8 @@ describe('DiffwiseHtml hidden lines', () => {
   });
 
   it('shows the text of the bar in Polish, or a custom text', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const polish = elementOf(render({ language: DiffwiseLanguage.PL }));
     const custom = elementOf(render({ customTexts: { showHiddenLinesLabel: 'Expand {count}' } }));
 

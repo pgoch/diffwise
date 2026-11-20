@@ -253,9 +253,9 @@ export interface DiffwiseVersionHeaderTexts {
 /** Languages of the interface. */
 export const DiffwiseLanguage = {
   /**
-   * The language of the app (`LOCALE_ID`) when the interface has it, or else English. Every
-   * Chinese locale gets Chinese in simplified characters, and only Portuguese without a region or
-   * of Portugal gets Portuguese.
+   * The language of the app (`LOCALE_ID`) when the app provides it with
+   * `provideDiffwiseLanguages()`, or else English. Every Chinese locale gets Chinese in simplified
+   * characters, and only Portuguese without a region or of Portugal gets Portuguese.
    */
   Auto: 'auto',
   /** English. */

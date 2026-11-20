@@ -1,6 +1,12 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { type DiffwiseConfigOptions, DiffwiseHtml, DiffwiseUserSetting } from 'ngx-diffwise';
+import {
+  type DiffwiseConfigOptions,
+  DiffwiseHtml,
+  DiffwiseUserSetting,
+  diffwisePolish,
+  provideDiffwiseLanguages,
+} from 'ngx-diffwise';
 
 import { DEFAULT_OPTIONS } from '../diff-options';
 import { serveSampleFiles } from '../../testing/sample-files';
@@ -159,6 +165,7 @@ describe('StepOptions', () => {
       'Lines around changes',
       'Wrap lines',
       'All spaces and tabs',
+      'Large document from',
     ]);
   });
 
@@ -209,6 +216,8 @@ describe('StepOptions', () => {
   });
 
   it('shows the preview in the chosen language', async () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const fixture = await render(StepId.General);
     const select = optionNamed(fixture, 'Language').querySelector<HTMLSelectElement>(
       SELECT_SELECTOR,

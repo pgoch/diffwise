@@ -45,6 +45,7 @@ const DEFAULT_OPTIONS = {
   contextLines: 3,
   wrapLines: true,
   showAllWhitespace: false,
+  largeDocumentLines: 20000,
   showToolbar: true,
   showNavigationToolbar: true,
   activeChangeStyle: DiffwiseActiveChangeStyle.Outline,

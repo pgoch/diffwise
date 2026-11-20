@@ -1,3 +1,5 @@
+import type { DiffwiseLanguage } from '../config/option-values';
+
 /** Stands in a text for a number, such as the number of hidden lines. */
 const COUNT_PLACEHOLDER = '{count}';
 
@@ -56,6 +58,12 @@ export interface DiffwiseCustomTexts {
   readonly changedLinesLabel?: string;
   /** The only text of the toolbar when the versions are the same. */
   readonly noChangesLabel?: string;
+  /** Titles the panel in place of the rows of a large document, until the user asks for them. */
+  readonly largeDocumentLabel?: string;
+  /** Names the lines of the longer version in the panel of a large document; `{count}` is their number. */
+  readonly documentLinesLabel?: string;
+  /** The button of the panel of a large document, which shows the rows. */
+  readonly showComparisonLabel?: string;
   /** Names the arrow to the previous block of changes and titles its tooltip. */
   readonly previousChangeLabel?: string;
   /** Names the arrow to the next block of changes and titles its tooltip. */
@@ -262,6 +270,20 @@ export interface DiffwiseCustomTexts {
 
 /** Every text of the interface in one language. */
 export type UiTexts = Required<DiffwiseCustomTexts>;
+
+/** A language the interface has texts in. */
+export type UiLanguage = Exclude<DiffwiseLanguage, typeof DiffwiseLanguage.Auto>;
+
+/**
+ * Every text of the interface in one language, such as `diffwisePolish`, which
+ * `provideDiffwiseLanguages()` adds to an app.
+ */
+export interface DiffwiseLanguagePack {
+  /** The language of the texts. */
+  readonly language: UiLanguage;
+  /** Every text of the interface in the language. */
+  readonly texts: UiTexts;
+}
 
 /** The text with the number in place of `{count}`. */
 export function withCount(text: string, count: number): string {

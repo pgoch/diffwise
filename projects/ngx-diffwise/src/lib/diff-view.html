@@ -75,7 +75,19 @@
   </diffwise-diff-toolbar>
 }
 
-@if (showsDocumentOnce()) {
+@if (waitsForRowsRequest()) {
+  <div class="diffwise-diff__large-document" [attr.lang]="uiLanguageTag()">
+    <p class="diffwise-diff__large-document-title">{{ texts().largeDocumentLabel }}</p>
+    <p class="diffwise-diff__large-document-lines">{{ documentLinesText() }}</p>
+    <button
+      type="button"
+      class="diffwise-diff__large-document-button"
+      (click)="showRowsOfLargeDocument()"
+    >
+      {{ texts().showComparisonLabel }}
+    </button>
+  </div>
+} @else if (showsDocumentOnce()) {
   @for (row of drawnDocumentRows(); track row.position) {
     @if (row.newLine; as line) {
       <div class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}">

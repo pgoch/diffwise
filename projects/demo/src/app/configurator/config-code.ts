@@ -58,6 +58,7 @@ const STRING_TYPE = 'string';
 
 const CONFIG_CLASS = 'DiffwiseConfig';
 const PROVIDE_FUNCTION = 'provideDiffwise';
+const LANGUAGES_FUNCTION = 'provideDiffwiseLanguages';
 const LIBRARY = 'ngx-diffwise';
 
 const ANGULAR_IMPORT = "import { ApplicationConfig } from '@angular/core';";
@@ -106,28 +107,59 @@ const CONSTANTS: Partial<Record<OptionName, LibraryConstant>> = {
   language: { name: 'DiffwiseLanguage', values: DiffwiseLanguage },
 };
 
+/** The constant of each language besides English, which an app gives to `provideDiffwiseLanguages`. */
+const LANGUAGE_CONSTANTS: Partial<Record<DiffwiseLanguage, string>> = {
+  [DiffwiseLanguage.PL]: 'diffwisePolish',
+  [DiffwiseLanguage.ZH]: 'diffwiseChinese',
+  [DiffwiseLanguage.ES]: 'diffwiseSpanish',
+  [DiffwiseLanguage.HI]: 'diffwiseHindi',
+  [DiffwiseLanguage.FR]: 'diffwiseFrench',
+  [DiffwiseLanguage.RU]: 'diffwiseRussian',
+  [DiffwiseLanguage.PT]: 'diffwisePortuguese',
+  [DiffwiseLanguage.IT]: 'diffwiseItalian',
+  [DiffwiseLanguage.JA]: 'diffwiseJapanese',
+  [DiffwiseLanguage.DE]: 'diffwiseGerman',
+  [DiffwiseLanguage.KO]: 'diffwiseKorean',
+};
+
 /**
  * The text of `app.config.ts` that gives the options to every diff of an app, in the order of
- * the options. The plain object has texts in quotes; the `DiffwiseConfig` has the constants of the
- * library instead, with their imports.
+ * the options, and the chosen language besides English to `provideDiffwiseLanguages`. The plain
+ * object has texts in quotes; the `DiffwiseConfig` has the constants of the library instead, with
+ * their imports.
  */
 export function configCode(options: DiffwiseConfigOptions, form: ConfigForm): string {
   const usesClass = form === ConfigForm.DiffwiseConfig;
   const values = usesClass ? withConstants(options) : options;
   const names = usesClass ? [...constantNamesOf(options), CONFIG_CLASS] : [];
+  const language =
+    options.language === undefined ? undefined : LANGUAGE_CONSTANTS[options.language];
+  const languageNames = language === undefined ? [] : [language, LANGUAGES_FUNCTION];
   const providers =
     Object.keys(options).length === 0
       ? [emptyProviders(usesClass)]
-      : [PROVIDERS_START, ...providerLines(values, usesClass), PROVIDERS_END];
+      : [
+          PROVIDERS_START,
+          ...providerLines(values, usesClass),
+          ...languageLines(language),
+          PROVIDERS_END,
+        ];
 
   return [
     ANGULAR_IMPORT,
-    libraryImport([...names, PROVIDE_FUNCTION]),
+    libraryImport([...names, PROVIDE_FUNCTION, ...languageNames]),
     '',
     CONFIG_START,
     ...providers,
     CONFIG_END,
   ].join('\n');
+}
+
+/** The line of `provideDiffwiseLanguages(…)` with the constant of the language, if there is one. */
+function languageLines(language: string | undefined): string[] {
+  return language === undefined
+    ? []
+    : [INDENT.repeat(2) + LANGUAGES_FUNCTION + CALL_START + language + CALL_END];
 }
 
 /** The providers of an app that changes no option, on one line, as Prettier writes them. */

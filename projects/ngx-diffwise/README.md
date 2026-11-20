@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A second component compares plain text line by line, with spaces, tabs and indentation as in the text. A toolbar steps between the changes, counts them, and lets your users choose the layout, the theme and the colors of changes, such as a colorblind-friendly or a high contrast palette. The interface comes in 12 languages and works with screen readers and the keyboard.
 
-> Version 0.7, an early preview. The API may change before 1.0.
+> Version 0.8, an early preview. The API may change before 1.0.
 
 ## Installation
 
@@ -34,6 +34,8 @@ Plain text goes to `<diffwise-text>` (`DiffwiseText`), which takes the same opti
 ```html
 <diffwise-text [oldText]="previousSettings" [newText]="currentSettings" />
 ```
+
+The interface is in English. Your app adds the other languages it uses, among eleven, in its providers, such as `provideDiffwiseLanguages(diffwisePolish, diffwiseGerman)`; the others stay out of its bundle.
 
 After each comparison, `(diffStatsComputed)` emits the numbers of changed lines, and `hasChanges` is `false` when the versions are the same:
 

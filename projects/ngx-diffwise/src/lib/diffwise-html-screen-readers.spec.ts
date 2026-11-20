@@ -2,7 +2,9 @@ import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
 import type { DiffwiseConfigOptions } from './config/diffwise-config';
 import { DiffwiseInlineDiffStyle, DiffwiseLanguage, DiffwiseLayout } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -181,6 +183,8 @@ describe('DiffwiseHtml for screen readers', () => {
   });
 
   it('marks the texts of the interface with its language, and leaves the content in the language of the page', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = elementOf(
       render({ layout: DiffwiseLayout.SideBySide, language: DiffwiseLanguage.PL }),
     );
@@ -203,6 +207,8 @@ describe('DiffwiseHtml for screen readers', () => {
   });
 
   it('describes changed lines in Polish', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = elementOf(
       render({ layout: DiffwiseLayout.Inline, language: DiffwiseLanguage.PL }),
     );

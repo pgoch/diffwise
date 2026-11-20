@@ -17,8 +17,10 @@ import {
   DiffwiseVersionHeaders,
 } from './config/option-values';
 import { provideDiffwise } from './config/provide-diffwise';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { Diffwise } from './diffwise';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -584,6 +586,8 @@ describe('DiffwiseHtml', () => {
   });
 
   it('shows the texts of the interface in Polish on request', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = renderElement('', '', { language: DiffwiseLanguage.PL });
 
     expect(textsOf(element, VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_LABELS);
@@ -592,13 +596,18 @@ describe('DiffwiseHtml', () => {
 
   it('takes the language of the app in automatic mode', () => {
     TestBed.configureTestingModule({
-      providers: [{ provide: LOCALE_ID, useValue: POLISH_LOCALE }],
+      providers: [
+        { provide: LOCALE_ID, useValue: POLISH_LOCALE },
+        provideDiffwiseLanguages(diffwisePolish),
+      ],
     });
 
     expect(textsOf(renderElement('', ''), VERSION_HEADER_SELECTOR)).toEqual(POLISH_VERSION_LABELS);
   });
 
   it('shows custom texts instead of single texts of the interface, also as names of icons', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = renderElement('', '', {
       language: DiffwiseLanguage.PL,
       versionHeaders: DiffwiseVersionHeaders.Icons,
@@ -899,6 +908,8 @@ describe('DiffwiseHtml change details', () => {
   });
 
   it('shows the texts of the tooltips in the language of the interface, and custom texts', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const polish = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, { language: DiffwiseLanguage.PL });
     const custom = renderElement(OLD_LINK_HTML, NEW_LINK_HTML, {
       customTexts: { linkChangeLabel: 'Other address' },

@@ -10,7 +10,9 @@ import {
   DiffwiseUserSetting,
   DiffwiseVersionHeaders,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -413,6 +415,8 @@ describe('DiffwiseHtml single column', () => {
   });
 
   it('shows the header of the single column in Polish on request', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = renderSingleColumn({ options: { language: DiffwiseLanguage.PL } });
 
     expect(attributesOf(element, VERSION_HEADER_ICON_SELECTOR, ARIA_LABEL_ATTRIBUTE)).toEqual([

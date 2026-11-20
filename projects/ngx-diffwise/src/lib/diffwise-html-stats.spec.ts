@@ -7,8 +7,10 @@ import {
   DiffwiseLayout,
   DiffwiseNoChangesView,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import type { DiffwiseDiffStats } from './diff-stats';
 import { DiffwiseHtml } from './diffwise-html';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_HTML_INPUT = 'oldHtml';
 const NEW_HTML_INPUT = 'newHtml';
@@ -259,6 +261,8 @@ describe('DiffwiseHtml toolbar', () => {
   });
 
   it('shows the texts of the toolbar in Polish', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const language = { language: DiffwiseLanguage.PL };
     const changed = elementOf(render(OLD_TERMS_HTML, NEW_TERMS_HTML, language).fixture);
     const same = elementOf(render(OLD_TERMS_HTML, OLD_TERMS_HTML, language).fixture);

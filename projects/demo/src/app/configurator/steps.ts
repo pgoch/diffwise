@@ -402,6 +402,16 @@ const LINE_OPTIONS: readonly StepOption[] = [
     diffKinds: TEXT_DIFF,
     choices: ON_OFF,
   }),
+  option({
+    kind: OptionKind.Number,
+    name: 'largeDocumentLines',
+    label: 'Large document from',
+    description:
+      'Lines of the longer version from which the diff shows a button in place of the rows; 0 turns it off.',
+    howTo:
+      'Write 10: the preview has more lines, so it shows the numbers of changes and a button, which shows the rows. Write 0, and the rows show at once.',
+    field: { min: 0, step: 1, unit: 'lines' },
+  }),
 ];
 
 const LAYOUT_OPTIONS: readonly StepOption[] = [

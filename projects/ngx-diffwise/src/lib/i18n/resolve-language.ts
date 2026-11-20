@@ -1,36 +1,14 @@
+import { warn } from '../config/normalize-config';
 import { DiffwiseLanguage } from '../config/option-values';
-import { GERMAN_TEXTS } from './de';
 import { ENGLISH_TEXTS } from './en';
-import { SPANISH_TEXTS } from './es';
-import { FRENCH_TEXTS } from './fr';
-import { HINDI_TEXTS } from './hi';
-import { ITALIAN_TEXTS } from './it';
-import { JAPANESE_TEXTS } from './ja';
-import { KOREAN_TEXTS } from './ko';
-import { POLISH_TEXTS } from './pl';
-import { PORTUGUESE_TEXTS } from './pt';
-import { RUSSIAN_TEXTS } from './ru';
-import type { UiTexts } from './texts';
-import { CHINESE_TEXTS } from './zh';
+import type { DiffwiseLanguagePack, UiLanguage } from './texts';
 
-/** A language the interface has texts in. */
-export type UiLanguage = Exclude<DiffwiseLanguage, typeof DiffwiseLanguage.Auto>;
+/** English, which the interface always has; the other languages come from the app. */
+const ENGLISH: DiffwiseLanguagePack = { language: DiffwiseLanguage.EN, texts: ENGLISH_TEXTS };
 
-/** Texts of the interface in each of its languages. */
-export const LANGUAGE_TEXTS: Readonly<Record<UiLanguage, UiTexts>> = {
-  [DiffwiseLanguage.EN]: ENGLISH_TEXTS,
-  [DiffwiseLanguage.PL]: POLISH_TEXTS,
-  [DiffwiseLanguage.ZH]: CHINESE_TEXTS,
-  [DiffwiseLanguage.ES]: SPANISH_TEXTS,
-  [DiffwiseLanguage.HI]: HINDI_TEXTS,
-  [DiffwiseLanguage.FR]: FRENCH_TEXTS,
-  [DiffwiseLanguage.RU]: RUSSIAN_TEXTS,
-  [DiffwiseLanguage.PT]: PORTUGUESE_TEXTS,
-  [DiffwiseLanguage.IT]: ITALIAN_TEXTS,
-  [DiffwiseLanguage.JA]: JAPANESE_TEXTS,
-  [DiffwiseLanguage.DE]: GERMAN_TEXTS,
-  [DiffwiseLanguage.KO]: KOREAN_TEXTS,
-};
+/** Warns in development mode; the console puts the language at `%s`. */
+const LANGUAGE_NOT_PROVIDED_WARNING =
+  'Diffwise shows English in place of the language "%s": the app does not provide it with provideDiffwiseLanguages().';
 
 /**
  * Language tags of the interface languages, for the `lang` attribute of the interface texts. Chinese
@@ -92,6 +70,31 @@ export function resolveLanguage(language: DiffwiseLanguage, localeId: string): U
   return appLanguage;
 }
 
+/**
+ * The language of the interface with its texts: the one of `resolveLanguage()` when it is English
+ * or the app provides it with `provideDiffwiseLanguages()`, or else English. In development mode,
+ * warns about a language that the app does not provide.
+ */
+export function interfaceLanguageOf(
+  language: DiffwiseLanguage,
+  localeId: string,
+  providedLanguages: readonly DiffwiseLanguagePack[],
+): DiffwiseLanguagePack {
+  const resolved = resolveLanguage(language, localeId);
+
+  if (resolved === DiffwiseLanguage.EN) {
+    return ENGLISH;
+  }
+
+  const provided = providedLanguages.find((candidate) => candidate.language === resolved);
+
+  if (provided === undefined) {
+    warn(LANGUAGE_NOT_PROVIDED_WARNING, resolved);
+  }
+
+  return provided ?? ENGLISH;
+}
+
 /** True for the parts of a Portuguese locale after its language without a region, or for Portugal. */
 function hasPortugueseRegion(subtags: readonly string[]): boolean {
   const region = regionOf(subtags);
@@ -110,5 +113,5 @@ function regionOf(subtags: readonly string[]): string | null {
 
 /** True for a language that the interface has texts in. */
 function isUiLanguage(language: string): language is UiLanguage {
-  return Object.hasOwn(LANGUAGE_TEXTS, language);
+  return Object.hasOwn(LANGUAGE_TAGS, language);
 }

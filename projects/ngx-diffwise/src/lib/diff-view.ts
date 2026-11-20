@@ -82,11 +82,17 @@ import {
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
 } from './config/option-values';
+import { DIFFWISE_LANGUAGES } from './config/provide-diffwise-languages';
 import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import type { ToolbarNavigation } from './toolbar/diff-toolbar';
-import { LANGUAGE_TEXTS, languageTag, resolveLanguage } from './i18n/resolve-language';
-import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
+import { interfaceLanguageOf, languageTag } from './i18n/resolve-language';
+import {
+  type DiffwiseCustomTexts,
+  type DiffwiseLanguagePack,
+  type UiTexts,
+  withCount,
+} from './i18n/texts';
 import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
@@ -197,6 +203,9 @@ const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 const NO_SHOWN_GROUPS: ReadonlySet<number> = new Set();
 
 const NO_CHANGED_LINES: DiffStats = { addedLines: 0, removedLines: 0, changedLines: 0 };
+
+/** Languages of an app that provides none besides English. */
+const NO_PROVIDED_LANGUAGES: readonly DiffwiseLanguagePack[] = [];
 
 /** The comparison of a diff waiting for its turn among the diffs of the page: no rows yet. */
 const NO_COMPARISON: Comparison = {
@@ -430,6 +439,12 @@ export abstract class DiffView {
   readonly showAllWhitespace = input<boolean>();
 
   /**
+   * From this number of lines of the longer version, the diff shows a button in place of the rows,
+   * which draws them; `0` turns it off. Wins over `config` and the global configuration.
+   */
+  readonly largeDocumentLines = input<number>();
+
+  /**
    * Shows the toolbar above the diff, which says anyway that the versions are the same; wins over
    * `config` and the global configuration.
    */
@@ -584,6 +599,8 @@ export abstract class DiffView {
   private readonly diffwise = inject(Diffwise);
   private readonly colorScheme = inject(ColorScheme);
   private readonly localeId = inject(LOCALE_ID);
+  private readonly providedLanguages =
+    inject(DIFFWISE_LANGUAGES, { optional: true }) ?? NO_PROVIDED_LANGUAGES;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly pendingTasks = inject(PendingTasks);
@@ -633,6 +650,7 @@ export abstract class DiffView {
     contextLines: this.contextLines(),
     wrapLines: this.wrapLines(),
     showAllWhitespace: this.showAllWhitespace(),
+    largeDocumentLines: this.largeDocumentLines(),
     showToolbar: this.showToolbar(),
     showNavigationToolbar: this.showNavigationToolbar(),
     activeChangeStyle: this.activeChangeStyle(),
@@ -750,19 +768,25 @@ export abstract class DiffView {
     isDarkColorMode(this.effectiveConfig().colorMode, () => this.autoModeIsDark()),
   );
 
-  /** Language of the interface; it also joins lists in the tooltips. */
-  private readonly uiLanguage = computed(() =>
-    resolveLanguage(this.effectiveConfig().language, this.localeId),
+  /** Language option of the diff; other options changing do not choose the language again. */
+  private readonly languageOption = computed(() => this.effectiveConfig().language);
+
+  /** Language of the interface with its texts, among English and the languages of the app. */
+  private readonly interfaceLanguage = computed(() =>
+    interfaceLanguageOf(this.languageOption(), this.localeId, this.providedLanguages),
   );
+
+  /** Language of the interface; it also joins lists in the tooltips. */
+  private readonly uiLanguage = computed(() => this.interfaceLanguage().language);
 
   /** Tag of the interface language, so that screen readers pronounce its texts in that language. */
   protected readonly uiLanguageTag = computed(() => languageTag(this.uiLanguage()));
 
   /** Texts of the interface in its language, with the custom texts of the app. */
-  protected readonly texts = computed<UiTexts>(() => {
-    const languageTexts = LANGUAGE_TEXTS[this.uiLanguage()];
-    return { ...languageTexts, ...this.effectiveConfig().customTexts };
-  });
+  protected readonly texts = computed<UiTexts>(() => ({
+    ...this.interfaceLanguage().texts,
+    ...this.effectiveConfig().customTexts,
+  }));
 
   /** Describes changes besides text in the language of the interface. */
   protected readonly describer = computed(() => {
@@ -858,7 +882,7 @@ export abstract class DiffView {
   protected readonly widestLinesText = computed(() => {
     const showsLines = this.showsDocumentOnce() || this.showsBothVersions();
 
-    if (!this.scrollsLinesSideways() || !showsLines) {
+    if (!this.scrollsLinesSideways() || !showsLines || this.waitsForRowsRequest()) {
       return null;
     }
 
@@ -1010,8 +1034,41 @@ export abstract class DiffView {
     firstItems(this.visibleSingleColumnRows(), this.drawnRowCount()),
   );
 
-  /** Rows and bars of the view shown now; none when it shows only a message. */
+  /** Lines of the longer version, which tell whether the document is large. */
+  private readonly documentLineCount = computed(() => longerVersionLineCount(this.comparison()));
+
+  /** True when the longer version has at least as many lines as `largeDocumentLines`, from 1. */
+  private readonly isLargeDocument = computed(() => {
+    const { largeDocumentLines } = this.effectiveConfig();
+    return largeDocumentLines > 0 && this.documentLineCount() >= largeDocumentLines;
+  });
+
+  /** True once the user asks for the rows of a large document; new versions wait again. */
+  private readonly rowsRequested = linkedSignal<unknown, boolean>({
+    source: () => this.versions(),
+    computation: () => false,
+  });
+
+  /**
+   * True while a large document shows a panel in place of its rows, until the user asks for them;
+   * the toolbar and the numbers of changes show anyway. A view without rows needs no panel.
+   */
+  protected readonly waitsForRowsRequest = computed(() => {
+    const showsRows = this.showsDocumentOnce() || this.showsBothVersions();
+    return this.hasTurn() && showsRows && this.isLargeDocument() && !this.rowsRequested();
+  });
+
+  /** The number of lines of the longer version, in the panel of a large document. */
+  protected readonly documentLinesText = computed(() =>
+    withCount(this.texts().documentLinesLabel, this.documentLineCount()),
+  );
+
+  /** Rows and bars of the view shown now; none when it shows only a message or a panel. */
   private readonly shownItemCount = computed(() => {
+    if (this.waitsForRowsRequest()) {
+      return 0;
+    }
+
     if (this.showsDocumentOnce()) {
       return this.rows().length;
     }
@@ -1312,9 +1369,24 @@ export abstract class DiffView {
     });
   }
 
-  /** Draws every row not drawn yet, such as before a step of the navigation. */
+  /**
+   * Draws every row not drawn yet, such as before a step of the navigation; a large document shows
+   * its rows then too.
+   */
   private drawAllRows(): void {
+    this.rowsRequested.set(true);
     this.drawnRowCount.set(ALL_ROWS);
+  }
+
+  /**
+   * Shows the rows of a large document in place of its panel, in parts as after a comparison. The
+   * button goes with the panel, so the focus moves to the diff, where screen readers continue.
+   */
+  protected showRowsOfLargeDocument(): void {
+    this.rowsRequested.set(true);
+    afterNextRender(() => focusWithoutScrolling(this.host.nativeElement), {
+      injector: this.injector,
+    });
   }
 
   /**
@@ -1402,7 +1474,7 @@ export abstract class DiffView {
       this.diffOptions();
       this.marksAllWhitespace();
 
-      if (this.isDrawing()) {
+      if (this.isDrawing() || this.waitsForRowsRequest()) {
         return;
       }
 
@@ -1841,6 +1913,19 @@ function columnSizersByKey(rows: readonly ViewRow[]): Map<string, string> {
 /** The first `count` items, or the list itself when it has no more. */
 function firstItems<Item>(items: readonly Item[], count: number): readonly Item[] {
   return count >= items.length ? items : items.slice(0, count);
+}
+
+/** Lines of the longer version of a comparison: rows with a line of that version. */
+function longerVersionLineCount(comparison: Comparison): number {
+  let oldLineCount = 0;
+  let newLineCount = 0;
+
+  for (const row of comparison.rows) {
+    oldLineCount += row.oldLine === null ? 0 : 1;
+    newLineCount += row.newLine === null ? 0 : 1;
+  }
+
+  return Math.max(oldLineCount, newLineCount);
 }
 
 /** An id prefix that no other diff on the page uses, such as `diffwise-1`. */
