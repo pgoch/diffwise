@@ -94,6 +94,8 @@ export interface StepOption {
   readonly enabledWhen: OptionCondition | null;
   /** Limits and unit of a number field, or an example of a text field. */
   readonly field: OptionField | null;
+  /** The label of a button under the option that starts the preview over; `null` for none. */
+  readonly restartLabel: string | null;
 }
 
 /** Limits and unit of a number field, or an example in an empty text field. */
@@ -184,6 +186,7 @@ function option(
     choices: [],
     enabledWhen: null,
     field: null,
+    restartLabel: null,
   };
 
   return { ...base, ...parts } as StepOption;
@@ -409,8 +412,9 @@ const LINE_OPTIONS: readonly StepOption[] = [
     description:
       'Lines of the longer version from which the diff shows a button in place of the rows; 0 turns it off.',
     howTo:
-      'Write 10: the preview has more lines, so it shows the numbers of changes and a button, which shows the rows. Write 0, and the rows show at once.',
+      'Write 10: the preview has more lines, so it shows the numbers of changes and a button, which shows the rows. After a click on that button, Show the panel again starts the preview over, so the panel shows again. Write 0, and the rows show at once.',
     field: { min: 0, step: 1, unit: 'lines' },
+    restartLabel: 'Show the panel again',
   }),
 ];
 

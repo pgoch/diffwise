@@ -39,6 +39,25 @@
   font-size: 11.5px;
 }
 
+/* A button under the field, on a line of its own, framed as the buttons of the configurator. */
+.restart-button {
+  flex-basis: 100%;
+  max-width: max-content;
+  margin-top: 6px;
+  padding: 6px 18px;
+  border: 1px solid var(--site-border);
+  border-radius: 8px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.restart-button:hover {
+  border-color: var(--site-muted);
+}
+
 /* Fields under the buttons of an option, such as the name of a font or the texts of headers. */
 .field-row {
   display: flex;

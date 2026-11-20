@@ -34,6 +34,11 @@
         />
         <span class="field-unit">{{ option.field?.unit }}</span>
         <span class="field-default">default {{ defaultOf(option) }}</span>
+        @if (option.restartLabel; as label) {
+          <button type="button" class="restart-button" (click)="state.restartPreview()">
+            {{ label }}
+          </button>
+        }
       </demo-option-control>
     }
     @case (kinds.Text) {
