@@ -173,3 +173,30 @@ describe('DiffwiseHtml drawing rows in parts', () => {
     expect(rowCountOf(fixture)).toBe(ROW_COUNT);
   });
 });
+
+describe('DiffwiseHtml diffs of a page in turns', () => {
+  it('draws the second of two diffs made together after the first, in a task of its own', async () => {
+    const first = TestBed.createComponent(DiffwiseHtml);
+    const second = TestBed.createComponent(DiffwiseHtml);
+    const emittedStats = vi.fn();
+
+    for (const fixture of [first, second]) {
+      fixture.componentRef.setInput(OLD_HTML_INPUT, OLD_HTML);
+      fixture.componentRef.setInput(NEW_HTML_INPUT, NEW_HTML);
+    }
+
+    second.componentInstance.diffStatsComputed.subscribe(emittedStats);
+    first.detectChanges();
+    second.detectChanges();
+
+    expect(rowCountOf(first)).toBe(FIRST_DRAWN_ROWS);
+    expect(rowCountOf(second)).toBe(0);
+    expect(elementOf(second).getAttribute(ARIA_BUSY_ATTRIBUTE)).toBe(BUSY);
+    expect(emittedStats).not.toHaveBeenCalled();
+
+    await second.whenStable();
+
+    expect(rowCountOf(second)).toBe(ROW_COUNT);
+    expect(emittedStats).toHaveBeenCalledTimes(1);
+  });
+});

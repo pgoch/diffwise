@@ -370,10 +370,11 @@ describe('DiffwiseHtml', () => {
     expect(rowsOf(fixture.nativeElement)).toEqual([[LineChangeKind.Changed, 1, 1]]);
   });
 
-  it('gives every diff on the page its own ids, so links stay within their version', () => {
+  it('gives every diff on the page its own ids, so links stay within their version', async () => {
     const fixture = TestBed.createComponent(TwoDiffs);
 
     fixture.detectChanges();
+    await fixture.whenStable();
 
     const element = fixture.nativeElement as HTMLElement;
     const ids = Array.from(element.querySelectorAll(CONTENT_ID_SELECTOR), (found) => found.id);
