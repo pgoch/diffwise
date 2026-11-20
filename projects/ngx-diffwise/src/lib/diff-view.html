@@ -76,7 +76,7 @@
 }
 
 @if (showsDocumentOnce()) {
-  @for (row of rows(); track row.position) {
+  @for (row of drawnDocumentRows(); track row.position) {
     @if (row.newLine; as line) {
       <div class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}">
         @if (lineNumbersShown) {
@@ -120,7 +120,7 @@
     </div>
   }
 
-  @for (item of visibleSingleColumnRows(); track item.position; let position = $index) {
+  @for (item of drawnSingleColumnRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
         [attr.lang]="uiLanguageTag()"
@@ -209,7 +209,7 @@
     </div>
   }
 
-  @for (item of visibleRows(); track item.position; let position = $index) {
+  @for (item of drawnRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
         [attr.lang]="uiLanguageTag()"

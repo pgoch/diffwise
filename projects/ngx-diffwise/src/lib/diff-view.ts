@@ -1,9 +1,11 @@
 import {
+  ChangeDetectorRef,
   DestroyRef,
   Directive,
   ElementRef,
   Injector,
   LOCALE_ID,
+  PendingTasks,
   type EffectCleanupRegisterFn,
   type Signal,
   afterNextRender,
@@ -191,6 +193,18 @@ const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 /** Groups of hidden lines that the user has shown, before the first one. */
 const NO_SHOWN_GROUPS: ReadonlySet<number> = new Set();
 
+/**
+ * Rows and bars drawn at once after a comparison, about two screens; each next part draws as many
+ * as all drawn before it, so a large document shows its first screen without waiting for the rest.
+ */
+const FIRST_DRAWN_ROWS = 120;
+const DRAWN_ROWS_GROWTH = 2;
+
+/** A count of drawn rows that covers any view: every row is drawn. */
+const ALL_ROWS = Number.POSITIVE_INFINITY;
+
+const BEFORE_PRINT_EVENT = 'beforeprint';
+
 /** Stands between the header texts of an app above the single column: "Version 3 → Version 4". */
 const VERSION_ARROW = ' → ';
 
@@ -300,6 +314,7 @@ export interface DiffVersions {
     '[class]': 'modifierClasses()',
     '[class.diffwise-diff--dark-theme]': 'isDark()',
     '[class.diffwise-diff--no-changes]': '!diffStats().hasChanges',
+    '[attr.aria-busy]': 'isDrawing() || null',
     '[style]': 'inlineStyles()',
     '(click)': 'followInPageLink($event)',
   },
@@ -549,6 +564,8 @@ export abstract class DiffView {
   private readonly localeId = inject(LOCALE_ID);
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
+  private readonly pendingTasks = inject(PendingTasks);
+  private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly userSettings = inject(UserSettingsStore);
 
   /** Starts the ids of this diff, so that each diff on the page has its own. */
@@ -927,6 +944,54 @@ export abstract class DiffView {
   );
 
   /**
+   * How many rows and bars of the view are drawn: the first ones at once, then each next part in a
+   * task of its own. Drawing starts again after a new comparison, in another layout, and when the
+   * diff hides unchanged lines or shows them again.
+   */
+  private readonly drawnRowCount = linkedSignal<unknown, number>({
+    source: () => [
+      this.diff(),
+      this.showsSingleColumn(),
+      this.hidesUnchangedLines(),
+      this.shownContextLines(),
+    ],
+    computation: () => FIRST_DRAWN_ROWS,
+  });
+
+  /** Rows of the document shown once, as far as they are drawn. */
+  protected readonly drawnDocumentRows = computed(() =>
+    firstItems(this.rows(), this.drawnRowCount()),
+  );
+
+  /** Rows and bars of the versions side by side, as far as they are drawn. */
+  protected readonly drawnRows = computed(() =>
+    firstItems(this.visibleRows(), this.drawnRowCount()),
+  );
+
+  /** Rows and bars of the single column, as far as they are drawn. */
+  protected readonly drawnSingleColumnRows = computed(() =>
+    firstItems(this.visibleSingleColumnRows(), this.drawnRowCount()),
+  );
+
+  /** Rows and bars of the view shown now; none when it shows only a message. */
+  private readonly shownItemCount = computed(() => {
+    if (this.showsDocumentOnce()) {
+      return this.rows().length;
+    }
+
+    if (!this.showsBothVersions()) {
+      return 0;
+    }
+
+    return this.showsSingleColumn()
+      ? this.visibleSingleColumnRows().length
+      : this.visibleRows().length;
+  });
+
+  /** True while the diff draws the rest of its rows; screen readers hear that it is busy. */
+  protected readonly isDrawing = computed(() => this.drawnRowCount() < this.shownItemCount());
+
+  /**
    * The rows of the active block in the layout shown now; `null` before the first step. In the
    * single column, the lines of a changed pair can be two rows.
    */
@@ -1013,10 +1078,12 @@ export abstract class DiffView {
       onCleanup(stopWatching);
     });
 
+    afterRenderEffect((onCleanup) => this.drawNextRows(onCleanup));
     afterRenderEffect(() => this.prepareMarkers());
     afterRenderEffect(() => this.prepareForKeyboardAndScreenReaders());
     afterRenderEffect((onCleanup) => this.scrollLongLinesTogether(onCleanup));
     afterRenderEffect(() => this.prepareLineScrollbars());
+    this.drawAllRowsBeforePrinting();
     this.emitStatsOfEachComparison();
     this.listenForTooltipTriggers();
     this.scrollTablesTogether();
@@ -1029,6 +1096,7 @@ export abstract class DiffView {
    * at first, and after the last one. The arrow in the toolbar does the same.
    */
   goToNextChange(): void {
+    this.drawAllRows();
     this.navigation.goToNext();
     this.scrollToActiveChange();
   }
@@ -1038,6 +1106,7 @@ export abstract class DiffView {
    * block at first, and before the first one. The arrow in the toolbar does the same.
    */
   goToPreviousChange(): void {
+    this.drawAllRows();
     this.navigation.goToPrevious();
     this.scrollToActiveChange();
   }
@@ -1130,7 +1199,8 @@ export abstract class DiffView {
 
   /**
    * Follows a `#…` link of the content within this diff. The browser would resolve the link
-   * against the app's `<base href>` and could leave the page.
+   * against the app's `<base href>` and could leave the page. While the diff draws its rows, it
+   * draws the rest first, since the target may be among them.
    */
   protected followInPageLink(event: MouseEvent): void {
     const clicked = event.target;
@@ -1142,6 +1212,24 @@ export abstract class DiffView {
 
     event.preventDefault();
 
+    if (this.isDrawing()) {
+      this.drawAllRows();
+      afterNextRender(() => this.goToLinkTarget(link), { injector: this.injector });
+      return;
+    }
+
+    this.goToLinkTarget(link);
+  }
+
+  /** In automatic mode: dark inside the dark mode marker of the app, or else as the system. */
+  private autoModeIsDark(): boolean {
+    return this.watchedDarkMarker() === null
+      ? this.colorScheme.systemPrefersDark()
+      : this.insideDarkMarker();
+  }
+
+  /** Scrolls to the element of this diff that a `#…` link points to, and focuses it. */
+  private goToLinkTarget(link: Element): void {
     const target = this.linkTarget(link);
 
     if (target !== null) {
@@ -1150,11 +1238,56 @@ export abstract class DiffView {
     }
   }
 
-  /** In automatic mode: dark inside the dark mode marker of the app, or else as the system. */
-  private autoModeIsDark(): boolean {
-    return this.watchedDarkMarker() === null
-      ? this.colorScheme.systemPrefersDark()
-      : this.insideDarkMarker();
+  /**
+   * After each drawn part, draws twice as many rows in the next task, until every row shows. The
+   * part counts as pending work of the app, so `whenStable()` waits until every row is drawn.
+   */
+  private drawNextRows(onCleanup: EffectCleanupRegisterFn): void {
+    const drawnCount = this.drawnRowCount();
+
+    if (drawnCount >= this.shownItemCount()) {
+      return;
+    }
+
+    const finishPart = this.pendingTasks.add();
+    const timer = setTimeout(() => {
+      this.drawnRowCount.set(drawnCount * DRAWN_ROWS_GROWTH);
+      finishPart();
+    });
+
+    onCleanup(() => {
+      clearTimeout(timer);
+      finishPart();
+    });
+  }
+
+  /** Draws every row not drawn yet, such as before a step of the navigation. */
+  private drawAllRows(): void {
+    this.drawnRowCount.set(ALL_ROWS);
+  }
+
+  /**
+   * Draws every row at once before the page prints, since printing does not wait for the next
+   * parts.
+   */
+  private drawAllRowsBeforePrinting(): void {
+    const listeners = new AbortController();
+    const view = this.host.nativeElement.ownerDocument.defaultView;
+
+    view?.addEventListener(BEFORE_PRINT_EVENT, () => this.drawAllRowsNow(), {
+      signal: listeners.signal,
+    });
+    this.destroyRef.onDestroy(() => listeners.abort());
+  }
+
+  /** Draws every row not drawn yet within the current task. */
+  private drawAllRowsNow(): void {
+    if (!this.isDrawing()) {
+      return;
+    }
+
+    this.drawAllRows();
+    this.changeDetector.detectChanges();
   }
 
   /** The rows with bars in place of unchanged lines far from changes, when the diff hides them. */
@@ -1189,13 +1322,18 @@ export abstract class DiffView {
 
   /**
    * While the diff shows no merged lines, compares the versions with merged lines once the browser
-   * is idle, after each new comparison. A diff that cannot show merged lines prepares nothing.
+   * is idle, after each new comparison and after every row is drawn, so the comparison does not
+   * hold up the parts still to draw. A diff that cannot show merged lines prepares nothing.
    */
   private prepareMergedLinesWhenIdle(): void {
     afterRenderEffect((onCleanup) => {
       this.versions();
       this.diffOptions();
       this.marksAllWhitespace();
+
+      if (this.isDrawing()) {
+        return;
+      }
 
       if (this.mergesChangedLines() || !this.mayShowMergedLines()) {
         return;
@@ -1263,8 +1401,8 @@ export abstract class DiffView {
 
   /**
    * After new rows, in another layout, with changed lines shown another way, with other lines
-   * hidden, or with details in another place: hides the tooltip, whose trigger may be gone, and lets
-   * marked changes take the focus when no icons show their details.
+   * hidden, with details in another place, or after each drawn part: hides the tooltip, whose
+   * trigger may be gone, and lets marked changes take the focus when no icons show their details.
    */
   private prepareMarkers(): void {
     const { rows } = this.diff();
@@ -1275,6 +1413,7 @@ export abstract class DiffView {
     this.hidesUnchangedLines();
     this.shownContextLines();
     this.shownGroups();
+    this.drawnRowCount();
 
     untracked(() => this.tooltip().hide());
 
@@ -1355,6 +1494,7 @@ export abstract class DiffView {
     this.shownLayout();
     this.visibleRows();
     this.visibleSingleColumnRows();
+    this.drawnRowCount();
     prepareLineScrollbars(this.host.nativeElement, this.texts().longLinesLabel);
   }
 
@@ -1380,8 +1520,8 @@ export abstract class DiffView {
   }
 
   /**
-   * After each drawing of the rows: keeps the copies that screen readers skip out of the order of
-   * `Tab`, and gives each table wider than its column one named stop of `Tab`.
+   * After each drawing of the rows, also of each part: keeps the copies that screen readers skip
+   * out of the order of `Tab`, and gives each table wider than its column one named stop of `Tab`.
    */
   private prepareForKeyboardAndScreenReaders(): void {
     const host = this.host.nativeElement;
@@ -1390,6 +1530,7 @@ export abstract class DiffView {
     this.width();
     this.visibleRows();
     this.visibleSingleColumnRows();
+    this.drawnRowCount();
     this.shownLayout();
 
     for (const copy of host.querySelectorAll(HIDDEN_COPY_SELECTOR)) {
@@ -1559,6 +1700,11 @@ export abstract class DiffView {
 
     return Array.from(targets).find((target) => isLinkTarget(target, fragment)) ?? null;
   }
+}
+
+/** The first `count` items, or the list itself when it has no more. */
+function firstItems<Item>(items: readonly Item[], count: number): readonly Item[] {
+  return count >= items.length ? items : items.slice(0, count);
 }
 
 /** An id prefix that no other diff on the page uses, such as `diffwise-1`. */
