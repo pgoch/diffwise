@@ -4,6 +4,8 @@ import {
   DiffwiseConfig,
   type DiffwiseConfigOptions,
   DiffwiseFontFamily,
+  DiffwiseLanguage,
+  type DiffwiseLanguagePack,
   DiffwiseLayout,
   DiffwisePalette,
   DiffwiseUserSetting,
@@ -56,6 +58,18 @@ export const appConfig: ApplicationConfig = {
   ],
 };`;
 
+const POLISH_OBJECT = `import { ApplicationConfig } from '@angular/core';
+import { diffwisePolish, provideDiffwise, provideDiffwiseLanguages } from 'ngx-diffwise';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideDiffwise({
+      language: 'pl',
+    }),
+    provideDiffwiseLanguages(diffwisePolish),
+  ],
+};`;
+
 /** Options of every kind: numbers, texts with quotes, lists, objects and a named font. */
 const RICH_OPTIONS: DiffwiseConfigOptions = {
   colorMode: DiffwiseColorMode.Auto,
@@ -80,18 +94,34 @@ const PROVIDERS_END = '],';
 const IMPORT_NAMES = /import \{([^}]*)\} from 'ngx-diffwise'/;
 
 /**
- * The options that the code gives to `provideDiffwise`: its list of providers runs with the
- * exports of the library, and `provideDiffwise` gives back what it gets.
+ * What the code gives to each provider function: its list of providers runs with the exports of
+ * the library, and `provideDiffwise` and `provideDiffwiseLanguages` give back what they get.
  */
-function providedOptions(code: string): unknown {
+function providersOf(code: string): unknown[] {
   const start = code.indexOf(PROVIDERS_START) + PROVIDERS_START.length;
   const providers = code.slice(start, code.lastIndexOf(PROVIDERS_END) + 1);
-  const scope = { ...library, provideDiffwise: (config: unknown) => config };
+  const scope = {
+    ...library,
+    provideDiffwise: (config: unknown) => config,
+    provideDiffwiseLanguages: (...languages: DiffwiseLanguagePack[]) => languages,
+  };
   const run = new Function(...Object.keys(scope), `return ${providers};`) as (
     ...values: unknown[]
   ) => unknown[];
 
-  return run(...Object.values(scope))[0];
+  return run(...Object.values(scope));
+}
+
+/** The options that the code gives to `provideDiffwise`. */
+function providedOptions(code: string): unknown {
+  return providersOf(code)[0];
+}
+
+/** The languages that the code gives to `provideDiffwiseLanguages`, if it calls it. */
+function providedLanguages(code: string): DiffwiseLanguage[] | undefined {
+  const languages = providersOf(code)[1] as DiffwiseLanguagePack[] | undefined;
+
+  return languages?.map(({ language }) => language);
 }
 
 /** The names the code imports from the library. */
@@ -175,6 +205,24 @@ describe('configCode', () => {
       expect(importedNames(code).every((name) => Object.hasOwn(library, name))).toBe(true);
     });
   }
+
+  it('gives the chosen language besides English to provideDiffwiseLanguages, with its import', () => {
+    expect(configCode({ language: DiffwiseLanguage.PL }, ConfigForm.PlainObject)).toBe(
+      POLISH_OBJECT,
+    );
+
+    for (const form of Object.values(ConfigForm)) {
+      for (const language of Object.values(DiffwiseLanguage)) {
+        const code = configCode({ language }, form);
+        const isProvided = language !== DiffwiseLanguage.EN && language !== DiffwiseLanguage.Auto;
+
+        expect(providedLanguages(code), `${language} ${form}`).toEqual(
+          isProvided ? [language] : undefined,
+        );
+        expect(importedNames(code).every((name) => Object.hasOwn(library, name))).toBe(true);
+      }
+    }
+  });
 
   it('keeps every line within the width of Prettier in an Angular app', () => {
     for (const form of Object.values(ConfigForm)) {
