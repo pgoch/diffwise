@@ -2,7 +2,7 @@
 
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup. A second component does the same for plain text.
 
-> **Status: version 0.7, an early preview.** It is not on npm yet; the first release is planned with version 0.9. The API may change before 1.0.
+> **Status: version 0.8, an early preview.** It is not on npm yet; the first release is planned with version 0.9. The API may change before 1.0.
 
 ## Why Diffwise?
 
@@ -17,7 +17,7 @@ Diffwise fills that gap:
 - You can use it anywhere you have access to the HTML of both versions, whatever editor or system produced it.
 - It is designed to be highly configurable, so you can adapt it to your own needs: colors, marking styles, layout, line numbers and the controls your users see.
 
-## What 0.7 does
+## What 0.8 does
 
 - Shows two versions side by side, one row per paragraph, heading, list item or table row, with line numbers.
 - Compares plain text line by line with a second component, `<diffwise-text>`, in the same views and with the same options. Spaces, tabs and indentation stay as in the text, changed spaces and tabs show as `·` and `→`, and the lines have a font of fixed width, which users can switch to the regular font. Long lines can stay in one row and scroll sideways together, every space and tab can show its sign, and blank lines added or removed can be left out of the changes.
@@ -35,12 +35,13 @@ Diffwise fills that gap:
 - Light, dark and automatic color modes, following the system or the dark mode of your app.
 - A colorblind-friendly palette, orange and blue, and a high contrast palette, with changes in frames instead of colored backgrounds.
 - Readable with screen readers, which hear "Changed line 2, before" before a change, and with the keyboard alone; changes stay visible in the high contrast mode of Windows. See [Accessibility](docs/accessibility.md).
-- Interface in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, or with your own texts.
+- Interface in 12 languages: English, Polish, Chinese, Spanish, Hindi, French, Russian, Portuguese, Italian, Japanese, German and Korean, or with your own texts. Your app adds the languages besides English that it uses, so the others stay out of its bundle.
+- Long documents show their first rows soon and draw the rest in parts, so the page answers in the meantime; the diffs of a page draw one by one, the visible ones first. From 20 000 lines, a diff shows the numbers of changes at once and its rows on request.
 - Many options for the look: marking styles, color intensity, contrast, line numbers, the column between the versions, icons, tooltips, fonts and your own colors.
 - Options to ignore whitespace, blank lines, letter case, formatting or link changes.
 - Configuration on three levels: global defaults, changes while the app runs, and inputs of each diff.
 
-A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: better performance and, with version 0.9, the first release on npm.
+A code block of a document is still one line. The [roadmap](docs/roadmap.md) shows what comes next: with version 0.9, final tests and the first release on npm.
 
 ## Installation
 

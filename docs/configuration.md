@@ -1,6 +1,6 @@
 # Configuration
 
-This page describes version 0.7. Diffwise works without any setup: every option has a default, and you set only what you want to change. The configurator of the [demo app](../README.md#demo) leads you through the options step by step, with a live preview, and gives you the configuration of your choices, ready to copy.
+This page describes version 0.8. Diffwise works without any setup: every option has a default, and you set only what you want to change. The configurator of the [demo app](../README.md#demo) leads you through the options step by step, with a live preview, and gives you the configuration of your choices, ready to copy.
 
 ## Two diffs
 
@@ -98,8 +98,11 @@ const darkCompactView = compactView.with({ colorMode: DiffwiseColorMode.Dark });
 | `contextLines` | `1` to `100` | `3` | With `hideUnchangedLines`, the unchanged lines that stay shown above and below each change |
 | `wrapLines` | `true`, `false` | `true` | Only in the text diff: breaks a long line into several rows of text. With `false`, each line stays in one row, and the lines of both versions scroll sideways together: by the scrollbars under the versions, which stay at the bottom of the window while the diff is in view, or with `Shift` and the wheel, or a touchpad, over a line. The line numbers stay in place. The user can switch it in the view settings |
 | `showAllWhitespace` | `true`, `false` | `false` | Only in the text diff: shows each space as `·` and each tab as `→` in every line, lighter outside changed text. With `false`, only changed spaces and tabs show them. The user can switch it in the view settings |
+| `largeDocumentLines` | a whole number from `0` | `20000` | From this number of lines of the longer version, the diff shows a panel with a button in place of the rows, and draws the rows when the user asks for them. `0` turns it off |
 
 Hidden lines are not rendered at all, so a long document with few changes opens faster. A single unchanged line is never hidden, as its bar would take as much room. Lines the user has shown stay shown until the versions or the options of the comparison change, or until `hideUnchangedLines` or `contextLines` changes. With `dividerStyle: 'line'`, the bar is a small button on the line between the versions, "Hidden lines: 12".
+
+**Large documents.** Drawing tens of thousands of lines takes seconds. From `largeDocumentLines` lines of the longer version, the diff still compares the versions at once, so the toolbar shows the numbers of changes and `(diffStatsComputed)` emits them, but in place of the rows it shows "Large document", the number of lines, such as "Lines: 52340", and the button "Show the comparison". The button draws the rows in parts, as after each comparison, and the focus moves to the diff, since the button goes. A step of the navigation draws them too. New versions show the panel again; other options keep the rows. Until the rows show, the find of the browser does not see them, and printing prints the panel.
 
 ### Layout
 
@@ -181,27 +184,43 @@ Only these options, and `showAllWhitespace`, which puts the signs into the lines
 
 | Option | Values | Default | What it does |
 |---|---|---|---|
-| `language` | `DiffwiseLanguage.Auto`, or one of the languages below | `Auto` | Language of the interface. `Auto` takes the language of your app from `LOCALE_ID` |
+| `language` | `DiffwiseLanguage.Auto`, or one of the languages below | `Auto` | Language of the interface. `Auto` takes the language of your app from `LOCALE_ID`. A language besides English needs its texts from `provideDiffwiseLanguages()` |
 | `customTexts` | `DiffwiseCustomTexts`, or `null` | none | Your own texts of the interface; see [Your own texts](#your-own-texts) |
 
-The interface comes in twelve languages, all in the package:
+The interface comes in twelve languages. English is always in your app. Each other language is a constant of its own, which you give to `provideDiffwiseLanguages()` next to `provideDiffwise()`, the way `registerLocaleData()` of Angular adds the data of a locale. The languages you leave out stay out of your app when it builds, about 13 kB after compression for all eleven:
 
-| Language | Constant | Value |
-|---|---|---|
-| English | `DiffwiseLanguage.EN` | `'en'` |
-| Polish | `DiffwiseLanguage.PL` | `'pl'` |
-| Chinese, in simplified characters | `DiffwiseLanguage.ZH` | `'zh'` |
-| Spanish | `DiffwiseLanguage.ES` | `'es'` |
-| Hindi | `DiffwiseLanguage.HI` | `'hi'` |
-| French | `DiffwiseLanguage.FR` | `'fr'` |
-| Russian | `DiffwiseLanguage.RU` | `'ru'` |
-| Portuguese, in the words and spelling of Portugal | `DiffwiseLanguage.PT` | `'pt'` |
-| Italian | `DiffwiseLanguage.IT` | `'it'` |
-| Japanese | `DiffwiseLanguage.JA` | `'ja'` |
-| German | `DiffwiseLanguage.DE` | `'de'` |
-| Korean | `DiffwiseLanguage.KO` | `'ko'` |
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { diffwiseGerman, diffwisePolish, provideDiffwise, provideDiffwiseLanguages } from 'ngx-diffwise';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideDiffwise({ language: 'auto' }),
+    provideDiffwiseLanguages(diffwisePolish, diffwiseGerman),
+  ],
+};
+```
+
+| Language | Constant of the option | Value | Texts for `provideDiffwiseLanguages()` |
+|---|---|---|---|
+| English | `DiffwiseLanguage.EN` | `'en'` | always in the app |
+| Polish | `DiffwiseLanguage.PL` | `'pl'` | `diffwisePolish` |
+| Chinese, in simplified characters | `DiffwiseLanguage.ZH` | `'zh'` | `diffwiseChinese` |
+| Spanish | `DiffwiseLanguage.ES` | `'es'` | `diffwiseSpanish` |
+| Hindi | `DiffwiseLanguage.HI` | `'hi'` | `diffwiseHindi` |
+| French | `DiffwiseLanguage.FR` | `'fr'` | `diffwiseFrench` |
+| Russian | `DiffwiseLanguage.RU` | `'ru'` | `diffwiseRussian` |
+| Portuguese, in the words and spelling of Portugal | `DiffwiseLanguage.PT` | `'pt'` | `diffwisePortuguese` |
+| Italian | `DiffwiseLanguage.IT` | `'it'` | `diffwiseItalian` |
+| Japanese | `DiffwiseLanguage.JA` | `'ja'` | `diffwiseJapanese` |
+| German | `DiffwiseLanguage.DE` | `'de'` | `diffwiseGerman` |
+| Korean | `DiffwiseLanguage.KO` | `'ko'` | `diffwiseKorean` |
+
+Call `provideDiffwiseLanguages()` in the providers of your app; more calls there add their languages too. Each constant has the type `DiffwiseLanguagePack`.
 
 **`Auto`** takes the language of `LOCALE_ID` with or without its region or script, so `pl-PL` gives Polish and `de-AT` German. Every Chinese locale, such as `zh-CN` or `zh-TW`, gives Chinese in simplified characters. Portuguese goes only to `pt` and `pt-PT`, also with a script, such as `pt-Latn-PT`; Portuguese of another region gives English. A language the interface has no texts in gives English too.
+
+**A language your app does not provide**, set in `language` or taken by `Auto` from `LOCALE_ID`, gives English, and in development mode a warning in the console names it.
 
 The texts of the interface carry the tag of their language in `lang`, so screen readers pronounce them in that language also on a page in another one; Chinese is `zh-Hans`. The documents keep the language of your page.
 
@@ -384,6 +403,14 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 | `showHiddenLinesLabel` | Show hidden lines: {count} | Pokaż ukryte linie: {count} | The bar in place of hidden lines; `{count}` stands for their number |
 | `hiddenLinesLabel` | Hidden lines: {count} | Ukryte linie: {count} | The same bar as a button on the line between the versions, with `dividerStyle: 'line'` |
 
+### Texts of a large document
+
+| Text | English | Polish | Where it shows |
+|---|---|---|---|
+| `largeDocumentLabel` | Large document | Duży dokument | The title of the panel in place of the rows, from `largeDocumentLines` lines |
+| `documentLinesLabel` | Lines: {count} | Linie: {count} | The lines of the longer version in that panel; `{count}` stands for their number |
+| `showComparisonLabel` | Show the comparison | Pokaż porównanie | The button of the panel, which draws the rows |
+
 ### Texts of the toolbar
 
 | Text | English | Polish | Where it shows |
@@ -419,7 +446,7 @@ A color, a font, a size or an alignment is shown with its value, as in "text col
 
 | Member | What it does |
 |---|---|
-| `(diffStatsComputed)` | Emits `DiffwiseDiffStats` after each comparison: when the versions or the options of the comparison change. Options of the look do not compare the versions again, so they emit nothing |
+| `(diffStatsComputed)` | Emits `DiffwiseDiffStats` after each comparison: when the versions or the options of the comparison change. Options of the look do not compare the versions again, so they emit nothing. A large document emits them before its rows show |
 | `(userSettingsChange)` | Emits `DiffwiseUserSettings` after each choice of the user in the view settings of this diff, also "Custom", and after "Restore defaults", with all choices under its key. Changes made by your app emit nothing |
 | `goToNextChange()`, `goToPreviousChange()` | Step to the next or the previous block of changes and scroll it into view, as the arrows do, also when the arrows are hidden |
 
@@ -547,6 +574,10 @@ Options that only show or hide a part, such as `hideUnchangedLines`, `showNaviga
 | `diffwise-diff__gap` | The empty place opposite an added or a removed line, or opposite a blank line that `ignoreBlankLines` leaves out of the changes |
 | `diffwise-diff__gap--cell` | An empty cell of a merged table row, in a column that the version of the row does not have; the classes stand on the cell |
 | `diffwise-diff__collapsed-lines` | The bar in place of hidden lines; the whole bar is a button |
+| `diffwise-diff__large-document` | The panel in place of the rows of a large document |
+| `diffwise-diff__large-document-title` | Its title, "Large document" |
+| `diffwise-diff__large-document-lines` | The number of its lines, such as "Lines: 52340" |
+| `diffwise-diff__large-document-button` | The button "Show the comparison" |
 | `diffwise-diff__toolbar` | The toolbar above the diff |
 | `diffwise-diff__navigation` | The arrows with the counter |
 | `diffwise-diff__navigation-button`, with `--previous` or `--next` | An arrow |

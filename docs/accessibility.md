@@ -1,6 +1,6 @@
 # Accessibility
 
-This page describes version 0.7. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
+This page describes version 0.8. Diffwise aims at level AA of WCAG 2.2: readers who use the keyboard, a screen reader, a high contrast mode or a strong zoom should learn from the diff what everyone else does. The HTML diff and the text diff share one view, so all of this applies to both, unless it names one of them.
 
 Version 0.5 was checked in Chrome: its accessibility tree, which screen readers read, real key presses, the emulated high contrast mode, a 320 px wide window, wider text spacing, and contrast measured in the page. The text diff of version 0.6 uses the same view, and so do the options of the text diff of version 0.7. Diffwise has not been tested with a screen reader such as NVDA, JAWS or VoiceOver yet.
 
@@ -13,6 +13,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - A tooltip shows when its icon gets the focus, or its marked change with `changeDetails: 'hover'`. Escape hides it.
 - A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it. Long lines of the text diff that do not wrap have one stop too: the scrollbar of the new version, named "Long lines, scroll sideways", while a line is wider than its column.
 - Side by side, the old copy of an unchanged line is not in the order of `Tab`, so each link of the documents is one stop. A click on its links still works.
+- A large document shows the button "Show the comparison" in place of its rows. The button goes with the panel, so the focus moves to the diff, and `Tab` goes on into the rows.
 
 ## Screen readers
 
@@ -25,6 +26,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - Each icon of changes is named by the title of its tooltip, such as "Link address changed", and the lines under the title describe it.
 - After a step of the navigation, screen readers hear "Change 2 of 3". The numbers of changed lines are named, such as "Added lines: 3".
 - The view settings are a dialog named "View settings", with a named group for each option; the chosen value is a pressed button.
+- While the diff draws its rows in parts, and while it waits for its turn among the diffs of a page, screen readers hear that it is busy (`aria-busy`). A large document that waits for the button is not busy: its panel says "Large document" and the number of its lines.
 - The texts of the interface carry the tag of their language in `lang`, so they are pronounced in that language on a page in another one. The documents keep the language of your page.
 
 The descriptions are texts of the interface, so they come in each of its languages and can be changed with `customTexts`; see [Texts for screen readers](configuration.md#texts-for-screen-readers).
