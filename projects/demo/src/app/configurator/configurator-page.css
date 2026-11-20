@@ -355,6 +355,16 @@
   color: var(--site-on-accent);
 }
 
+/* In the high contrast mode, a chosen button takes the colors of a selection of the system. */
+@media (forced-colors: active) {
+  .preview-switch button[aria-pressed='true'] {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
 /* In a narrow window: the current step alone, and the preview under the options. */
 @media (max-width: 960px) {
   .flow-steps {

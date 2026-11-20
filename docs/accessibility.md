@@ -49,7 +49,8 @@ In the high contrast mode of Windows (forced colors), the browser replaces the c
 - a changed image or checkbox in the same frames;
 - a bar at the number of a changed line, from orange to blue in a merged line of the single column;
 - diagonal stripes opposite an added or a removed line;
-- frames around the changed parts of the values in a tooltip.
+- frames around the changed parts of the values in a tooltip;
+- the colors of a selection of the system on the chosen values of the view settings.
 
 The text of the documents keeps the colors of the system.
 
