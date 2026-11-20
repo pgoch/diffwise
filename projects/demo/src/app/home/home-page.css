@@ -124,6 +124,16 @@ a {
   font-size: 12.5px;
 }
 
+/* The link in the line of the version, underlined because the line is muted. */
+.meta a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.meta a:hover {
+  color: var(--site-text);
+}
+
 /* The diff in the frame of a window. */
 .shot {
   overflow: hidden;

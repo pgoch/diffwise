@@ -5,7 +5,7 @@ import { Title } from '@angular/platform-browser';
 import { ConfiguratorPage } from './configurator/configurator-page';
 import { DemoPage } from './demo/demo-page';
 import { HomePage } from './home/home-page';
-import { DOCS_URL, GITHUB_URL, VERSION } from './site';
+import { DOCS_URL, GITHUB_URL, NPM_URL, VERSION } from './site';
 
 /** Pages of the site. */
 const Page = {
@@ -48,7 +48,7 @@ export class App {
   protected readonly pages = Page;
 
   /** Links of the bar on top, for the template. */
-  protected readonly links = { docs: DOCS_URL, github: GITHUB_URL };
+  protected readonly links = { docs: DOCS_URL, github: GITHUB_URL, npm: NPM_URL };
 
   /** The version in the bar on top. */
   protected readonly version = VERSION;

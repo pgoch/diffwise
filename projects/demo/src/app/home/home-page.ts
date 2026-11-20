@@ -8,7 +8,7 @@ import {
 import { DiffwiseColorMode, DiffwiseHtml } from 'ngx-diffwise';
 
 import { ownOptions } from '../diff-options';
-import { DOCS_URL, ISSUES_URL, VERSION } from '../site';
+import { CHANGELOG_URL, DOCS_URL, ISSUES_URL, VERSION } from '../site';
 
 /** The command that adds Diffwise to an app. */
 const INSTALL_COMMAND = 'npm install ngx-diffwise';
@@ -111,8 +111,8 @@ export class HomePage {
   /** The version of Diffwise. */
   protected readonly version = VERSION;
 
-  /** Links to the repository and to its issues. */
-  protected readonly links = { issues: ISSUES_URL };
+  /** Links to the issues and to the changelog of the repository. */
+  protected readonly links = { issues: ISSUES_URL, changelog: CHANGELOG_URL };
 
   /** The command that adds Diffwise to an app. */
   protected readonly installCommand = INSTALL_COMMAND;
