@@ -75,6 +75,17 @@ describe('diffHtml with merged lines', () => {
     );
   });
 
+  it('puts removed text before added text, when it stood at a space inside the added text', () => {
+    expect(
+      mergedLine(
+        '<p>Plans, 20 euros a month for each user.</p>',
+        '<p>Plans,free now for each user.</p>',
+      ),
+    ).toBe(
+      `<p>Plans, <del ${REPLACED}>20 euros a month</del>${HIDDEN_SPACE}<ins ${ADDED}>free now</ins> for each user.</p>`,
+    );
+  });
+
   it('puts removed text where it stood, with a space on each side', () => {
     expect(
       mergedLine('<p>You can create one account today.</p>', '<p>You can create today.</p>'),

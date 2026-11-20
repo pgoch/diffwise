@@ -182,7 +182,7 @@ export function serialized(content: DocumentFragment): string {
  * not a piece of longer removed text. An image replaced by another one is such a changed image.
  */
 function oldParts(
-  { removed }: WordChanges,
+  { removed, added }: WordChanges,
   { oldRanges, newRanges, details }: DescribedChanges,
 ): OldPart[] {
   const imageRanges = oldRanges.filter((range) => describesImage(range, details));
@@ -195,12 +195,22 @@ function oldParts(
   );
   const textParts = removedText.map((range) => ({
     ranges: [range, ...imagesInLongerText.filter((imageRange) => isInside(imageRange, range))],
-    newPosition: range.newPosition,
+    newPosition: placeBeforeAddedText(range.newPosition, added),
     isChangedImage: false,
   }));
   const imageParts = imagesOfTheirOwn.flatMap((range) => changedImagePart(range, newRanges));
 
   return [...textParts, ...imageParts];
+}
+
+/**
+ * The place of removed text in the new line: where it stood, or the start of the added text around
+ * that place, so the removed text goes before the added text and not into it. Added words joined
+ * across a space surround such a place when the old line had that space before the removed text.
+ */
+function placeBeforeAddedText(position: number, added: readonly TextRange[]): number {
+  const surrounding = added.find(({ start, end }) => start < position && position < end);
+  return surrounding?.start ?? position;
 }
 
 /** True when one of the details of the range is a change of an image. */
