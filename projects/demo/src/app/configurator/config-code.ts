@@ -132,8 +132,7 @@ export function configCode(options: DiffwiseConfigOptions, form: ConfigForm): st
   const usesClass = form === ConfigForm.DiffwiseConfig;
   const values = usesClass ? withConstants(options) : options;
   const names = usesClass ? [...constantNamesOf(options), CONFIG_CLASS] : [];
-  const language =
-    options.language === undefined ? undefined : LANGUAGE_CONSTANTS[options.language];
+  const language = languageConstantOf(options);
   const languageNames = language === undefined ? [] : [language, LANGUAGES_FUNCTION];
   const providers =
     Object.keys(options).length === 0
@@ -153,6 +152,16 @@ export function configCode(options: DiffwiseConfigOptions, form: ConfigForm): st
     ...providers,
     CONFIG_END,
   ].join('\n');
+}
+
+/** True when the configuration gives the chosen language to `provideDiffwiseLanguages`. */
+export function providesLanguages(options: DiffwiseConfigOptions): boolean {
+  return languageConstantOf(options) !== undefined;
+}
+
+/** The constant of the chosen language besides English; `undefined` for English and `Auto`. */
+function languageConstantOf(options: DiffwiseConfigOptions): string | undefined {
+  return options.language === undefined ? undefined : LANGUAGE_CONSTANTS[options.language];
 }
 
 /** The line of `provideDiffwiseLanguages(…)` with the constant of the language, if there is one. */

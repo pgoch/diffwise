@@ -16,7 +16,7 @@ import type {
 } from 'ngx-diffwise';
 
 import type { Choice } from '../choice';
-import { ConfigForm, configCode } from './config-code';
+import { ConfigForm, configCode, providesLanguages } from './config-code';
 import { ConfiguratorState } from './configurator-state';
 import { FONT_CHOICES, HEADERS_CHOICES, USER_SETTING_CHOICES } from './step-options';
 import { type ConfiguratorStep, OptionKind, type StepOption } from './steps';
@@ -87,6 +87,11 @@ export class ResultStep {
 
   /** The text of `app.config.ts` in the form that shows. */
   protected readonly code = computed(() => configCode(this.state.resultOptions(), this.form()));
+
+  /** True when the code gives a language to `provideDiffwiseLanguages`, which stays for one diff too. */
+  protected readonly keepsLanguagesInProviders = computed(() =>
+    providesLanguages(this.state.resultOptions()),
+  );
 
   /** The changed options, with their values as people read them. */
   protected readonly changes = computed<readonly ShownChange[]>(() =>

@@ -1,5 +1,5 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
-import { DiffwiseColorMode } from 'ngx-diffwise';
+import { DiffwiseColorMode, DiffwiseLanguage } from 'ngx-diffwise';
 
 import { serveSampleFiles } from '../../testing/sample-files';
 import { ConfigForm, configCode } from './config-code';
@@ -8,6 +8,8 @@ import { ConfiguratorPage } from './configurator-page';
 import { STEPS, StepId } from './steps';
 
 const CODE_SELECTOR = '.code';
+const CODE_NOTE_SELECTOR = '.code-note';
+const LANGUAGES_NOTE = 'Keep provideDiffwiseLanguages() in the providers of your app';
 const FORM_BUTTON_SELECTOR = '.form-switch button';
 const COPY_BUTTON_SELECTOR = '.code-head .button--primary';
 const CHANGE_SELECTOR = '.change-text';
@@ -104,6 +106,25 @@ describe('ResultStep', () => {
       'Options for the user: None',
     ]);
     expect(elementOf(fixture, PREVIEW_SELECTOR).hidden).toBe(true);
+  });
+
+  it('says that the languages stay in the providers for one diff when the code gives one', async () => {
+    TestBed.inject(ConfiguratorState).setOption('language', DiffwiseLanguage.PL);
+
+    const fixture = await renderResult();
+    const [diffNote] = textsOf(fixture, CODE_NOTE_SELECTOR);
+
+    expect(elementOf(fixture, CODE_SELECTOR).textContent).toContain('provideDiffwiseLanguages(');
+    expect(diffNote).toContain(LANGUAGES_NOTE);
+  });
+
+  it('says nothing of the languages when the code gives none', async () => {
+    chooseOptions();
+
+    const fixture = await renderResult();
+    const [diffNote] = textsOf(fixture, CODE_NOTE_SELECTOR);
+
+    expect(diffNote).not.toContain(LANGUAGES_NOTE);
   });
 
   it('shows the configuration as a DiffwiseConfig on request', async () => {
