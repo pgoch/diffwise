@@ -165,6 +165,7 @@ describe('StepOptions', () => {
       'Lines around changes',
       'Wrap lines',
       'All spaces and tabs',
+      'Large document from',
     ]);
   });
 

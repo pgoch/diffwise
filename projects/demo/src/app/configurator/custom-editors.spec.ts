@@ -158,6 +158,7 @@ describe('CustomTextsEditor', () => {
       'Tooltips',
       'Names of formatting',
       'Single column and hidden lines',
+      'Large documents',
       'Toolbar',
       'View settings',
     ]);

@@ -139,6 +139,15 @@ export const CUSTOM_TEXT_GROUPS: readonly CustomTextGroup[] = [
     ],
   },
   {
+    title: 'Large documents',
+    diffKinds: ALL_DIFFS,
+    texts: [
+      { name: 'largeDocumentLabel', english: 'Large document' },
+      { name: 'documentLinesLabel', english: 'Lines: {count}' },
+      { name: 'showComparisonLabel', english: 'Show the comparison' },
+    ],
+  },
+  {
     title: 'Toolbar',
     diffKinds: ALL_DIFFS,
     texts: [
