@@ -321,13 +321,13 @@ A palette the user chooses in the view settings takes the place of your colors, 
 
 `customTexts` replaces texts of the interface. A text you leave out stays in the language of the interface, and all of them together add a language.
 
-The tables below show the texts in English and Polish; the texts of the other languages are in [the source](../projects/ngx-diffwise/src/lib/i18n).
+The tables below show the texts in English; the texts of the other languages are in [the source](../projects/ngx-diffwise/src/lib/i18n).
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `oldVersionLabel` | Previous version | Poprzednia wersja | The header of the earlier version, or the name and the tooltip of its icon |
-| `newVersionLabel` | New version | Nowa wersja | The same for the later version |
-| `diffLabel` | Comparison of document versions | Porównanie wersji dokumentu | The name of the diff for screen readers; it does not show on the screen |
+| Text | English | Where it shows |
+|---|---|---|
+| `oldVersionLabel` | Previous version | The header of the earlier version, or the name and the tooltip of its icon |
+| `newVersionLabel` | New version | The same for the later version |
+| `diffLabel` | Comparison of document versions | The name of the diff for screen readers; it does not show on the screen |
 
 ```ts
 provideDiffwise({ customTexts: { oldVersionLabel: 'Draft', newVersionLabel: 'Published' } });
@@ -339,107 +339,107 @@ Each level of the configuration changes only the texts it sets. `null` takes awa
 
 A screen reader hears a short description before each removed, added or changed line, in place of its line number. These texts do not show on the screen; `{number}` stands for the number of the line.
 
-| Text | English | Polish | Where it is heard |
-|---|---|---|---|
-| `removedLineLabel` | Removed line {number} | Usunięta linia {number} | Before a removed line |
-| `addedLineLabel` | Added line {number} | Dodana linia {number} | Before an added line |
-| `changedLineBeforeLabel`, `changedLineAfterLabel` | Changed line {number}, before; Changed line {number}, after | Zmieniona linia {number}, przed; Zmieniona linia {number}, po | Before the old and the new version of a changed line, side by side |
-| `changedLineLabel` | Changed line {number} | Zmieniona linia {number} | Before a merged line of the single column |
-| `wideTableLabel` | Wide table, scroll sideways | Szeroka tabela, przewiń w bok | The name of a table wider than its column, which takes the focus to scroll |
-| `longLinesLabel` | Long lines, scroll sideways | Długie linie, przewiń w bok | The name of the scrollbar of lines of the text diff that do not wrap, which takes the focus to scroll while a line is wider than its column |
+| Text | English | Where it is heard |
+|---|---|---|
+| `removedLineLabel` | Removed line {number} | Before a removed line |
+| `addedLineLabel` | Added line {number} | Before an added line |
+| `changedLineBeforeLabel`, `changedLineAfterLabel` | Changed line {number}, before; Changed line {number}, after | Before the old and the new version of a changed line, side by side |
+| `changedLineLabel` | Changed line {number} | Before a merged line of the single column |
+| `wideTableLabel` | Wide table, scroll sideways | The name of a table wider than its column, which takes the focus to scroll |
+| `longLinesLabel` | Long lines, scroll sideways | The name of the scrollbar of lines of the text diff that do not wrap, which takes the focus to scroll while a line is wider than its column |
 
 ### Texts of the tooltips
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `formattingChangeLabel` | Formatting change | Zmiana formatowania | The title of a tooltip about formatting, and the name of its icon |
-| `linkChangeLabel` | Link address changed | Zmieniony adres linku | The title of a tooltip about another address of a link around the same text |
-| `addedLinkLabel` | Link added | Dodany link | The title of a tooltip about a link added around unchanged text |
-| `removedLinkLabel` | Link removed | Usunięty link | The title of a tooltip about a link removed from unchanged text |
-| `imageChangeLabel` | Image changed | Zmieniony obrazek | The title of a tooltip about an image with another file, size or alternative text |
-| `multipleChangesLabel` | Formatting changes: {count} | Zmiany formatowania: {count} | The title of a tooltip about several changes in one line; `{count}` stands for their number |
-| `oldValueLabel`, `newValueLabel` | Before, After | Było, Jest | The labels of the old and the new value, such as an address |
-| `imageFileLabel` | file | plik | Heads the old and the new file of an image when more of the image changed |
-| `imageSizeLabel` | size | rozmiar | Before the old and the new size of an image: "size: 480 × 270 → 640 × 360 px" |
-| `imageAltTextLabel` | alternative text | tekst alternatywny | Heads the old and the new alternative text of an image |
+| Text | English | Where it shows |
+|---|---|---|
+| `formattingChangeLabel` | Formatting change | The title of a tooltip about formatting, and the name of its icon |
+| `linkChangeLabel` | Link address changed | The title of a tooltip about another address of a link around the same text |
+| `addedLinkLabel` | Link added | The title of a tooltip about a link added around unchanged text |
+| `removedLinkLabel` | Link removed | The title of a tooltip about a link removed from unchanged text |
+| `imageChangeLabel` | Image changed | The title of a tooltip about an image with another file, size or alternative text |
+| `multipleChangesLabel` | Formatting changes: {count} | The title of a tooltip about several changes in one line; `{count}` stands for their number |
+| `oldValueLabel`, `newValueLabel` | Before, After | The labels of the old and the new value, such as an address |
+| `imageFileLabel` | file | Heads the old and the new file of an image when more of the image changed |
+| `imageSizeLabel` | size | Before the old and the new size of an image: "size: 480 × 270 → 640 × 360 px" |
+| `imageAltTextLabel` | alternative text | Heads the old and the new alternative text of an image |
 
 ### Names of formatting
 
 A tooltip names formatting in three forms: the name, used with an arrow, as in "italic → bold"; the form for formatting added to unchanged text, as in "bold added"; and the form for formatting removed from it. Each form has its own text, since some languages need other word forms, such as Polish "dodane pogrubienie" and "dodana kursywa". The texts follow one pattern: `boldLabel`, `addedBoldLabel`, `removedBoldLabel`.
 
-| Formatting | Texts | English | Polish |
-|---|---|---|---|
-| Bold | `boldLabel`, `addedBoldLabel`, `removedBoldLabel` | bold, bold added, bold removed | pogrubienie, dodane pogrubienie, usunięte pogrubienie |
-| Italic | `italicLabel`, `addedItalicLabel`, `removedItalicLabel` | italic, italic added, italic removed | kursywa, dodana kursywa, usunięta kursywa |
-| Underline | `underlineLabel`, `addedUnderlineLabel`, `removedUnderlineLabel` | underline, underline added, underline removed | podkreślenie, dodane podkreślenie, usunięte podkreślenie |
-| Strikethrough | `strikethroughLabel`, `addedStrikethroughLabel`, `removedStrikethroughLabel` | strikethrough, strikethrough added, strikethrough removed | przekreślenie, dodane przekreślenie, usunięte przekreślenie |
-| Superscript | `superscriptLabel`, `addedSuperscriptLabel`, `removedSuperscriptLabel` | superscript, superscript added, superscript removed | indeks górny, dodany indeks górny, usunięty indeks górny |
-| Subscript | `subscriptLabel`, `addedSubscriptLabel`, `removedSubscriptLabel` | subscript, subscript added, subscript removed | indeks dolny, dodany indeks dolny, usunięty indeks dolny |
-| Code font | `codeLabel`, `addedCodeLabel`, `removedCodeLabel` | code font, code font added, code font removed | czcionka kodu, dodana czcionka kodu, usunięta czcionka kodu |
-| Highlight (`<mark>`) | `textHighlightLabel`, `addedTextHighlightLabel`, `removedTextHighlightLabel` | highlight, highlight added, highlight removed | zakreślenie, dodane zakreślenie, usunięte zakreślenie |
-| Smaller font (`<small>`) | `smallTextLabel`, `addedSmallTextLabel`, `removedSmallTextLabel` | smaller font, smaller font added, smaller font removed | mniejsza czcionka, dodana mniejsza czcionka, usunięta mniejsza czcionka |
-| Upper case | `uppercaseLabel`, `addedUppercaseLabel`, `removedUppercaseLabel` | uppercase, uppercase added, uppercase removed | wielkie litery, dodane wielkie litery, usunięte wielkie litery |
-| Lower case | `lowercaseLabel`, `addedLowercaseLabel`, `removedLowercaseLabel` | lowercase, lowercase added, lowercase removed | małe litery, dodane małe litery, usunięte małe litery |
-| Capitalized | `capitalizedLabel`, `addedCapitalizedLabel`, `removedCapitalizedLabel` | capitalized, capitalization added, capitalization removed | wielkie pierwsze litery, dodane wielkie pierwsze litery, usunięte wielkie pierwsze litery |
-| Text color | `textColorLabel`, `addedTextColorLabel`, `removedTextColorLabel` | text color, text color added, text color removed | kolor tekstu, dodany kolor tekstu, usunięty kolor tekstu |
-| Background color | `backgroundColorLabel`, `addedBackgroundColorLabel`, `removedBackgroundColorLabel` | background color, background color added, background color removed | kolor tła, dodany kolor tła, usunięty kolor tła |
-| Font | `fontFamilyLabel`, `addedFontFamilyLabel`, `removedFontFamilyLabel` | font, font added, font removed | czcionka, dodana czcionka, usunięta czcionka |
-| Font size | `fontSizeLabel`, `addedFontSizeLabel`, `removedFontSizeLabel` | font size, font size added, font size removed | rozmiar tekstu, dodany rozmiar tekstu, usunięty rozmiar tekstu |
-| Alignment | `textAlignmentLabel`, `addedTextAlignmentLabel`, `removedTextAlignmentLabel` | alignment, alignment added, alignment removed | wyrównanie, dodane wyrównanie, usunięte wyrównanie |
+| Formatting | Texts | English |
+|---|---|---|
+| Bold | `boldLabel`, `addedBoldLabel`, `removedBoldLabel` | bold, bold added, bold removed |
+| Italic | `italicLabel`, `addedItalicLabel`, `removedItalicLabel` | italic, italic added, italic removed |
+| Underline | `underlineLabel`, `addedUnderlineLabel`, `removedUnderlineLabel` | underline, underline added, underline removed |
+| Strikethrough | `strikethroughLabel`, `addedStrikethroughLabel`, `removedStrikethroughLabel` | strikethrough, strikethrough added, strikethrough removed |
+| Superscript | `superscriptLabel`, `addedSuperscriptLabel`, `removedSuperscriptLabel` | superscript, superscript added, superscript removed |
+| Subscript | `subscriptLabel`, `addedSubscriptLabel`, `removedSubscriptLabel` | subscript, subscript added, subscript removed |
+| Code font | `codeLabel`, `addedCodeLabel`, `removedCodeLabel` | code font, code font added, code font removed |
+| Highlight (`<mark>`) | `textHighlightLabel`, `addedTextHighlightLabel`, `removedTextHighlightLabel` | highlight, highlight added, highlight removed |
+| Smaller font (`<small>`) | `smallTextLabel`, `addedSmallTextLabel`, `removedSmallTextLabel` | smaller font, smaller font added, smaller font removed |
+| Upper case | `uppercaseLabel`, `addedUppercaseLabel`, `removedUppercaseLabel` | uppercase, uppercase added, uppercase removed |
+| Lower case | `lowercaseLabel`, `addedLowercaseLabel`, `removedLowercaseLabel` | lowercase, lowercase added, lowercase removed |
+| Capitalized | `capitalizedLabel`, `addedCapitalizedLabel`, `removedCapitalizedLabel` | capitalized, capitalization added, capitalization removed |
+| Text color | `textColorLabel`, `addedTextColorLabel`, `removedTextColorLabel` | text color, text color added, text color removed |
+| Background color | `backgroundColorLabel`, `addedBackgroundColorLabel`, `removedBackgroundColorLabel` | background color, background color added, background color removed |
+| Font | `fontFamilyLabel`, `addedFontFamilyLabel`, `removedFontFamilyLabel` | font, font added, font removed |
+| Font size | `fontSizeLabel`, `addedFontSizeLabel`, `removedFontSizeLabel` | font size, font size added, font size removed |
+| Alignment | `textAlignmentLabel`, `addedTextAlignmentLabel`, `removedTextAlignmentLabel` | alignment, alignment added, alignment removed |
 
 A color, a font, a size or an alignment is shown with its value, as in "text color: ■ #c0392b → ■ #1e7d4f" or "font size added: 18px". A few more texts complete the names:
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `headingLabel` | heading {level} | nagłówek {level} | A heading level, as in "heading 3 → heading 2"; `{level}` stands for the level |
-| `paragraphLabel` | paragraph | akapit | Text that is not a heading, as in "paragraph → heading 2" |
-| `alignLeftLabel`, `alignCenterLabel`, `alignRightLabel`, `alignJustifyLabel` | left, center, right, justified | do lewej, do środka, do prawej, do obu krawędzi | Values of the alignment; rare values, such as `start`, show as CSS writes them |
+| Text | English | Where it shows |
+|---|---|---|
+| `headingLabel` | heading {level} | A heading level, as in "heading 3 → heading 2"; `{level}` stands for the level |
+| `paragraphLabel` | paragraph | Text that is not a heading, as in "paragraph → heading 2" |
+| `alignLeftLabel`, `alignCenterLabel`, `alignRightLabel`, `alignJustifyLabel` | left, center, right, justified | Values of the alignment; rare values, such as `start`, show as CSS writes them |
 
 ### Texts of the single column and hidden lines
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `inlineContentLabel` | Content after changes | Treść po zmianach | The header above the content of the single column |
-| `showHiddenLinesLabel` | Show hidden lines: {count} | Pokaż ukryte linie: {count} | The bar in place of hidden lines; `{count}` stands for their number |
-| `hiddenLinesLabel` | Hidden lines: {count} | Ukryte linie: {count} | The same bar as a button on the line between the versions, with `dividerStyle: 'line'` |
+| Text | English | Where it shows |
+|---|---|---|
+| `inlineContentLabel` | Content after changes | The header above the content of the single column |
+| `showHiddenLinesLabel` | Show hidden lines: {count} | The bar in place of hidden lines; `{count}` stands for their number |
+| `hiddenLinesLabel` | Hidden lines: {count} | The same bar as a button on the line between the versions, with `dividerStyle: 'line'` |
 
 ### Texts of a large document
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `largeDocumentLabel` | The document is too large to load without confirmation. | Dokument jest zbyt duży, żeby go wczytać bez potwierdzenia. | The sentence of the panel in place of the rows, from `largeDocumentLines` lines |
-| `showComparisonLabel` | Show the comparison | Pokaż porównanie | The button of the panel, which draws the rows |
+| Text | English | Where it shows |
+|---|---|---|
+| `largeDocumentLabel` | The document is too large to load without confirmation. | The sentence of the panel in place of the rows, from `largeDocumentLines` lines |
+| `showComparisonLabel` | Show the comparison | The button of the panel, which draws the rows |
 
 ### Texts of the toolbar
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `addedLinesLabel`, `removedLinesLabel`, `changedLinesLabel` | Added lines: {count}, Removed lines: {count}, Changed lines: {count} | Dodane linie: {count}, Usunięte linie: {count}, Zmienione linie: {count} | The tooltips and the names of the numbers, such as "+3" |
-| `noChangesLabel` | No changes | Brak zmian | The only text of the toolbar when the versions are the same |
-| `previousChangeLabel`, `nextChangeLabel` | Previous change, Next change | Poprzednia zmiana, Następna zmiana | The names and the tooltips of the arrows |
-| `currentChangeLabel` | Change {current} of {total} | Zmiana {current} z {total} | The tooltip of the counter, such as "2 / 3", and what screen readers hear after each step |
-| `changeCountLabel` | Changes: {count} | Zmiany: {count} | The tooltip of the counter before the first step, "– / 3" |
+| Text | English | Where it shows |
+|---|---|---|
+| `addedLinesLabel`, `removedLinesLabel`, `changedLinesLabel` | Added lines: {count}, Removed lines: {count}, Changed lines: {count} | The tooltips and the names of the numbers, such as "+3" |
+| `noChangesLabel` | No changes | The only text of the toolbar when the versions are the same |
+| `previousChangeLabel`, `nextChangeLabel` | Previous change, Next change | The names and the tooltips of the arrows |
+| `currentChangeLabel` | Change {current} of {total} | The tooltip of the counter, such as "2 / 3", and what screen readers hear after each step |
+| `changeCountLabel` | Changes: {count} | The tooltip of the counter before the first step, "– / 3" |
 
 ### Texts of the view settings
 
-| Text | English | Polish | Where it shows |
-|---|---|---|---|
-| `viewButtonLabel` | View | Widok | The name and the tooltip of the button that opens the view settings |
-| `viewSettingsLabel` | View settings | Ustawienia widoku | The name of the view settings for screen readers |
-| `layoutLabel` | Layout | Układ | The name of the layout |
-| `autoLayoutLabel`, `sideBySideLayoutLabel`, `inlineLayoutLabel` | Auto, Side by side, Single column | Auto, Obok siebie, Jedna kolumna | Its values |
-| `inlineDiffStyleLabel` | Changes in a single column | Zmiany w jednej kolumnie | The name of the look of changed lines in the single column |
-| `mergedInlineDiffLabel`, `strikethroughInlineDiffLabel`, `stackedInlineDiffLabel` | Merged, Struck through, Stacked | Scalone, Przekreślone, Jedna pod drugą | Its values |
-| `colorModeLabel` | Theme | Motyw | The name of the theme |
-| `autoColorModeLabel`, `lightColorModeLabel`, `darkColorModeLabel` | Auto, Light, Dark | Auto, Jasny, Ciemny | Its values |
-| `diffPaletteLabel` | Colors of changes | Kolory zmian | The name of the colors of changes |
-| `defaultDiffPaletteLabel`, `colorblindDiffPaletteLabel`, `highContrastDiffPaletteLabel`, `customDiffPaletteLabel` | Standard, Colorblind-friendly, High contrast, Custom | Standardowe, Dla daltonistów, Wysoki kontrast, Własne | Its values; "Custom" stands for the colors of your app |
-| `textFontLabel` | Text font | Czcionka tekstu | The name of the font of the text diff |
-| `monospaceTextFontLabel`, `proportionalTextFontLabel` | Fixed width, Regular | Stała szerokość, Zwykła | Its values |
-| `hideUnchangedLinesLabel` | Hide unchanged lines | Ukryj niezmienione linie | The checkbox of hidden lines |
-| `wrapLinesLabel` | Wrap lines | Zawijaj wiersze | The checkbox of wrapped lines of the text diff |
-| `showAllWhitespaceLabel` | Show all spaces and tabs | Pokaż wszystkie spacje i tabulatory | The checkbox of the signs of all spaces and tabs of the text diff |
-| `resetUserSettingsLabel` | Restore defaults | Przywróć domyślne | The button that takes the choices back |
+| Text | English | Where it shows |
+|---|---|---|
+| `viewButtonLabel` | View | The name and the tooltip of the button that opens the view settings |
+| `viewSettingsLabel` | View settings | The name of the view settings for screen readers |
+| `layoutLabel` | Layout | The name of the layout |
+| `autoLayoutLabel`, `sideBySideLayoutLabel`, `inlineLayoutLabel` | Auto, Side by side, Single column | Its values |
+| `inlineDiffStyleLabel` | Changes in a single column | The name of the look of changed lines in the single column |
+| `mergedInlineDiffLabel`, `strikethroughInlineDiffLabel`, `stackedInlineDiffLabel` | Merged, Struck through, Stacked | Its values |
+| `colorModeLabel` | Theme | The name of the theme |
+| `autoColorModeLabel`, `lightColorModeLabel`, `darkColorModeLabel` | Auto, Light, Dark | Its values |
+| `diffPaletteLabel` | Colors of changes | The name of the colors of changes |
+| `defaultDiffPaletteLabel`, `colorblindDiffPaletteLabel`, `highContrastDiffPaletteLabel`, `customDiffPaletteLabel` | Standard, Colorblind-friendly, High contrast, Custom | Its values; "Custom" stands for the colors of your app |
+| `textFontLabel` | Text font | The name of the font of the text diff |
+| `monospaceTextFontLabel`, `proportionalTextFontLabel` | Fixed width, Regular | Its values |
+| `hideUnchangedLinesLabel` | Hide unchanged lines | The checkbox of hidden lines |
+| `wrapLinesLabel` | Wrap lines | The checkbox of wrapped lines of the text diff |
+| `showAllWhitespaceLabel` | Show all spaces and tabs | The checkbox of the signs of all spaces and tabs of the text diff |
+| `resetUserSettingsLabel` | Restore defaults | The button that takes the choices back |
 
 ## Events and methods of the diff
 
