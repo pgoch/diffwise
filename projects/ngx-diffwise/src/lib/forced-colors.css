@@ -100,6 +100,14 @@
     outline: 1px dashed var(--diffwise-removed-accent);
     text-decoration: line-through;
   }
+
+  /* The chosen value of the view settings takes the colors of a selection of the system. */
+  .diffwise-diff__view-settings-choice[aria-pressed='true'] {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
 }
 
 /* Light colors for the dark themes of contrast. */

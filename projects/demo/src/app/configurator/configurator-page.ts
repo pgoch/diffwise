@@ -122,6 +122,12 @@ export class ConfiguratorPage {
     return ownOptions(userSettingsKey, options);
   });
 
+  /**
+   * One run of the preview, tracked by its start, so its diff is drawn anew when it starts over.
+   * Tracking the run itself would draw it anew too, but with a warning of Angular in development.
+   */
+  protected readonly previewRuns = computed(() => [{ start: this.state.previewStarts() }]);
+
   /** The goal of the configurator, the last step. */
   protected readonly resultStep = computed(() => this.state.steps().at(-1));
 

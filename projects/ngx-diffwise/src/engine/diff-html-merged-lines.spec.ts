@@ -20,6 +20,7 @@ const REMOVED_CHECKBOX =
 const ADDED_CHECKBOX =
   'class="diffwise-diff__highlight diffwise-diff__highlight--added diffwise-diff__highlight--checkbox"';
 const CHECKBOX_FRAMES_SELECTOR = 'label > .diffwise-diff__highlight--checkbox';
+const ARIA_LABEL_ATTRIBUTE = 'aria-label';
 const CHECKED_ATTRIBUTE = 'checked';
 const FIRST_DETAIL = 'data-diffwise-change-details="0"';
 const ARROW = '<span class="diffwise-diff__image-change-arrow" aria-hidden="true"></span>';
@@ -72,6 +73,17 @@ describe('diffHtml with merged lines', () => {
       ),
     ).toBe(
       `<p>You can create <del ${REPLACED}>one account</del>${HIDDEN_SPACE}<ins ${ADDED}>up to three accounts</ins> today.</p>`,
+    );
+  });
+
+  it('puts removed text before added text, when it stood at a space inside the added text', () => {
+    expect(
+      mergedLine(
+        '<p>Plans, 20 euros a month for each user.</p>',
+        '<p>Plans,free now for each user.</p>',
+      ),
+    ).toBe(
+      `<p>Plans, <del ${REPLACED}>20 euros a month</del>${HIDDEN_SPACE}<ins ${ADDED}>free now</ins> for each user.</p>`,
     );
   });
 
@@ -263,6 +275,19 @@ describe('diffHtml with merged lines', () => {
     ]);
     expect(parsed(line).querySelectorAll(ID_SELECTOR)).toHaveLength(1);
     expect(checkboxes[1]?.matches(ID_SELECTOR)).toBe(true);
+  });
+
+  it('names the old and the new checkbox of a label by its old and its new text', () => {
+    const line = mergedLine(
+      '<ul><li><label><input type="checkbox"> Invite your family</label></li></ul>',
+      '<ul><li><label><input type="checkbox" checked> Invite your friends</label></li></ul>',
+    );
+    const frames = Array.from(parsed(line).querySelectorAll(CHECKBOX_FRAMES_SELECTOR));
+    const names = frames.map((frame) =>
+      frame.firstElementChild?.getAttribute(ARIA_LABEL_ATTRIBUTE),
+    );
+
+    expect(names).toEqual(['Invite your family', 'Invite your friends']);
   });
 
   it('merges a line inside a quote and inside a nested list', () => {

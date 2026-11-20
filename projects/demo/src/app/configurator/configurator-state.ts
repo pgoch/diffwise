@@ -100,6 +100,9 @@ export class ConfiguratorState {
   /** Grows with each change of an option. */
   readonly optionsVersion = signal(0);
 
+  /** Grows each time the preview starts over, which draws its diff anew. */
+  readonly previewStarts = signal(0);
+
   /** The steps with options chosen in them. */
   readonly changedSteps = computed(() => {
     const changed = Object.keys(this.options());
@@ -176,6 +179,14 @@ export class ConfiguratorState {
       return isDefault ? others : { ...others, [name]: value };
     });
     this.optionsVersion.update((version) => version + 1);
+  }
+
+  /**
+   * Starts the preview over with a new diff, which forgets that its rows were asked for, so a
+   * large document shows its panel again.
+   */
+  restartPreview(): void {
+    this.previewStarts.update((starts) => starts + 1);
   }
 
   /** Shows the step. */

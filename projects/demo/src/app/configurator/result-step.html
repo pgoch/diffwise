@@ -19,6 +19,10 @@
     <pre class="code" #codeBlock><code>{{ code() }}</code></pre>
     <p class="code-note">
       For one diff only, pass the object to its <code>config</code> input instead.
+      @if (keepsLanguagesInProviders()) {
+        Keep <code>provideDiffwiseLanguages()</code> in the providers of your app, since the texts
+        of the language come from there.
+      }
     </p>
     <p class="code-note">
       Every option can also change while your app runs: <code>updateConfig()</code> of the

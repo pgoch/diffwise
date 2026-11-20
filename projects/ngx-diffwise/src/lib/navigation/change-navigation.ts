@@ -11,6 +11,7 @@ const INSTANT_SCROLL: ScrollBehavior = 'auto';
 const TO_MIDDLE: ScrollLogicalPosition = 'center';
 const TO_TOP: ScrollLogicalPosition = 'start';
 const PIXEL_UNIT = 'px';
+const STICKY_POSITION = 'sticky';
 const NO_STYLE = '';
 
 /**
@@ -168,10 +169,17 @@ function followUntilSettled(
   });
 }
 
-/** How far down the stuck toolbar covers the scrolled area: its offset from the top and height. */
+/**
+ * How far down the toolbar covers the scrolled area: its offset from the top, such as the height of
+ * a sticky header of the app, and its own height while it sticks. In a low window it scrolls with
+ * the diff and covers nothing.
+ */
 function coveredHeight(toolbar: Element): number {
-  const offset = Number.parseFloat(getComputedStyle(toolbar).top) || 0;
-  return offset + toolbar.getBoundingClientRect().height;
+  const { top, position } = getComputedStyle(toolbar);
+  const offset = Number.parseFloat(top) || 0;
+  const stickingHeight = position === STICKY_POSITION ? toolbar.getBoundingClientRect().height : 0;
+
+  return offset + stickingHeight;
 }
 
 /**

@@ -106,6 +106,16 @@
   color: var(--site-on-accent);
 }
 
+/* In the high contrast mode, a chosen button takes the colors of a selection of the system. */
+@media (forced-colors: active) {
+  .option-choice[aria-pressed='true'] {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
 /* The value an app gets without the option. */
 .option-default {
   margin-inline-start: 4px;

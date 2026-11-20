@@ -33,9 +33,6 @@ const VALUE_ATTRIBUTE = 'value';
 /** Cells of a line that is not a table row. */
 const NO_CELLS: readonly TableCell[] = [];
 
-/** The place of a caption: the first line of its table, above its rows. */
-const CAPTION_PLACE: TableLinePlace = { isFirstLine: true, isFirstRow: false, isLastRow: false };
-
 /** What a line is built from. */
 interface LineSource {
   readonly kind: LineKind;
@@ -141,20 +138,22 @@ class LineCollector {
   }
 
   /**
-   * Adds the lines of a table: its caption, then its rows in the order a browser shows them. A row
-   * without cells shows nothing, so it gives no line.
+   * Adds the lines of a table: its captions, then its rows in the order a browser shows them. HTML
+   * allows one caption, but HTML put together from pieces can have more, and a browser shows each
+   * of them above the table. A row without cells shows nothing, so it gives no line.
    */
   private addTable(table: Element, wrappers: readonly Element[]): void {
     const number = this.tableCount;
-    const caption = Array.from(table.children).find(isCaption);
+    const captions = Array.from(table.children).filter(isCaption);
     const rows = tableGrid(table).filter(hasCells);
     const tableWrappers = [...wrappers, table];
     const lineCountBefore = this.lines.length;
 
     this.tableCount++;
 
-    if (caption !== undefined) {
-      const tablePart = { table, number, row: null, place: CAPTION_PLACE };
+    for (const caption of captions) {
+      const isFirstLine = this.lines.length === lineCountBefore;
+      const tablePart = { table, number, row: null, place: captionPlace(isFirstLine) };
 
       this.addLine({
         ...captionLineType(caption),
@@ -351,6 +350,11 @@ function hasCells(row: GridRow): boolean {
 /** Kind and tag of the line of a caption. */
 function captionLineType(caption: Element): LineType {
   return { kind: LineKind.TableCaption, tag: caption.localName };
+}
+
+/** The place of a caption: above the rows of its table, and its first line when nothing is above. */
+function captionPlace(isFirstLine: boolean): TableLinePlace {
+  return { isFirstLine, isFirstRow: false, isLastRow: false };
 }
 
 /** Kind and tag of the line of a table row. */

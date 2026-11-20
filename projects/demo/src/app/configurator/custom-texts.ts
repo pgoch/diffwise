@@ -142,8 +142,10 @@ export const CUSTOM_TEXT_GROUPS: readonly CustomTextGroup[] = [
     title: 'Large documents',
     diffKinds: ALL_DIFFS,
     texts: [
-      { name: 'largeDocumentLabel', english: 'Large document' },
-      { name: 'documentLinesLabel', english: 'Lines: {count}' },
+      {
+        name: 'largeDocumentLabel',
+        english: 'The document is too large to load without confirmation.',
+      },
       { name: 'showComparisonLabel', english: 'Show the comparison' },
     ],
   },

@@ -33,6 +33,10 @@ const DARK_THEME_CLASS = 'diffwise-diff--dark-theme';
 const INPUT_EVENT = 'input';
 const CHANGE_EVENT = 'change';
 const GENERAL_STEP = 'General';
+const PANEL_SELECTOR = '.preview .diffwise-diff__large-document';
+const SHOW_ROWS_SELECTOR = '.preview .diffwise-diff__large-document-button';
+const RESTART_SELECTOR = '.restart-button';
+const LARGE_DOCUMENT_OPTION = 'Large document from';
 const CHANGED_WORDS = '(changed)';
 
 /** Options the preview does not take from the choices: it keeps its own key and never remembers. */
@@ -474,6 +478,27 @@ describe('StepOptions', () => {
       'Ignore blank lines',
       'Ignore letter case',
     ]);
+  });
+
+  it('shows the panel of a large document again with the button under its option', async () => {
+    const fixture = await render(StepId.Lines);
+    const element = fixture.nativeElement as HTMLElement;
+
+    await write(fixture, LARGE_DOCUMENT_OPTION, '1');
+
+    expect(element.querySelector(PANEL_SELECTOR)).not.toBeNull();
+
+    element.querySelector<HTMLElement>(SHOW_ROWS_SELECTOR)?.click();
+    await settle(fixture);
+
+    expect(element.querySelector(PANEL_SELECTOR)).toBeNull();
+
+    optionNamed(fixture, LARGE_DOCUMENT_OPTION)
+      .querySelector<HTMLElement>(RESTART_SELECTOR)
+      ?.click();
+    await settle(fixture);
+
+    expect(element.querySelector(PANEL_SELECTOR)).not.toBeNull();
   });
 
   it('starts the choices of the view settings of the preview over after each change', async () => {

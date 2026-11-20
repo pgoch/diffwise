@@ -1,24 +1,32 @@
 /*
  * The panel in place of the rows of a large document, under the toolbar with the numbers of
- * changes: its title, the number of lines of the longer version, and a button that shows the rows.
- * It stands on the background of the diff, not on the stripes of its empty places.
+ * changes: a sentence that the document waits for the user, and a button that shows the rows. It
+ * stands where the version headers do, in the middle by default, on the background of the diff,
+ * not on the stripes of its empty places.
  */
 
 .diffwise-diff__large-document {
   display: grid;
   gap: 10px;
-  justify-items: start;
+  justify-items: center;
   padding: 18px 20px;
   background: var(--diffwise-background);
   color: var(--diffwise-text);
+  text-align: center;
 }
 
-.diffwise-diff__large-document-title,
-.diffwise-diff__large-document-lines {
-  margin: 0;
+.diffwise-diff--version-header-alignment-start .diffwise-diff__large-document {
+  justify-items: start;
+  text-align: start;
+}
+
+.diffwise-diff--version-header-alignment-end .diffwise-diff__large-document {
+  justify-items: end;
+  text-align: end;
 }
 
 .diffwise-diff__large-document-title {
+  margin: 0;
   font-weight: 650;
 }
 

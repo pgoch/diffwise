@@ -147,18 +147,20 @@
       @if (sample.error()) {
         <p role="alert">The sample could not be loaded.</p>
       } @else if (shownSample(); as pair) {
-        @if (pair.kind === diffKinds.Text) {
-          <diffwise-text
-            [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-            [newText]="pair.newVersion"
-            [config]="previewConfig()"
-          />
-        } @else {
-          <diffwise-html
-            [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
-            [newHtml]="pair.newVersion"
-            [config]="previewConfig()"
-          />
+        @for (run of previewRuns(); track run.start) {
+          @if (pair.kind === diffKinds.Text) {
+            <diffwise-text
+              [oldText]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+              [newText]="pair.newVersion"
+              [config]="previewConfig()"
+            />
+          } @else {
+            <diffwise-html
+              [oldHtml]="comparesSampleWithItself() ? pair.newVersion : pair.oldVersion"
+              [newHtml]="pair.newVersion"
+              [config]="previewConfig()"
+            />
+          }
         }
       }
     </div>

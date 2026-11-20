@@ -7,6 +7,7 @@ import {
   CONTINUED_ITEM_ATTRIBUTE,
   CheckboxState,
   DETAIL_INDEX_SEPARATOR,
+  HIDDEN_SPACE_ATTRIBUTE,
   LINE_ITEM_ATTRIBUTE,
   LIST_MARKER_ATTRIBUTE,
   type Line,
@@ -42,6 +43,12 @@ const CHECKBOX_HIGHLIGHT_CLASS = `${HIGHLIGHT_CLASS}--checkbox`;
 const CHECKBOX_FRAME_SELECTOR = `.${CHECKBOX_HIGHLIGHT_CLASS}`;
 const ID_ATTRIBUTE = 'id';
 const CHECKED_ATTRIBUTE = 'checked';
+const LABEL_TAG = 'label';
+const ARIA_LABEL_ATTRIBUTE = 'aria-label';
+const CLASS_SELECTOR_START = '.';
+const WHITESPACE = /\s+/g;
+const SPACE = ' ';
+const NO_TEXT = '';
 
 /** The element that wraps changed text, with its classes. */
 export interface ChangeMarker {
@@ -60,6 +67,15 @@ export const ADDED_TEXT_MARKER: ChangeMarker = {
   tag: 'ins',
   classNames: [HIGHLIGHT_CLASS, `${HIGHLIGHT_CLASS}--added`],
 };
+
+/** Spaces only for screen readers and copied text, and parts that screen readers skip. */
+const NOT_READ_SELECTOR = `[${HIDDEN_SPACE_ATTRIBUTE}], [aria-hidden="true"]`;
+
+/** What the old version of a merged line does not read: added text, besides the unread parts. */
+const NOT_IN_OLD_TEXT_SELECTOR = [markerSelector(ADDED_TEXT_MARKER), NOT_READ_SELECTOR].join();
+
+/** What the new version of a merged line does not read: removed text, besides the unread parts. */
+const NOT_IN_NEW_TEXT_SELECTOR = [markerSelector(REMOVED_TEXT_MARKER), NOT_READ_SELECTOR].join();
 
 /** Part of a text node, `[start, end)` counted in the node's text, or an image. */
 interface NodeSegment {
@@ -188,6 +204,7 @@ export function drawRemovedCheckbox(
   oldCheckbox.toggleAttribute(CHECKED_ATTRIBUTE, oldState === CheckboxState.Checked);
   oldFrame.append(oldCheckbox);
   newFrame.before(oldFrame);
+  nameCheckboxesByLabel(oldCheckbox, newCheckbox);
 }
 
 /**
@@ -264,6 +281,45 @@ function markListItem(
   if (listMarker !== null && listMarkerChanged) {
     drawListMarker(item, listMarker, marker);
   }
+}
+
+/**
+ * Names the old and the new checkbox of a label by its text, the old one as the old version reads
+ * it and the new one as the new version does. A label names only one control, the first one in it,
+ * and the name it gives would hold the name of the other checkbox too.
+ */
+function nameCheckboxesByLabel(oldCheckbox: Element, newCheckbox: Element): void {
+  const label = newCheckbox.closest(LABEL_TAG);
+
+  if (label === null) {
+    return;
+  }
+
+  nameElement(oldCheckbox, textWithout(label, NOT_IN_OLD_TEXT_SELECTOR));
+  nameElement(newCheckbox, textWithout(label, NOT_IN_NEW_TEXT_SELECTOR));
+}
+
+/** Gives the element the name, unless the name is empty. */
+function nameElement(element: Element, name: string): void {
+  if (name.length > 0) {
+    element.setAttribute(ARIA_LABEL_ATTRIBUTE, name);
+  }
+}
+
+/** The text of an element without the parts that match the selector, with single spaces. */
+function textWithout(element: Element, selector: string): string {
+  const copy = element.cloneNode(true) as Element;
+
+  for (const part of copy.querySelectorAll(selector)) {
+    part.remove();
+  }
+
+  return (copy.textContent ?? NO_TEXT).replace(WHITESPACE, SPACE).trim();
+}
+
+/** Finds the markers of changed text that the marker makes, with the details of changes left out. */
+function markerSelector({ tag, classNames }: ChangeMarker): string {
+  return [tag, ...classNames].join(CLASS_SELECTOR_START) + `:not([${CHANGE_DETAILS_ATTRIBUTE}])`;
 }
 
 /** Wraps the checkbox the item starts with in a marker that frames it. */

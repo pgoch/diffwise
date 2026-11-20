@@ -67,6 +67,16 @@ import type { Choice } from '../choice';
       background: #1f2328;
       color: #fff;
     }
+
+    /* In the high contrast mode, a chosen button takes the colors of a selection of the system. */
+    @media (forced-colors: active) {
+      button[aria-pressed='true'] {
+        border-color: Highlight;
+        background: Highlight;
+        color: HighlightText;
+        forced-color-adjust: none;
+      }
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

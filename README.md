@@ -1,5 +1,7 @@
 # Diffwise
 
+[Website](https://pgoch.github.io/diffwise/) · [Configurator](https://pgoch.github.io/diffwise/#configurator) · [Demo](https://pgoch.github.io/diffwise/#demo)
+
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise is a free, standalone component that shows two versions of a document side by side, the way a reader sees them: what changed in the text, not in the markup. A second component does the same for plain text.
 
 > **Status: version 0.8, an early preview.** It is not on npm yet; the first release is planned with version 0.9. The API may change before 1.0.

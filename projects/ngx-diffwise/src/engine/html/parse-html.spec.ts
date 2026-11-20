@@ -38,4 +38,10 @@ describe('parseHtml', () => {
 
     expect(parseHtml(html).innerHTML).toBe('<p data-note="1"><b>Text</b></p>');
   });
+
+  it('turns customized built-in elements into plain ones with their attributes and text', () => {
+    const html = '<p is="my-paragraph" class="note">Text <span is="my-span">inside</span></p>';
+
+    expect(parseHtml(html).innerHTML).toBe('<p class="note">Text <span>inside</span></p>');
+  });
 });

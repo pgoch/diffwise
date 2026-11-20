@@ -36,6 +36,16 @@
   color: var(--site-on-accent);
 }
 
+/* In the high contrast mode, a chosen button takes the colors of a selection of the system. */
+@media (forced-colors: active) {
+  .form-switch button[aria-pressed='true'] {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+}
+
 .button {
   padding: 6px 18px;
   border: 1px solid var(--site-border);

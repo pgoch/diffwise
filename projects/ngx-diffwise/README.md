@@ -1,8 +1,10 @@
 # ngx-diffwise
 
+[Website](https://pgoch.github.io/diffwise/) · [Configurator](https://pgoch.github.io/diffwise/#configurator) · [Demo](https://pgoch.github.io/diffwise/#demo)
+
 Side-by-side diffs of rendered HTML and plain text for Angular. Diffwise shows two versions of a document side by side or in a single column, the way a reader sees them, with the changed lines, words, formatting, links, images, list markers and table cells marked. A second component compares plain text line by line, with spaces, tabs and indentation as in the text. A toolbar steps between the changes, counts them, and lets your users choose the layout, the theme and the colors of changes, such as a colorblind-friendly or a high contrast palette. The interface comes in 12 languages and works with screen readers and the keyboard.
 
-> Version 0.8, an early preview. The API may change before 1.0.
+> Version 0.9, an early preview. The API may change before 1.0.
 
 ## Installation
 

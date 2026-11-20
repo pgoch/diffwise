@@ -9,11 +9,11 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - `Tab` goes through the toolbar first, then through the content in the order of the document: the icons of changes, the links of the documents, the bars of hidden lines and wide tables, and last the scrollbar of long lines of the text diff, while its lines do not wrap.
 - Every element with the focus has a visible outline in `--diffwise-focus`. An element that takes the focus scrolls into view below the sticky toolbar, not under it.
 - The arrows of the toolbar step between the blocks of changes and keep the focus.
-- The button of the view settings opens them; Escape closes them and puts the focus back on the button.
+- The button of the view settings opens them; Escape closes them and puts the focus back on the button. They also close when the focus moves on to another element of the page, such as with `Tab`, but not when it goes back to their button.
 - A tooltip shows when its icon gets the focus, or its marked change with `changeDetails: 'hover'`. Escape hides it.
 - A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it. Long lines of the text diff that do not wrap have one stop too: the scrollbar of the new version, named "Long lines, scroll sideways", while a line is wider than its column.
 - Side by side, the old copy of an unchanged line is not in the order of `Tab`, so each link of the documents is one stop. A click on its links still works.
-- A large document shows the button "Show the comparison" in place of its rows. The button goes with the panel, so the focus moves to the diff, and `Tab` goes on into the rows.
+- A large document shows the button "Show the comparison" in place of its rows. The button goes with the panel, so the focus moves to the start of the diff, and `Tab` goes on through the toolbar, when the diff shows one, into the rows.
 
 ## Screen readers
 
@@ -26,7 +26,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - Each icon of changes is named by the title of its tooltip, such as "Link address changed", and the lines under the title describe it.
 - After a step of the navigation, screen readers hear "Change 2 of 3". The numbers of changed lines are named, such as "Added lines: 3".
 - The view settings are a dialog named "View settings", with a named group for each option; the chosen value is a pressed button.
-- While the diff draws its rows in parts, and while it waits for its turn among the diffs of a page, screen readers hear that it is busy (`aria-busy`). A large document that waits for the button is not busy: its panel says "Large document" and the number of its lines.
+- While the diff draws its rows in parts, and while it waits for its turn among the diffs of a page, screen readers hear that it is busy (`aria-busy`). A large document that waits for the button is not busy: its panel says "The document is too large to load without confirmation."
 - The texts of the interface carry the tag of their language in `lang`, so they are pronounced in that language on a page in another one. The documents keep the language of your page.
 
 The descriptions are texts of the interface, so they come in each of its languages and can be changed with `customTexts`; see [Texts for screen readers](configuration.md#texts-for-screen-readers).
@@ -49,7 +49,8 @@ In the high contrast mode of Windows (forced colors), the browser replaces the c
 - a changed image or checkbox in the same frames;
 - a bar at the number of a changed line, from orange to blue in a merged line of the single column;
 - diagonal stripes opposite an added or a removed line;
-- frames around the changed parts of the values in a tooltip.
+- frames around the changed parts of the values in a tooltip;
+- the colors of a selection of the system on the chosen values of the view settings.
 
 The text of the documents keeps the colors of the system.
 
@@ -59,7 +60,7 @@ The navigation scrolls smoothly over a short distance and jumps over a long one;
 
 ## Zoom and narrow screens
 
-In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either, unless your app sets `wrapLines: false` or the user unticks "Wrap lines". Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings.
+In a window 320 px wide, as at a zoom of 400%, the automatic layout shows a single column, and only code blocks and wide tables scroll sideways. The lines of the text diff wrap, so they do not scroll sideways either, unless your app sets `wrapLines: false` or the user unticks "Wrap lines". Wider spacing of letters, words and lines cuts nothing off, also in the toolbar and the view settings. In a window lower than 30em, as at a zoom of 400%, the toolbar does not stick to the top: it scrolls with the diff, so it does not take a large part of the window from the rows.
 
 ## Font of plain text
 

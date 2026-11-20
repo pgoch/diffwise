@@ -358,6 +358,17 @@ describe('splitLines', () => {
     ]);
   });
 
+  it('makes a line of each caption above the rows, as a browser shows a table with more of them', () => {
+    const html =
+      '<table><caption>Plans</caption><tr><td>Free</td></tr><caption>Prices</caption></table>';
+
+    expect(htmlOfLines(html)).toEqual([
+      `<table ${TABLE_COPY} ${FIRST_TABLE_LINE}><caption>Plans</caption></table>`,
+      `<table ${TABLE_COPY}><caption>Prices</caption></table>`,
+      `<table ${TABLE_COPY} ${FIRST_TABLE_ROW} ${LAST_TABLE_ROW}><tbody><tr><td>Free</td></tr></tbody></table>`,
+    ]);
+  });
+
   it('keeps an empty row as a line, as its cells show, and skips a row without cells', () => {
     const html = '<table><tr><td></td><td></td></tr><tr></tr><tr><td>Free</td></tr></table>';
 

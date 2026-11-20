@@ -38,6 +38,20 @@
   line-height: 1.6;
 }
 
+/*
+ * In a low window, such as at a zoom of 400%, the toolbar scrolls with the diff, so the rows get the
+ * whole height of the window, and an element that takes the focus needs no room for it.
+ */
+@media (max-height: 30em) {
+  .diffwise-diff :is(a[href], button, summary, input, [tabindex]) {
+    scroll-margin-top: var(--diffwise-toolbar-top);
+  }
+
+  .diffwise-diff__toolbar {
+    position: static;
+  }
+}
+
 .diffwise-diff__diff-stats {
   display: flex;
   gap: 0.8em;
