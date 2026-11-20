@@ -1,5 +1,5 @@
 /** The version of Diffwise that the site shows. */
-export const VERSION = '0.8';
+export const VERSION = '0.9';
 
 /** The repository of Diffwise on GitHub. */
 export const GITHUB_URL = 'https://github.com/pgoch/diffwise';
