@@ -154,6 +154,7 @@ const OPEN_STATE = 'open';
 const RIGHT_TO_LEFT = 'rtl';
 const SCROLL_EVENT = 'scroll';
 const RESIZE_EVENT = 'resize';
+const FOCUSIN_EVENT = 'focusin';
 const PIXEL_UNIT = 'px';
 
 /** Space between the view settings and their button, in px. */
@@ -170,7 +171,8 @@ const VIEW_SETTINGS_REFERENCE = 'viewSettings';
  * The button of the view settings in the toolbar and the settings it opens, in the top layer of the
  * page: the options the app allows the user to change, and a button that takes the choices back.
  * The browser closes them on Escape, which brings the focus back to the button, and on a click
- * elsewhere.
+ * elsewhere. They close when the focus moves on to another element of the page too, such as with
+ * Tab, except to their button.
  */
 @Component({
   selector: 'diffwise-view-settings',
@@ -244,11 +246,14 @@ export class ViewSettings {
   private readonly viewSettings =
     viewChild.required<ElementRef<HTMLElement>>(VIEW_SETTINGS_REFERENCE);
 
-  /** Listens to the page while the view settings are open: they follow their button. */
+  /**
+   * Listens to the page while the view settings are open: they follow their button, and close when
+   * the focus moves elsewhere.
+   */
   private pageListeners: AbortController | null = null;
 
   constructor() {
-    inject(DestroyRef).onDestroy(() => this.stopFollowingButton());
+    inject(DestroyRef).onDestroy(() => this.stopListeningToPage());
   }
 
   /**
@@ -280,11 +285,11 @@ export class ViewSettings {
 
     if (isOpen) {
       this.placeByButton();
-      this.followButton();
+      this.listenToPage();
       this.viewSettings().nativeElement.focus({ preventScroll: true });
       this.opened.emit();
     } else {
-      this.stopFollowingButton();
+      this.stopListeningToPage();
     }
   }
 
@@ -315,9 +320,12 @@ export class ViewSettings {
     return isCustomPalette ? CUSTOM_COLORS_CHOICE : this.config()[setting];
   }
 
-  /** Places the view settings again when the page scrolls or the window changes its size. */
-  private followButton(): void {
-    this.stopFollowingButton();
+  /**
+   * Places the view settings again when the page scrolls or the window changes its size, and closes
+   * them when the focus moves to another element of the page.
+   */
+  private listenToPage(): void {
+    this.stopListeningToPage();
     this.pageListeners = new AbortController();
 
     const page = this.button().nativeElement.ownerDocument;
@@ -326,12 +334,28 @@ export class ViewSettings {
 
     page.addEventListener(SCROLL_EVENT, () => this.placeByButton(), options);
     page.defaultView?.addEventListener(RESIZE_EVENT, () => this.placeByButton(), options);
+    page.addEventListener(FOCUSIN_EVENT, (event) => this.closeWhenFocusLeft(event), options);
   }
 
-  /** Stops placing the view settings again when the page scrolls or the window changes size. */
-  private stopFollowingButton(): void {
+  /** Stops listening to the page once the view settings close. */
+  private stopListeningToPage(): void {
     this.pageListeners?.abort();
     this.pageListeners = null;
+  }
+
+  /**
+   * Closes the view settings when the focus has moved to an element outside them and their button,
+   * such as with Tab. The browser does not close them then, and they could cover that element.
+   */
+  private closeWhenFocusLeft({ target }: Event): void {
+    const viewSettings = this.viewSettings().nativeElement;
+    const button = this.button().nativeElement;
+    const isOutside =
+      target instanceof Node && !viewSettings.contains(target) && !button.contains(target);
+
+    if (isOutside) {
+      viewSettings.hidePopover();
+    }
   }
 
   /**

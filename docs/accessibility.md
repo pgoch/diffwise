@@ -9,7 +9,7 @@ Version 0.5 was checked in Chrome: its accessibility tree, which screen readers 
 - `Tab` goes through the toolbar first, then through the content in the order of the document: the icons of changes, the links of the documents, the bars of hidden lines and wide tables, and last the scrollbar of long lines of the text diff, while its lines do not wrap.
 - Every element with the focus has a visible outline in `--diffwise-focus`. An element that takes the focus scrolls into view below the sticky toolbar, not under it.
 - The arrows of the toolbar step between the blocks of changes and keep the focus.
-- The button of the view settings opens them; Escape closes them and puts the focus back on the button.
+- The button of the view settings opens them; Escape closes them and puts the focus back on the button. They also close when the focus moves on to another element of the page, such as with `Tab`, but not when it goes back to their button.
 - A tooltip shows when its icon gets the focus, or its marked change with `changeDetails: 'hover'`. Escape hides it.
 - A table wider than its column has one stop for `Tab`, its last row, from which the arrow keys scroll it. Long lines of the text diff that do not wrap have one stop too: the scrollbar of the new version, named "Long lines, scroll sideways", while a line is wider than its column.
 - Side by side, the old copy of an unchanged line is not in the order of `Tab`, so each link of the documents is one stop. A click on its links still works.

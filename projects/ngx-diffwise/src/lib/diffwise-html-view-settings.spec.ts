@@ -19,6 +19,7 @@ const NEW_HTML_INPUT = 'newHtml';
 const LAYOUT_INPUT = 'layout';
 const ALLOWED_USER_SETTINGS_INPUT = 'allowedUserSettings';
 const WARN_METHOD = 'warn';
+const BUTTON_TAG = 'button';
 const PARAGRAPH_COUNT = 30;
 const TOOLBAR_SELECTOR = '.diffwise-diff__toolbar';
 const NAVIGATION_SELECTOR = '.diffwise-diff__navigation';
@@ -497,6 +498,29 @@ describe('DiffwiseHtml view settings', () => {
     toggle(fixture, CLOSED_STATE);
 
     expect(button?.getAttribute(ARIA_EXPANDED_ATTRIBUTE)).toBe('false');
+  });
+
+  it('closes the view settings when the focus moves on to the page, but not to their button', () => {
+    const fixture = render();
+    const element = elementOf(fixture);
+    const button = viewButtonOf(element) as HTMLElement;
+    const viewSettings = viewSettingsOf(element) as HTMLElement;
+    const elementAfter = document.createElement(BUTTON_TAG);
+
+    document.body.append(elementAfter);
+    viewSettings.showPopover();
+    toggle(fixture, OPEN_STATE);
+    choiceOf(element, LIGHT_CHOICE).focus();
+    button.focus();
+
+    expect(openPopovers.has(viewSettings)).toBe(true);
+
+    elementAfter.focus();
+
+    expect(openPopovers.has(viewSettings)).toBe(false);
+    expect(document.activeElement).toBe(elementAfter);
+
+    elementAfter.remove();
   });
 
   it('shows the name of the button in a tooltip, but not while the view settings are open', () => {
