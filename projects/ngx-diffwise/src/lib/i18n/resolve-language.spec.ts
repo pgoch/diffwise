@@ -1,7 +1,10 @@
 import { DiffwiseLanguage } from '../config/option-values';
-import { resolveLanguage } from './resolve-language';
+import { ENGLISH_TEXTS } from './en';
+import { diffwiseGerman, diffwisePolish } from './languages';
+import { interfaceLanguageOf, resolveLanguage } from './resolve-language';
 
 const ENGLISH_LOCALE = 'en-US';
+const WARN_METHOD = 'warn';
 
 /** Locales of apps with a region, and the language of the interface each one gets. */
 const REGIONAL_LOCALES: readonly [string, DiffwiseLanguage][] = [
@@ -52,5 +55,39 @@ describe('resolveLanguage', () => {
   it('falls back to English when the interface has no texts in the language of the app', () => {
     expect(resolveLanguage(DiffwiseLanguage.Auto, 'nl-NL')).toBe(DiffwiseLanguage.EN);
     expect(resolveLanguage(DiffwiseLanguage.Auto, 'plt')).toBe(DiffwiseLanguage.EN);
+  });
+});
+
+describe('interfaceLanguageOf', () => {
+  const ENGLISH = { language: DiffwiseLanguage.EN, texts: ENGLISH_TEXTS };
+
+  beforeEach(() => {
+    vi.spyOn(console, WARN_METHOD).mockImplementation(() => undefined);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('gives the texts of a language that the app provides, set or taken from the app', () => {
+    const provided = [diffwiseGerman, diffwisePolish];
+
+    expect(interfaceLanguageOf(DiffwiseLanguage.PL, ENGLISH_LOCALE, provided)).toBe(diffwisePolish);
+    expect(interfaceLanguageOf(DiffwiseLanguage.Auto, 'de-AT', provided)).toBe(diffwiseGerman);
+    expect(console.warn).not.toHaveBeenCalled();
+  });
+
+  it('gives English in place of a language that the app does not provide, and warns', () => {
+    expect(interfaceLanguageOf(DiffwiseLanguage.PL, ENGLISH_LOCALE, [diffwiseGerman])).toEqual(
+      ENGLISH,
+    );
+    expect(interfaceLanguageOf(DiffwiseLanguage.Auto, 'pl-PL', [])).toEqual(ENGLISH);
+    expect(console.warn).toHaveBeenCalledTimes(2);
+  });
+
+  it('gives English without a warning when it is the language of the interface', () => {
+    expect(interfaceLanguageOf(DiffwiseLanguage.EN, ENGLISH_LOCALE, [])).toEqual(ENGLISH);
+    expect(interfaceLanguageOf(DiffwiseLanguage.Auto, 'nl-NL', [])).toEqual(ENGLISH);
+    expect(console.warn).not.toHaveBeenCalled();
   });
 });

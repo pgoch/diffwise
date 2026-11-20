@@ -1,13 +1,49 @@
 import { DiffwiseLanguage } from '../config/option-values';
-import { LANGUAGE_TEXTS, type UiLanguage, languageTag } from './resolve-language';
-import type { UiTexts } from './texts';
+import { ENGLISH_TEXTS } from './en';
+import {
+  LANGUAGE_PACKS,
+  diffwiseChinese,
+  diffwiseFrench,
+  diffwiseGerman,
+  diffwiseHindi,
+  diffwiseItalian,
+  diffwiseJapanese,
+  diffwiseKorean,
+  diffwisePolish,
+  diffwisePortuguese,
+  diffwiseRussian,
+  diffwiseSpanish,
+} from './languages';
+import { languageTag } from './resolve-language';
+import type { DiffwiseLanguagePack, UiTexts } from './texts';
 
 /** A place for a number in a text, such as `{count}`. */
 const PLACEHOLDER = /\{[a-z]+\}/g;
 
-const ENGLISH_TEXTS = LANGUAGE_TEXTS[DiffwiseLanguage.EN];
 const TEXT_NAMES = Object.keys(ENGLISH_TEXTS) as (keyof UiTexts)[];
-const LANGUAGES = Object.keys(LANGUAGE_TEXTS) as UiLanguage[];
+
+/** Every language of the interface with its texts, English first. */
+const LANGUAGE_TEXTS: readonly DiffwiseLanguagePack[] = [
+  { language: DiffwiseLanguage.EN, texts: ENGLISH_TEXTS },
+  ...LANGUAGE_PACKS,
+];
+
+const LANGUAGES = LANGUAGE_TEXTS.map(({ language }) => language);
+
+/** Each constant of a language that apps give to `provideDiffwiseLanguages()`, with its language. */
+const NAMED_LANGUAGES: readonly [DiffwiseLanguagePack, DiffwiseLanguage][] = [
+  [diffwisePolish, DiffwiseLanguage.PL],
+  [diffwiseChinese, DiffwiseLanguage.ZH],
+  [diffwiseSpanish, DiffwiseLanguage.ES],
+  [diffwiseHindi, DiffwiseLanguage.HI],
+  [diffwiseFrench, DiffwiseLanguage.FR],
+  [diffwiseRussian, DiffwiseLanguage.RU],
+  [diffwisePortuguese, DiffwiseLanguage.PT],
+  [diffwiseItalian, DiffwiseLanguage.IT],
+  [diffwiseJapanese, DiffwiseLanguage.JA],
+  [diffwiseGerman, DiffwiseLanguage.DE],
+  [diffwiseKorean, DiffwiseLanguage.KO],
+];
 
 /** The places for numbers in a text, in alphabetical order. */
 function placeholdersOf(text: string): string[] {
@@ -32,10 +68,16 @@ describe('Translations of the interface', () => {
     ]);
   });
 
-  for (const language of LANGUAGES) {
-    describe(`in the language "${language}"`, () => {
-      const texts = LANGUAGE_TEXTS[language];
+  it('give each language besides English a constant of its own, named after the language', () => {
+    for (const [pack, language] of NAMED_LANGUAGES) {
+      expect(pack.language).toBe(language);
+    }
 
+    expect(NAMED_LANGUAGES.map(([pack]) => pack)).toEqual(LANGUAGE_PACKS);
+  });
+
+  for (const { language, texts } of LANGUAGE_TEXTS) {
+    describe(`in the language "${language}"`, () => {
       it('have every text of the English interface, and no other', () => {
         expect(Object.keys(texts).sort()).toEqual([...TEXT_NAMES].sort());
       });

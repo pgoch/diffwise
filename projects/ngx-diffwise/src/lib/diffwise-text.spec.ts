@@ -12,9 +12,11 @@ import {
   DiffwiseNoChangesView,
   DiffwiseTooltipColorMode,
 } from './config/option-values';
+import { provideDiffwiseLanguages } from './config/provide-diffwise-languages';
 import { type DiffwiseDiffStats } from './diff-stats';
 import { DiffwiseHtml } from './diffwise-html';
 import { DiffwiseText } from './diffwise-text';
+import { diffwisePolish } from './i18n/languages';
 
 const OLD_TEXT_INPUT = 'oldText';
 const NEW_TEXT_INPUT = 'newText';
@@ -282,6 +284,8 @@ describe('DiffwiseText', () => {
   });
 
   it('shows the texts of the interface in the language of the options', () => {
+    TestBed.configureTestingModule({ providers: [provideDiffwiseLanguages(diffwisePolish)] });
+
     const element = renderElement('one', 'one', { language: DiffwiseLanguage.PL });
 
     expect(textsOf(element, VERSION_HEADER_SELECTOR).map((text) => text?.trim())).toEqual([

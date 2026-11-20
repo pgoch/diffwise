@@ -82,11 +82,12 @@ import {
   type DiffwiseVersionHeaderTexts,
   type DiffwiseVerticalAlignment,
 } from './config/option-values';
+import { DIFFWISE_LANGUAGES } from './config/provide-diffwise-languages';
 import { type DiffwiseDiffStats, diffwiseDiffStats } from './diff-stats';
 import { Diffwise } from './diffwise';
 import type { ToolbarNavigation } from './toolbar/diff-toolbar';
-import { LANGUAGE_TEXTS, languageTag, resolveLanguage } from './i18n/resolve-language';
-import type { DiffwiseCustomTexts, UiTexts } from './i18n/texts';
+import { interfaceLanguageOf, languageTag } from './i18n/resolve-language';
+import type { DiffwiseCustomTexts, DiffwiseLanguagePack, UiTexts } from './i18n/texts';
 import { runWhenIdle } from './idle-task';
 import { observedWidth } from './layout/diff-width';
 import { keepOutOfTabOrder, lineDescription } from './line-descriptions';
@@ -197,6 +198,9 @@ const NO_CHANGE_DETAILS: readonly ChangeDetail[] = [];
 const NO_SHOWN_GROUPS: ReadonlySet<number> = new Set();
 
 const NO_CHANGED_LINES: DiffStats = { addedLines: 0, removedLines: 0, changedLines: 0 };
+
+/** Languages of an app that provides none besides English. */
+const NO_PROVIDED_LANGUAGES: readonly DiffwiseLanguagePack[] = [];
 
 /** The comparison of a diff waiting for its turn among the diffs of the page: no rows yet. */
 const NO_COMPARISON: Comparison = {
@@ -584,6 +588,8 @@ export abstract class DiffView {
   private readonly diffwise = inject(Diffwise);
   private readonly colorScheme = inject(ColorScheme);
   private readonly localeId = inject(LOCALE_ID);
+  private readonly providedLanguages =
+    inject(DIFFWISE_LANGUAGES, { optional: true }) ?? NO_PROVIDED_LANGUAGES;
   private readonly destroyRef = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly pendingTasks = inject(PendingTasks);
@@ -750,19 +756,25 @@ export abstract class DiffView {
     isDarkColorMode(this.effectiveConfig().colorMode, () => this.autoModeIsDark()),
   );
 
-  /** Language of the interface; it also joins lists in the tooltips. */
-  private readonly uiLanguage = computed(() =>
-    resolveLanguage(this.effectiveConfig().language, this.localeId),
+  /** Language option of the diff; other options changing do not choose the language again. */
+  private readonly languageOption = computed(() => this.effectiveConfig().language);
+
+  /** Language of the interface with its texts, among English and the languages of the app. */
+  private readonly interfaceLanguage = computed(() =>
+    interfaceLanguageOf(this.languageOption(), this.localeId, this.providedLanguages),
   );
+
+  /** Language of the interface; it also joins lists in the tooltips. */
+  private readonly uiLanguage = computed(() => this.interfaceLanguage().language);
 
   /** Tag of the interface language, so that screen readers pronounce its texts in that language. */
   protected readonly uiLanguageTag = computed(() => languageTag(this.uiLanguage()));
 
   /** Texts of the interface in its language, with the custom texts of the app. */
-  protected readonly texts = computed<UiTexts>(() => {
-    const languageTexts = LANGUAGE_TEXTS[this.uiLanguage()];
-    return { ...languageTexts, ...this.effectiveConfig().customTexts };
-  });
+  protected readonly texts = computed<UiTexts>(() => ({
+    ...this.interfaceLanguage().texts,
+    ...this.effectiveConfig().customTexts,
+  }));
 
   /** Describes changes besides text in the language of the interface. */
   protected readonly describer = computed(() => {

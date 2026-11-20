@@ -227,7 +227,10 @@ export interface DiffwiseConfigOptions {
   readonly ignoreFormatting?: boolean;
   /** Ignores links added, removed or pointing elsewhere around the same text. Default: `false`. */
   readonly ignoreLinkChanges?: boolean;
-  /** Language of the interface; `auto` takes the one of the app. Default: `DiffwiseLanguage.Auto`. */
+  /**
+   * Language of the interface; `auto` takes the one of the app. A language besides English needs
+   * its texts from `provideDiffwiseLanguages()`. Default: `DiffwiseLanguage.Auto`.
+   */
   readonly language?: DiffwiseLanguage;
   /**
    * Texts shown instead of texts of the interface. Each level of the configuration changes only
