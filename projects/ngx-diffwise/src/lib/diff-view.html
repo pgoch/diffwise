@@ -76,7 +76,7 @@
 }
 
 @if (showsDocumentOnce()) {
-  @for (row of rows(); track row.position) {
+  @for (row of drawnDocumentRows(); track row.position) {
     @if (row.newLine; as line) {
       <div class="diffwise-diff__row diffwise-diff__row--{{ row.kind }}">
         @if (lineNumbersShown) {
@@ -90,6 +90,7 @@
         <div
           class="diffwise-diff__content diffwise-diff__content--new"
           [attr.data-diffwise-table]="line.table"
+          [attr.data-diffwise-columns]="line.columns"
           [innerHTML]="line.html"
         ></div>
       </div>
@@ -120,7 +121,7 @@
     </div>
   }
 
-  @for (item of visibleSingleColumnRows(); track item.position; let position = $index) {
+  @for (item of drawnSingleColumnRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
         [attr.lang]="uiLanguageTag()"
@@ -177,6 +178,7 @@
         <div
           class="diffwise-diff__content diffwise-diff__content--{{ row.content }}"
           [attr.data-diffwise-table]="row.table"
+          [attr.data-diffwise-columns]="row.columns"
           [attr.data-diffwise-table-neighbors]="row.tableNeighbors"
           [innerHTML]="row.html"
         ></div>
@@ -209,7 +211,7 @@
     </div>
   }
 
-  @for (item of visibleRows(); track item.position; let position = $index) {
+  @for (item of drawnRows(); track item.position; let position = $index) {
     @if (isHiddenLines(item)) {
       <diffwise-collapsed-lines-bar
         [attr.lang]="uiLanguageTag()"
@@ -246,6 +248,7 @@
             class="diffwise-diff__content diffwise-diff__content--old"
             [attr.aria-hidden]="isHiddenCopy(row) || null"
             [attr.data-diffwise-table]="line.table"
+            [attr.data-diffwise-columns]="line.columns"
             [innerHTML]="line.html"
           ></div>
         } @else {
@@ -281,6 +284,7 @@
           <div
             class="diffwise-diff__content diffwise-diff__content--new"
             [attr.data-diffwise-table]="line.table"
+            [attr.data-diffwise-columns]="line.columns"
             [innerHTML]="line.html"
           ></div>
         } @else {

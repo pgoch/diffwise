@@ -227,7 +227,7 @@ describe('DiffwiseText lines', () => {
     expect(signCountsOf(fixture)).toEqual({ spaces: 0, tabs: 0 });
   });
 
-  it('leaves the checkboxes of the text diff out of the HTML diff and out of the allowed settings', () => {
+  it('leaves the checkboxes of the text diff out of the HTML diff and out of the allowed settings', async () => {
     const htmlFixture = TestBed.createComponent(DiffwiseHtml);
     const allowedFixture = render(SETTINGS_OLD_TEXT, SETTINGS_NEW_TEXT, {
       allowedUserSettings: [DiffwiseUserSetting.WrapLines],
@@ -236,6 +236,8 @@ describe('DiffwiseText lines', () => {
     htmlFixture.componentRef.setInput(OLD_HTML_INPUT, '<p>Sync every hour</p>');
     htmlFixture.componentRef.setInput(NEW_HTML_INPUT, '<p>Sync every day</p>');
     htmlFixture.detectChanges();
+    await htmlFixture.whenStable();
+    allowedFixture.detectChanges();
 
     expect(checkboxNamesOf(htmlFixture)).toEqual([HIDE_UNCHANGED_LINES]);
     expect(checkboxNamesOf(allowedFixture)).toEqual([WRAP_LINES]);

@@ -280,10 +280,12 @@ describe('diffHtml with merged tables', () => {
     expect(fragmentOf(row.mergedLine?.html ?? '').querySelector(COLUMN_GROUP_SELECTOR)).toBeNull();
   });
 
-  it('gives every line of a merged table hidden copies of the merged rows', () => {
+  it('gives the first line of a merged table hidden copies of the merged rows', () => {
     const rows = compare(PRICES_BEFORE, PRICES_AFTER);
+    const [first, ...others] = rows.map((row) => sizersOf(row.mergedLine));
 
-    expect(rows.map((row) => sizersOf(row.mergedLine))).toEqual(rows.map(() => [3, 3, 3, 3, 3]));
+    expect(first).toEqual([3, 3, 3, 3, 3]);
+    expect(others).toEqual(others.map(() => []));
     expect(rows.map((row) => row.mergedLine?.table)).toEqual(rows.map(() => 0));
   });
 
@@ -307,7 +309,9 @@ describe('diffHtml with merged tables', () => {
     const tableRows = compare(before, after).filter(
       (row) => (row.newLine ?? row.oldLine)?.table !== null,
     );
-    const columnCounts = tableRows.map((row) => sizersOf(row.mergedLine).at(0));
+    const columnCounts = tableRows
+      .map((row) => sizersOf(row.mergedLine).at(0))
+      .filter((count) => count !== undefined);
 
     expect(tableRows.length).toBeGreaterThan(0);
     expect(tableRows.every((row) => row.mergedLine !== null)).toBe(true);

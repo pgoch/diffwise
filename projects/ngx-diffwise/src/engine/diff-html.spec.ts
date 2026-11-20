@@ -672,7 +672,11 @@ describe('diffHtml', () => {
   });
 
   it('gives no rows for two empty documents', () => {
-    expect(compare('', '')).toEqual({ rows: [], stats: NO_CHANGES });
+    expect(compare('', '')).toEqual({
+      rows: [],
+      stats: NO_CHANGES,
+      withMergedLines: expect.any(Function),
+    });
   });
 
   it('gives the ids of each version a prefix of their own', () => {
@@ -790,6 +794,7 @@ describe('diffHtml', () => {
         },
       ],
       stats: { ...NO_CHANGES, changedLines: 1 },
+      withMergedLines: expect.any(Function),
     });
   });
 
@@ -899,15 +904,18 @@ describe('diffHtml', () => {
     ]);
   });
 
-  it('gives each table line the position of its table and copies of the rows of that table', () => {
+  it('gives each table line the position of its table, and lines of each table copies of its rows', () => {
     const { rows } = sampleDiff(EN_LONG);
     const oldLines = rows.map((row) => row.oldLine);
     const newLines = rows.map((row) => row.newLine);
+    const oldCopies = copiedRowCounts(oldLines).filter((count) => count > 0);
+    const newCopies = copiedRowCounts(newLines).filter((count) => count > 0);
 
     expect(linesPerTable(oldLines)).toEqual({ 0: 7, 1: 5, 2: 4 });
     expect(linesPerTable(newLines)).toEqual({ 0: 8, 1: 5, 2: 3 });
-    expect(new Set(copiedRowCounts(oldLines))).toEqual(new Set([6, 5, 4]));
-    expect(new Set(copiedRowCounts(newLines))).toEqual(new Set([7, 5, 3]));
+    expect(new Set(oldCopies)).toEqual(new Set([6, 5, 4]));
+    expect(new Set(newCopies)).toEqual(new Set([7, 5, 3]));
+    expect(oldCopies.length).toBeLessThan(copiedRowCounts(oldLines).length);
   });
 
   it('gives an image with another link and size one marker with both details', () => {

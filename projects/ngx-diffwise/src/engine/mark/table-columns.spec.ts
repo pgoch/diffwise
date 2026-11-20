@@ -63,17 +63,18 @@ function tableOf(rows: readonly (readonly string[])[]): string {
 }
 
 describe('addTableColumns', () => {
-  it('gives each line of a table hidden copies of all rows of its table, the caption line too', () => {
+  it('gives hidden copies of all rows of a table to its first line with a row and to its caption line', () => {
     const lines = addTableColumns(
       viewLines(
-        '<table><caption>Plans</caption><tr><th>Plan</th></tr><tr><td>Free</td></tr></table>',
+        '<table><caption>Plans</caption><tr><th>Plan</th></tr><tr><td>Free</td></tr><tr><td>Family</td></tr></table>',
       ),
     );
 
     expect(lines.map(sizerTexts)).toEqual([
-      ['Plan', 'Free'],
-      ['Plan', 'Free'],
-      ['Plan', 'Free'],
+      ['Plan', 'Free', 'Family'],
+      ['Plan', 'Free', 'Family'],
+      [],
+      [],
     ]);
   });
 
