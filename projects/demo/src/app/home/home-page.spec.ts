@@ -1,10 +1,11 @@
 import { type ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DOCS_URL, ISSUES_URL } from '../site';
+import { CHANGELOG_URL, DOCS_URL, ISSUES_URL } from '../site';
 import { HomePage } from './home-page';
 
 const ENTRY_SELECTOR = '.entry';
 const ACTION_SELECTOR = '.actions a';
+const VERSION_LINK_SELECTOR = '.meta a';
 const DIFF_SELECTOR = '.shot diffwise-html';
 const COPY_SELECTOR = '.install-copy';
 const HREF_ATTRIBUTE = 'href';
@@ -75,6 +76,12 @@ describe('HomePage', () => {
       '#configurator',
       DOCS_URL,
     ]);
+  });
+
+  it('leads to the changelog from the line of the version', () => {
+    const fixture = render();
+
+    expect(linksOf(fixture, VERSION_LINK_SELECTOR)).toEqual([['Changelog', CHANGELOG_URL]]);
   });
 
   it('shows the changes of a short policy in a real diff', () => {

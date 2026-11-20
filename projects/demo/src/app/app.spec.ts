@@ -3,7 +3,7 @@ import { Title } from '@angular/platform-browser';
 
 import { serveSampleFiles } from '../testing/sample-files';
 import { App } from './app';
-import { DOCS_URL, GITHUB_URL } from './site';
+import { DOCS_URL, GITHUB_URL, NPM_URL } from './site';
 
 const DEMO_HASH = '#demo';
 const CONFIGURATOR_HASH = '#configurator';
@@ -117,7 +117,7 @@ describe('App', () => {
     expect(scrollTo).not.toHaveBeenCalled();
   });
 
-  it('leads home from the name, and to the documentation and the repository', async () => {
+  it('leads home from the name, and to the documentation, the repository and the package', async () => {
     const element = await render(DEMO_HASH);
 
     expect(element.querySelector(BRAND_SELECTOR)?.getAttribute(HREF_ATTRIBUTE)).toBe(HOME_HREF);
@@ -126,6 +126,7 @@ describe('App', () => {
       Configurator: CONFIGURATOR_HASH,
       Docs: DOCS_URL,
       GitHub: GITHUB_URL,
+      npm: NPM_URL,
     });
   });
 });

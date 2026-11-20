@@ -1,6 +1,6 @@
 # How it works
 
-This page describes version 0.8. Diffwise compares two HTML documents in five steps, and then builds the views of the comparison: two columns or a single one, with hidden lines and blocks of changes. Plain text takes a shorter way to the same views; see [Plain text](#plain-text).
+This page describes version 0.9. Diffwise compares two HTML documents in five steps, and then builds the views of the comparison: two columns or a single one, with hidden lines and blocks of changes. Plain text takes a shorter way to the same views; see [Plain text](#plain-text).
 
 ## 1. Clean and parse
 

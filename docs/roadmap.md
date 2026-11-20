@@ -1,6 +1,6 @@
 # Roadmap
 
-> Tentative. The order and scope may change. Versions 0.1 to 0.8 are complete; [Configuration](configuration.md) describes what they can do.
+> Tentative. The order and scope may change. Versions 0.1 to 0.9 are complete; [Configuration](configuration.md) describes what they can do.
 
 | Version | Scope |
 |---|---|
@@ -12,10 +12,10 @@
 | 0.6 | Plain text diffs: a second component that compares two versions of plain text line by line, with the same look and configuration as the HTML diff; spaces, tabs and indentation as in the text, changed whitespace shown as signs, and a font of fixed width that end users can switch |
 | 0.7 | A configurator: a page that leads you step by step through the options, with a live preview of the diff, and gives you configuration ready to copy into your app, as a plain object or as a `DiffwiseConfig`; a home page of the demo app; options to hide the toolbar and the headers; for plain text, long lines that scroll sideways, signs of all spaces and tabs, and ignored blank lines; cleaner code |
 | 0.8 | Performance: a review of the whole code; long documents and texts show their first rows sooner and draw the rest in parts; merged lines and the columns of tables without repeated work; the diffs of a page drawn one by one, the visible ones first; very large documents that show their rows on request; and a smaller bundle, as an app adds only the languages of the interface it uses |
-| 0.9 | Final tests in Chrome, Edge, Firefox and Safari and with screen readers, bug fixes, and the first release on npm |
-| 1.0 | Stable API, complete documentation and a live demo with the configurator |
+| 0.9 | Final tests in Chrome and Edge, bug fixes, pages with many diffs that open sooner, the first release on npm, and a live demo with the configurator |
+| 1.0 | Tests with screen readers, a stable API and complete documentation |
 
-The first version on npm is planned at the end of 0.9. Later versions will be published as they are ready.
+Version 0.9.0 is the first one on npm. Later versions will be published as they are ready.
 
 ## Ideas after 1.0
 
